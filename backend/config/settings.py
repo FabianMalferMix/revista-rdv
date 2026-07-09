@@ -6,17 +6,42 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Seguridad ─────────────────────────────────────────────
-# Fail-safe: DEBUG apagado por defecto; en producción exige una SECRET_KEY propia.
+# Fail-safe: DEBUG apagado por defecto; en producción exige credenciales propias.
 DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
 _INSECURE_SECRET = "dev-insecure-change-me"
+_INSECURE_DB_PASSWORD = "resenas"
+_DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
+
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", _INSECURE_SECRET)
-if not DEBUG and SECRET_KEY == _INSECURE_SECRET:
+# Rotación de clave con solapamiento (las sesiones firmadas con claves previas siguen válidas).
+SECRET_KEY_FALLBACKS = [
+    k for k in os.environ.get("DJANGO_SECRET_KEY_FALLBACKS", "").split(",") if k
+]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", _DEFAULT_HOSTS).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o
+]
+
+# Guard de producción: con DEBUG=0 rechaza arrancar con valores de ejemplo o inseguros.
+if not DEBUG:
     from django.core.exceptions import ImproperlyConfigured
 
-    raise ImproperlyConfigured("Define un DJANGO_SECRET_KEY propio y secreto cuando DEBUG=0.")
-
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
+    _insecure = []
+    if SECRET_KEY == _INSECURE_SECRET:
+        _insecure.append("DJANGO_SECRET_KEY")
+    if os.environ.get("POSTGRES_PASSWORD", _INSECURE_DB_PASSWORD) in ("", _INSECURE_DB_PASSWORD):
+        _insecure.append("POSTGRES_PASSWORD")
+    if os.environ.get("DJANGO_ALLOWED_HOSTS", "") in ("", _DEFAULT_HOSTS):
+        _insecure.append("DJANGO_ALLOWED_HOSTS")
+    if not CSRF_TRUSTED_ORIGINS:
+        _insecure.append("DJANGO_CSRF_TRUSTED_ORIGINS")
+    if _insecure:
+        raise ImproperlyConfigured(
+            "Configuración insegura con DEBUG=0 — define en el entorno: "
+            + ", ".join(_insecure)
+            + "."
+        )
 
 # ── Aplicaciones ──────────────────────────────────────────
 INSTALLED_APPS = [
@@ -121,9 +146,15 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ── Celery ────────────────────────────────────────────────
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/1")
+# ── Celery / Redis ────────────────────────────────────────
+# La URL se deriva de REDIS_PASSWORD (única fuente): con contraseña incluye la auth.
+_REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+_REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
+_REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
+_REDIS_AUTH = f":{_REDIS_PASSWORD}@" if _REDIS_PASSWORD else ""
+_REDIS_BASE = f"redis://{_REDIS_AUTH}{_REDIS_HOST}:{_REDIS_PORT}"
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"{_REDIS_BASE}/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", f"{_REDIS_BASE}/1")
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
     "publicar-articulos-programados": {
@@ -132,10 +163,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# ── Seguridad ─────────────────────────────────────────────
-CSRF_TRUSTED_ORIGINS = [
-    o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o
-]
+# ── Cabeceras de seguridad ────────────────────────────────
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
@@ -144,9 +172,9 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    # Activar cuando sirvas por HTTPS (requiere que el proxy fije X-Forwarded-Proto).
-    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "0") == "1"
-    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "0"))
+    # HTTPS forzado y HSTS activos por defecto en producción (opt-out por env).
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "31536000"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 

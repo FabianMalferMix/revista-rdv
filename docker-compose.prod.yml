@@ -19,3 +19,13 @@ services:
   beat:
     environment:
       DJANGO_DEBUG: "0"
+
+  # Redis autenticado (REDIS_PASSWORD es obligatorio; ver .env.prod.example).
+  # La URL de Celery incluye la contraseña automáticamente (settings deriva de REDIS_PASSWORD).
+  redis:
+    command: "redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requerido en produccion}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+
+# NOTA: db no publica 5432 al host (bind 127.0.0.1 en el compose base) y web:8000 se cablea
+# tras el proxy TLS en el Lote 3. En este override no se exponen puertos internos a Internet.
