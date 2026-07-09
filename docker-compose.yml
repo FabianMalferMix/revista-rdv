@@ -64,6 +64,27 @@ services:
     depends_on:
       - web
 
+  # Respaldos (perfil "backup"): NO arranca con `docker compose up`.
+  #  · Respaldo puntual:   docker compose run --rm --entrypoint sh backup /scripts/backup.sh
+  #  · Restaurar:          docker compose run --rm --entrypoint sh backup /scripts/restore.sh latest
+  #  · Sidecar programado (prod): docker compose --profile backup up -d backup
+  # /backups es un bind-mount del host (BACKUP_DIR) para sobrevivir a `down -v` y a la
+  # pérdida del disco; apúntalo a almacenamiento respaldado/externo en producción.
+  backup:
+    image: postgres:16
+    profiles: ["backup"]
+    env_file: .env
+    volumes:
+      - media:/volumes/media
+      - private_media:/volumes/private_media
+      - ${BACKUP_DIR:-./backups}:/backups
+      - ./infra/backup:/scripts:ro
+    entrypoint: ["sh", "/scripts/entrypoint.sh"]
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
   media:
