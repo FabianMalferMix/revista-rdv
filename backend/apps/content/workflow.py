@@ -3,6 +3,7 @@
 Las transiciones se validan aquí en el servidor, nunca en la UI. Cada movimiento
 deja un rastro inmutable en EditorialTransition.
 """
+
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
@@ -14,15 +15,15 @@ S = ArticleStatus
 # nombre -> (estados_origen, estado_destino, roles_permitidos)
 #   "editor" = editor o admin ; "owner" = dueño del artículo
 TRANSITIONS = {
-    "submit":          ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW,        ("owner", "editor")),
-    "request_changes": ({S.IN_REVIEW},                  S.CHANGES_REQUESTED, ("editor",)),
-    "accept":          ({S.IN_REVIEW},                  S.APPROVED,          ("editor",)),
-    "reject":          ({S.IN_REVIEW},                  S.REJECTED,          ("editor",)),
-    "schedule":        ({S.APPROVED},                   S.SCHEDULED,         ("editor",)),
-    "publish":         ({S.APPROVED, S.SCHEDULED},      S.PUBLISHED,         ("editor",)),
-    "unpublish":       ({S.PUBLISHED},                  S.DRAFT,             ("editor",)),
-    "archive":         ({S.PUBLISHED},                  S.ARCHIVED,          ("editor",)),
-    "restore":         ({S.ARCHIVED},                   S.PUBLISHED,         ("editor",)),
+    "submit": ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW, ("owner", "editor")),
+    "request_changes": ({S.IN_REVIEW}, S.CHANGES_REQUESTED, ("editor",)),
+    "accept": ({S.IN_REVIEW}, S.APPROVED, ("editor",)),
+    "reject": ({S.IN_REVIEW}, S.REJECTED, ("editor",)),
+    "schedule": ({S.APPROVED}, S.SCHEDULED, ("editor",)),
+    "publish": ({S.APPROVED, S.SCHEDULED}, S.PUBLISHED, ("editor",)),
+    "unpublish": ({S.PUBLISHED}, S.DRAFT, ("editor",)),
+    "archive": ({S.PUBLISHED}, S.ARCHIVED, ("editor",)),
+    "restore": ({S.ARCHIVED}, S.PUBLISHED, ("editor",)),
 }
 
 
@@ -49,9 +50,7 @@ def perform_transition(article, name, user, note=""):
 
     froms, to_state, roles = TRANSITIONS[name]
     if article.status not in froms:
-        raise ValueError(
-            f"No se puede '{name}' desde el estado '{article.status}'."
-        )
+        raise ValueError(f"No se puede '{name}' desde el estado '{article.status}'.")
     if not _allowed(user, article, roles):
         raise PermissionDenied(f"Sin permiso para '{name}'.")
 

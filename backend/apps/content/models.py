@@ -63,9 +63,7 @@ class Article(models.Model):
     subtitle = models.CharField(max_length=255, blank=True, help_text="Bajada")
     body = models.TextField()
     excerpt = models.TextField(blank=True, help_text="Extracto autoral (opcional)")
-    type = models.CharField(
-        max_length=20, choices=ArticleType.choices, default=ArticleType.RESENA
-    )
+    type = models.CharField(max_length=20, choices=ArticleType.choices, default=ArticleType.RESENA)
     status = models.CharField(
         max_length=20,
         choices=ArticleStatus.choices,
@@ -136,9 +134,7 @@ class Article(models.Model):
         super().save(*args, **kwargs)
         # Recalcula el vector de búsqueda (derivado, sin redundancia editable a mano).
         type(self).objects.filter(pk=self.pk).update(
-            search_vector=SearchVector(
-                "title", "subtitle", "body", config="spanish"
-            )
+            search_vector=SearchVector("title", "subtitle", "body", config="spanish")
         )
 
 
@@ -164,16 +160,12 @@ class ReviewedWork(models.Model):
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name="reviewed_work_links"
     )
-    work = models.ForeignKey(
-        "reviews.Work", on_delete=models.CASCADE, related_name="review_links"
-    )
+    work = models.ForeignKey("reviews.Work", on_delete=models.CASCADE, related_name="review_links")
     is_primary = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["article", "work"], name="uniq_article_work"
-            )
+            models.UniqueConstraint(fields=["article", "work"], name="uniq_article_work")
         ]
 
 
@@ -219,9 +211,7 @@ class DossierArticle(models.Model):
     class Meta:
         ordering = ["position"]
         constraints = [
-            models.UniqueConstraint(
-                fields=["dossier", "article"], name="uniq_dossier_article"
-            )
+            models.UniqueConstraint(fields=["dossier", "article"], name="uniq_dossier_article")
         ]
 
 
@@ -253,9 +243,7 @@ class Page(models.Model):
 class EditorialTransition(models.Model):
     """Rastro inmutable de cada movimiento del flujo editorial."""
 
-    article = models.ForeignKey(
-        Article, on_delete=models.CASCADE, related_name="transitions"
-    )
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="transitions")
     from_status = models.CharField(max_length=20)
     to_status = models.CharField(max_length=20)
     actor = models.ForeignKey(
@@ -278,9 +266,7 @@ class EditorialTransition(models.Model):
 class EditorialNote(models.Model):
     """Discusión interna editor ↔ autor, separada de los comentarios públicos."""
 
-    article = models.ForeignKey(
-        Article, on_delete=models.CASCADE, related_name="editorial_notes"
-    )
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="editorial_notes")
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
     )

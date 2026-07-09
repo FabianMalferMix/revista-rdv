@@ -27,9 +27,7 @@ def submit(request):
             return redirect("submissions:submit_thanks")
     else:
         form = SubmissionForm()
-    return render(
-        request, "submissions/submit.html", {"form": form, "call": _open_call()}
-    )
+    return render(request, "submissions/submit.html", {"form": form, "call": _open_call()})
 
 
 def submit_thanks(request):
@@ -45,6 +43,4 @@ def submission_file(request, pk):
     if not submission.file:
         raise Http404
     filename = submission.file.name.rsplit("/", 1)[-1]
-    return FileResponse(
-        submission.file.open("rb"), as_attachment=True, filename=filename
-    )
+    return FileResponse(submission.file.open("rb"), as_attachment=True, filename=filename)

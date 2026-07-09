@@ -1,0 +1,13 @@
+# El contexto de build es ./backend, así que este .dockerignore es el efectivo
+# (el de la raíz no aplica a este contexto).
+.git
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+staticfiles
+mediafiles
+media
+private_media
+celerybeat-schedule
+.env

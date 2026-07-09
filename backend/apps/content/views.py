@@ -61,7 +61,10 @@ def contributor_detail(request, slug):
     return render(
         request,
         "content/contributor_detail.html",
-        {"contributor": contributor, "articles": _paginate(request, _published().filter(authors=contributor))},
+        {
+            "contributor": contributor,
+            "articles": _paginate(request, _published().filter(authors=contributor)),
+        },
     )
 
 
@@ -74,9 +77,7 @@ def dossier_detail(request, slug):
     dossier = get_object_or_404(Dossier, slug=slug, status=DossierStatus.PUBLISHED)
     # Orden curado (DossierArticle.position), solo artículos publicados.
     links = (
-        DossierArticle.objects.filter(
-            dossier=dossier, article__status=ArticleStatus.PUBLISHED
-        )
+        DossierArticle.objects.filter(dossier=dossier, article__status=ArticleStatus.PUBLISHED)
         .select_related("article", "article__section")
         .prefetch_related("article__authors")
         .order_by("position")

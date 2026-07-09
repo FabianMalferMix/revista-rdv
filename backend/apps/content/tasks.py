@@ -8,9 +8,7 @@ def publish_due_articles():
     from .models import Article, ArticleStatus, EditorialTransition
 
     due = list(
-        Article.objects.filter(
-            status=ArticleStatus.SCHEDULED, published_at__lte=timezone.now()
-        )
+        Article.objects.filter(status=ArticleStatus.SCHEDULED, published_at__lte=timezone.now())
     )
     for article in due:
         article.status = ArticleStatus.PUBLISHED

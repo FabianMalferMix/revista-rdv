@@ -85,7 +85,17 @@ docker compose run --rm --entrypoint pytest web
 
 Cubren el flujo editorial, los permisos por rol y estado, el formulario de envíos y las
 vistas públicas. El pipeline de CI ([.github/workflows/ci.yml](.github/workflows/ci.yml))
-los corre en cada push y pull request, junto con una comprobación de migraciones al día.
+los corre en cada push y pull request, junto con lint (ruff), auditoría de dependencias
+(pip-audit) y una comprobación de migraciones al día.
+
+## Calidad de código
+
+Lint, formato e imports con **ruff** (config en [backend/pyproject.toml](backend/pyproject.toml)):
+
+```bash
+docker compose run --rm --entrypoint ruff web check .
+docker compose run --rm --entrypoint ruff web format .
+```
 
 ## Producción
 
