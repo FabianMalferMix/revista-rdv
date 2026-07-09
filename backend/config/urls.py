@@ -6,10 +6,11 @@ from django.urls import include, path
 
 from apps.content.feeds import LatestArticlesFeed
 from apps.content.sitemaps import SITEMAPS
-from apps.content.views import robots
+from apps.content.views import healthz, robots
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("healthz/", healthz, name="healthz"),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
     path("feed/", LatestArticlesFeed(), name="feed"),
     path("robots.txt", robots, name="robots"),

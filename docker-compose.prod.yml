@@ -1,31 +1,89 @@
-# Override de producción: DEBUG off, gunicorn, estáticos vía WhiteNoise.
+# Override de PRODUCCIÓN. No carga docker-compose.override.yml → usa el código de la imagen.
 #
+#   cp .env.prod.example .env   &&   editar .env (SECRET_KEY, contraseñas, SITE_ADDRESS…)
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#   # migraciones y grupos, como paso de despliegue (web no los corre al arrancar):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py migrate
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py setup_groups
 #
-# En producción real: sirve detrás de un proxy con TLS (ver infra/nginx/), quita el
-# bind mount de código del servicio web y define los secretos con variables seguras.
+# Caddy (proxy) termina TLS automáticamente (Let's Encrypt) cuando SITE_ADDRESS es un dominio.
+# Ver docs/despliegue.md.
 
 services:
   web:
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - ${GUNICORN_WORKERS:-3}
+      - --timeout
+      - "60"
+      - --max-requests
+      - "1000"
+      - --max-requests-jitter
+      - "100"
+      - --forwarded-allow-ips
+      - "*"
+      - --access-logfile
+      - "-"
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_COLLECTSTATIC: "1"
+      DJANGO_SKIP_MIGRATE: "1"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5).status==200 else 1)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   worker:
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_SKIP_MIGRATE: "1"
+    restart: unless-stopped
 
   beat:
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_SKIP_MIGRATE: "1"
+    restart: unless-stopped
 
-  # Redis autenticado (REDIS_PASSWORD es obligatorio; ver .env.prod.example).
-  # La URL de Celery incluye la contraseña automáticamente (settings deriva de REDIS_PASSWORD).
+  db:
+    restart: unless-stopped
+
+  # Redis autenticado (REDIS_PASSWORD obligatorio; ver .env.prod.example).
   redis:
     command: "redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requerido en produccion}"
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+    restart: unless-stopped
 
-# NOTA: db no publica 5432 al host (bind 127.0.0.1 en el compose base) y web:8000 se cablea
-# tras el proxy TLS en el Lote 3. En este override no se exponen puertos internos a Internet.
+  # Proxy inverso con TLS automático. Sirve /media/ directo desde el volumen; el resto va a
+  # gunicorn (estáticos vía WhiteNoise). web NO se publica al host: solo el proxy es accesible.
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "${PROXY_HTTP_PORT:-80}:80"
+      - "${PROXY_HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - media:/srv/media:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  caddydata:
+  caddyconfig:

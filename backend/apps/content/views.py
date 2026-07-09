@@ -114,6 +114,11 @@ def search(request):
     )
 
 
+def healthz(request):
+    """Sonda de salud para el healthcheck del contenedor y el proxy (sin tocar la BD)."""
+    return HttpResponse("ok", content_type="text/plain")
+
+
 def robots(request):
     lines = [
         "User-agent: *",

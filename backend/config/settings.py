@@ -166,6 +166,8 @@ CELERY_BEAT_SCHEDULE = {
 # ── Cabeceras de seguridad ────────────────────────────────
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+# El healthcheck interno pega por HTTP a /healthz/: que no se redirija a HTTPS.
+SECURE_REDIRECT_EXEMPT = [r"^healthz/?$"]
 
 if not DEBUG:
     # Detrás de un proxy que termina TLS (nginx, etc.).
