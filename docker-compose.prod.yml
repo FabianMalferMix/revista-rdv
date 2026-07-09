@@ -1,0 +1,21 @@
+# Override de producción: DEBUG off, gunicorn, estáticos vía WhiteNoise.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# En producción real: sirve detrás de un proxy con TLS (ver infra/nginx/), quita el
+# bind mount de código del servicio web y define los secretos con variables seguras.
+
+services:
+  web:
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_COLLECTSTATIC: "1"
+
+  worker:
+    environment:
+      DJANGO_DEBUG: "0"
+
+  beat:
+    environment:
+      DJANGO_DEBUG: "0"

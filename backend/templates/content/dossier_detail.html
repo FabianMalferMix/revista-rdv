@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ dossier.title }} — Reseñas{% endblock %}
+{% block description %}{{ dossier.description|default:dossier.title }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Dosier</span>
+    <h1>{{ dossier.title }}</h1>
+    {% if dossier.intro %}<p class="dek">{{ dossier.intro }}</p>{% endif %}
+  </header>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

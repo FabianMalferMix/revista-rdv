@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ work.title }} — Reseñas{% endblock %}
+{% block description %}Reseñas de {{ work.title }}.{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">{{ work.get_kind_display }}</span>
+    <h1>{{ work.title }}</h1>
+    <p class="meta">
+      {% for ba in work.authors.all %}<a href="{% url 'reviews:bookauthor_detail' ba.slug %}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+      {% if work.publisher %} · <a href="{% url 'reviews:publisher_detail' work.publisher.slug %}">{{ work.publisher.name }}</a>{% endif %}
+      {% if work.publication_year %} · {{ work.publication_year }}{% endif %}
+      {% if work.isbn %} · ISBN {{ work.isbn }}{% endif %}
+    </p>
+    {% if work.description %}<p class="dek">{{ work.description }}</p>{% endif %}
+  </header>
+  <h2 class="subhead">Reseñas de esta obra</h2>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

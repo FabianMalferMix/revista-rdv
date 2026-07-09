@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tag.name }} — Reseñas{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Etiqueta</span>
+    <h1>{{ tag.name }}</h1>
+  </header>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

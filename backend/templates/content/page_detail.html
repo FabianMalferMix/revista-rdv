@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.seo_title|default:page.title }} — Reseñas{% endblock %}
+{% block description %}{{ page.seo_description|default:page.title }}{% endblock %}
+
+{% block content %}
+  <article class="article">
+    <h1>{{ page.title }}</h1>
+    {# body es HTML autoral; sanitizar en el editor antes de guardar (pendiente). #}
+    <div class="body">{{ page.body|safe }}</div>
+  </article>
+{% endblock %}

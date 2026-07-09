@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ publisher.name }} — Reseñas{% endblock %}
+{% block description %}Reseñas de libros de {{ publisher.name }}.{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Editorial</span>
+    <h1>{{ publisher.name }}</h1>
+    <p class="meta">
+      {% if publisher.country %}{{ publisher.country }}{% endif %}
+      {% if publisher.website %} · <a href="{{ publisher.website }}" rel="nofollow">Sitio web</a>{% endif %}
+    </p>
+  </header>
+
+  <h2 class="subhead">Catálogo reseñado</h2>
+  {% include "reviews/_work_list.html" %}
+
+  <h2 class="subhead">Reseñas de esta editorial</h2>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

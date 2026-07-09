@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contributor.display_name }} — Reseñas{% endblock %}
+{% block description %}{{ contributor.bio|default:contributor.display_name }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Colaborador</span>
+    <h1>{{ contributor.display_name }}</h1>
+    {% if contributor.bio %}<p class="dek">{{ contributor.bio }}</p>{% endif %}
+    {% with links=contributor.social_links.all %}
+      {% if links %}
+        <p class="meta">
+          {% for s in links %}<a href="{{ s.url }}" rel="me nofollow">{{ s.platform }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+        </p>
+      {% endif %}
+    {% endwith %}
+  </header>
+  <h2 class="subhead">Publicaciones</h2>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

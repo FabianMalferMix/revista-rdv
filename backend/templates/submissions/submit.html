@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Enviar una propuesta — Reseñas{% endblock %}
+{% block description %}Envía tu reseña, ensayo o entrevista a la revista.{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Colaboraciones</span>
+    <h1>Enviar una propuesta</h1>
+    {% if call %}
+      <p class="dek">Convocatoria abierta: <strong>{{ call.title }}</strong>. Cierra el {{ call.closes_at|date:"j M Y" }}.</p>
+    {% else %}
+      <p class="dek">Recibimos propuestas de reseñas, ensayos y entrevistas durante todo el año.</p>
+    {% endif %}
+  </header>
+
+  <form class="form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {{ form.apodo }}
+
+    {% if form.non_field_errors %}
+      <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% for field in form.visible_fields %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">
+          {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+
+    <button type="submit">Enviar propuesta</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,70 @@
+name: resenas
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-resenas}
+      POSTGRES_USER: ${POSTGRES_USER:-resenas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resenas}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-resenas}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # Aplica migraciones + grupos (entrypoint) y levanta el servidor de desarrollo.
+  web:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file: .env
+    volumes:
+      - ./backend:/app
+      - media:/app/mediafiles
+      - private_media:/app/private_media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Worker de Celery (envío de correo, publicación programada). Sin migraciones: las corre `web`.
+  worker:
+    build: ./backend
+    entrypoint: ["celery", "-A", "config", "worker", "-l", "info"]
+    env_file: .env
+    volumes:
+      - ./backend:/app
+      - media:/app/mediafiles
+      - private_media:/app/private_media
+    depends_on:
+      - web
+
+  # Planificador de Celery (dispara publish_due_articles cada minuto).
+  beat:
+    build: ./backend
+    entrypoint: ["celery", "-A", "config", "beat", "-l", "info"]
+    env_file: .env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  media:
+  private_media:

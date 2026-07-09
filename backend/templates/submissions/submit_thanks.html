@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Propuesta enviada — Reseñas{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Colaboraciones</span>
+    <h1>¡Gracias por tu propuesta!</h1>
+    <p class="dek">La recibimos. El comité editorial la revisará y te escribiremos al correo que dejaste.</p>
+  </header>
+  <p><a href="{% url 'content:home' %}">← Volver a la portada</a></p>
+{% endblock %}

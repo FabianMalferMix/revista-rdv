@@ -1,0 +1,12 @@
+.git
+.gitignore
+**/__pycache__
+*.pyc
+.env
+.venv
+venv
+backend/staticfiles
+backend/mediafiles
+backend/media
+backend/private_media
+*.md

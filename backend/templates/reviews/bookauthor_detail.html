@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ author.name }} — Reseñas{% endblock %}
+{% block description %}Reseñas de libros de {{ author.name }}.{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Autor de la obra</span>
+    <h1>{{ author.name }}</h1>
+    {% if author.bio %}<p class="dek">{{ author.bio }}</p>{% endif %}
+  </header>
+
+  <h2 class="subhead">Obras</h2>
+  {% include "reviews/_work_list.html" %}
+
+  <h2 class="subhead">Reseñas</h2>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

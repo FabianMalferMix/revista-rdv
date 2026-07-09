@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Dosieres — Reseñas{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Dosieres</h1>
+  <ul class="dossier-list">
+    {% for d in dossiers %}
+      <li>
+        <h2><a href="{% url 'content:dossier_detail' d.slug %}">{{ d.title }}</a></h2>
+        {% if d.description %}<p class="dek">{{ d.description }}</p>{% endif %}
+      </li>
+    {% empty %}
+      <li class="empty">Aún no hay dosieres publicados.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

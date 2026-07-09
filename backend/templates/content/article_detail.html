@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.seo_title|default:article.title }} — Reseñas{% endblock %}
+{% block description %}{{ article.seo_description|default:article.subtitle }}{% endblock %}
+
+{% block opengraph %}
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ article.seo_title|default:article.title }}">
+  <meta property="og:description" content="{{ article.seo_description|default:article.subtitle }}">
+  {% if article.cover_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ article.cover_image.file.url }}">{% endif %}
+  <meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+  {% for c in article.authors.all %}<meta property="article:author" content="{{ c.display_name }}">{% endfor %}
+  <meta name="twitter:card" content="{% if article.cover_image %}summary_large_image{% else %}summary{% endif %}">
+{% endblock %}
+
+{% block head_extra %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ article.title|escapejs }}",
+    "datePublished": "{{ article.published_at|date:'c' }}",
+    "dateModified": "{{ article.updated_at|date:'c' }}",
+    "author": [{% for c in article.authors.all %}{"@type": "Person", "name": "{{ c.display_name|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
+    "publisher": {"@type": "Organization", "name": "Reseñas"}{% if article.subtitle %},
+    "description": "{{ article.subtitle|escapejs }}"{% endif %}
+  }
+  </script>
+{% endblock %}
+
+{% block content %}
+  <article class="article">
+    <span class="kicker">
+      {% if article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {% endif %}{{ article.get_type_display }}
+    </span>
+    <h1>{{ article.title }}</h1>
+    {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
+    <p class="meta">
+      {% for c in article.authors.all %}<a href="{% url 'content:contributor_detail' c.slug %}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if article.authors.all %} · {% endif %}{{ article.reading_time }} min · {{ article.published_at|date:"j M Y" }}
+    </p>
+
+    {% with reviewed=article.reviewed_works.all %}
+      {% if reviewed %}
+        <aside class="reviewed">
+          <h2>Obra reseñada</h2>
+          <ul>
+            {% for w in reviewed %}
+              <li>
+                <a href="{% url 'reviews:work_detail' w.slug %}">{{ w.title }}</a>{% if w.publisher %} — <a href="{% url 'reviews:publisher_detail' w.publisher.slug %}">{{ w.publisher.name }}</a>{% endif %}{% if w.publication_year %} ({{ w.publication_year }}){% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </aside>
+      {% endif %}
+    {% endwith %}
+
+    {# body es HTML autoral; sanitizar en el editor antes de guardar (pendiente). #}
+    <div class="body">{{ article.body|safe }}</div>
+
+    {% with tags=article.tags.all %}
+      {% if tags %}
+        <p class="tags">
+          {% for t in tags %}<a class="tag" href="{% url 'content:tag_detail' t.slug %}">{{ t.name }}</a>{% endfor %}
+        </p>
+      {% endif %}
+    {% endwith %}
+  </article>
+{% endblock %}

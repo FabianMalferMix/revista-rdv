@@ -1,0 +1,14 @@
+{% if q %}
+  {% if results %}
+    <ul class="search-list">
+      {% for a in results %}
+        <li>
+          <a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a>
+          <span class="kicker">{{ a.get_type_display }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty">Sin resultados para “{{ q }}”.</p>
+  {% endif %}
+{% endif %}

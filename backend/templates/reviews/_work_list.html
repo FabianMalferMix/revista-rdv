@@ -1,0 +1,10 @@
+<ul class="work-list">
+  {% for w in works %}
+    <li>
+      <a href="{% url 'reviews:work_detail' w.slug %}">{{ w.title }}</a>
+      <span class="muted">{{ w.get_kind_display }}{% if w.publication_year %} · {{ w.publication_year }}{% endif %}</span>
+    </li>
+  {% empty %}
+    <li class="empty">Sin obras en el catálogo todavía.</li>
+  {% endfor %}
+</ul>

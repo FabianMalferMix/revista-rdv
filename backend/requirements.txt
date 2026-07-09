@@ -1,0 +1,8 @@
+Django>=5.1,<5.2
+psycopg2-binary>=2.9,<3
+gunicorn>=21,<23
+celery>=5.3,<6
+redis>=5,<6
+Pillow>=10,<12
+nh3>=0.2,<1
+whitenoise>=6,<7
