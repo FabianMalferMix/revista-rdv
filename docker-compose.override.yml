@@ -1,0 +1,25 @@
+# Override de DESARROLLO — lo carga `docker compose up` automáticamente.
+# Monta el código para hot-reload, usa runserver y publica el puerto local (solo 127.0.0.1).
+# En producción NO se carga (se usa `-f docker-compose.yml -f docker-compose.prod.yml`).
+
+services:
+  web:
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  worker:
+    volumes:
+      - ./backend:/app
+
+  beat:
+    volumes:
+      - ./backend:/app
+
+  # Puerto de la BD publicado solo en dev (psql/GUI local, en 127.0.0.1).
+  # En producción la BD no se publica: solo se accede por la red interna de compose.
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"

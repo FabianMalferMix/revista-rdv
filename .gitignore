@@ -18,6 +18,7 @@ db.sqlite3
 
 # Entorno
 .env
+.env.prodtest
 
 # Respaldos locales (deben ir a almacenamiento externo, no al repo)
 /backups/

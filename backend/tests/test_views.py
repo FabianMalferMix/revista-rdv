@@ -116,3 +116,9 @@ def test_submission_file_only_for_editors(client, editor, autor):
     resp = client.get(url)
     assert resp.status_code == 200
     assert b"contenido-secreto" in b"".join(resp.streaming_content)
+
+
+def test_healthz(client):
+    resp = client.get(reverse("healthz"))
+    assert resp.status_code == 200
+    assert resp.content == b"ok"

@@ -1,0 +1,20 @@
+{
+	admin off
+}
+
+# SITE_ADDRESS = dominio real en producción (Caddy obtiene TLS de Let's Encrypt
+# automáticamente) o ":80" en local/pruebas (HTTP, sin certificado).
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Medios servidos directamente desde el volumen (cierra A3: MEDIA en producción).
+	handle_path /media/* {
+		root * /srv/media
+		file_server
+	}
+
+	# Todo lo demás va a gunicorn; los estáticos los sirve WhiteNoise dentro de la app.
+	reverse_proxy web:8000
+
+	header -Server
+}

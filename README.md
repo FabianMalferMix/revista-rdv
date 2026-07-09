@@ -99,14 +99,18 @@ docker compose run --rm --entrypoint ruff web format .
 
 ## Producción
 
+**Caddy** (proxy con TLS automático) → gunicorn → PostgreSQL/Redis, con Celery. Estáticos por
+**WhiteNoise** y `/media/` servido por Caddy. Guía completa en [docs/despliegue.md](docs/despliegue.md).
+
 ```bash
+cp .env.prod.example .env   # editar secretos, contraseñas y SITE_ADDRESS (tu dominio)
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py migrate
 ```
 
-Corre con `DEBUG=0`, gunicorn y estáticos servidos por **WhiteNoise** (comprimidos y con
-hash). Activa cookies seguras, `X-Frame-Options`, HSTS y redirección a HTTPS mediante las
-variables de [.env.example](.env.example). Sírvelo detrás de un proxy con TLS
-(ver [infra/nginx/](infra/nginx/)) y con SMTP real para la newsletter.
+Con `DEBUG=0` el arranque exige credenciales propias; cookies seguras, HSTS y redirección a HTTPS
+quedan activas por defecto. `web` no publica puertos (solo el proxy). Todos los servicios llevan
+`restart: unless-stopped` y healthcheck.
 
 **Respaldos:** el contenido es un archivo permanente — configura los respaldos automáticos
 y prueba la restauración siguiendo [docs/respaldos.md](docs/respaldos.md).
