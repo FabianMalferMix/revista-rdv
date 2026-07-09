@@ -108,6 +108,9 @@ hash). Activa cookies seguras, `X-Frame-Options`, HSTS y redirección a HTTPS me
 variables de [.env.example](.env.example). Sírvelo detrás de un proxy con TLS
 (ver [infra/nginx/](infra/nginx/)) y con SMTP real para la newsletter.
 
+**Respaldos:** el contenido es un archivo permanente — configura los respaldos automáticos
+y prueba la restauración siguiendo [docs/respaldos.md](docs/respaldos.md).
+
 ## SEO
 
 - Feed RSS en `/feed/`, sitemap en `/sitemap.xml`, `robots.txt`.
