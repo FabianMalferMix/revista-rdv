@@ -29,7 +29,7 @@ jobs:
 
     env:
       DJANGO_SECRET_KEY: ci-secret-key
-      DJANGO_DEBUG: "0"
+      DJANGO_DEBUG: "1" # los tests corren en modo desarrollo; la config prod se valida aparte
       POSTGRES_HOST: localhost
       POSTGRES_PORT: "5432"
       CELERY_BROKER_URL: redis://localhost:6379/0
@@ -65,3 +65,13 @@ jobs:
       - name: Ejecutar tests
         working-directory: backend
         run: pytest
+
+      - name: Validar configuración de producción (DEBUG=0)
+        working-directory: backend
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_SECRET_KEY: ci-prod-secret-key-larga-y-unica
+          POSTGRES_PASSWORD: ci-strong-db-password
+          DJANGO_ALLOWED_HOSTS: ci.example.com
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
+        run: python manage.py check

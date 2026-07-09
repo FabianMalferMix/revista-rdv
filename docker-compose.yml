@@ -15,10 +15,14 @@ services:
       timeout: 3s
       retries: 12
     ports:
-      - "5432:5432"
+      # Solo localhost del host: nunca expuesto a Internet (tampoco en prod).
+      - "127.0.0.1:5432:5432"
 
   redis:
     image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -89,3 +93,4 @@ volumes:
   pgdata:
   media:
   private_media:
+  redisdata:
