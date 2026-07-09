@@ -46,9 +46,7 @@ class Submission(models.Model):
     type = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     body = models.TextField()
-    file = models.FileField(
-        upload_to="submissions/%Y/%m/", blank=True, storage=private_storage
-    )
+    file = models.FileField(upload_to="submissions/%Y/%m/", blank=True, storage=private_storage)
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.RECEIVED, db_index=True
     )

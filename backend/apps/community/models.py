@@ -61,9 +61,7 @@ class NewsletterSubscriber(models.Model):
         UNSUBSCRIBED = "unsubscribed", "Dado de baja"
 
     email = models.EmailField(unique=True)
-    status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.PENDING
-    )
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     token = models.CharField(max_length=64, blank=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

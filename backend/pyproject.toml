@@ -1,0 +1,9 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["staticfiles", "**/migrations/*"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, UP pyupgrade, B bugbear, C4 comprehensions.
+select = ["E", "W", "F", "I", "UP", "B", "C4"]
+ignore = ["E501"]  # el largo de línea lo gestiona el formateador

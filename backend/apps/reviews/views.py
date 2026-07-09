@@ -7,9 +7,7 @@ from .models import BookAuthor, Publisher, Work
 
 def _reviews_of(work_ids):
     return (
-        Article.objects.filter(
-            status=ArticleStatus.PUBLISHED, reviewed_works__in=work_ids
-        )
+        Article.objects.filter(status=ArticleStatus.PUBLISHED, reviewed_works__in=work_ids)
         .select_related("section")
         .prefetch_related("authors")
         .distinct()

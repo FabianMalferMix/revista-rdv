@@ -1,13 +1,35 @@
 """Sanitización de HTML autoral (cierra el riesgo del `|safe` en plantillas)."""
+
 import nh3
 
 # Etiquetas permitidas para el cuerpo de artículos y páginas.
 ALLOWED_TAGS = {
-    "p", "br", "hr", "blockquote", "pre", "code",
-    "em", "strong", "i", "b", "u", "s", "sub", "sup", "small", "cite",
-    "h2", "h3", "h4",
-    "ul", "ol", "li",
-    "a", "img", "figure", "figcaption",
+    "p",
+    "br",
+    "hr",
+    "blockquote",
+    "pre",
+    "code",
+    "em",
+    "strong",
+    "i",
+    "b",
+    "u",
+    "s",
+    "sub",
+    "sup",
+    "small",
+    "cite",
+    "h2",
+    "h3",
+    "h4",
+    "ul",
+    "ol",
+    "li",
+    "a",
+    "img",
+    "figure",
+    "figcaption",
 }
 
 ALLOWED_ATTRIBUTES = {

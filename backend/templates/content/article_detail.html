@@ -54,7 +54,7 @@
       {% endif %}
     {% endwith %}
 
-    {# body es HTML autoral; sanitizar en el editor antes de guardar (pendiente). #}
+    {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
     <div class="body">{{ article.body|safe }}</div>
 
     {% with tags=article.tags.all %}

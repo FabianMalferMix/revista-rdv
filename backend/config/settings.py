@@ -1,4 +1,5 @@
 """Configuración de Django para el proyecto Reseñas."""
+
 import os
 from pathlib import Path
 
@@ -13,13 +14,9 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", _INSECURE_SECRET)
 if not DEBUG and SECRET_KEY == _INSECURE_SECRET:
     from django.core.exceptions import ImproperlyConfigured
 
-    raise ImproperlyConfigured(
-        "Define un DJANGO_SECRET_KEY propio y secreto cuando DEBUG=0."
-    )
+    raise ImproperlyConfigured("Define un DJANGO_SECRET_KEY propio y secreto cuando DEBUG=0.")
 
-ALLOWED_HOSTS = os.environ.get(
-    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0"
-).split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
 
 # ── Aplicaciones ──────────────────────────────────────────
 INSTALLED_APPS = [
@@ -107,9 +104,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
 # Almacenamiento privado (envíos): fuera de MEDIA_ROOT, nunca servido públicamente.
-PRIVATE_MEDIA_ROOT = os.environ.get(
-    "DJANGO_PRIVATE_MEDIA_ROOT", str(BASE_DIR / "private_media")
-)
+PRIVATE_MEDIA_ROOT = os.environ.get("DJANGO_PRIVATE_MEDIA_ROOT", str(BASE_DIR / "private_media"))
 
 # En producción WhiteNoise sirve los estáticos comprimidos y con hash; en desarrollo
 # se usa el almacenamiento simple (el manifiesto exigiría collectstatic).
@@ -165,9 +160,7 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL", "Reseñas <no-reply@resenas.cl>"
-)
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Reseñas <no-reply@resenas.cl>")
 
 # ── Logging a stdout ──────────────────────────────────────
 LOGGING = {

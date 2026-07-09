@@ -41,9 +41,7 @@ def test_comment_guest_is_valid(make_article):
 
 
 def test_body_is_sanitized_on_save(make_article):
-    article = make_article(
-        body='<p>Texto legítimo</p><script>alert("xss")</script>'
-    )
+    article = make_article(body='<p>Texto legítimo</p><script>alert("xss")</script>')
     assert "<script" not in article.body
     assert "alert" not in article.body  # el contenido del script también se elimina
     assert "<p>Texto legítimo</p>" in article.body
@@ -61,6 +59,4 @@ def test_sociallink_unique_per_platform():
     contributor = Contributor.objects.create(slug="c1", display_name="Colaboradora")
     SocialLink.objects.create(contributor=contributor, platform="twitter", url="https://x/a")
     with pytest.raises(IntegrityError):
-        SocialLink.objects.create(
-            contributor=contributor, platform="twitter", url="https://x/b"
-        )
+        SocialLink.objects.create(contributor=contributor, platform="twitter", url="https://x/b")

@@ -2,6 +2,7 @@
 
 Idempotente: se puede correr en cada arranque (lo hace el entrypoint).
 """
+
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 

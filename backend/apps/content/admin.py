@@ -3,7 +3,6 @@ from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 
 from . import workflow
-from .permissions import can_edit_article, is_editor
 from .models import (
     Article,
     ArticleContributor,
@@ -16,6 +15,7 @@ from .models import (
     Section,
     Tag,
 )
+from .permissions import can_edit_article, is_editor
 
 
 class RichTextWidget(forms.Textarea):
@@ -132,9 +132,7 @@ class ArticleAdmin(admin.ModelAdmin):
             except (PermissionDenied, ValueError) as exc:
                 self.message_user(request, f"{article}: {exc}", level=messages.WARNING)
         if ok:
-            self.message_user(
-                request, f"{ok} artículo(s) → '{name}'.", level=messages.SUCCESS
-            )
+            self.message_user(request, f"{ok} artículo(s) → '{name}'.", level=messages.SUCCESS)
 
     @admin.action(description="Enviar a revisión")
     def do_submit(self, request, queryset):

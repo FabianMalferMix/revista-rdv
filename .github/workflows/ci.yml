@@ -47,6 +47,17 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r backend/requirements-dev.txt
 
+      - name: Lint y formato (ruff)
+        working-directory: backend
+        run: |
+          ruff check --output-format=github .
+          ruff format --check .
+
+      - name: Auditoría de dependencias (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit --desc || true   # no bloqueante por ahora
+
       - name: Verificar migraciones al día
         working-directory: backend
         run: python manage.py makemigrations --check --dry-run

@@ -51,7 +51,9 @@ def test_accepts_allowed_extension():
 
 
 def test_rejects_oversized_file():
-    big = SimpleUploadedFile("grande.pdf", b"0" * (11 * 1024 * 1024), content_type="application/pdf")
+    big = SimpleUploadedFile(
+        "grande.pdf", b"0" * (11 * 1024 * 1024), content_type="application/pdf"
+    )
     form = SubmissionForm(data=_data(), files={"file": big})
     assert not form.is_valid()
     assert "file" in form.errors

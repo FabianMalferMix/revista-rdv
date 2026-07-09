@@ -1,4 +1,5 @@
 """Autorización a nivel de objeto y estado para el flujo editorial."""
+
 from .models import ArticleStatus
 
 # El autor solo puede editar su artículo en estos estados.

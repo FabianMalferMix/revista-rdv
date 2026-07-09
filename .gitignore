@@ -13,6 +13,8 @@ db.sqlite3
 /backend/mediafiles/
 /backend/media/
 /backend/private_media/
+/backend/celerybeat-schedule
+/backend/.ruff_cache/
 
 # Entorno
 .env
