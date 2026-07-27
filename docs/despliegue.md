@@ -72,6 +72,8 @@ proxy alternativo (`PROXY_HTTP_PORT`). Este flujo se ejecutó al implementar el 
 
 ## Ajustes útiles
 
+- `SENTRY_DSN` — activa error tracking (Django + Celery). Sin él no se activa nada. Con
+  `DJANGO_DEBUG=0` los logs salen en **JSON** (agregables por un colector); en dev son texto plano.
 - `GUNICORN_WORKERS` — nº de workers (por defecto 3; ~`2·CPU+1`).
 - `DJANGO_SECURE_SSL_REDIRECT` / `DJANGO_HSTS_SECONDS` — activos por defecto con `DEBUG=0`.
 - `PROXY_HTTP_PORT` / `PROXY_HTTPS_PORT` — si otro proxy/LB va delante de Caddy.

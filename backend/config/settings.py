@@ -195,13 +195,38 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Reseñas <no-reply@resenas.cl>")
 
-# ── Logging a stdout ──────────────────────────────────────
+# ── Logging a stdout (JSON en producción, texto plano legible en desarrollo) ──
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "formatters": {
+        "plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+        "json": {"()": "config.logformat.JsonFormatter"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain" if DEBUG else "json",
+        }
+    },
     "root": {
         "handlers": ["console"],
         "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
+
+# ── Observabilidad: Sentry (opt-in por SENTRY_DSN) ────────
+# Con SENTRY_DSN definido se captura error tracking; sentry-sdk auto-habilita las
+# integraciones de Django y Celery (basta con inicializar aquí, importado por ambos
+# procesos vía DJANGO_SETTINGS_MODULE). Sin DSN no hace nada (dev/tests intactos).
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production" if not DEBUG else "dev"),
+        release=os.environ.get("SENTRY_RELEASE") or None,
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
+        send_default_pii=False,
+    )
