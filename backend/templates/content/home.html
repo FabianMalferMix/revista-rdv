@@ -3,6 +3,16 @@
 {% block title %}Reseñas — Revista literaria{% endblock %}
 
 {% block content %}
+  <section class="hero">
+    {% if site_profile.tagline %}<p class="hero-tagline">{{ site_profile.tagline }}</p>{% endif %}
+    <p class="hero-ctas">
+      <a class="btn btn-primary" href="{% if site_profile.dossier_pdf %}{{ site_profile.dossier_pdf.url }}{% else %}{% url 'showcase:dossier' %}{% endif %}">Descargar dossier</a>
+      {% if site_profile.booking_email %}
+        <a class="btn" href="mailto:{{ site_profile.booking_email }}">Contacto de gestión</a>
+      {% endif %}
+    </p>
+  </section>
+
   {% if stats.events or stats.years %}
     <ul class="stats-strip home-stats">
       {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
