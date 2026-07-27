@@ -39,10 +39,15 @@ def _paginate(request, queryset, per_page=12):
 
 
 def home(request):
-    profile = SiteProfile.objects.select_related("featured_poem").first()
+    profile = SiteProfile.objects.select_related(
+        "featured_poem", "featured_recording", "featured_recording__poster"
+    ).first()
     featured_poem = profile.featured_poem if profile else None
     if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
         featured_poem = None  # el destacado solo se muestra si está publicado
+    featured_recording = profile.featured_recording if profile else None
+    if featured_recording and not featured_recording.published:
+        featured_recording = None
     return render(
         request,
         "content/home.html",
@@ -50,6 +55,7 @@ def home(request):
             "articles": _paginate(request, _published()),
             "members": Contributor.members()[:8],
             "featured_poem": featured_poem,
+            "featured_recording": featured_recording,
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),
         },

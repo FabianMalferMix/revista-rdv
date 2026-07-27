@@ -1,0 +1,17 @@
+{% load embeds %}
+{% with src=r.embed_url|embed_src %}
+  {% if src %}
+    <div class="player-frame">
+      <iframe src="{{ src }}" title="{{ r.title }}" loading="lazy" allowfullscreen
+              allow="accelerometer; encrypted-media; picture-in-picture"></iframe>
+    </div>
+  {% elif r.file %}
+    {% if r.kind == "video" %}
+      <video controls preload="none" {% if r.poster %}poster="{{ r.poster.file.url }}"{% endif %} src="{{ r.file.url }}"></video>
+    {% else %}
+      <audio controls preload="none" src="{{ r.file.url }}"></audio>
+    {% endif %}
+  {% elif r.embed_url %}
+    <p><a class="btn" href="{{ r.embed_url }}" rel="noopener" target="_blank">Ver / escuchar ↗</a></p>
+  {% endif %}
+{% endwith %}

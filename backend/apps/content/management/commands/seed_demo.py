@@ -466,6 +466,25 @@ class Command(BaseCommand):
         ]:
             Milestone.objects.get_or_create(year=year, title=title, defaults={"description": desc})
 
+        # ── Registro de audio (alimenta el feed podcast) ─────
+        audio, audio_created = Recording.objects.get_or_create(
+            slug="umbral-lectura",
+            defaults={
+                "title": "«Umbral» — lectura de la autora",
+                "kind": Recording.Kind.AUDIO,
+                "description": "Lectura del poema «Umbral», registrada en el recital.",
+                "published": True,
+                "published_at": now - timedelta(days=2),
+                "event": events["recital-nuevas-voces-lanzamiento"],
+                "position": 1,
+            },
+        )
+        if audio_created:
+            from django.core.files.base import ContentFile
+
+            audio.file.save("umbral-lectura.wav", ContentFile(self._audio_bytes()), save=True)
+        audio.participants.add(contributors["Fernanda Soto"])
+
         self._summary()
 
     # ─────────────────────────────────────────────────────────
@@ -484,6 +503,26 @@ class Command(BaseCommand):
         asset = MediaAsset(alt_text=alt_text, credit="Archivo del colectivo")
         asset.file.save(f"{slugify(alt_text)[:80]}.jpg", ContentFile(buffer.getvalue()), save=True)
         return asset
+
+    def _audio_bytes(self):
+        """WAV corto generado (1 s, tono 220 Hz): audio real y liviano para la demo."""
+        import math
+        import struct
+        import wave
+        from io import BytesIO
+
+        buffer = BytesIO()
+        with wave.open(buffer, "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(8000)
+            wav.writeframes(
+                b"".join(
+                    struct.pack("<h", int(12000 * math.sin(2 * math.pi * 220 * i / 8000)))
+                    for i in range(8000)
+                )
+            )
+        return buffer.getvalue()
 
     def _user(self, User, username, group_name):
         user, created = User.objects.get_or_create(

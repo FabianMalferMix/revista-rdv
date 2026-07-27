@@ -8,6 +8,7 @@
   <meta name="description" content="{% block description %}Revista literaria de reseñas: crítica de libros, ensayos y entrevistas.{% endblock %}">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
   <link rel="alternate" type="application/rss+xml" title="Reseñas — Revista literaria" href="{% url 'feed' %}">
+  <link rel="alternate" type="application/rss+xml" title="Registros (podcast)" href="{% url 'recordings_feed' %}">
 
   <meta property="og:site_name" content="Reseñas">
   <meta property="og:locale" content="es_CL">
@@ -46,6 +47,7 @@
       <a href="{% url 'agenda:agenda' %}">Agenda</a>
       <a href="{% url 'agenda:trayectoria' %}">Trayectoria</a>
       <a href="{% url 'agenda:gallery' %}">Galería</a>
+      <a href="{% url 'media:recording_index' %}">Registros</a>
       <a href="{% url 'content:collection_index' %}">Colecciones</a>
       <a href="{% url 'submissions:submit' %}">Enviar</a>
     </nav>
