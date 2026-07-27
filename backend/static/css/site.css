@@ -2,6 +2,7 @@
   --paper:#edf0f3; --surface:#ffffff; --ink:#16202b; --muted:#586674;
   --accent:#1d4e73; --border:#d6dde4;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --display:"Fraunces",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){
@@ -11,11 +12,32 @@
   }
 }
 
+/* Display serif auto-hospedada (Fraunces variable, OFL) para marca y títulos.
+   La url() es RELATIVA: CompressedManifestStaticFilesStorage la reescribe con
+   hash en collectstatic (no usar {% static %}: el CSS no es plantilla). */
+@font-face{
+  font-family:"Fraunces";
+  src:url("../fonts/fraunces.woff2") format("woff2");
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+}
+
 *{box-sizing:border-box}
 body{margin:0; background:var(--paper); color:var(--ink);
   font-family:var(--serif); line-height:1.6; -webkit-font-smoothing:antialiased}
 .wrap{max-width:820px; margin:0 auto; padding:0 20px}
 a{color:var(--accent); text-underline-offset:3px}
+
+/* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
+   lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
+.brand, .hero-tagline,
+.index-head h1, .article h1, .poem h1, .dossier-head h1,
+.article-card h2, .featured h2, .next-event h2,
+.recording-card h2, .collection-list h2, .press-item h2,
+.member-name, .pub-title{
+  font-family:var(--display); letter-spacing:-.01em;
+}
 
 /* Masthead */
 .masthead{border-bottom:2px solid var(--ink); padding:18px 0 0; margin-bottom:8px}
@@ -28,11 +50,24 @@ a{color:var(--accent); text-underline-offset:3px}
 .htmx-indicator{opacity:0; font-family:var(--mono); color:var(--muted); transition:opacity .2s}
 .htmx-request .htmx-indicator{opacity:1}
 
-/* Nav de secciones */
-.nav{display:flex; flex-wrap:wrap; gap:6px 18px; padding-top:14px; padding-bottom:14px}
+/* Nav principal: disclosure <details> en móvil, en línea en escritorio.
+   Sin JS: el <details> es nativo y degrada solo. */
+.nav-disclosure summary{display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  list-style:none; padding:12px 0; font-family:var(--mono); font-size:12px;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.nav-disclosure summary::-webkit-details-marker{display:none}
+.nav-disclosure summary::after{content:"▾"; font-size:10px}
+.nav-disclosure[open] summary::after{content:"▴"}
+.nav-disclosure summary:hover{color:var(--accent)}
+.nav{display:flex; flex-wrap:wrap; gap:6px 18px; padding:0 0 14px}
 .nav a{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
   text-decoration:none; color:var(--muted)}
 .nav a:hover{color:var(--accent)}
+@media (min-width:720px){
+  /* En escritorio se oculta el toggle y la nav se muestra siempre en línea. */
+  .nav-disclosure summary{display:none}
+  .nav-disclosure > .nav{display:flex !important; padding-top:14px}
+}
 
 /* Buscador (dropdown htmx) */
 #search-results:not(:empty){background:var(--surface); border:1px solid var(--border);

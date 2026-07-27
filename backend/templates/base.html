@@ -38,18 +38,22 @@
         <span id="search-ind" class="htmx-indicator">…</span>
       </form>
     </div>
-    {# Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie. #}
-    <nav class="nav wrap" aria-label="Principal">
-      <a href="{% url 'content:poem_index' %}">Poemas</a>
-      <a href="{% url 'people:member_index' %}">Integrantes</a>
-      <a href="{% url 'agenda:agenda' %}">Agenda</a>
-      <a href="{% url 'agenda:trayectoria' %}">Trayectoria</a>
-      <a href="{% url 'agenda:gallery' %}">Galería</a>
-      <a href="{% url 'media:recording_index' %}">Registros</a>
-      <a href="{% url 'showcase:publication_index' %}">Publicaciones</a>
-      <a href="{% url 'showcase:press_index' %}">Prensa</a>
-      <a href="{% url 'showcase:dossier' %}">Dossier</a>
-    </nav>
+    {# Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
+       En móvil colapsa en un disclosure nativo «Menú»; en escritorio va en línea. #}
+    <details class="nav-disclosure wrap">
+      <summary>Menú</summary>
+      <nav class="nav" aria-label="Principal">
+        <a href="{% url 'content:poem_index' %}">Poemas</a>
+        <a href="{% url 'people:member_index' %}">Integrantes</a>
+        <a href="{% url 'agenda:agenda' %}">Agenda</a>
+        <a href="{% url 'agenda:trayectoria' %}">Trayectoria</a>
+        <a href="{% url 'agenda:gallery' %}">Galería</a>
+        <a href="{% url 'media:recording_index' %}">Registros</a>
+        <a href="{% url 'showcase:publication_index' %}">Publicaciones</a>
+        <a href="{% url 'showcase:press_index' %}">Prensa</a>
+        <a href="{% url 'showcase:dossier' %}">Dossier</a>
+      </nav>
+    </details>
   </header>
 
   <div id="search-results" class="wrap"></div>
