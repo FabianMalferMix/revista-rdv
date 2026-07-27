@@ -23,11 +23,16 @@ from .permissions import can_edit_item, is_editor
 
 
 class RichTextWidget(forms.Textarea):
-    """Textarea con editor TinyMCE (ver static/admin/richtext_init.js)."""
+    """Textarea con editor TinyMCE (ver static/admin/richtext_init.js).
+
+    TinyMCE va auto-hospedado en `static/vendor/tinymce/` (sin CDN): su cargador
+    perezoso resuelve tema/modelo/iconos/skin/plugins relativos a este archivo,
+    por eso ese subárbol se sirve sin hash (ver config.staticfiles).
+    """
 
     class Media:
         js = (
-            "https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js",
+            "vendor/tinymce/tinymce.min.js",
             "admin/richtext_init.js",
         )
 

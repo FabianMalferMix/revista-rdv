@@ -43,9 +43,13 @@ def test_dossier_aggregates_everything(client, profile):
         b"Notables.",
         b"Fondo Dossier",
         b"gestion@example.com",
-        b"window.print()",
+        b"data-print",  # botón de impresión (el handler vive en dossier.js, sin inline)
     ]:
         assert fragment in resp.content
+
+    # El botón de imprimir ya no usa handler inline (incompatible con la CSP).
+    assert b"onclick" not in resp.content
+    assert b"js/dossier.js" in resp.content
 
 
 def test_dossier_excludes_unpublished_publication(client, profile):

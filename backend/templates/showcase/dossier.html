@@ -1,12 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Dossier — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Kit de prensa del colectivo: quiénes somos, trayectoria, publicaciones y contacto.{% endblock %}
 
+{% block head_extra %}
+  {# Botón de impresión sin handler inline (compatible con la CSP restrictiva). #}
+  <script src="{% static 'js/dossier.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
 <article class="dossier-doc">
   <div class="no-print dossier-toolbar">
-    <button class="btn" onclick="window.print()">Imprimir / guardar como PDF</button>
+    <button class="btn" type="button" data-print>Imprimir / guardar como PDF</button>
     {% if profile.dossier_pdf %}
       <a class="btn" href="{{ profile.dossier_pdf.url }}">Descargar PDF maquetado</a>
     {% endif %}
