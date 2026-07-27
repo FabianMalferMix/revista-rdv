@@ -1,0 +1,8 @@
+fraunces.woff2 — Fraunces (subset latino, eje variable opsz+wght).
+
+Copyright 2019 The Fraunces Project Authors
+https://github.com/undercasetype/Fraunces
+
+Licencia: SIL Open Font License 1.1 — https://openfontlicense.org
+Se puede empaquetar y servir libremente. Archivo obtenido desde Google Fonts
+(fonts.gstatic.com), subset latino.
