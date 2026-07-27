@@ -25,6 +25,7 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body>
+  <a class="skip" href="#main">Saltar al contenido</a>
   <header class="masthead">
     <div class="wrap top">
       <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
@@ -36,6 +37,8 @@
                hx-indicator="#search-ind"
                autocomplete="off" aria-label="Buscar">
         <span id="search-ind" class="htmx-indicator">…</span>
+        {# Resultados como overlay anclado al buscador (no empujan el layout). #}
+        <div id="search-results" role="region" aria-live="polite" aria-label="Resultados de búsqueda"></div>
       </form>
     </div>
     {# Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
@@ -56,8 +59,6 @@
     </details>
   </header>
 
-  <div id="search-results" class="wrap"></div>
-
   {% if messages %}
     <div class="wrap">
       {% for message in messages %}
@@ -66,7 +67,7 @@
     </div>
   {% endif %}
 
-  <main class="wrap">
+  <main class="wrap" id="main">
     {% block content %}{% endblock %}
   </main>
 

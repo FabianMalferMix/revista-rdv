@@ -60,13 +60,22 @@
 
     {% with photos=event.photos.all %}
       {% if photos %}
-        <section>
+        <section id="galeria-{{ event.slug }}">
           <h2 class="subhead">Galería</h2>
           <ul class="photo-grid">
             {% for p in photos %}
               <li>
-                <img src="{{ p.asset.file.url }}" alt="{{ p.caption|default:p.asset.alt_text }}" loading="lazy">
+                <a href="#lb-{{ event.slug }}-{{ forloop.counter }}" aria-label="Ampliar foto">
+                  <img src="{{ p.asset.file.url }}" alt="{{ p.caption|default:p.asset.alt_text }}" loading="lazy">
+                </a>
                 {% if p.caption %}<span class="muted">{{ p.caption }}</span>{% endif %}
+                <figure class="lightbox" id="lb-{{ event.slug }}-{{ forloop.counter }}"
+                        role="dialog" aria-modal="true" aria-label="{{ p.caption|default:p.asset.alt_text }}">
+                  <a class="lightbox-back" href="#galeria-{{ event.slug }}" tabindex="-1" aria-label="Cerrar"></a>
+                  <a class="lightbox-close" href="#galeria-{{ event.slug }}" aria-label="Cerrar">×</a>
+                  <img src="{{ p.asset.file.url }}" alt="{{ p.caption|default:p.asset.alt_text }}">
+                  {% if p.caption %}<figcaption>{{ p.caption }}</figcaption>{% endif %}
+                </figure>
               </li>
             {% endfor %}
           </ul>
