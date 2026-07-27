@@ -282,7 +282,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .newsletter input[type=email]{font-family:var(--serif); font-size:14px; padding:7px 12px;
   border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--ink); min-width:200px}
 .newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
+.news-consent{flex-basis:100%; font-family:var(--mono); font-size:11px; color:var(--muted)}
 .foot-links{margin:0}
+.foot-legal{margin:8px 0 0; font-family:var(--mono); font-size:11px; color:var(--muted)}
+.foot-legal a{color:var(--muted)}
 .flash{padding:10px 16px; border:1px solid var(--border); border-left:3px solid var(--accent);
   border-radius:3px; background:var(--surface); margin:14px 0 0}
 .flash-error{border-left-color:#b3392f}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <h1>{{ title }}</h1>
+    <p class="dek">{{ body }}</p>
+  </header>
+  {% if unsubscribe_token %}
+    <p class="meta">
+      ¿No quieres seguir recibiendo correos?
+      <a href="{% url 'community:unsubscribe' unsubscribe_token %}">Darme de baja</a>.
+    </p>
+  {% endif %}
+  <p><a href="{% url 'content:home' %}">← Volver al inicio</a></p>
+{% endblock %}
