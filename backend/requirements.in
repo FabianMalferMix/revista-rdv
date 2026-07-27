@@ -1,0 +1,13 @@
+# Dependencias de RUNTIME (fuente con rangos). El lockfile fijado + hashes es
+# requirements.txt, generado con:
+#   pip-compile --generate-hashes --strip-extras requirements.in
+# Regenerar tras editar este archivo (ver README/CONTRIBUTING).
+Django>=5.2,<5.3
+psycopg[binary]>=3.1,<4
+gunicorn>=21,<23
+celery>=5.3,<6
+redis>=5,<6
+Pillow>=12.3,<13
+nh3>=0.2,<1
+whitenoise>=6,<7
+sentry-sdk>=2,<3

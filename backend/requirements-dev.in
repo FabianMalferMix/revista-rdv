@@ -1,0 +1,8 @@
+# Dependencias de DESARROLLO/TEST (fuente con rangos). El lockfile fijado +
+# hashes es requirements-dev.txt (superconjunto de runtime + dev), generado con:
+#   pip-compile --generate-hashes --strip-extras requirements-dev.in
+# Regenerar tras editar este archivo o requirements.in.
+-r requirements.in
+pytest>=8,<9
+pytest-django>=4.8,<5
+ruff>=0.6,<1
