@@ -3,6 +3,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
 
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    """Caché limpia por test: evita que los contadores de django-ratelimit (LocMem,
+    persistente en el proceso) se filtren entre tests."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.fixture
 def groups(db):
     return {

@@ -1,6 +1,7 @@
 """Configuración de Django para el proyecto Reseñas."""
 
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -62,6 +63,8 @@ INSTALLED_APPS = [
     "apps.agenda",
     "apps.community",
     "apps.submissions",
+    # Anti-fuerza-bruta en el login del admin.
+    "axes",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +78,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # django-axes: debe ir al final, tras AuthenticationMiddleware.
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -120,6 +125,30 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# ── Anti-abuso ────────────────────────────────────────────
+# django-axes (fuerza bruta en /admin/): el backend de axes debe ir primero.
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+AXES_FAILURE_LIMIT = int(os.environ.get("AXES_FAILURE_LIMIT", "5"))
+AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
+AXES_LOCKOUT_PARAMETERS = ["ip_address"]  # bloquea la IP atacante
+AXES_RESET_ON_SUCCESS = True
+# Detrás del proxy (Caddy) la IP real llega en X-Forwarded-For.
+AXES_IPWARE_PROXY_COUNT = 0 if DEBUG else 1
+# En tests se desactiva (usan force_login); el test de bloqueo lo reactiva puntualmente.
+AXES_ENABLED = os.environ.get("AXES_ENABLED", "0" if "pytest" in sys.modules else "1") == "1"
+
+# django-ratelimit: contadores en la caché por defecto (LocMem). A escala de este
+# sitio es proporcionado; para límites entre procesos, apuntar a una caché compartida.
+RATELIMIT_ENABLE = os.environ.get("RATELIMIT_ENABLE", "1") == "1"
+
+# Límites de subida (defensa ante cuerpos de request abusivos; el proxy corta antes).
+# El adjunto de envíos permite hasta 10 MB (validado en el form); Caddy corta en 12 MB.
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get("DJANGO_DATA_UPLOAD_MAX", str(3 * 1024 * 1024)))
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
 
 # ── Internacionalización ──────────────────────────────────
 LANGUAGE_CODE = "es"

@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
@@ -22,12 +23,16 @@ def _by_token(token):
 
 
 @require_POST
+@ratelimit(key="ip", rate="5/m", method="POST", block=False)
 def subscribe(request):
     """Alta con **doble opt-in**: crea (o reusa) el suscriptor en 'pending' y envía un
     correo con enlace de confirmación. Solo tras confirmar se le puede escribir. El
     honeypot descarta bots en silencio."""
-    form = SubscribeForm(request.POST)
     nxt = request.POST.get("next") or "content:home"
+    if getattr(request, "limited", False):  # rate-limit por IP superado
+        messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+        return redirect(nxt)
+    form = SubscribeForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Revisa el correo ingresado.")
         return redirect(nxt)

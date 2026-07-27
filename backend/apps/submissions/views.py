@@ -1,7 +1,9 @@
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
 
 from apps.content.permissions import is_editor
 
@@ -14,8 +16,16 @@ def _open_call():
     return Call.objects.filter(opens_at__lte=now, closes_at__gte=now).first()
 
 
+@ratelimit(key="ip", rate="10/h", method="POST", block=False)
 def submit(request):
     if request.method == "POST":
+        if getattr(request, "limited", False):  # rate-limit por IP superado
+            messages.error(request, "Has enviado demasiadas propuestas. Inténtalo más tarde.")
+            return render(
+                request,
+                "submissions/submit.html",
+                {"form": SubmissionForm(), "call": _open_call()},
+            )
         form = SubmissionForm(request.POST, request.FILES)
         if form.is_valid():
             if form.is_spam:

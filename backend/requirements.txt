@@ -11,7 +11,9 @@ amqp==5.3.1 \
 asgiref==3.12.1 \
     --hash=sha256:59dcb51c272ad209d59bed5708a64a333083e86017d7fcdd67498eeab7784340 \
     --hash=sha256:fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094
-    # via django
+    # via
+    #   django
+    #   django-axes
 billiard==4.2.4 \
     --hash=sha256:525b42bdec68d2b983347ac312f892db930858495db601b5836ac24e6477cde5 \
     --hash=sha256:55f542c371209e03cd5862299b74e52e4fbcba8250ba611ad94276b369b6a85f
@@ -47,6 +49,16 @@ click-repl==0.3.0 \
 django==5.2.16 \
     --hash=sha256:04f354bf9d807a86ad1a8392fe3808d362358a8eafc322848e0e43e59b24371d \
     --hash=sha256:59ea02020c3136fce14bef0bbece21a10a4febef5eed1c51c22ae468efa22200
+    # via
+    #   -r requirements.in
+    #   django-axes
+django-axes==8.3.1 \
+    --hash=sha256:d57e923c0ba33cf45275253dd1313c3a3ff04bec686b38d677beb2b3d43c7bcd \
+    --hash=sha256:f7887582fd12713064f1602091ff6152752becae5e891a15bf802746cab0f51a
+    # via -r requirements.in
+django-ratelimit==4.1.0 \
+    --hash=sha256:555943b283045b917ad59f196829530d63be2a39adb72788d985b90c81ba808b \
+    --hash=sha256:d047a31cf94d83ef1465d7543ca66c6fc16695559b5f8d814d1b51df15110b92
     # via -r requirements.in
 gunicorn==22.0.0 \
     --hash=sha256:350679f91b24062c86e386e198a15438d53a7a8207235a78ba1b53df4c4378d9 \
