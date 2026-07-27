@@ -4,6 +4,7 @@ docker compose exec web python manage.py seed_demo
 """
 
 from datetime import timedelta
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -142,12 +143,14 @@ class Command(BaseCommand):
                 "position": 0,
                 "short_bio": "Poeta y editora. Coordina las publicaciones del colectivo.",
                 "poetics": "Escribo para afinar el oído: el poema como temperatura del habla.",
+                "photo_file": "member-fernanda.jpg",
             },
             "Andrés Cáceres": {
                 "member_since": 2021,
                 "position": 1,
                 "short_bio": "Poeta. Escribe sobre narrativa y poesía chilena.",
                 "poetics": "Busco el verso que camina: ritmo antes que ornamento.",
+                "photo_file": "member-andres.jpg",
             },
             "Paula Miranda": {
                 "role": "Fundadora",
@@ -155,11 +158,13 @@ class Command(BaseCommand):
                 "position": 2,
                 "short_bio": "Poeta, ensayista y traductora.",
                 "poetics": "Traducir y escribir son la misma operación: escuchar dos veces.",
+                "photo_file": "member-paula.jpg",
             },
         }
         for name, extra in members_extra.items():
+            photo = self._photo(f"Retrato de {name}", extra.pop("photo_file"))
             Contributor.objects.filter(pk=contributors[name].pk).update(
-                is_member=True, active=True, **extra
+                is_member=True, active=True, photo=photo, **extra
             )
 
         # ── Artículos en varios estados ──────────────────────
@@ -398,9 +403,9 @@ class Command(BaseCommand):
                 "description": "Lectura colectiva de apertura del año, con invitados.",
                 "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
                 "photos": [
-                    ("Lectura de apertura", (29, 78, 115)),
-                    ("Público en la sala", (90, 108, 125)),
-                    ("Cierre colectivo", (140, 90, 60)),
+                    ("Lectura de apertura", "event-apertura.jpg"),
+                    ("Público en la sala", "event-publico.jpg"),
+                    ("Cierre colectivo", "event-cierre.jpg"),
                 ],
             },
             {
@@ -454,10 +459,10 @@ class Command(BaseCommand):
                 },
             )
             event.participants.add(*[contributors[n] for n in spec.get("participants", [])])
-            for i, (caption, color) in enumerate(spec.get("photos", [])):
+            for i, (caption, filename) in enumerate(spec.get("photos", [])):
                 EventPhoto.objects.get_or_create(
                     event=event,
-                    asset=self._image(f"{spec['title']} — {caption}", color),
+                    asset=self._photo(f"{spec['title']} — {caption}", filename),
                     defaults={"caption": caption, "position": i},
                 )
             events[spec["slug"]] = event
@@ -502,7 +507,7 @@ class Command(BaseCommand):
                 "synopsis": "Plaquette colectiva: nueve poemas sobre casas, puertas y regresos. "
                 "Edición artesanal cosida a mano.",
                 "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
-                "cover_color": (29, 78, 115),
+                "cover_file": "cover-umbral.jpg",
                 "featured": True,
                 "with_pdf": True,
                 "stores": [("Feria del Libro Independiente", "https://example.com/feria")],
@@ -516,7 +521,7 @@ class Command(BaseCommand):
                 "synopsis": "Primer libro individual de Fernanda Soto, escrito dentro del taller "
                 "del colectivo.",
                 "participants": ["Fernanda Soto"],
-                "cover_color": (140, 90, 60),
+                "cover_file": "cover-cuadernos.jpg",
                 "stores": [("Editorial Overol", "https://example.com/overol")],
             },
             {
@@ -527,7 +532,7 @@ class Command(BaseCommand):
                 "synopsis": "Fanzine de poemas cruzados entre integrantes: cada texto responde "
                 "al anterior. Descarga gratuita.",
                 "participants": ["Paula Miranda", "Andrés Cáceres"],
-                "cover_color": (90, 108, 125),
+                "cover_file": "cover-correspondencias.jpg",
                 "with_pdf": True,
             },
         ]
@@ -540,7 +545,7 @@ class Command(BaseCommand):
                     "year": spec["year"],
                     "publisher": publishers.get(spec.get("publisher")),
                     "synopsis": spec["synopsis"],
-                    "cover": self._image(f"Portada — {spec['title']}", spec["cover_color"]),
+                    "cover": self._photo(f"Portada — {spec['title']}", spec["cover_file"]),
                     "featured": spec.get("featured", False),
                     "published": True,
                 },
@@ -598,20 +603,22 @@ class Command(BaseCommand):
         self._summary()
 
     # ─────────────────────────────────────────────────────────
-    def _image(self, alt_text, rgb):
-        """MediaAsset de demostración con imagen generada (idempotente por alt_text)."""
-        existing = MediaAsset.objects.filter(alt_text=alt_text).first()
-        if existing:
-            return existing
-        from io import BytesIO
+    ASSETS = Path(__file__).resolve().parent / "seed_assets"
 
+    def _photo(self, alt_text, filename, credit="Placeholder de demo (reemplazable)"):
+        """MediaAsset desde una imagen empaquetada en seed_assets/ (placeholder).
+
+        Idempotente: crea el recurso por alt_text y (re)escribe el archivo solo si
+        falta o si el nombre difiere — así reemplaza los antiguos colores planos en
+        una BD ya sembrada sin duplicar recursos.
+        """
         from django.core.files.base import ContentFile
-        from PIL import Image
 
-        buffer = BytesIO()
-        Image.new("RGB", (640, 400), rgb).save(buffer, format="JPEG", quality=70)
-        asset = MediaAsset(alt_text=alt_text, credit="Archivo del colectivo")
-        asset.file.save(f"{slugify(alt_text)[:80]}.jpg", ContentFile(buffer.getvalue()), save=True)
+        asset, _ = MediaAsset.objects.get_or_create(alt_text=alt_text, defaults={"credit": credit})
+        current = Path(asset.file.name).name if asset.file else ""
+        if current != filename:
+            data = (self.ASSETS / filename).read_bytes()
+            asset.file.save(filename, ContentFile(data), save=True)
         return asset
 
     def _audio_bytes(self):

@@ -1,0 +1,11 @@
+Imágenes de demostración (placeholders reemplazables por material real del colectivo).
+
+member-*.jpg  — Avatares ilustrados generados con DiceBear, estilo "lorelei"
+                (https://dicebear.com). Los resultados se publican bajo CC0
+                (dominio público).
+event-*.jpg   — Fotografías de Lorem Picsum (https://picsum.photos), originadas
+cover-*.jpg     en Unsplash (Licencia Unsplash: uso libre, comercial incluido).
+                Convertidas a escala de grises.
+
+No representan personas, eventos ni obras reales: son marcadores para
+desarrollo/demo hasta que el colectivo suba sus propias fotos.
