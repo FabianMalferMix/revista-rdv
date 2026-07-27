@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Integrantes — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Integrantes del colectivo: poetas, trayectorias y obra.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Integrantes</h1>
+  <ul class="member-grid">
+    {% for m in members %}
+      {% include "people/partials/_member_card.html" %}
+    {% empty %}
+      <li class="empty">Aún no hay integrantes publicados.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

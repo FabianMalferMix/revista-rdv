@@ -41,6 +41,7 @@
       {% for s in nav_sections %}
         <a href="{% url 'content:section_detail' s.slug %}">{{ s.name }}</a>
       {% endfor %}
+      <a href="{% url 'people:member_index' %}">Integrantes</a>
       <a href="{% url 'content:collection_index' %}">Colecciones</a>
       <a href="{% url 'submissions:submit' %}">Enviar</a>
     </nav>

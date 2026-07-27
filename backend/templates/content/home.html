@@ -5,4 +5,16 @@
 {% block content %}
   <h1 class="page-title">Últimas publicaciones</h1>
   {% include "content/partials/_article_list.html" %}
+
+  {% if members %}
+    <section class="members-strip">
+      <h2 class="subhead">Integrantes</h2>
+      <ul class="member-grid">
+        {% for m in members %}
+          {% include "people/partials/_member_card.html" %}
+        {% endfor %}
+      </ul>
+      <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+    </section>
+  {% endif %}
 {% endblock %}

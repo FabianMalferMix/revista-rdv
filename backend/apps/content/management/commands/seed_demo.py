@@ -122,6 +122,35 @@ class Command(BaseCommand):
             contributors["Andrés Cáceres"].user = autor_user
             contributors["Andrés Cáceres"].save(update_fields=["user"])
 
+        # ── Integrantes del colectivo ────────────────────────
+        # Diego Salinas queda como colaborador externo (sin membresía).
+        members_extra = {
+            "Fernanda Soto": {
+                "role": "Fundadora · edición",
+                "member_since": 2019,
+                "position": 0,
+                "short_bio": "Poeta y editora. Coordina las publicaciones del colectivo.",
+                "poetics": "Escribo para afinar el oído: el poema como temperatura del habla.",
+            },
+            "Andrés Cáceres": {
+                "member_since": 2021,
+                "position": 1,
+                "short_bio": "Poeta. Escribe sobre narrativa y poesía chilena.",
+                "poetics": "Busco el verso que camina: ritmo antes que ornamento.",
+            },
+            "Paula Miranda": {
+                "role": "Fundadora",
+                "member_since": 2019,
+                "position": 2,
+                "short_bio": "Poeta, ensayista y traductora.",
+                "poetics": "Traducir y escribir son la misma operación: escuchar dos veces.",
+            },
+        }
+        for name, extra in members_extra.items():
+            Contributor.objects.filter(pk=contributors[name].pk).update(
+                is_member=True, active=True, **extra
+            )
+
         # ── Artículos en varios estados ──────────────────────
         articles = {}
         for spec in self._articles(now):
@@ -268,6 +297,7 @@ class Command(BaseCommand):
         if profile.featured_recording_id is None:
             profile.featured_recording = recording
             profile.save(update_fields=["featured_recording"])
+        recording.participants.add(contributors["Fernanda Soto"], contributors["Paula Miranda"])
 
         self._summary()
 
@@ -459,11 +489,13 @@ class Command(BaseCommand):
     def _summary(self):
         pub = Article.objects.filter(status=ArticleStatus.PUBLISHED).count()
         sched = Article.objects.filter(status=ArticleStatus.SCHEDULED).count()
+        members = Contributor.objects.filter(is_member=True).count()
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seed listo — {Article.objects.count()} artículos "
                 f"({pub} publicados, {sched} programado), "
-                f"{Work.objects.count()} obras, {Contributor.objects.count()} colaboradores."
+                f"{Work.objects.count()} obras, {Contributor.objects.count()} colaboradores "
+                f"({members} integrantes)."
             )
         )
         self.stdout.write(

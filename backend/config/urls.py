@@ -14,6 +14,7 @@ urlpatterns = [
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
     path("feed/", LatestArticlesFeed(), name="feed"),
     path("robots.txt", robots, name="robots"),
+    path("", include("apps.people.urls")),
     path("", include("apps.reviews.urls")),
     path("", include("apps.submissions.urls")),
     path("", include("apps.content.urls")),
