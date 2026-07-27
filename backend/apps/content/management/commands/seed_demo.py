@@ -254,16 +254,16 @@ class Command(BaseCommand):
             (
                 "quienes-somos",
                 "Quiénes somos",
-                "<p>Reseñas es una revista literaria dedicada a la crítica de libros. "
-                "Publicamos reseñas, ensayos y entrevistas sobre narrativa y poesía "
-                "contemporáneas.</p>",
+                "<p>Somos un colectivo de poesía dedicado a difundir la obra de sus "
+                "integrantes: poemas, reseñas y ensayos, además de los recitales, "
+                "talleres y publicaciones que realizamos como grupo.</p>",
             ),
             (
                 "bases",
                 "Bases de colaboración",
-                "<p>Recibimos reseñas inéditas de entre 4.000 y 8.000 caracteres. "
-                "Envía tu propuesta desde la página de colaboraciones y el comité "
-                "editorial te responderá.</p>",
+                "<p>Cuando abrimos convocatorias recibimos textos inéditos. Envía tu "
+                "propuesta desde la página de convocatorias y el equipo editorial "
+                "te responderá.</p>",
             ),
         ]:
             Page.objects.get_or_create(

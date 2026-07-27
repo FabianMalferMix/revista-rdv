@@ -201,6 +201,17 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .dossier-list-plain{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px}
 .dossier-contact{padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:4px}
 
+/* Pie: newsletter (lista de prensa) y enlaces secundarios */
+.newsletter{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px}
+.newsletter label{font-family:var(--mono); font-size:12px; color:var(--muted)}
+.newsletter input[type=email]{font-family:var(--serif); font-size:14px; padding:7px 12px;
+  border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--ink); min-width:200px}
+.newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
+.foot-links{margin:0}
+.flash{padding:10px 16px; border:1px solid var(--border); border-left:3px solid var(--accent);
+  border-radius:3px; background:var(--surface); margin:14px 0 0}
+.flash-error{border-left-color:#b3392f}
+
 @media print{
   .masthead, .site-foot, #search-results, .no-print{display:none !important}
   body{background:#fff; color:#000; font-size:12pt}

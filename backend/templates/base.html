@@ -4,19 +4,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Reseñas — Revista literaria{% endblock %}</title>
-  <meta name="description" content="{% block description %}Revista literaria de reseñas: crítica de libros, ensayos y entrevistas.{% endblock %}">
+  <title>{% block title %}{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}{% endblock %}">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
-  <link rel="alternate" type="application/rss+xml" title="Reseñas — Revista literaria" href="{% url 'feed' %}">
-  <link rel="alternate" type="application/rss+xml" title="Registros (podcast)" href="{% url 'recordings_feed' %}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — textos" href="{% url 'feed' %}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — registros (podcast)" href="{% url 'recordings_feed' %}">
 
-  <meta property="og:site_name" content="Reseñas">
+  <meta property="og:site_name" content="{{ site_profile.name|default:"Reseñas" }}">
   <meta property="og:locale" content="es_CL">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   {% block opengraph %}
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Reseñas — Revista literaria">
-    <meta property="og:description" content="Crítica de libros, ensayos y entrevistas.">
+    <meta property="og:title" content="{{ site_profile.name|default:"Reseñas" }}">
+    <meta property="og:description" content="{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}">
     <meta name="twitter:card" content="summary">
   {% endblock %}
 
@@ -29,7 +29,7 @@
     <div class="wrap top">
       <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
       <form class="search" role="search" action="{% url 'content:home' %}">
-        <input type="search" name="q" placeholder="Buscar reseñas…"
+        <input type="search" name="q" placeholder="Buscar textos…"
                hx-get="{% url 'content:search' %}"
                hx-trigger="keyup changed delay:300ms, search"
                hx-target="#search-results"
@@ -38,10 +38,8 @@
         <span id="search-ind" class="htmx-indicator">…</span>
       </form>
     </div>
-    <nav class="nav wrap" aria-label="Secciones">
-      {% for s in nav_sections %}
-        <a href="{% url 'content:section_detail' s.slug %}">{{ s.name }}</a>
-      {% endfor %}
+    {# Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie. #}
+    <nav class="nav wrap" aria-label="Principal">
       <a href="{% url 'content:poem_index' %}">Poemas</a>
       <a href="{% url 'people:member_index' %}">Integrantes</a>
       <a href="{% url 'agenda:agenda' %}">Agenda</a>
@@ -50,13 +48,19 @@
       <a href="{% url 'media:recording_index' %}">Registros</a>
       <a href="{% url 'showcase:publication_index' %}">Publicaciones</a>
       <a href="{% url 'showcase:press_index' %}">Prensa</a>
-      <a href="{% url 'content:collection_index' %}">Colecciones</a>
       <a href="{% url 'showcase:dossier' %}">Dossier</a>
-      <a href="{% url 'submissions:submit' %}">Enviar</a>
     </nav>
   </header>
 
   <div id="search-results" class="wrap"></div>
+
+  {% if messages %}
+    <div class="wrap">
+      {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <main class="wrap">
     {% block content %}{% endblock %}
@@ -64,14 +68,27 @@
 
   <footer class="site-foot">
     <div class="wrap">
-      {% if site_profile.booking_email %}
-        Gestión y contrataciones:
-        <a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a> ·
-      {% endif %}
-      {% for link in site_profile.social_links.all %}
-        <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a> ·
-      {% endfor %}
-      <a href="{% url 'feed' %}">RSS</a>
+      <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <input type="text" name="apodo" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
+        <label for="news-email">Novedades para prensa y gestores:</label>
+        <input id="news-email" type="email" name="email" placeholder="tu@correo.cl" required>
+        <button class="btn" type="submit">Suscribirme</button>
+      </form>
+      <p class="foot-links">
+        {% if site_profile.booking_email %}
+          Gestión y contrataciones:
+          <a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a> ·
+        {% endif %}
+        {% for link in site_profile.social_links.all %}
+          <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a> ·
+        {% endfor %}
+        <a href="{% url 'content:collection_index' %}">Colecciones</a> ·
+        <a href="{% url 'submissions:submit' %}">Convocatorias</a> ·
+        <a href="{% url 'feed' %}">RSS</a> ·
+        <a href="{% url 'recordings_feed' %}">Podcast</a>
+      </p>
     </div>
   </footer>
 </body>
