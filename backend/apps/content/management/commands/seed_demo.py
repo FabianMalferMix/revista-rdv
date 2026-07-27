@@ -32,7 +32,14 @@ from apps.content.models import (
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
-from apps.showcase.models import SiteProfile, SiteSocialLink
+from apps.showcase.models import (
+    Partner,
+    PressMention,
+    Publication,
+    SiteProfile,
+    SiteSocialLink,
+    WhereToBuy,
+)
 from apps.submissions.models import Call, Submission
 
 P = "<p>{}</p>"
@@ -485,6 +492,109 @@ class Command(BaseCommand):
             audio.file.save("umbral-lectura.wav", ContentFile(self._audio_bytes()), save=True)
         audio.participants.add(contributors["Fernanda Soto"])
 
+        # ── Catálogo de publicaciones (vitrina, sin pagos) ───
+        pubs_data = [
+            {
+                "slug": "umbral-y-otras-salidas",
+                "title": "Umbral y otras salidas",
+                "kind": Publication.Kind.PLAQUETTE,
+                "year": 2022,
+                "synopsis": "Plaquette colectiva: nueve poemas sobre casas, puertas y regresos. "
+                "Edición artesanal cosida a mano.",
+                "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
+                "cover_color": (29, 78, 115),
+                "featured": True,
+                "with_pdf": True,
+                "stores": [("Feria del Libro Independiente", "https://example.com/feria")],
+            },
+            {
+                "slug": "cuadernos-del-ruido",
+                "title": "Cuadernos del ruido",
+                "kind": Publication.Kind.LIBRO,
+                "year": 2024,
+                "publisher": "Overol",
+                "synopsis": "Primer libro individual de Fernanda Soto, escrito dentro del taller "
+                "del colectivo.",
+                "participants": ["Fernanda Soto"],
+                "cover_color": (140, 90, 60),
+                "stores": [("Editorial Overol", "https://example.com/overol")],
+            },
+            {
+                "slug": "correspondencias",
+                "title": "Correspondencias",
+                "kind": Publication.Kind.FANZINE,
+                "year": 2023,
+                "synopsis": "Fanzine de poemas cruzados entre integrantes: cada texto responde "
+                "al anterior. Descarga gratuita.",
+                "participants": ["Paula Miranda", "Andrés Cáceres"],
+                "cover_color": (90, 108, 125),
+                "with_pdf": True,
+            },
+        ]
+        for spec in pubs_data:
+            pub, pub_created = Publication.objects.get_or_create(
+                slug=spec["slug"],
+                defaults={
+                    "title": spec["title"],
+                    "kind": spec["kind"],
+                    "year": spec["year"],
+                    "publisher": publishers.get(spec.get("publisher")),
+                    "synopsis": spec["synopsis"],
+                    "cover": self._image(f"Portada — {spec['title']}", spec["cover_color"]),
+                    "featured": spec.get("featured", False),
+                    "published": True,
+                },
+            )
+            pub.participants.add(*[contributors[n] for n in spec.get("participants", [])])
+            if pub_created and spec.get("with_pdf"):
+                from django.core.files.base import ContentFile
+
+                pub.pdf.save(f"{spec['slug']}.pdf", ContentFile(self._pdf_bytes()), save=True)
+            for i, (label, url) in enumerate(spec.get("stores", [])):
+                WhereToBuy.objects.get_or_create(
+                    publication=pub, label=label, defaults={"url": url, "position": i}
+                )
+
+        # ── Prensa y aliados ─────────────────────────────────
+        for spec in [
+            {
+                "title": "«La poesía vuelve a los recitales»",
+                "outlet": "El Mercurio de Valparaíso",
+                "kind": PressMention.Kind.NOTA,
+                "published_on": (now - timedelta(days=200)).date(),
+                "quote": "Uno de los colectivos más activos de la escena joven.",
+                "featured": True,
+            },
+            {
+                "title": "Entrevista al colectivo tras su plaquette",
+                "outlet": "Radio Universidad",
+                "kind": PressMention.Kind.ENTREVISTA,
+                "published_on": (now - timedelta(days=120)).date(),
+                "quote": "Leen como quien conversa: cerca, sin solemnidad.",
+                "author": "M. Torres",
+            },
+        ]:
+            PressMention.objects.get_or_create(
+                title=spec["title"],
+                outlet=spec["outlet"],
+                defaults={
+                    "kind": spec["kind"],
+                    "published_on": spec["published_on"],
+                    "quote": spec["quote"],
+                    "author": spec.get("author", ""),
+                    "featured": spec.get("featured", False),
+                    "published": True,
+                },
+            )
+        for i, (name, kind) in enumerate(
+            [
+                ("Fondo Nacional de Fomento del Libro", Partner.Kind.FINANCIAMIENTO),
+                ("Casa del Libro", Partner.Kind.ESPACIO),
+                ("Editorial Overol", Partner.Kind.EDITORIAL),
+            ]
+        ):
+            Partner.objects.get_or_create(name=name, defaults={"kind": kind, "position": i})
+
         self._summary()
 
     # ─────────────────────────────────────────────────────────
@@ -523,6 +633,26 @@ class Command(BaseCommand):
                 )
             )
         return buffer.getvalue()
+
+    def _pdf_bytes(self):
+        """PDF mínimo válido (una página en blanco) para descargas de demostración."""
+        header = b"%PDF-1.4\n"
+        objs = [
+            b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n",
+            b"2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n",
+            b"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]>>endobj\n",
+        ]
+        out = bytearray(header)
+        offsets = []
+        for obj in objs:
+            offsets.append(len(out))
+            out += obj
+        xref = len(out)
+        out += b"xref\n0 4\n0000000000 65535 f \n"
+        for offset in offsets:
+            out += f"{offset:010d} 00000 n \n".encode()
+        out += b"trailer<</Size 4/Root 1 0 R>>\nstartxref\n" + str(xref).encode() + b"\n%%EOF\n"
+        return bytes(out)
 
     def _user(self, User, username, group_name):
         user, created = User.objects.get_or_create(
@@ -718,7 +848,7 @@ class Command(BaseCommand):
                 f"({pub} publicados, {sched} programado), "
                 f"{Work.objects.count()} obras, {Contributor.objects.count()} colaboradores "
                 f"({members} integrantes), {Poem.objects.count()} poemas, "
-                f"{Event.objects.count()} eventos."
+                f"{Event.objects.count()} eventos, {Publication.objects.count()} publicaciones."
             )
         )
         self.stdout.write(

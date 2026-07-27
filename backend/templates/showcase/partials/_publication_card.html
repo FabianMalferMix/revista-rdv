@@ -1,0 +1,7 @@
+<li class="pub-card">
+  <a href="{{ pub.get_absolute_url }}">
+    {% if pub.cover %}<img src="{{ pub.cover.file.url }}" alt="{{ pub.cover.alt_text }}" loading="lazy">{% else %}<span class="pub-cover-fallback" aria-hidden="true">{{ pub.get_kind_display }}</span>{% endif %}
+    <span class="pub-title">{{ pub.title }}</span>
+  </a>
+  <span class="muted">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</span>
+</li>

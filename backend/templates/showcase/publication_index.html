@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Publicaciones — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Catálogo de libros, plaquettes y fanzines del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Publicaciones</h1>
+  <ul class="pub-grid">
+    {% for pub in publications %}
+      {% include "showcase/partials/_publication_card.html" %}
+    {% empty %}
+      <li class="empty">Aún no hay publicaciones en el catálogo.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

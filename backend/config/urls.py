@@ -19,6 +19,7 @@ urlpatterns = [
     path("", include("apps.people.urls")),
     path("", include("apps.media.urls")),
     path("", include("apps.agenda.urls")),
+    path("", include("apps.showcase.urls")),
     path("", include("apps.reviews.urls")),
     path("", include("apps.submissions.urls")),
     path("", include("apps.content.urls")),

@@ -47,6 +47,31 @@
   <h1 class="page-title">Últimas publicaciones</h1>
   {% include "content/partials/_article_list.html" %}
 
+  {% if publications %}
+    <section class="members-strip">
+      <h2 class="subhead">Publicaciones</h2>
+      <ul class="pub-grid">
+        {% for pub in publications %}
+          {% include "showcase/partials/_publication_card.html" %}
+        {% endfor %}
+      </ul>
+      <p><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+    </section>
+  {% endif %}
+
+  {% if press_quotes %}
+    <section class="members-strip">
+      <h2 class="subhead">Han dicho de nosotros</h2>
+      {% for m in press_quotes %}
+        <blockquote class="press-quote home-quote">
+          «{{ m.quote }}»
+          <cite>— {{ m.outlet }}{% if m.published_on %}, {{ m.published_on|date:"Y" }}{% endif %}</cite>
+        </blockquote>
+      {% endfor %}
+      <p><a href="{% url 'showcase:press_index' %}">Toda la prensa →</a></p>
+    </section>
+  {% endif %}
+
   {% if members %}
     <section class="members-strip">
       <h2 class="subhead">Integrantes</h2>
@@ -56,6 +81,16 @@
         {% endfor %}
       </ul>
       <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+    </section>
+  {% endif %}
+
+  {% if partners %}
+    <section class="members-strip partners-strip">
+      <h2 class="subhead">Con el apoyo de</h2>
+      <p class="meta">
+        {% for p in partners %}{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }}</a>{% else %}{{ p.name }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}
+        &nbsp;·&nbsp;<a href="{% url 'showcase:partner_index' %}">Aliados →</a>
+      </p>
     </section>
   {% endif %}
 {% endblock %}

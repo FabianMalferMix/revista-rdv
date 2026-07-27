@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ publication.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}{{ publication.synopsis|truncatechars:200|default:publication.title }}{% endblock %}
+
+{% block opengraph %}
+  <meta property="og:type" content="book">
+  <meta property="og:title" content="{{ publication.title }}">
+  <meta property="og:description" content="{{ publication.synopsis|truncatechars:200|default:publication.title }}">
+  {% if publication.cover %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ publication.cover.file.url }}">{% endif %}
+  <meta name="twitter:card" content="{% if publication.cover %}summary_large_image{% else %}summary{% endif %}">
+{% endblock %}
+
+{% block content %}
+  <article class="pub-detail">
+    <header class="index-head">
+      <span class="kicker">{{ publication.get_kind_display }}{% if not publication.is_own %} · participación{% endif %}</span>
+      <h1>{{ publication.title }}</h1>
+      <p class="meta">
+        {% if publication.year %}{{ publication.year }}{% endif %}
+        {% if publication.publisher %} · {{ publication.publisher.name }}{% endif %}
+        {% if publication.isbn %} · ISBN {{ publication.isbn }}{% endif %}
+      </p>
+    </header>
+
+    {% if publication.cover %}
+      <img class="pub-cover" src="{{ publication.cover.file.url }}" alt="{{ publication.cover.alt_text }}">
+    {% endif %}
+
+    {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}
+
+    {% with people=publication.participants.all %}
+      {% if people %}
+        <section>
+          <h2 class="subhead">Participan</h2>
+          <p class="meta">
+            {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+          </p>
+        </section>
+      {% endif %}
+    {% endwith %}
+
+    {% with stores=publication.where_to_buy.all %}
+      {% if stores or publication.pdf %}
+        <section>
+          <h2 class="subhead">Dónde conseguirlo</h2>
+          <p class="buy-links">
+            {% for s in stores %}<a class="btn" href="{{ s.url }}" rel="noopener" target="_blank">{{ s.label }} ↗</a>{% endfor %}
+            {% if publication.pdf %}<a class="btn" href="{{ publication.pdf.url }}">Descargar PDF gratis</a>{% endif %}
+          </p>
+        </section>
+      {% endif %}
+    {% endwith %}
+  </article>
+{% endblock %}
