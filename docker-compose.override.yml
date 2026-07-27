@@ -4,6 +4,9 @@
 
 services:
   web:
+    build:
+      context: ./backend
+      target: dev
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
@@ -11,10 +14,16 @@ services:
       - "127.0.0.1:8000:8000"
 
   worker:
+    build:
+      context: ./backend
+      target: dev
     volumes:
       - ./backend:/app
 
   beat:
+    build:
+      context: ./backend
+      target: dev
     volumes:
       - ./backend:/app
 

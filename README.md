@@ -70,7 +70,8 @@ Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale 
 
 Las migraciones se versionan en el repo; el contenedor solo corre `migrate` al arrancar.
 Cuando cambies los modelos, genera la migración y ajusta la propiedad de los archivos
-(el contenedor corre como root):
+(el contenedor de **desarrollo** corre como root; la imagen de **producción** usa un
+usuario no-root, ver `backend/Dockerfile`):
 
 ```bash
 docker compose exec web python manage.py makemigrations
