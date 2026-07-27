@@ -26,7 +26,7 @@
 <body>
   <header class="masthead">
     <div class="wrap top">
-      <a class="brand" href="{% url 'content:home' %}">Reseñas</a>
+      <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
       <form class="search" role="search" action="{% url 'content:home' %}">
         <input type="search" name="q" placeholder="Buscar reseñas…"
                hx-get="{% url 'content:search' %}"
@@ -41,7 +41,7 @@
       {% for s in nav_sections %}
         <a href="{% url 'content:section_detail' s.slug %}">{{ s.name }}</a>
       {% endfor %}
-      <a href="{% url 'content:dossier_index' %}">Dosieres</a>
+      <a href="{% url 'content:collection_index' %}">Colecciones</a>
       <a href="{% url 'submissions:submit' %}">Enviar</a>
     </nav>
   </header>
@@ -54,7 +54,13 @@
 
   <footer class="site-foot">
     <div class="wrap">
-      Revista literaria de reseñas · Django + htmx ·
+      {% if site_profile.booking_email %}
+        Gestión y contrataciones:
+        <a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a> ·
+      {% endif %}
+      {% for link in site_profile.social_links.all %}
+        <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a> ·
+      {% endfor %}
       <a href="{% url 'feed' %}">RSS</a>
     </div>
   </footer>

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}{{ collection.description|default:collection.title }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <span class="kicker">Colección</span>
+    <h1>{{ collection.title }}</h1>
+    {% if collection.intro %}<p class="dek">{{ collection.intro }}</p>{% endif %}
+  </header>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

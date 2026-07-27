@@ -8,10 +8,10 @@ from apps.people.models import Contributor
 from .models import (
     Article,
     ArticleStatus,
-    Dossier,
-    DossierArticle,
-    DossierStatus,
+    Collection,
+    CollectionArticle,
     Page,
+    PublishStatus,
     Section,
     Tag,
 )
@@ -68,16 +68,18 @@ def contributor_detail(request, slug):
     )
 
 
-def dossier_index(request):
-    dossiers = Dossier.objects.filter(status=DossierStatus.PUBLISHED)
-    return render(request, "content/dossier_index.html", {"dossiers": dossiers})
+def collection_index(request):
+    collections = Collection.objects.filter(status=PublishStatus.PUBLISHED)
+    return render(request, "content/collection_index.html", {"collections": collections})
 
 
-def dossier_detail(request, slug):
-    dossier = get_object_or_404(Dossier, slug=slug, status=DossierStatus.PUBLISHED)
-    # Orden curado (DossierArticle.position), solo artículos publicados.
+def collection_detail(request, slug):
+    collection = get_object_or_404(Collection, slug=slug, status=PublishStatus.PUBLISHED)
+    # Orden curado (CollectionArticle.position), solo artículos publicados.
     links = (
-        DossierArticle.objects.filter(dossier=dossier, article__status=ArticleStatus.PUBLISHED)
+        CollectionArticle.objects.filter(
+            collection=collection, article__status=ArticleStatus.PUBLISHED
+        )
         .select_related("article", "article__section")
         .prefetch_related("article__authors")
         .order_by("position")
@@ -85,13 +87,13 @@ def dossier_detail(request, slug):
     articles = [link.article for link in links]
     return render(
         request,
-        "content/dossier_detail.html",
-        {"dossier": dossier, "articles": articles},
+        "content/collection_detail.html",
+        {"collection": collection, "articles": articles},
     )
 
 
 def page_detail(request, slug):
-    page = get_object_or_404(Page, slug=slug, status=DossierStatus.PUBLISHED)
+    page = get_object_or_404(Page, slug=slug, status=PublishStatus.PUBLISHED)
     return render(request, "content/page_detail.html", {"page": page})
 
 

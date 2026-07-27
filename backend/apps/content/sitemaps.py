@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from apps.reviews.models import BookAuthor, Publisher, Work
 
-from .models import Article, ArticleStatus, Dossier, DossierStatus, Page, Section
+from .models import Article, ArticleStatus, Collection, Page, PublishStatus, Section
 
 
 class ArticleSitemap(Sitemap):
@@ -31,15 +31,15 @@ class SectionSitemap(Sitemap):
         return reverse("content:section_detail", args=[obj.slug])
 
 
-class DossierSitemap(Sitemap):
+class CollectionSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.6
 
     def items(self):
-        return Dossier.objects.filter(status=DossierStatus.PUBLISHED)
+        return Collection.objects.filter(status=PublishStatus.PUBLISHED)
 
     def location(self, obj):
-        return reverse("content:dossier_detail", args=[obj.slug])
+        return reverse("content:collection_detail", args=[obj.slug])
 
 
 class PageSitemap(Sitemap):
@@ -47,7 +47,7 @@ class PageSitemap(Sitemap):
     priority = 0.3
 
     def items(self):
-        return Page.objects.filter(status=DossierStatus.PUBLISHED)
+        return Page.objects.filter(status=PublishStatus.PUBLISHED)
 
     def location(self, obj):
         return reverse("content:page_detail", args=[obj.slug])
@@ -86,7 +86,7 @@ class BookAuthorSitemap(_ReviewsSitemap):
 SITEMAPS = {
     "articulos": ArticleSitemap,
     "secciones": SectionSitemap,
-    "dosieres": DossierSitemap,
+    "colecciones": CollectionSitemap,
     "paginas": PageSitemap,
     "obras": WorkSitemap,
     "editoriales": PublisherSitemap,

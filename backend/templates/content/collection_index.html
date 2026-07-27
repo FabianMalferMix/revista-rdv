@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Colecciones — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Colecciones</h1>
+  <ul class="collection-list">
+    {% for c in collections %}
+      <li>
+        <h2><a href="{% url 'content:collection_detail' c.slug %}">{{ c.title }}</a></h2>
+        {% if c.description %}<p class="dek">{{ c.description }}</p>{% endif %}
+      </li>
+    {% empty %}
+      <li class="empty">Aún no hay colecciones publicadas.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

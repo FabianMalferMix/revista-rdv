@@ -122,3 +122,29 @@ def test_healthz(client):
     resp = client.get(reverse("healthz"))
     assert resp.status_code == 200
     assert resp.content == b"ok"
+
+
+def test_collection_index_and_detail(client, make_article):
+    from apps.content.models import Collection, CollectionArticle, PublishStatus
+
+    article = _publish(make_article(slug="en-coleccion", title="Pieza en Colección"))
+    collection = Collection.objects.create(
+        slug="antologia", title="Antología Demo", status=PublishStatus.PUBLISHED
+    )
+    CollectionArticle.objects.create(collection=collection, article=article, position=0)
+
+    index = client.get(reverse("content:collection_index"))
+    assert index.status_code == 200
+    assert b"Antolog\xc3\xada Demo" in index.content
+
+    detail = client.get(reverse("content:collection_detail", args=[collection.slug]))
+    assert detail.status_code == 200
+    assert b"Pieza en Colecci\xc3\xb3n" in detail.content
+
+
+def test_collection_detail_404_for_draft(client):
+    from apps.content.models import Collection, PublishStatus
+
+    draft = Collection.objects.create(slug="borrador", title="Oculta", status=PublishStatus.DRAFT)
+    resp = client.get(reverse("content:collection_detail", args=[draft.slug]))
+    assert resp.status_code == 404
