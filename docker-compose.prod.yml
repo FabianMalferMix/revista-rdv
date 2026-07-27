@@ -49,12 +49,28 @@ services:
       DJANGO_DEBUG: "0"
       DJANGO_SKIP_MIGRATE: "1"
     restart: unless-stopped
+    healthcheck:
+      # Un worker colgado no responde al ping por el broker (a diferencia de un
+      # simple chequeo de proceso, que un cuelgue no detectaría).
+      test: ["CMD-SHELL", "celery -A config inspect ping -d celery@$$(hostname) -t 10 >/dev/null 2>&1"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 40s
 
   beat:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SKIP_MIGRATE: "1"
     restart: unless-stopped
+    healthcheck:
+      # Beat actualiza su archivo de agenda al programar; si se cuelga y deja de
+      # programar, el mtime se vuelve obsoleto (umbral holgado sobre el tick de 60s).
+      test: ["CMD-SHELL", "python -c \"import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
 
   db:
     restart: unless-stopped

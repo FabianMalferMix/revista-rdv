@@ -6,12 +6,13 @@ from django.urls import include, path
 
 from apps.content.feeds import LatestArticlesFeed
 from apps.content.sitemaps import SITEMAPS
-from apps.content.views import healthz, robots
+from apps.content.views import healthz, readyz, robots
 from apps.media.feeds import RecordingsFeed
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz/", healthz, name="healthz"),
+    path("readyz/", readyz, name="readyz"),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
     path("feed/", LatestArticlesFeed(), name="feed"),
     path("feed/registros/", RecordingsFeed(), name="recordings_feed"),

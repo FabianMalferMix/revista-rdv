@@ -177,8 +177,52 @@ def search(request):
 
 
 def healthz(request):
-    """Sonda de salud para el healthcheck del contenedor y el proxy (sin tocar la BD)."""
+    """Liveness: sonda barata para el healthcheck del contenedor y el proxy (no toca la BD)."""
     return HttpResponse("ok", content_type="text/plain")
+
+
+def _db_ok():
+    """La BD responde a una consulta trivial."""
+    from django.db import connections
+
+    try:
+        with connections["default"].cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+        return True
+    except Exception:
+        return False
+
+
+def _broker_ok():
+    """El broker de Celery (Redis) acepta un PING."""
+    import redis
+    from django.conf import settings
+
+    try:
+        client = redis.from_url(
+            settings.CELERY_BROKER_URL, socket_connect_timeout=3, socket_timeout=3
+        )
+        return bool(client.ping())
+    except Exception:
+        return False
+
+
+def readyz(request):
+    """Readiness: verifica dependencias (BD + broker). 200 si listo, 503 si no.
+
+    Distinto de healthz (liveness): apto para monitoreo externo de uptime y para
+    detectar que la app no puede operar aunque el proceso siga vivo.
+    """
+    import json
+
+    checks = {"database": _db_ok(), "broker": _broker_ok()}
+    ready = all(checks.values())
+    return HttpResponse(
+        json.dumps({"status": "ready" if ready else "not-ready", "checks": checks}),
+        content_type="application/json",
+        status=200 if ready else 503,
+    )
 
 
 def robots(request):
