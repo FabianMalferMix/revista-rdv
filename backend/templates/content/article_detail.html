@@ -22,7 +22,7 @@
     "datePublished": "{{ article.published_at|date:'c' }}",
     "dateModified": "{{ article.updated_at|date:'c' }}",
     "author": [{% for c in article.authors.all %}{"@type": "Person", "name": "{{ c.display_name|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
-    "publisher": {"@type": "Organization", "name": "Reseñas"}{% if article.subtitle %},
+    "publisher": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"}{% if article.subtitle %},
     "description": "{{ article.subtitle|escapejs }}"{% endif %}
   }
   </script>
