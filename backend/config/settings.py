@@ -67,6 +67,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # CSP restrictiva con nonce por petición (tras WhiteNoise: no aplica a estáticos).
+    "config.csp.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -142,7 +144,9 @@ STORAGES = {
         "BACKEND": (
             "django.contrib.staticfiles.storage.StaticFilesStorage"
             if DEBUG
-            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            # Manifiesto + compresión WhiteNoise, exceptuando el subárbol de TinyMCE
+            # (se sirve sin hash para no romper su carga perezosa relativa).
+            else "config.staticfiles.VendoredStaticFilesStorage"
         )
     },
 }
@@ -169,6 +173,8 @@ CELERY_BEAT_SCHEDULE = {
 # ── Cabeceras de seguridad ────────────────────────────────
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+# CSP restrictiva (config.csp): con DJANGO_CSP_REPORT_ONLY=1 solo reporta, no bloquea.
+CSP_REPORT_ONLY = os.environ.get("DJANGO_CSP_REPORT_ONLY", "0") == "1"
 # El healthcheck interno pega por HTTP a /healthz/: que no se redirija a HTTPS.
 SECURE_REDIRECT_EXEMPT = [r"^healthz/?$"]
 
