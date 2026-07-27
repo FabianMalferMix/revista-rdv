@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Aliados — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Fondos, instituciones y espacios que apoyan al colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Aliados y financiamiento</h1>
+  <ul class="partner-list">
+    {% for p in partners %}
+      <li class="partner-item">
+        {% if p.logo %}<img class="partner-logo" src="{{ p.logo.file.url }}" alt="{{ p.logo.alt_text }}" loading="lazy">{% endif %}
+        <div>
+          <span class="kicker">{{ p.get_kind_display }}</span>
+          <strong>{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }} ↗</a>{% else %}{{ p.name }}{% endif %}</strong>
+          {% if p.description %}<p class="dek">{{ p.description }}</p>{% endif %}
+        </div>
+      </li>
+    {% empty %}
+      <li class="empty">Aún no hay aliados registrados.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

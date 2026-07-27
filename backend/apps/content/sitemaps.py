@@ -5,6 +5,7 @@ from apps.agenda.models import Event
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
+from apps.showcase.models import Publication
 
 from .models import Article, Collection, EditorialStatus, Page, Poem, PublishStatus, Section
 
@@ -81,6 +82,17 @@ class EventSitemap(Sitemap):
         return obj.get_absolute_url()
 
 
+class PublicationSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.7
+
+    def items(self):
+        return Publication.objects.filter(published=True)
+
+    def location(self, obj):
+        return obj.get_absolute_url()
+
+
 class RecordingSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.5
@@ -141,6 +153,7 @@ SITEMAPS = {
     "integrantes": MemberSitemap,
     "eventos": EventSitemap,
     "registros": RecordingSitemap,
+    "publicaciones": PublicationSitemap,
     "paginas": PageSitemap,
     "obras": WorkSitemap,
     "editoriales": PublisherSitemap,

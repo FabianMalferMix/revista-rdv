@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Prensa — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Entrevistas, reseñas y menciones del colectivo en medios.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Prensa</h1>
+  <ul class="press-list">
+    {% for m in mentions %}
+      <li class="press-item">
+        <span class="kicker">{{ m.get_kind_display }} · {{ m.outlet }}{% if m.published_on %} · {{ m.published_on|date:"M Y" }}{% endif %}</span>
+        <h2>{% if m.url %}<a href="{{ m.url }}" rel="noopener" target="_blank">{{ m.title }} ↗</a>{% else %}{{ m.title }}{% endif %}</h2>
+        {% if m.quote %}<blockquote class="press-quote">«{{ m.quote }}»</blockquote>{% endif %}
+        {% if m.author %}<span class="muted">Por {{ m.author }}</span>{% endif %}
+      </li>
+    {% empty %}
+      <li class="empty">Aún no hay menciones registradas.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

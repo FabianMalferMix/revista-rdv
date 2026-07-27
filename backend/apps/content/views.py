@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.agenda.models import Event
 from apps.agenda.views import stats as trajectory_stats
 from apps.people.models import Contributor
-from apps.showcase.models import SiteProfile
+from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
 
 from .models import (
     Article,
@@ -58,6 +58,9 @@ def home(request):
             "featured_recording": featured_recording,
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),
+            "publications": Publication.objects.filter(published=True).select_related("cover")[:4],
+            "press_quotes": PressMention.objects.filter(published=True).exclude(quote="")[:2],
+            "partners": Partner.objects.filter(active=True)[:6],
         },
     )
 

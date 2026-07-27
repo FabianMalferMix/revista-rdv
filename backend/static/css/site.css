@@ -156,6 +156,32 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .featured-recording h2 a{text-decoration:none; color:var(--ink)}
 .featured-recording h2 a:hover{color:var(--accent)}
 
+/* Catálogo, prensa y aliados */
+.pub-grid{list-style:none; padding:0; margin:0;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:20px}
+.pub-card a{display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink)}
+.pub-card img, .pub-cover-fallback{width:100%; aspect-ratio:5/7; object-fit:cover;
+  border:1px solid var(--border); border-radius:3px; background:var(--surface)}
+.pub-cover-fallback{display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:12px; text-transform:uppercase; color:var(--muted)}
+.pub-title{font-weight:700; line-height:1.25}
+.pub-card a:hover .pub-title{color:var(--accent)}
+.pub-cover{max-width:240px; border:1px solid var(--border); border-radius:3px; margin:8px 0 16px}
+.buy-links{display:flex; flex-wrap:wrap; gap:10px}
+.press-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:30px}
+.press-item h2{margin:6px 0; font-size:22px}
+.press-item h2 a{text-decoration:none; color:var(--ink)}
+.press-item h2 a:hover{color:var(--accent)}
+.press-quote{margin:10px 0; padding-left:18px; border-left:3px solid var(--accent);
+  font-style:italic; font-size:18px}
+.home-quote cite{display:block; margin-top:6px; font-style:normal;
+  font-family:var(--mono); font-size:12px; color:var(--muted)}
+.partner-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:22px}
+.partner-item{display:flex; gap:14px; align-items:flex-start}
+.partner-logo{width:64px; height:64px; object-fit:contain; border:1px solid var(--border);
+  border-radius:4px; background:#fff}
+.partners-strip{border-top:1px solid var(--border); padding-top:14px}
+
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:clamp(30px,5vw,46px); line-height:1.08; margin:10px 0; text-wrap:balance}
