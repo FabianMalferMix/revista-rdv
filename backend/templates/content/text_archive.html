@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Textos — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Reseñas, ensayos y entrevistas del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Textos</h1>
+  {% include "content/partials/_article_list.html" %}
+{% endblock %}

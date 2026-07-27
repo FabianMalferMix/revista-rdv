@@ -48,20 +48,32 @@ def home(request):
     featured_recording = profile.featured_recording if profile else None
     if featured_recording and not featured_recording.published:
         featured_recording = None
+    # Un solo destacado grande (evita apilar dos): el registro manda sobre el poema.
+    featured = None
+    if featured_recording:
+        featured = {"kind": "recording", "object": featured_recording}
+    elif featured_poem:
+        featured = {"kind": "poem", "object": featured_poem}
     return render(
         request,
         "content/home.html",
         {
-            "articles": _paginate(request, _published()),
+            "articles": _published()[:5],  # portada curada; el archivo vive en /textos/
             "members": Contributor.members()[:8],
-            "featured_poem": featured_poem,
-            "featured_recording": featured_recording,
+            "featured": featured,
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),
             "publications": Publication.objects.filter(published=True).select_related("cover")[:4],
             "press_quotes": PressMention.objects.filter(published=True).exclude(quote="")[:2],
             "partners": Partner.objects.filter(active=True)[:6],
         },
+    )
+
+
+def text_archive(request):
+    """Archivo completo de textos (reseñas, ensayos, entrevistas), paginado."""
+    return render(
+        request, "content/text_archive.html", {"articles": _paginate(request, _published())}
     )
 
 

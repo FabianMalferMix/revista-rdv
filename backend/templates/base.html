@@ -84,6 +84,7 @@
         {% for link in site_profile.social_links.all %}
           <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a> ·
         {% endfor %}
+        <a href="{% url 'content:text_archive' %}">Textos</a> ·
         <a href="{% url 'content:collection_index' %}">Colecciones</a> ·
         <a href="{% url 'submissions:submit' %}">Convocatorias</a> ·
         <a href="{% url 'feed' %}">RSS</a> ·

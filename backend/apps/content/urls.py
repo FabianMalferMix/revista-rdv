@@ -6,6 +6,7 @@ app_name = "content"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("textos/", views.text_archive, name="text_archive"),
     path("buscar/", views.search, name="search"),
     path("articulo/<slug:slug>/", views.article_detail, name="article_detail"),
     path("poemas/", views.poem_index, name="poem_index"),
