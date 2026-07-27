@@ -36,7 +36,7 @@
     <h1>{{ article.title }}</h1>
     {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
     <p class="meta">
-      {% for c in article.authors.all %}<a href="{% url 'content:contributor_detail' c.slug %}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if article.authors.all %} · {% endif %}{{ article.reading_time }} min · {{ article.published_at|date:"j M Y" }}
+      {% for c in article.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if article.authors.all %} · {% endif %}{{ article.reading_time }} min · {{ article.published_at|date:"j M Y" }}
     </p>
 
     {% with reviewed=article.reviewed_works.all %}

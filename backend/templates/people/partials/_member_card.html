@@ -1,0 +1,12 @@
+<li class="member-card">
+  <a href="{% url 'people:member_detail' m.slug %}">
+    {% if m.photo %}
+      <img class="avatar" src="{{ m.photo.file.url }}" alt="{{ m.photo.alt_text }}" loading="lazy">
+    {% else %}
+      <span class="avatar avatar-fallback" aria-hidden="true">{{ m.display_name|slice:":1" }}</span>
+    {% endif %}
+    <span class="member-name">{{ m.display_name }}</span>
+  </a>
+  {% if m.role %}<span class="member-role">{{ m.role }}</span>{% endif %}
+  {% if m.short_bio %}<p class="member-bio">{{ m.short_bio }}</p>{% endif %}
+</li>

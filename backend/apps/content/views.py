@@ -1,7 +1,7 @@
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.people.models import Contributor
 
@@ -30,7 +30,11 @@ def _paginate(request, queryset, per_page=12):
 
 
 def home(request):
-    return render(request, "content/home.html", {"articles": _paginate(request, _published())})
+    return render(
+        request,
+        "content/home.html",
+        {"articles": _paginate(request, _published()), "members": Contributor.members()[:8]},
+    )
 
 
 def article_detail(request, slug):
@@ -58,6 +62,9 @@ def tag_detail(request, slug):
 
 def contributor_detail(request, slug):
     contributor = get_object_or_404(Contributor, slug=slug)
+    if contributor.is_member:
+        # URL canónica única por persona: el integrante vive en su perfil rico.
+        return redirect("people:member_detail", slug=slug)
     return render(
         request,
         "content/contributor_detail.html",

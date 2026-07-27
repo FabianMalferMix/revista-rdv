@@ -70,6 +70,25 @@ a{color:var(--accent); text-underline-offset:3px}
 .collection-list h2 a{text-decoration:none; color:var(--ink)}
 .collection-list h2 a:hover{color:var(--accent)}
 
+/* Integrantes */
+.member-grid{list-style:none; padding:0; margin:0;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:22px}
+.member-card a{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ink)}
+.member-card a:hover .member-name{color:var(--accent)}
+.member-name{font-size:19px; font-weight:700; line-height:1.2}
+.member-role{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent)}
+.member-bio{color:var(--muted); font-size:14px; margin:4px 0 0}
+.avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
+.avatar-fallback{display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:26px; color:var(--muted)}
+.avatar-lg{width:104px; height:104px; font-size:38px; margin-bottom:6px}
+.member-head .avatar{display:flex}
+.members-strip{margin-top:44px}
+.poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--accent);
+  font-style:italic; font-size:19px; color:var(--ink)}
+.poetics p{margin:0}
+.member-about p{margin:10px 0}
+
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:clamp(30px,5vw,46px); line-height:1.08; margin:10px 0; text-wrap:balance}

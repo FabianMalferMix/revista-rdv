@@ -1,6 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 
 from .models import Article, ArticleStatus, Collection, Page, PublishStatus, Section
@@ -53,6 +54,17 @@ class PageSitemap(Sitemap):
         return reverse("content:page_detail", args=[obj.slug])
 
 
+class MemberSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.6
+
+    def items(self):
+        return Contributor.members()
+
+    def location(self, obj):
+        return reverse("people:member_detail", args=[obj.slug])
+
+
 class _ReviewsSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.4
@@ -87,6 +99,7 @@ SITEMAPS = {
     "articulos": ArticleSitemap,
     "secciones": SectionSitemap,
     "colecciones": CollectionSitemap,
+    "integrantes": MemberSitemap,
     "paginas": PageSitemap,
     "obras": WorkSitemap,
     "editoriales": PublisherSitemap,
