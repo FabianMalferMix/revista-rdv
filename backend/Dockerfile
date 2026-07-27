@@ -9,11 +9,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 WORKDIR /app
+# pip al día (corrige CVEs del propio pip) y compatible con --require-hashes.
+RUN pip install --upgrade pip
 COPY requirements.txt requirements-dev.txt ./
 
 # ── Desarrollo ────────────────────────────────────────────
 FROM base AS dev
-RUN pip install -r requirements-dev.txt
+# Lockfile con hashes: instalación reproducible y verificada.
+RUN pip install --require-hashes -r requirements-dev.txt
 COPY . .
 RUN chmod +x entrypoint.sh
 # Invocado vía bash para no depender del bit +x (el bind-mount lo sobrescribe).
@@ -22,7 +25,8 @@ CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers
 
 # ── Producción ────────────────────────────────────────────
 FROM base AS prod
-RUN pip install -r requirements.txt
+# Solo runtime, desde el lockfile con hashes (build reproducible y verificado).
+RUN pip install --require-hashes -r requirements.txt
 # Usuario sin privilegios (uid 1000): los volúmenes nuevos heredan su propiedad,
 # de modo que gunicorn puede escribir en mediafiles/private_media/staticfiles.
 RUN useradd --system --create-home --uid 1000 app \
