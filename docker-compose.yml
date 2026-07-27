@@ -70,7 +70,7 @@ services:
   # /backups es un bind-mount del host (BACKUP_DIR) para sobrevivir a `down -v` y a la
   # pérdida del disco; apúntalo a almacenamiento respaldado/externo en producción.
   backup:
-    image: postgres:16
+    build: ./infra/backup   # postgres:16 + restic (off-site) + curl (alertas)
     profiles: ["backup"]
     env_file: .env
     volumes:

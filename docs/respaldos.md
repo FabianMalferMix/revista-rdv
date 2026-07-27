@@ -21,8 +21,23 @@ Cada respaldo es una carpeta con marca de tiempo en `/backups/<YYYYmmdd-HHMMSS>/
 que los respaldos **sobrevivan a `docker compose down -v`, a un fallo de disco y a migraciones de host**.
 
 > **En producción:** `BACKUP_DIR` debe apuntar a un disco respaldado y, además, sincronizarse a
-> **almacenamiento externo** (S3/BackBlaze con `restic`/`borg`, o `aws s3 sync`). Un respaldo que vive
-> en el mismo host que la base **no es un respaldo** frente a la pérdida del host.
+> **almacenamiento externo**. Un respaldo que vive en el mismo host que la base **no es un respaldo**
+> frente a la pérdida del host. El off-site ya está implementado en `backup.sh` (restic) — ver abajo.
+
+## Off-site y alertas de fallo
+
+El sidecar (`infra/backup/`, imagen `postgres:16` + `restic` + `curl`) hace dos cosas más allá del
+respaldo local, **ambas opt-in por variables de entorno**:
+
+- **Off-site cifrado (restic).** Con `RESTIC_REPOSITORY` + `RESTIC_PASSWORD` definidos, cada respaldo
+  se sube a almacenamiento externo cifrado y deduplicado (S3/BackBlaze/rclone según el backend). El
+  repo se inicializa solo la primera vez; la retención off-site la controla `RESTIC_KEEP` (30 por
+  defecto). Sin `RESTIC_REPOSITORY` el paso se omite con un aviso.
+- **Alerta de fallo (dead-man's-switch).** Con `BACKUP_PING_URL` (p. ej. healthchecks.io), se hace
+  `GET` a la URL al terminar OK y a `<URL>/fail` si el respaldo aborta (vía `trap`). Así un sidecar
+  que falla en silencio **dispara una alerta** en lugar de pasar semanas sin backups válidos.
+
+Configúralas en `.env` (ver `.env.prod.example`).
 
 ## Ejecutar un respaldo
 
@@ -40,8 +55,9 @@ docker compose --profile backup up -d backup
 
 Alternativa: **cron del host** invocando el comando puntual (p. ej. `0 3 * * *`).
 
-**Retención:** se conservan los últimos `BACKUP_KEEP` respaldos (14 por defecto). Para retención
-tipo abuelo-padre-hijo (diarios/semanales/mensuales) y cifrado, usar `restic`/`borg` sobre `BACKUP_DIR`.
+**Retención:** local, se conservan los últimos `BACKUP_KEEP` respaldos (14 por defecto); off-site,
+`RESTIC_KEEP` (30 por defecto). restic aporta cifrado y deduplicación; para política
+abuelo-padre-hijo usar `restic forget --keep-daily/--keep-weekly/--keep-monthly`.
 
 ## Restaurar
 
@@ -79,5 +95,8 @@ docker compose up -d                                                # 5. levanta
 # 6. verificar que el contenido volvió (home con artículos, adjuntos presentes)
 ```
 
-Este flujo se ejecutó y verificó al implementar este lote. **Repetir la prueba tras cualquier
-cambio en el esquema de respaldos y, en producción, de forma periódica.**
+Este flujo es el procedimiento de verificación de referencia. **Debe ejecutarse tras cualquier
+cambio en el esquema de respaldos y, en producción, de forma periódica** (idealmente automatizado:
+un job programado que restaure el último respaldo en una BD desechable y compruebe un conteo de
+filas). Un RTO/RPO objetivo (p. ej. RTO < 2 h, RPO < 24 h) debe declararse y probarse contra este
+procedimiento; hoy no está automatizado.

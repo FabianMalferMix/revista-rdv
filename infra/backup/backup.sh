@@ -1,9 +1,17 @@
 #!/usr/bin/env sh
-# Respaldo del archivo: dump de PostgreSQL (formato custom) + tar de media/private_media.
-# Se ejecuta dentro de un contenedor con pg_dump y acceso a los volúmenes y a /backups.
-# Los respaldos van a /backups, que DEBE ser un almacenamiento que sobreviva a
-# `docker compose down -v` y a la pérdida del disco (bind-mount del host / externo).
+# Respaldo del archivo: dump de PostgreSQL (formato custom) + tar de media/private_media,
+# con sincronización OFF-SITE opcional (restic) y ALERTA de fallo (ping healthchecks).
+# Se ejecuta dentro de un contenedor con pg_dump/restic/curl y acceso a los volúmenes.
 set -eu
+
+# ── Alerta de fallo (dead-man's-switch tipo healthchecks.io) ──
+# Si BACKUP_PING_URL está definido: se hace GET a esa URL al terminar OK, y a
+# "<URL>/fail" si el respaldo aborta por cualquier motivo (set -e + trap EXIT).
+PING="${BACKUP_PING_URL:-}"
+notify_fail() {
+  [ -n "$PING" ] && curl -fsS -m 10 --retry 3 "${PING%/}/fail" >/dev/null 2>&1 || true
+}
+trap notify_fail EXIT INT TERM
 
 TS=$(date +%Y%m%d-%H%M%S)
 DEST="/backups/$TS"
@@ -18,7 +26,21 @@ echo "→ archivando volúmenes de medios"
 tar czf "$DEST/media.tar.gz" -C /volumes/media . 2>/dev/null || echo "  (media vacío)"
 tar czf "$DEST/private_media.tar.gz" -C /volumes/private_media . 2>/dev/null || echo "  (private_media vacío)"
 
-# Retención: conservar los últimos BACKUP_KEEP respaldos (rotación diaria simple).
+# ── Off-site (opcional pero recomendado) ──
+# Con RESTIC_REPOSITORY + RESTIC_PASSWORD definidos, sube el respaldo a almacenamiento
+# externo cifrado y deduplicado (S3/BackBlaze/rclone/… según el backend de restic).
+# Sin RESTIC_REPOSITORY el paso se omite (un respaldo solo local NO protege ante la
+# pérdida del host).
+if [ -n "${RESTIC_REPOSITORY:-}" ]; then
+  echo "→ off-site (restic → $RESTIC_REPOSITORY)"
+  restic snapshots >/dev/null 2>&1 || restic init          # inicializa el repo la 1ª vez
+  restic backup --tag resenas --host "${RESTIC_HOST:-resenas}" "$DEST"
+  restic forget --prune --keep-last "${RESTIC_KEEP:-30}" >/dev/null
+else
+  echo "  (off-site desactivado: define RESTIC_REPOSITORY para activarlo)"
+fi
+
+# Retención local: conservar los últimos BACKUP_KEEP respaldos (rotación diaria simple).
 KEEP="${BACKUP_KEEP:-14}"
 ls -1dt /backups/*/ 2>/dev/null | tail -n "+$((KEEP + 1))" | while read -r old; do
   echo "→ purgando respaldo antiguo: $old"
@@ -26,3 +48,7 @@ ls -1dt /backups/*/ 2>/dev/null | tail -n "+$((KEEP + 1))" | while read -r old; 
 done
 
 echo "✓ respaldo completo en $DEST ($(du -sh "$DEST" 2>/dev/null | cut -f1))"
+
+# Éxito: desarma el trap de fallo y avisa OK.
+trap - EXIT INT TERM
+[ -n "$PING" ] && curl -fsS -m 10 --retry 3 "$PING" >/dev/null 2>&1 || true
