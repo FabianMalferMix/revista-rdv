@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Registros — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Registros en audio y video de lecturas y recitales del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Registros</h1>
+  <p class="meta">Lecturas y recitales en audio y video · <a href="{% url 'recordings_feed' %}">Podcast RSS</a></p>
+  <ul class="recording-list">
+    {% for r in recordings %}
+      <li class="recording-card">
+        {% include "media/partials/_player.html" %}
+        <h2><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>
+        <span class="meta">
+          {{ r.get_kind_display }}
+          {% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}
+          {% if r.event %} · <a href="{{ r.event.get_absolute_url }}">{{ r.event.title }}</a>{% endif %}
+        </span>
+      </li>
+    {% empty %}
+      <li class="empty">Aún no hay registros publicados.</li>
+    {% endfor %}
+  </ul>
+
+  {% if recordings.has_other_pages %}
+    <nav class="pagination" aria-label="Paginación">
+      {% if recordings.has_previous %}<a href="?page={{ recordings.previous_page_number }}">← Anteriores</a>{% else %}<span class="disabled">← Anteriores</span>{% endif %}
+      <span class="page-of">Página {{ recordings.number }} de {{ recordings.paginator.num_pages }}</span>
+      {% if recordings.has_next %}<a href="?page={{ recordings.next_page_number }}">Siguientes →</a>{% else %}<span class="disabled">Siguientes →</span>{% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

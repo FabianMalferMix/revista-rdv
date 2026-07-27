@@ -35,6 +35,15 @@
     </section>
   {% endif %}
 
+  {% if featured_recording %}
+    <section class="featured-recording">
+      <span class="kicker">Registro destacado</span>
+      <h2><a href="{{ featured_recording.get_absolute_url }}">{{ featured_recording.title }}</a></h2>
+      {% include "media/partials/_player.html" with r=featured_recording %}
+      <p class="meta"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
+    </section>
+  {% endif %}
+
   <h1 class="page-title">Últimas publicaciones</h1>
   {% include "content/partials/_article_list.html" %}
 

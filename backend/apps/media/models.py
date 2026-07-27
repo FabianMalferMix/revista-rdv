@@ -87,6 +87,11 @@ class Recording(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+
+        return reverse("media:recording_detail", args=[self.slug])
+
     def clean(self):
         if not self.file and not self.embed_url:
             raise ValidationError("Indica un archivo o una URL de embed para el registro.")

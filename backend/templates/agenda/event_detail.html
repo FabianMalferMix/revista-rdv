@@ -50,9 +50,7 @@
         <ul class="work-list">
           {% for r in recordings %}
             <li>
-              {% if r.embed_url %}<a href="{{ r.embed_url }}" rel="noopener" target="_blank">{{ r.title }}</a>
-              {% elif r.file %}<a href="{{ r.file.url }}">{{ r.title }}</a>
-              {% else %}{{ r.title }}{% endif %}
+              <a href="{{ r.get_absolute_url }}">{{ r.title }}</a>
               <span class="muted">{{ r.get_kind_display }}</span>
             </li>
           {% endfor %}

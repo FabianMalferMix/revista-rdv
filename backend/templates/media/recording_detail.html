@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recording.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}{{ recording.description|default:recording.title }}{% endblock %}
+
+{% block opengraph %}
+  <meta property="og:type" content="video.other">
+  <meta property="og:title" content="{{ recording.title }}">
+  <meta property="og:description" content="{{ recording.description|default:recording.title }}">
+  {% if recording.poster %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ recording.poster.file.url }}">{% endif %}
+  <meta name="twitter:card" content="{% if recording.poster %}summary_large_image{% else %}summary{% endif %}">
+{% endblock %}
+
+{% block content %}
+  <article>
+    <header class="index-head">
+      <span class="kicker">Registro · {{ recording.get_kind_display }}</span>
+      <h1>{{ recording.title }}</h1>
+      <p class="meta">
+        {% if recording.recorded_on %}{{ recording.recorded_on|date:"j M Y" }}{% endif %}
+        {% if recording.event %} · <a href="{{ recording.event.get_absolute_url }}">{{ recording.event.title }}</a>{% endif %}
+      </p>
+    </header>
+
+    {% include "media/partials/_player.html" with r=recording %}
+
+    {% if recording.description %}<div class="member-about">{{ recording.description|linebreaks }}</div>{% endif %}
+
+    {% with people=recording.participants.all %}
+      {% if people %}
+        <section>
+          <h2 class="subhead">Participan</h2>
+          <p class="meta">
+            {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+          </p>
+        </section>
+      {% endif %}
+    {% endwith %}
+  </article>
+{% endblock %}
