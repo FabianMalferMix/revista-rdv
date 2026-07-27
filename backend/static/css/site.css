@@ -182,6 +182,36 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   border-radius:4px; background:#fff}
 .partners-strip{border-top:1px solid var(--border); padding-top:14px}
 
+/* Hero de portada (CTA hacia gestores) */
+.hero{margin:26px 0 4px; padding-bottom:18px; border-bottom:1px solid var(--border)}
+.hero-tagline{font-size:clamp(19px,3vw,24px); font-style:italic; margin:0 0 14px; text-wrap:balance}
+.hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:0}
+.btn-primary{background:var(--accent); color:var(--paper)}
+.btn-primary:hover{opacity:.9}
+
+/* Dossier / kit de prensa (pantalla + impresión) */
+.dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}
+.dossier-toolbar .btn{cursor:pointer; font-family:var(--mono); background:none}
+.dossier-toolbar .btn:hover{background:var(--accent); color:var(--paper)}
+.dossier-head{padding:26px 0 10px; border-bottom:2px solid var(--ink)}
+.dossier-head h1{font-size:clamp(30px,5vw,44px); margin:0 0 6px}
+.dossier-section{margin:26px 0}
+.dossier-members{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px}
+.dossier-members .dek{margin:2px 0 0}
+.dossier-list-plain{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px}
+.dossier-contact{padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:4px}
+
+@media print{
+  .masthead, .site-foot, #search-results, .no-print{display:none !important}
+  body{background:#fff; color:#000; font-size:12pt}
+  .wrap{max-width:none; padding:0}
+  a{color:#000; text-decoration:none}
+  .dossier-contact{border:1px solid #999; background:#fff}
+  .dossier-section{break-inside:avoid}
+  .stats-strip{border-bottom:1px solid #999}
+  .press-quote{border-left-color:#000}
+}
+
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:clamp(30px,5vw,46px); line-height:1.08; margin:10px 0; text-wrap:balance}

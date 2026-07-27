@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Dossier — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Kit de prensa del colectivo: quiénes somos, trayectoria, publicaciones y contacto.{% endblock %}
+
+{% block content %}
+<article class="dossier-doc">
+  <div class="no-print dossier-toolbar">
+    <button class="btn" onclick="window.print()">Imprimir / guardar como PDF</button>
+    {% if profile.dossier_pdf %}
+      <a class="btn" href="{{ profile.dossier_pdf.url }}">Descargar PDF maquetado</a>
+    {% endif %}
+  </div>
+
+  <header class="dossier-head">
+    <h1>{{ profile.name|default:"Colectivo" }}</h1>
+    {% if profile.tagline %}<p class="dek">{{ profile.tagline }}</p>{% endif %}
+    <p class="meta">
+      {% if profile.location %}{{ profile.location }} · {% endif %}
+      {% if profile.founded_year %}desde {{ profile.founded_year }} · {% endif %}
+      {{ request.scheme }}://{{ request.get_host }}
+    </p>
+  </header>
+
+  {% if profile.manifesto %}
+    <section class="dossier-section">
+      <h2 class="subhead">Quiénes somos</h2>
+      {{ profile.manifesto|linebreaks }}
+    </section>
+  {% endif %}
+
+  <section class="dossier-section">
+    <h2 class="subhead">En números</h2>
+    <ul class="stats-strip">
+      {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
+      <li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }}</li>
+      {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</li>{% endif %}
+      {% if stats.festivals %}<li><strong>{{ stats.festivals }}</strong> festival{{ stats.festivals|pluralize:"es" }}/ferias</li>{% endif %}
+    </ul>
+  </section>
+
+  {% if members %}
+    <section class="dossier-section">
+      <h2 class="subhead">Integrantes</h2>
+      <ul class="dossier-members">
+        {% for m in members %}
+          <li>
+            <strong>{{ m.display_name }}</strong>{% if m.role %} · {{ m.role }}{% endif %}
+            {% if m.short_bio %}<p class="dek">{{ m.short_bio }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if events or milestones %}
+    <section class="dossier-section">
+      <h2 class="subhead">Trayectoria destacada</h2>
+      <ul class="dossier-list-plain">
+        {% for m in milestones %}
+          <li><strong>{{ m.year }}</strong> — {{ m.title }}</li>
+        {% endfor %}
+        {% for e in events %}
+          <li><strong>{{ e.starts_at|date:"Y" }}</strong> — {{ e.title }}{% if e.is_external and e.host %} ({{ e.host }}){% endif %}{% if e.city %}, {{ e.city }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+      <p class="meta no-print"><a href="{% url 'agenda:trayectoria' %}">Trayectoria completa →</a></p>
+    </section>
+  {% endif %}
+
+  {% if publications %}
+    <section class="dossier-section">
+      <h2 class="subhead">Publicaciones</h2>
+      <ul class="dossier-list-plain">
+        {% for pub in publications %}
+          <li>
+            <strong>{{ pub.title }}</strong> ({{ pub.get_kind_display|lower }}{% if pub.year %}, {{ pub.year }}{% endif %}{% if pub.publisher %}, {{ pub.publisher.name }}{% endif %})
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if mentions %}
+    <section class="dossier-section">
+      <h2 class="subhead">Prensa</h2>
+      {% for m in mentions %}
+        <blockquote class="press-quote">«{{ m.quote }}» <cite>— {{ m.outlet }}{% if m.published_on %}, {{ m.published_on|date:"Y" }}{% endif %}</cite></blockquote>
+      {% endfor %}
+    </section>
+  {% endif %}
+
+  {% if partners %}
+    <section class="dossier-section">
+      <h2 class="subhead">Con el apoyo de</h2>
+      <p>{% for p in partners %}{{ p.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+    </section>
+  {% endif %}
+
+  <section class="dossier-section dossier-contact">
+    <h2 class="subhead">Contacto</h2>
+    <p>
+      {% if profile.booking_email %}<strong>Gestión y contrataciones:</strong> {{ profile.booking_email }}<br>{% endif %}
+      {% if profile.general_email %}<strong>General:</strong> {{ profile.general_email }}<br>{% endif %}
+      {% if profile.phone %}<strong>Teléfono:</strong> {{ profile.phone }}<br>{% endif %}
+      {% for link in profile.social_links.all %}{{ link.platform }}: {{ link.url }}<br>{% endfor %}
+    </p>
+  </section>
+</article>
+{% endblock %}
