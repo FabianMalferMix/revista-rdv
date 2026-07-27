@@ -21,7 +21,9 @@ services:
 
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    # noeviction: como broker de Celery, Redis NUNCA debe descartar tareas encoladas
+    # bajo presión de memoria (rechaza escrituras en su lugar). No se usa como caché.
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
     volumes:
       - redisdata:/data
     healthcheck:
