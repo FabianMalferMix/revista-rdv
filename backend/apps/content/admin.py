@@ -101,7 +101,19 @@ class EditorialItemAdmin(admin.ModelAdmin):
     acciones de transición; las subclases solo declaran campos e inlines.
     """
 
-    actions = ["do_submit", "do_accept", "do_publish", "do_archive"]
+    # Todo cambio de estado pasa por estas acciones (perform_transition, con guardas
+    # de rol/estado y bitácora). El desplegable `status` es readonly (ver get_readonly_fields).
+    actions = [
+        "do_submit",
+        "do_request_changes",
+        "do_accept",
+        "do_reject",
+        "do_schedule",
+        "do_publish",
+        "do_unpublish",
+        "do_archive",
+        "do_restore",
+    ]
 
     # ── Permisos por objeto y estado ─────────────────────────
     def save_model(self, request, obj, form, change):
@@ -127,10 +139,12 @@ class EditorialItemAdmin(admin.ModelAdmin):
         return is_editor(request.user)
 
     def get_readonly_fields(self, request, obj=None):
-        ro = list(self.readonly_fields)
+        # `status` es readonly SIEMPRE (también para editores): solo cambia por las
+        # acciones de transición, que aplican guardas y dejan rastro en la bitácora.
+        ro = [*self.readonly_fields, "status"]
         if not is_editor(request.user):
-            # El autor no cambia estado/owner a mano: solo por el flujo editorial.
-            ro += ["status", "published_at", "owner"]
+            # El autor tampoco toca la fecha de publicación ni el dueño.
+            ro += ["published_at", "owner"]
         return ro
 
     def _run(self, request, queryset, name):
@@ -149,17 +163,37 @@ class EditorialItemAdmin(admin.ModelAdmin):
     def do_submit(self, request, queryset):
         self._run(request, queryset, "submit")
 
+    @admin.action(description="Pedir cambios")
+    def do_request_changes(self, request, queryset):
+        self._run(request, queryset, "request_changes")
+
     @admin.action(description="Aceptar")
     def do_accept(self, request, queryset):
         self._run(request, queryset, "accept")
+
+    @admin.action(description="Rechazar")
+    def do_reject(self, request, queryset):
+        self._run(request, queryset, "reject")
+
+    @admin.action(description="Programar (usa la fecha de publicación indicada)")
+    def do_schedule(self, request, queryset):
+        self._run(request, queryset, "schedule")
 
     @admin.action(description="Publicar")
     def do_publish(self, request, queryset):
         self._run(request, queryset, "publish")
 
+    @admin.action(description="Despublicar (volver a borrador)")
+    def do_unpublish(self, request, queryset):
+        self._run(request, queryset, "unpublish")
+
     @admin.action(description="Archivar")
     def do_archive(self, request, queryset):
         self._run(request, queryset, "archive")
+
+    @admin.action(description="Restaurar (archivado → publicado)")
+    def do_restore(self, request, queryset):
+        self._run(request, queryset, "restore")
 
 
 @admin.register(Article)

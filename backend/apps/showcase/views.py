@@ -43,7 +43,7 @@ def dossier(request):
     from apps.agenda.views import stats
     from apps.people.models import Contributor
 
-    profile = SiteProfile.objects.prefetch_related("social_links").first()
+    profile = SiteProfile.load()
     return render(
         request,
         "showcase/dossier.html",

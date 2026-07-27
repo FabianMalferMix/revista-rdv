@@ -8,10 +8,10 @@ from .models import Event, Milestone
 
 def stats():
     """Números de trayectoria (para /trayectoria/ y la portada)."""
-    profile = SiteProfile.objects.first()
+    profile = SiteProfile.load()
     past = Event.past()
     years = None
-    if profile and profile.founded_year:
+    if profile.founded_year:
         years = max(timezone.now().year - profile.founded_year, 1)
     return {
         "years": years,
