@@ -80,6 +80,8 @@
         <label for="news-email">Novedades para prensa y gestores:</label>
         <input id="news-email" type="email" name="email" placeholder="tu@correo.cl" required>
         <button class="btn" type="submit">Suscribirme</button>
+        <span class="news-consent">Confirmamos por correo (doble opt-in). Al suscribirte aceptas la
+          <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.</span>
       </form>
       <p class="foot-links">
         {% if site_profile.booking_email %}
@@ -94,6 +96,11 @@
         <a href="{% url 'submissions:submit' %}">Convocatorias</a> ·
         <a href="{% url 'feed' %}">RSS</a> ·
         <a href="{% url 'recordings_feed' %}">Podcast</a>
+      </p>
+      <p class="foot-legal">
+        <a href="{% url 'content:page_detail' 'privacidad' %}">Privacidad</a> ·
+        <a href="{% url 'content:page_detail' 'cookies' %}">Cookies</a> ·
+        <a href="{% url 'content:page_detail' 'terminos' %}">Términos y derechos</a>
       </p>
     </div>
   </footer>
