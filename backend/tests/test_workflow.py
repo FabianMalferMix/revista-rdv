@@ -78,3 +78,29 @@ def test_publish_due_items_task(make_article):
     article.refresh_from_db()
     assert published >= 1
     assert article.status == S.PUBLISHED
+
+
+def test_publish_due_items_is_idempotent(make_article):
+    # Una pieza vencida se publica una vez; una segunda corrida no la re-publica
+    # ni duplica la bitácora (idempotencia contra doble beat / reintento acks_late).
+    article = make_article(status=S.SCHEDULED)
+    article.published_at = timezone.now() - timedelta(minutes=1)
+    article.save(update_fields=["published_at"])
+
+    assert publish_due_items() == 1
+    assert publish_due_items() == 0
+    assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
+
+
+def test_perform_transition_rechecks_state_under_lock(editor, make_article):
+    # Dos instancias de la misma pieza; una queda obsoleta en memoria. Tras publicar
+    # por una vía, el re-chequeo autoritativo bajo lock frena la segunda transición
+    # y no duplica la bitácora (cierre del TOCTOU de perform_transition).
+    article = make_article(status=S.SCHEDULED)
+    stale = type(article).objects.get(pk=article.pk)
+
+    workflow.perform_transition(article, "publish", editor)
+    with pytest.raises(ValueError):
+        workflow.perform_transition(stale, "publish", editor)
+
+    assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
