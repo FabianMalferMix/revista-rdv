@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.people",
     "apps.reviews",
     "apps.content",
+    "apps.showcase",
     "apps.community",
     "apps.submissions",
 ]
@@ -87,6 +88,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.content.context_processors.nav",
+                "apps.showcase.context_processors.site_profile",
             ],
         },
     },

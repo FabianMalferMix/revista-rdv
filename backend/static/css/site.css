@@ -61,14 +61,14 @@ a{color:var(--accent); text-underline-offset:3px}
 .meta a:hover{color:var(--accent)}
 .empty{color:var(--muted); font-style:italic; padding:18px 0; list-style:none}
 
-/* Listas de obras y dosieres */
-.work-list, .dossier-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px}
+/* Listas de obras y colecciones */
+.work-list, .collection-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px}
 .work-list li{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
 .work-list a{text-decoration:none; font-size:17px}
 .muted{color:var(--muted); font-family:var(--mono); font-size:12px}
-.dossier-list h2{margin:0 0 4px; font-size:22px}
-.dossier-list h2 a{text-decoration:none; color:var(--ink)}
-.dossier-list h2 a:hover{color:var(--accent)}
+.collection-list h2{margin:0 0 4px; font-size:22px}
+.collection-list h2 a{text-decoration:none; color:var(--ink)}
+.collection-list h2 a:hover{color:var(--accent)}
 
 /* Detalle de artículo */
 .article{padding:20px 0 60px}

@@ -17,16 +17,18 @@ from apps.content.models import (
     ArticleContributor,
     ArticleStatus,
     ArticleType,
-    Dossier,
-    DossierArticle,
-    DossierStatus,
+    Collection,
+    CollectionArticle,
     Page,
+    PublishStatus,
     ReviewedWork,
     Section,
     Tag,
 )
+from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
+from apps.showcase.models import SiteProfile, SiteSocialLink
 from apps.submissions.models import Call, Submission
 
 P = "<p>{}</p>"
@@ -127,14 +129,14 @@ class Command(BaseCommand):
                 spec, sections, tags, contributors, works, editora, autor_user
             )
 
-        # ── Dosier con artículos publicados ──────────────────
-        dossier, _ = Dossier.objects.get_or_create(
+        # ── Colección con artículos publicados ───────────────
+        collection, _ = Collection.objects.get_or_create(
             slug="nuevas-voces",
             defaults={
                 "title": "Nuevas voces",
                 "description": "Un recorrido por la narrativa y poesía chilena reciente.",
                 "intro": "Cinco lecturas para entrar al año literario.",
-                "status": DossierStatus.PUBLISHED,
+                "status": PublishStatus.PUBLISHED,
                 "published_at": now - timedelta(days=1),
             },
         )
@@ -146,8 +148,8 @@ class Command(BaseCommand):
             ]
         ):
             if slug in articles:
-                DossierArticle.objects.get_or_create(
-                    dossier=dossier, article=articles[slug], defaults={"position": i}
+                CollectionArticle.objects.get_or_create(
+                    collection=collection, article=articles[slug], defaults={"position": i}
                 )
 
         # ── Comentarios (moderación) ─────────────────────────
@@ -226,8 +228,46 @@ class Command(BaseCommand):
         ]:
             Page.objects.get_or_create(
                 slug=slug,
-                defaults={"title": title, "body": html, "status": DossierStatus.PUBLISHED},
+                defaults={"title": title, "body": html, "status": PublishStatus.PUBLISHED},
             )
+
+        # ── Identidad del colectivo (SiteProfile singleton) ──
+        profile = SiteProfile.load()
+        if profile.name in ("", "Colectivo"):
+            profile.name = "Reseñas"
+            profile.tagline = "Colectivo de poesía · crítica y difusión literaria."
+            profile.manifesto = (
+                "Somos un colectivo dedicado a difundir el trabajo literario de sus integrantes: "
+                "poemas, reseñas y ensayos, además de los recitales y publicaciones que hacemos."
+            )
+            profile.founded_year = 2019
+            profile.location = "Santiago, Chile"
+            profile.general_email = "hola@resenas.cl"
+            profile.booking_email = "gestion@resenas.cl"
+            profile.save()
+        for i, (platform, url) in enumerate(
+            [("Instagram", "https://instagram.com/"), ("YouTube", "https://youtube.com/")]
+        ):
+            SiteSocialLink.objects.get_or_create(
+                profile=profile, platform=platform, defaults={"url": url, "position": i}
+            )
+
+        # ── Registro destacado (embed de ejemplo) ────────────
+        recording, _ = Recording.objects.get_or_create(
+            slug="recital-nuevas-voces",
+            defaults={
+                "title": "Recital «Nuevas voces» (registro)",
+                "kind": Recording.Kind.VIDEO,
+                "embed_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                "description": "Lectura colectiva de apertura del año.",
+                "featured": True,
+                "published": True,
+                "published_at": now - timedelta(days=1),
+            },
+        )
+        if profile.featured_recording_id is None:
+            profile.featured_recording = recording
+            profile.save(update_fields=["featured_recording"])
 
         self._summary()
 

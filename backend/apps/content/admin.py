@@ -6,8 +6,8 @@ from . import workflow
 from .models import (
     Article,
     ArticleContributor,
-    Dossier,
-    DossierArticle,
+    Collection,
+    CollectionArticle,
     EditorialNote,
     EditorialTransition,
     Page,
@@ -164,19 +164,19 @@ class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
 
 
-class DossierArticleInline(admin.TabularInline):
-    model = DossierArticle
+class CollectionArticleInline(admin.TabularInline):
+    model = CollectionArticle
     extra = 1
     autocomplete_fields = ["article"]
 
 
-@admin.register(Dossier)
-class DossierAdmin(admin.ModelAdmin):
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
     list_display = ["title", "status", "published_at"]
     list_filter = ["status"]
     search_fields = ["title"]
     prepopulated_fields = {"slug": ("title",)}
-    inlines = [DossierArticleInline]
+    inlines = [CollectionArticleInline]
 
 
 @admin.register(Page)

@@ -169,13 +169,17 @@ class ReviewedWork(models.Model):
         ]
 
 
-class DossierStatus(models.TextChoices):
+class PublishStatus(models.TextChoices):
     DRAFT = "draft", "Borrador"
     PUBLISHED = "published", "Publicado"
 
 
-class Dossier(models.Model):
-    """Dosier / especial temático (publicación híbrida)."""
+class Collection(models.Model):
+    """Colección / antología: agrupación curada de piezas (ex «dosier»).
+
+    El término «dosier» se reservó para el kit de prensa del colectivo; esta entidad
+    agrupa contenido editorial (artículos y, desde el lote de obra, poemas).
+    """
 
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
@@ -185,33 +189,35 @@ class Dossier(models.Model):
         "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     status = models.CharField(
-        max_length=20, choices=DossierStatus.choices, default=DossierStatus.DRAFT
+        max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT
     )
     published_at = models.DateTimeField(null=True, blank=True)
     articles = models.ManyToManyField(
-        Article, through="content.DossierArticle", related_name="dossiers"
+        Article, through="content.CollectionArticle", related_name="collections"
     )
 
     class Meta:
         ordering = ["-published_at"]
-        verbose_name = "dosier"
-        verbose_name_plural = "dosieres"
+        verbose_name = "colección"
+        verbose_name_plural = "colecciones"
 
     def __str__(self):
         return self.title
 
 
-class DossierArticle(models.Model):
-    """Puente Dosier ↔ Artículo. `position` = secuencia curada."""
+class CollectionArticle(models.Model):
+    """Puente Colección ↔ Artículo. `position` = secuencia curada."""
 
-    dossier = models.ForeignKey(Dossier, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["position"]
         constraints = [
-            models.UniqueConstraint(fields=["dossier", "article"], name="uniq_dossier_article")
+            models.UniqueConstraint(
+                fields=["collection", "article"], name="uniq_collection_article"
+            )
         ]
 
 
@@ -222,7 +228,7 @@ class Page(models.Model):
     title = models.CharField(max_length=255)
     body = models.TextField()
     status = models.CharField(
-        max_length=20, choices=DossierStatus.choices, default=DossierStatus.DRAFT
+        max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
