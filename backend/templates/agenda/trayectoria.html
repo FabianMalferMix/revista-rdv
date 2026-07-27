@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Trayectoria — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Recorrido del colectivo: recitales, festivales e hitos.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Trayectoria</h1>
+
+  <ul class="stats-strip">
+    {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
+    <li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>
+    {% if stats.festivals %}<li><strong>{{ stats.festivals }}</strong> festival{{ stats.festivals|pluralize:"es" }}/ferias</li>{% endif %}
+  </ul>
+
+  {% for block in timeline %}
+    <section class="timeline-year">
+      <h2 class="year-mark">{{ block.year }}</h2>
+      <ul class="timeline-items">
+        {% for m in block.milestones %}
+          <li class="milestone">
+            <span class="kicker">Hito</span>
+            <strong>{{ m.title }}</strong>
+            {% if m.description %}<p class="dek">{{ m.description }}</p>{% endif %}
+          </li>
+        {% endfor %}
+        {% for e in block.events %}
+          <li>
+            <span class="kicker">{{ e.get_type_display }}{% if e.is_external and e.host %} · {{ e.host }}{% endif %}</span>
+            <a href="{{ e.get_absolute_url }}">{{ e.title }}</a>
+            <span class="muted">{{ e.starts_at|date:"j M" }}{% if e.city %} · {{ e.city }}{% endif %}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% empty %}
+    <p class="empty">Aún no hay actividades registradas.</p>
+  {% endfor %}
+{% endblock %}

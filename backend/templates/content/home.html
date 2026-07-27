@@ -3,6 +3,26 @@
 {% block title %}Reseñas — Revista literaria{% endblock %}
 
 {% block content %}
+  {% if stats.events or stats.years %}
+    <ul class="stats-strip home-stats">
+      {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
+      {% if stats.events %}<li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>{% endif %}
+      <li><a href="{% url 'agenda:trayectoria' %}">Ver trayectoria →</a></li>
+    </ul>
+  {% endif %}
+
+  {% if next_event %}
+    <section class="next-event">
+      <span class="kicker">Próxima actividad</span>
+      <h2><a href="{{ next_event.get_absolute_url }}">{{ next_event.title }}</a></h2>
+      <p class="meta">
+        {{ next_event.starts_at|date:"l j M · H:i" }} hrs
+        {% if next_event.venue_name %} · {{ next_event.venue_name }}{% endif %}{% if next_event.city %} · {{ next_event.city }}{% endif %}
+        {% if next_event.registration_url %} · <a href="{{ next_event.registration_url }}" rel="noopener" target="_blank">Inscripción ↗</a>{% endif %}
+      </p>
+    </section>
+  {% endif %}
+
   {% if featured_poem %}
     <section class="featured-poem">
       <span class="kicker">Poema destacado</span>

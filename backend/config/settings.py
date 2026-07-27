@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "apps.reviews",
     "apps.content",
     "apps.showcase",
+    "apps.agenda",
     "apps.community",
     "apps.submissions",
 ]

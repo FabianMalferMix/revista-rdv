@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.agenda.models import Event, EventPhoto, Milestone
 from apps.community.models import Comment, NewsletterSubscriber
 from apps.content.models import (
     Article,
@@ -28,7 +29,7 @@ from apps.content.models import (
     Section,
     Tag,
 )
-from apps.media.models import Recording
+from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import SiteProfile, SiteSocialLink
@@ -378,9 +379,112 @@ class Command(BaseCommand):
             profile.featured_poem = umbral
             profile.save(update_fields=["featured_poem"])
 
+        # ── Agenda y trayectoria (eventos, galería, hitos) ───
+        events_data = [
+            {
+                "slug": "recital-nuevas-voces-lanzamiento",
+                "title": "Recital «Nuevas voces»",
+                "type": Event.Type.RECITAL,
+                "starts_at": now - timedelta(days=90),
+                "venue_name": "Casa del Libro",
+                "city": "Santiago",
+                "description": "Lectura colectiva de apertura del año, con invitados.",
+                "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
+                "photos": [
+                    ("Lectura de apertura", (29, 78, 115)),
+                    ("Público en la sala", (90, 108, 125)),
+                    ("Cierre colectivo", (140, 90, 60)),
+                ],
+            },
+            {
+                "slug": "lectura-festival-poesia-joven",
+                "title": "Lectura en Festival de Poesía Joven",
+                "type": Event.Type.FESTIVAL,
+                "starts_at": now - timedelta(days=300),
+                "city": "Valparaíso",
+                "is_external": True,
+                "host": "Festival de Poesía Joven",
+                "participants": ["Fernanda Soto", "Andrés Cáceres"],
+            },
+            {
+                "slug": "taller-el-verso-vivo",
+                "title": "Taller de escritura: el verso vivo",
+                "type": Event.Type.TALLER,
+                "starts_at": now + timedelta(days=20),
+                "venue_name": "Biblioteca de Santiago",
+                "city": "Santiago",
+                "description": "Taller abierto de escritura poética, cupos limitados.",
+                "registration_url": "https://example.com/inscripcion",
+                "featured": True,
+                "participants": ["Paula Miranda"],
+            },
+            {
+                "slug": "recital-de-invierno",
+                "title": "Recital de invierno",
+                "type": Event.Type.RECITAL,
+                "starts_at": now + timedelta(days=45),
+                "venue_name": "Café Literario",
+                "city": "Santiago",
+                "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
+            },
+        ]
+        events = {}
+        for spec in events_data:
+            event, _ = Event.objects.get_or_create(
+                slug=spec["slug"],
+                defaults={
+                    "title": spec["title"],
+                    "type": spec["type"],
+                    "starts_at": spec["starts_at"],
+                    "venue_name": spec.get("venue_name", ""),
+                    "city": spec.get("city", ""),
+                    "description": spec.get("description", ""),
+                    "is_external": spec.get("is_external", False),
+                    "host": spec.get("host", ""),
+                    "registration_url": spec.get("registration_url", ""),
+                    "featured": spec.get("featured", False),
+                    "published": True,
+                },
+            )
+            event.participants.add(*[contributors[n] for n in spec.get("participants", [])])
+            for i, (caption, color) in enumerate(spec.get("photos", [])):
+                EventPhoto.objects.get_or_create(
+                    event=event,
+                    asset=self._image(f"{spec['title']} — {caption}", color),
+                    defaults={"caption": caption, "position": i},
+                )
+            events[spec["slug"]] = event
+
+        # El registro del recital queda ligado a su evento.
+        if recording.event_id is None:
+            recording.event = events["recital-nuevas-voces-lanzamiento"]
+            recording.save(update_fields=["event"])
+
+        for year, title, desc in [
+            (2019, "Fundación del colectivo", "Primera lectura conjunta y manifiesto."),
+            (2022, "Primera plaquette colectiva", "Edición artesanal de 200 ejemplares."),
+        ]:
+            Milestone.objects.get_or_create(year=year, title=title, defaults={"description": desc})
+
         self._summary()
 
     # ─────────────────────────────────────────────────────────
+    def _image(self, alt_text, rgb):
+        """MediaAsset de demostración con imagen generada (idempotente por alt_text)."""
+        existing = MediaAsset.objects.filter(alt_text=alt_text).first()
+        if existing:
+            return existing
+        from io import BytesIO
+
+        from django.core.files.base import ContentFile
+        from PIL import Image
+
+        buffer = BytesIO()
+        Image.new("RGB", (640, 400), rgb).save(buffer, format="JPEG", quality=70)
+        asset = MediaAsset(alt_text=alt_text, credit="Archivo del colectivo")
+        asset.file.save(f"{slugify(alt_text)[:80]}.jpg", ContentFile(buffer.getvalue()), save=True)
+        return asset
+
     def _user(self, User, username, group_name):
         user, created = User.objects.get_or_create(
             username=username,
@@ -574,7 +678,8 @@ class Command(BaseCommand):
                 f"Seed listo — {Article.objects.count()} artículos "
                 f"({pub} publicados, {sched} programado), "
                 f"{Work.objects.count()} obras, {Contributor.objects.count()} colaboradores "
-                f"({members} integrantes), {Poem.objects.count()} poemas."
+                f"({members} integrantes), {Poem.objects.count()} poemas, "
+                f"{Event.objects.count()} eventos."
             )
         )
         self.stdout.write(

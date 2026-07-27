@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Galería — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Fotos de los recitales y actividades del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Galería</h1>
+  <ul class="album-grid">
+    {% for e in events %}
+      {% with cover=e.photos.first %}
+        <li class="album-card">
+          <a href="{{ e.get_absolute_url }}">
+            {% if cover %}<img src="{{ cover.asset.file.url }}" alt="{{ cover.asset.alt_text }}" loading="lazy">{% endif %}
+            <span class="album-title">{{ e.title }}</span>
+            <span class="muted">{{ e.starts_at|date:"M Y" }} · {{ e.photos.count }} foto{{ e.photos.count|pluralize }}</span>
+          </a>
+        </li>
+      {% endwith %}
+    {% empty %}
+      <li class="empty">Aún no hay álbumes publicados.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

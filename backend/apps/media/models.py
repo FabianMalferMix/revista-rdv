@@ -62,6 +62,14 @@ class Recording(models.Model):
     )
     description = models.TextField(blank=True)
     recorded_on = models.DateField(null=True, blank=True)
+    event = models.ForeignKey(
+        "agenda.Event",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="recordings",
+        help_text="Evento del que proviene el registro (opcional).",
+    )
     participants = models.ManyToManyField(
         "people.Contributor", blank=True, related_name="recordings"
     )

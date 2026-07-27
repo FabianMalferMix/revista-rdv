@@ -3,6 +3,8 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.agenda.models import Event
+from apps.agenda.views import stats as trajectory_stats
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
 
@@ -48,6 +50,8 @@ def home(request):
             "articles": _paginate(request, _published()),
             "members": Contributor.members()[:8],
             "featured_poem": featured_poem,
+            "next_event": Event.upcoming().first(),
+            "stats": trajectory_stats(),
         },
     )
 
