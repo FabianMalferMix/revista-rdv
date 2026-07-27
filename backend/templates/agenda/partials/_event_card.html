@@ -1,0 +1,17 @@
+<li class="event-card">
+  <div class="event-date">
+    <span class="event-day">{{ e.starts_at|date:"j" }}</span>
+    <span class="event-month">{{ e.starts_at|date:"b Y" }}</span>
+  </div>
+  <div class="event-info">
+    <span class="kicker">{{ e.get_type_display }}{% if e.is_external and e.host %} · {{ e.host }}{% endif %}</span>
+    <h2><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>
+    <span class="meta">
+      {{ e.starts_at|date:"j M Y · H:i" }} hrs
+      {% if e.venue_name %} · {{ e.venue_name }}{% endif %}{% if e.city %} · {{ e.city }}{% endif %}
+    </span>
+    {% if e.registration_url %}
+      <p><a class="btn" href="{{ e.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>
+    {% endif %}
+  </div>
+</li>

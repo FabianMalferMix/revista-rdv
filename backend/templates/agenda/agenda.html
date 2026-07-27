@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Agenda — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Próximos recitales, lanzamientos y talleres del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Agenda</h1>
+  <ul class="event-list">
+    {% for e in events %}
+      {% include "agenda/partials/_event_card.html" %}
+    {% empty %}
+      <li class="empty">No hay actividades anunciadas por ahora. Revisa la <a href="{% url 'agenda:trayectoria' %}">trayectoria</a>.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
