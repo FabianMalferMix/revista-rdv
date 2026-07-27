@@ -15,11 +15,14 @@ from apps.community.models import Comment, NewsletterSubscriber
 from apps.content.models import (
     Article,
     ArticleContributor,
-    ArticleStatus,
     ArticleType,
     Collection,
     CollectionArticle,
+    CollectionPoem,
+    EditorialStatus,
     Page,
+    Poem,
+    PoemContributor,
     PublishStatus,
     ReviewedWork,
     Section,
@@ -299,6 +302,82 @@ class Command(BaseCommand):
             profile.save(update_fields=["featured_recording"])
         recording.participants.add(contributors["Fernanda Soto"], contributors["Paula Miranda"])
 
+        # ── Poemas (obra propia: texto plano, versos y sangrías) ──
+        poems_data = [
+            {
+                "slug": "umbral",
+                "title": "Umbral",
+                "author": "Fernanda Soto",
+                "status": EditorialStatus.PUBLISHED,
+                "published": now - timedelta(days=3),
+                "featured": True,
+                "epigraph": "a los que llegan tarde",
+                "body": (
+                    "La casa guarda un idioma\n"
+                    "que nadie termina de hablar:\n"
+                    "\n"
+                    "    la llave que gira,\n"
+                    "    el agua que sube,\n"
+                    "    la luz que se apaga sola.\n"
+                    "\n"
+                    "Entrar es aprender de nuevo\n"
+                    "dónde duelen las paredes."
+                ),
+            },
+            {
+                "slug": "oficio-de-la-lluvia",
+                "title": "Oficio de la lluvia",
+                "author": "Paula Miranda",
+                "status": EditorialStatus.PUBLISHED,
+                "published": now - timedelta(days=7),
+                "body": (
+                    "Llueve como corrige un editor:\n"
+                    "sin apuro,\n"
+                    "        tachando lo que sobra,\n"
+                    "dejando en pie\n"
+                    "lo que de verdad moja."
+                ),
+            },
+            {
+                "slug": "borrador-de-invierno",
+                "title": "Borrador de invierno",
+                "author": "Andrés Cáceres",
+                "status": EditorialStatus.DRAFT,
+                "published": None,
+                "body": "Primer verso en frío.\n(aún en trabajo)",
+            },
+        ]
+        poems = {}
+        for spec in poems_data:
+            poem, _ = Poem.objects.get_or_create(
+                slug=spec["slug"],
+                defaults={
+                    "title": spec["title"],
+                    "epigraph": spec.get("epigraph", ""),
+                    "body": spec["body"],
+                    "status": spec["status"],
+                    "featured": spec.get("featured", False),
+                    "owner": autor_user,
+                    "published_at": spec["published"],
+                },
+            )
+            PoemContributor.objects.get_or_create(
+                poem=poem, contributor=contributors[spec["author"]], defaults={"position": 0}
+            )
+            poems[spec["slug"]] = poem
+
+        # El destacado lleva el registro del recital, entra a la colección y a la portada.
+        umbral = poems["umbral"]
+        if umbral.recording_id is None:
+            umbral.recording = recording
+            umbral.save(update_fields=["recording"])
+        CollectionPoem.objects.get_or_create(
+            collection=collection, poem=umbral, defaults={"position": 3}
+        )
+        if profile.featured_poem_id is None:
+            profile.featured_poem = umbral
+            profile.save(update_fields=["featured_poem"])
+
         self._summary()
 
     # ─────────────────────────────────────────────────────────
@@ -322,7 +401,7 @@ class Command(BaseCommand):
                 "subtitle": "El debut de Valentina Aguirre convierte el frío en método.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.PUBLISHED,
+                "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=2),
                 "featured": True,
                 "author": "Fernanda Soto",
@@ -341,7 +420,7 @@ class Command(BaseCommand):
                 "subtitle": "Ignacio Bravo escribe una geografía de la pérdida.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.PUBLISHED,
+                "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=6),
                 "featured": False,
                 "author": "Andrés Cáceres",
@@ -360,7 +439,7 @@ class Command(BaseCommand):
                 "subtitle": "El ensayo de Camila Reyes reordena nuestra cartografía crítica.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.PUBLISHED,
+                "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=12),
                 "featured": False,
                 "author": "Paula Miranda",
@@ -378,7 +457,7 @@ class Command(BaseCommand):
                 "subtitle": "Notas para una reseña que no adula ni destruye.",
                 "type": ArticleType.ENSAYO,
                 "section": "Ensayos",
-                "status": ArticleStatus.PUBLISHED,
+                "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=4),
                 "featured": True,
                 "author": "Paula Miranda",
@@ -397,7 +476,7 @@ class Command(BaseCommand):
                 "subtitle": "Hablamos sobre catálogos, riesgo y supervivencia.",
                 "type": ArticleType.ENTREVISTA,
                 "section": "Entrevistas",
-                "status": ArticleStatus.PUBLISHED,
+                "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=8),
                 "featured": False,
                 "author": "Diego Salinas",
@@ -416,7 +495,7 @@ class Command(BaseCommand):
                 "subtitle": "Programada — se publicará automáticamente en unos minutos.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.SCHEDULED,
+                "status": EditorialStatus.SCHEDULED,
                 "published": now + timedelta(minutes=2),
                 "featured": False,
                 "author": "Fernanda Soto",
@@ -434,7 +513,7 @@ class Command(BaseCommand):
                 "subtitle": "En preparación.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.DRAFT,
+                "status": EditorialStatus.DRAFT,
                 "published": None,
                 "featured": False,
                 "author": "Andrés Cáceres",
@@ -448,7 +527,7 @@ class Command(BaseCommand):
                 "subtitle": "Enviada, esperando decisión del comité.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
-                "status": ArticleStatus.IN_REVIEW,
+                "status": EditorialStatus.IN_REVIEW,
                 "published": None,
                 "featured": False,
                 "author": "Andrés Cáceres",
@@ -487,15 +566,15 @@ class Command(BaseCommand):
         return article
 
     def _summary(self):
-        pub = Article.objects.filter(status=ArticleStatus.PUBLISHED).count()
-        sched = Article.objects.filter(status=ArticleStatus.SCHEDULED).count()
+        pub = Article.objects.filter(status=EditorialStatus.PUBLISHED).count()
+        sched = Article.objects.filter(status=EditorialStatus.SCHEDULED).count()
         members = Contributor.objects.filter(is_member=True).count()
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seed listo — {Article.objects.count()} artículos "
                 f"({pub} publicados, {sched} programado), "
                 f"{Work.objects.count()} obras, {Contributor.objects.count()} colaboradores "
-                f"({members} integrantes)."
+                f"({members} integrantes), {Poem.objects.count()} poemas."
             )
         )
         self.stdout.write(

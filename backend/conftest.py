@@ -27,7 +27,7 @@ def autor(db, groups):
 @pytest.fixture
 def make_article(db):
     """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
-    from apps.content.models import Article, ArticleStatus
+    from apps.content.models import Article, EditorialStatus
 
     def _make(**kwargs):
         n = Article.objects.count()
@@ -35,9 +35,28 @@ def make_article(db):
             "slug": f"articulo-{n}",
             "title": "Título de prueba",
             "body": "palabra " * 250,
-            "status": ArticleStatus.DRAFT,
+            "status": EditorialStatus.DRAFT,
         }
         defaults.update(kwargs)
         return Article.objects.create(**defaults)
+
+    return _make
+
+
+@pytest.fixture
+def make_poem(db):
+    """Fábrica de poemas. Uso: make_poem(owner=autor, status=..., title=...)."""
+    from apps.content.models import EditorialStatus, Poem
+
+    def _make(**kwargs):
+        n = Poem.objects.count()
+        defaults = {
+            "slug": f"poema-{n}",
+            "title": "Poema de prueba",
+            "body": "Verso uno\n    verso con sangría\n\nVerso final",
+            "status": EditorialStatus.DRAFT,
+        }
+        defaults.update(kwargs)
+        return Poem.objects.create(**defaults)
 
     return _make

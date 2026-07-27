@@ -1,7 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.urls import reverse
 
-from .models import Article, ArticleStatus
+from .models import Article, EditorialStatus
 
 
 class LatestArticlesFeed(Feed):
@@ -11,7 +11,7 @@ class LatestArticlesFeed(Feed):
 
     def items(self):
         return (
-            Article.objects.filter(status=ArticleStatus.PUBLISHED)
+            Article.objects.filter(status=EditorialStatus.PUBLISHED)
             .select_related("section")
             .prefetch_related("authors")[:20]
         )

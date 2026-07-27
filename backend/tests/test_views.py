@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import ArticleStatus, ReviewedWork
+from apps.content.models import EditorialStatus, ReviewedWork
 from apps.reviews.models import Publisher, Work
 from apps.submissions.models import Submission
 
@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _publish(article):
-    article.status = ArticleStatus.PUBLISHED
+    article.status = EditorialStatus.PUBLISHED
     article.published_at = timezone.now()
     article.save()
     return article
@@ -18,7 +18,7 @@ def _publish(article):
 
 def test_home_shows_published_hides_drafts(client, make_article):
     _publish(make_article(slug="pub", title="Artículo Publicado"))
-    make_article(slug="draft", title="Artículo Borrador", status=ArticleStatus.DRAFT)
+    make_article(slug="draft", title="Artículo Borrador", status=EditorialStatus.DRAFT)
     resp = client.get(reverse("content:home"))
     assert resp.status_code == 200
     assert b"Art\xc3\xadculo Publicado" in resp.content
@@ -26,7 +26,7 @@ def test_home_shows_published_hides_drafts(client, make_article):
 
 
 def test_article_detail_404_for_draft(client, make_article):
-    draft = make_article(slug="oculto", status=ArticleStatus.DRAFT)
+    draft = make_article(slug="oculto", status=EditorialStatus.DRAFT)
     resp = client.get(reverse("content:article_detail", args=[draft.slug]))
     assert resp.status_code == 404
 

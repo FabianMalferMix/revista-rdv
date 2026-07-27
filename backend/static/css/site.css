@@ -89,6 +89,20 @@ a{color:var(--accent); text-underline-offset:3px}
 .poetics p{margin:0}
 .member-about p{margin:10px 0}
 
+/* Poemas: tipografía fiel (pre-wrap preserva versos, sangrías y espacios) */
+.poem h1{font-size:clamp(28px,5vw,40px); line-height:1.15; margin:10px 0 6px; text-wrap:balance}
+.poem-body{white-space:pre-wrap; font-size:19px; line-height:1.8; margin:30px 0;
+  overflow-x:auto}
+.poem-epigraph{font-style:italic}
+.poem-audio{margin:28px 0; padding-top:8px; border-top:1px solid var(--border)}
+.poem-audio audio{width:100%}
+.featured-poem{margin:30px 0 6px; padding:22px 24px; background:var(--surface);
+  border:1px solid var(--border); border-radius:4px}
+.featured-poem h2{margin:8px 0 4px; font-size:24px}
+.featured-poem h2 a{text-decoration:none; color:var(--ink)}
+.featured-poem h2 a:hover{color:var(--accent)}
+.poem-excerpt{font-size:17px; margin:14px 0}
+
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:clamp(30px,5vw,46px); line-height:1.08; margin:10px 0; text-wrap:balance}

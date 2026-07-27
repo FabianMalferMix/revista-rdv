@@ -4,7 +4,7 @@ from django.urls import reverse
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 
-from .models import Article, ArticleStatus, Collection, Page, PublishStatus, Section
+from .models import Article, Collection, EditorialStatus, Page, Poem, PublishStatus, Section
 
 
 class ArticleSitemap(Sitemap):
@@ -12,7 +12,7 @@ class ArticleSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Article.objects.filter(status=ArticleStatus.PUBLISHED)
+        return Article.objects.filter(status=EditorialStatus.PUBLISHED)
 
     def lastmod(self, obj):
         return obj.updated_at
@@ -30,6 +30,20 @@ class SectionSitemap(Sitemap):
 
     def location(self, obj):
         return reverse("content:section_detail", args=[obj.slug])
+
+
+class PoemSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.8
+
+    def items(self):
+        return Poem.objects.filter(status=EditorialStatus.PUBLISHED)
+
+    def lastmod(self, obj):
+        return obj.updated_at
+
+    def location(self, obj):
+        return obj.get_absolute_url()
 
 
 class CollectionSitemap(Sitemap):
@@ -97,6 +111,7 @@ class BookAuthorSitemap(_ReviewsSitemap):
 
 SITEMAPS = {
     "articulos": ArticleSitemap,
+    "poemas": PoemSitemap,
     "secciones": SectionSitemap,
     "colecciones": CollectionSitemap,
     "integrantes": MemberSitemap,

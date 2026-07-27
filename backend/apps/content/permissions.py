@@ -1,9 +1,9 @@
 """Autorización a nivel de objeto y estado para el flujo editorial."""
 
-from .models import ArticleStatus
+from .models import EditorialStatus
 
-# El autor solo puede editar su artículo en estos estados.
-EDITABLE_BY_OWNER = {ArticleStatus.DRAFT, ArticleStatus.CHANGES_REQUESTED}
+# El autor solo puede editar su pieza (artículo o poema) en estos estados.
+EDITABLE_BY_OWNER = {EditorialStatus.DRAFT, EditorialStatus.CHANGES_REQUESTED}
 
 
 def is_admin(user):
@@ -19,17 +19,17 @@ def is_editor(user):
     )
 
 
-def is_owner(user, article):
-    return user.is_authenticated and article.owner_id == user.id
+def is_owner(user, item):
+    return user.is_authenticated and item.owner_id == user.id
 
 
-def can_edit_article(user, article):
-    """El permiso depende del rol Y del estado del artículo."""
+def can_edit_item(user, item):
+    """El permiso depende del rol Y del estado de la pieza editorial."""
     if not user.is_authenticated:
         return False
     if is_editor(user):
         return True
-    return is_owner(user, article) and article.status in EDITABLE_BY_OWNER
+    return is_owner(user, item) and item.status in EDITABLE_BY_OWNER
 
 
 def can_moderate_comments(user):

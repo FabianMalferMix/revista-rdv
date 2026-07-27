@@ -21,6 +21,14 @@ class SiteProfile(models.Model):
     featured_recording = models.ForeignKey(
         "media.Recording", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
+    featured_poem = models.ForeignKey(
+        "content.Poem",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Poema destacado en la portada.",
+    )
     dossier_pdf = models.FileField(
         upload_to="dossier/",
         blank=True,

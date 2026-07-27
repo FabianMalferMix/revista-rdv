@@ -159,9 +159,9 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"{_REDIS_BASE}/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", f"{_REDIS_BASE}/1")
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
-    "publicar-articulos-programados": {
-        "task": "apps.content.tasks.publish_due_articles",
-        "schedule": 60.0,  # cada minuto
+    "publicar-piezas-programadas": {
+        "task": "apps.content.tasks.publish_due_items",
+        "schedule": 60.0,  # cada minuto (artículos y poemas)
     },
 }
 

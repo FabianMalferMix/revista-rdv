@@ -5,11 +5,11 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
 from apps.content import workflow
-from apps.content.models import ArticleStatus, EditorialTransition
-from apps.content.tasks import publish_due_articles
+from apps.content.models import EditorialStatus, EditorialTransition
+from apps.content.tasks import publish_due_items
 
 pytestmark = pytest.mark.django_db
-S = ArticleStatus
+S = EditorialStatus
 
 
 def test_author_can_submit_own(autor, make_article):
@@ -70,11 +70,11 @@ def test_available_transitions_for_author_draft(autor, make_article):
     assert workflow.available_transitions(autor, article) == ["submit"]
 
 
-def test_publish_due_articles_task(make_article):
+def test_publish_due_items_task(make_article):
     article = make_article(status=S.SCHEDULED)
     article.published_at = timezone.now() - timedelta(minutes=1)
     article.save(update_fields=["published_at"])
-    published = publish_due_articles()
+    published = publish_due_items()
     article.refresh_from_db()
     assert published >= 1
     assert article.status == S.PUBLISHED

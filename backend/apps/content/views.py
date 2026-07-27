@@ -4,13 +4,16 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.people.models import Contributor
+from apps.showcase.models import SiteProfile
 
 from .models import (
     Article,
-    ArticleStatus,
     Collection,
     CollectionArticle,
+    CollectionPoem,
+    EditorialStatus,
     Page,
+    Poem,
     PublishStatus,
     Section,
     Tag,
@@ -19,10 +22,14 @@ from .models import (
 
 def _published():
     return (
-        Article.objects.filter(status=ArticleStatus.PUBLISHED)
+        Article.objects.filter(status=EditorialStatus.PUBLISHED)
         .select_related("section")
         .prefetch_related("authors")
     )
+
+
+def _published_poems():
+    return Poem.objects.filter(status=EditorialStatus.PUBLISHED).prefetch_related("authors")
 
 
 def _paginate(request, queryset, per_page=12):
@@ -30,10 +37,18 @@ def _paginate(request, queryset, per_page=12):
 
 
 def home(request):
+    profile = SiteProfile.objects.select_related("featured_poem").first()
+    featured_poem = profile.featured_poem if profile else None
+    if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
+        featured_poem = None  # el destacado solo se muestra si está publicado
     return render(
         request,
         "content/home.html",
-        {"articles": _paginate(request, _published()), "members": Contributor.members()[:8]},
+        {
+            "articles": _paginate(request, _published()),
+            "members": Contributor.members()[:8],
+            "featured_poem": featured_poem,
+        },
     )
 
 
@@ -80,22 +95,37 @@ def collection_index(request):
     return render(request, "content/collection_index.html", {"collections": collections})
 
 
+def poem_index(request):
+    return render(
+        request, "content/poem_index.html", {"poems": _paginate(request, _published_poems())}
+    )
+
+
+def poem_detail(request, slug):
+    poem = get_object_or_404(_published_poems().select_related("recording"), slug=slug)
+    return render(request, "content/poem_detail.html", {"poem": poem})
+
+
 def collection_detail(request, slug):
     collection = get_object_or_404(Collection, slug=slug, status=PublishStatus.PUBLISHED)
-    # Orden curado (CollectionArticle.position), solo artículos publicados.
-    links = (
+    # Secuencia curada única: artículos y poemas publicados, mezclados por `position`.
+    article_links = (
         CollectionArticle.objects.filter(
-            collection=collection, article__status=ArticleStatus.PUBLISHED
+            collection=collection, article__status=EditorialStatus.PUBLISHED
         )
         .select_related("article", "article__section")
         .prefetch_related("article__authors")
-        .order_by("position")
     )
-    articles = [link.article for link in links]
+    poem_links = CollectionPoem.objects.filter(
+        collection=collection, poem__status=EditorialStatus.PUBLISHED
+    ).prefetch_related("poem__authors")
+    entries = [("article", link.position, link.article) for link in article_links]
+    entries += [("poem", link.position, link.poem) for link in poem_links]
+    items = [{"kind": kind, "object": obj} for kind, _, obj in sorted(entries, key=lambda e: e[1])]
     return render(
         request,
         "content/collection_detail.html",
-        {"collection": collection, "articles": articles},
+        {"collection": collection, "items": items},
     )
 
 

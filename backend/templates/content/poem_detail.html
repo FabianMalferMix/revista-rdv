@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poem.seo_title|default:poem.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}{{ poem.seo_description|default:poem.epigraph|default:poem.title }}{% endblock %}
+
+{% block opengraph %}
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ poem.seo_title|default:poem.title }}">
+  <meta property="og:description" content="{{ poem.seo_description|default:poem.epigraph|default:poem.title }}">
+  {% if poem.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ poem.og_image.file.url }}">{% endif %}
+  <meta property="article:published_time" content="{{ poem.published_at|date:'c' }}">
+  {% for c in poem.authors.all %}<meta property="article:author" content="{{ c.display_name }}">{% endfor %}
+  <meta name="twitter:card" content="{% if poem.og_image %}summary_large_image{% else %}summary{% endif %}">
+{% endblock %}
+
+{% block content %}
+  <article class="poem">
+    <span class="kicker">Poema</span>
+    <h1>{{ poem.title }}</h1>
+    {% if poem.epigraph %}<p class="dek poem-epigraph">{{ poem.epigraph }}</p>{% endif %}
+    <p class="meta">
+      {% for c in poem.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if poem.authors.all %} · {% endif %}{{ poem.published_at|date:"j M Y" }}
+    </p>
+
+    {# Texto plano autoescapado; pre-wrap preserva versos, sangrías y espacios. #}
+    <div class="poem-body">{{ poem.body }}</div>
+
+    {% if poem.recording %}
+      <aside class="poem-audio">
+        <h2 class="subhead">Escuchar el poema</h2>
+        {% if poem.recording.file %}
+          <audio controls preload="none" src="{{ poem.recording.file.url }}"></audio>
+        {% elif poem.recording.embed_url %}
+          <p><a href="{{ poem.recording.embed_url }}" rel="noopener" target="_blank">{{ poem.recording.title }} ↗</a></p>
+        {% endif %}
+      </aside>
+    {% endif %}
+  </article>
+{% endblock %}
