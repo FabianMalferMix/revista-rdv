@@ -11,3 +11,5 @@ Pillow>=12.3,<13
 nh3>=0.2,<1
 whitenoise>=6,<7
 sentry-sdk>=2,<3
+django-axes>=8,<9
+django-ratelimit>=4,<5

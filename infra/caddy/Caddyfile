@@ -7,6 +7,12 @@
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
+	# Corta cuerpos de request abusivos en el borde (el adjunto de envíos permite
+	# 10 MB; el margen cubre la sobrecarga multipart). Defensa antes de llegar a la app.
+	request_body {
+		max_size 12MB
+	}
+
 	# Medios servidos directamente desde el volumen (cierra A3: MEDIA en producción).
 	handle_path /media/* {
 		root * /srv/media
