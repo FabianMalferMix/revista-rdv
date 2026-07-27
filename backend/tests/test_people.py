@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import ArticleContributor, ArticleStatus
+from apps.content.models import ArticleContributor, EditorialStatus
 from apps.media.models import Recording
 from apps.people.models import Contributor
 
@@ -38,7 +38,7 @@ def test_member_detail_shows_profile_and_published_articles(client, member, make
     art = make_article(
         slug="texto-pub",
         title="Texto Publicado",
-        status=ArticleStatus.PUBLISHED,
+        status=EditorialStatus.PUBLISHED,
         published_at=timezone.now(),
     )
     ArticleContributor.objects.create(article=art, contributor=member)

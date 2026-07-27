@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core.exceptions import PermissionDenied
 
 from . import workflow
@@ -8,14 +9,17 @@ from .models import (
     ArticleContributor,
     Collection,
     CollectionArticle,
+    CollectionPoem,
     EditorialNote,
     EditorialTransition,
     Page,
+    Poem,
+    PoemContributor,
     ReviewedWork,
     Section,
     Tag,
 )
-from .permissions import can_edit_article, is_editor
+from .permissions import can_edit_item, is_editor
 
 
 class RichTextWidget(forms.Textarea):
@@ -40,6 +44,15 @@ class ArticleAdminForm(forms.ModelForm):
         widgets = {"body": RichTextWidget()}
 
 
+class PoemAdminForm(forms.ModelForm):
+    """El cuerpo del poema es texto plano (sin editor rico): lo que se escribe, queda."""
+
+    class Meta:
+        model = Poem
+        fields = "__all__"
+        widgets = {"body": forms.Textarea(attrs={"rows": 24, "class": "poem-source"})}
+
+
 class PageAdminForm(forms.ModelForm):
     class Meta:
         model = Page
@@ -53,19 +66,25 @@ class ArticleContributorInline(admin.TabularInline):
     autocomplete_fields = ["contributor"]
 
 
+class PoemContributorInline(admin.TabularInline):
+    model = PoemContributor
+    extra = 1
+    autocomplete_fields = ["contributor"]
+
+
 class ReviewedWorkInline(admin.TabularInline):
     model = ReviewedWork
     extra = 1
     autocomplete_fields = ["work"]
 
 
-class EditorialNoteInline(admin.TabularInline):
+class EditorialNoteInline(GenericTabularInline):
     model = EditorialNote
     extra = 1
     readonly_fields = ["created_at"]
 
 
-class EditorialTransitionInline(admin.TabularInline):
+class EditorialTransitionInline(GenericTabularInline):
     model = EditorialTransition
     extra = 0
     can_delete = False
@@ -75,22 +94,13 @@ class EditorialTransitionInline(admin.TabularInline):
         return False
 
 
-@admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
-    form = ArticleAdminForm
-    list_display = ["title", "type", "status", "featured", "published_at"]
-    list_filter = ["status", "type", "featured", "section"]
-    search_fields = ["title", "subtitle", "body"]
-    prepopulated_fields = {"slug": ("title",)}
-    autocomplete_fields = ["section", "owner", "cover_image", "og_image"]
-    filter_horizontal = ["tags"]
-    readonly_fields = ["reading_time", "created_at", "updated_at"]
-    inlines = [
-        ArticleContributorInline,
-        ReviewedWorkInline,
-        EditorialNoteInline,
-        EditorialTransitionInline,
-    ]
+class EditorialItemAdmin(admin.ModelAdmin):
+    """Base para piezas del flujo editorial (Article, Poem).
+
+    Concentra los permisos por objeto y estado, el dueño automático y las
+    acciones de transición; las subclases solo declaran campos e inlines.
+    """
+
     actions = ["do_submit", "do_accept", "do_publish", "do_archive"]
 
     # ── Permisos por objeto y estado ─────────────────────────
@@ -111,7 +121,7 @@ class ArticleAdmin(admin.ModelAdmin):
             return super().has_change_permission(request)
         if is_editor(request.user):
             return True
-        return can_edit_article(request.user, obj)
+        return can_edit_item(request.user, obj)
 
     def has_delete_permission(self, request, obj=None):
         return is_editor(request.user)
@@ -125,14 +135,15 @@ class ArticleAdmin(admin.ModelAdmin):
 
     def _run(self, request, queryset, name):
         ok = 0
-        for article in queryset:
+        for item in queryset:
             try:
-                workflow.perform_transition(article, name, request.user)
+                workflow.perform_transition(item, name, request.user)
                 ok += 1
             except (PermissionDenied, ValueError) as exc:
-                self.message_user(request, f"{article}: {exc}", level=messages.WARNING)
+                self.message_user(request, f"{item}: {exc}", level=messages.WARNING)
         if ok:
-            self.message_user(request, f"{ok} artículo(s) → '{name}'.", level=messages.SUCCESS)
+            label = self.model._meta.verbose_name_plural
+            self.message_user(request, f"{ok} {label} → '{name}'.", level=messages.SUCCESS)
 
     @admin.action(description="Enviar a revisión")
     def do_submit(self, request, queryset):
@@ -149,6 +160,40 @@ class ArticleAdmin(admin.ModelAdmin):
     @admin.action(description="Archivar")
     def do_archive(self, request, queryset):
         self._run(request, queryset, "archive")
+
+
+@admin.register(Article)
+class ArticleAdmin(EditorialItemAdmin):
+    form = ArticleAdminForm
+    list_display = ["title", "type", "status", "featured", "published_at"]
+    list_filter = ["status", "type", "featured", "section"]
+    search_fields = ["title", "subtitle", "body"]
+    prepopulated_fields = {"slug": ("title",)}
+    autocomplete_fields = ["section", "owner", "cover_image", "og_image"]
+    filter_horizontal = ["tags"]
+    readonly_fields = ["reading_time", "created_at", "updated_at"]
+    inlines = [
+        ArticleContributorInline,
+        ReviewedWorkInline,
+        EditorialNoteInline,
+        EditorialTransitionInline,
+    ]
+
+
+@admin.register(Poem)
+class PoemAdmin(EditorialItemAdmin):
+    form = PoemAdminForm
+    list_display = ["title", "status", "featured", "published_at"]
+    list_filter = ["status", "featured"]
+    search_fields = ["title", "body"]
+    prepopulated_fields = {"slug": ("title",)}
+    autocomplete_fields = ["owner", "recording", "og_image"]
+    readonly_fields = ["created_at", "updated_at"]
+    inlines = [
+        PoemContributorInline,
+        EditorialNoteInline,
+        EditorialTransitionInline,
+    ]
 
 
 @admin.register(Section)
@@ -170,13 +215,19 @@ class CollectionArticleInline(admin.TabularInline):
     autocomplete_fields = ["article"]
 
 
+class CollectionPoemInline(admin.TabularInline):
+    model = CollectionPoem
+    extra = 1
+    autocomplete_fields = ["poem"]
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ["title", "status", "published_at"]
     list_filter = ["status"]
     search_fields = ["title"]
     prepopulated_fields = {"slug": ("title",)}
-    inlines = [CollectionArticleInline]
+    inlines = [CollectionArticleInline, CollectionPoemInline]
 
 
 @admin.register(Page)

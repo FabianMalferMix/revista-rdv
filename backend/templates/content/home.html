@@ -3,6 +3,18 @@
 {% block title %}Reseñas — Revista literaria{% endblock %}
 
 {% block content %}
+  {% if featured_poem %}
+    <section class="featured-poem">
+      <span class="kicker">Poema destacado</span>
+      <h2><a href="{{ featured_poem.get_absolute_url }}">{{ featured_poem.title }}</a></h2>
+      <div class="poem-body poem-excerpt">{{ featured_poem.body|truncatechars:280 }}</div>
+      <p class="meta">
+        {% for c in featured_poem.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        · <a href="{{ featured_poem.get_absolute_url }}">Leer completo →</a>
+      </p>
+    </section>
+  {% endif %}
+
   <h1 class="page-title">Últimas publicaciones</h1>
   {% include "content/partials/_article_list.html" %}
 

@@ -3,10 +3,10 @@ from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory
 
 from apps.content.admin import ArticleAdmin
-from apps.content.models import Article, ArticleStatus
+from apps.content.models import Article, EditorialStatus
 
 pytestmark = pytest.mark.django_db
-S = ArticleStatus
+S = EditorialStatus
 
 
 def _admin():

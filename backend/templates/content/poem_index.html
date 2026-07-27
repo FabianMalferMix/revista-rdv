@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Poemas — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Poemas de los integrantes del colectivo.{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">Poemas</h1>
+  {% include "content/partials/_poem_list.html" %}
+{% endblock %}

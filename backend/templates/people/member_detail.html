@@ -39,6 +39,17 @@
     </section>
   {% endif %}
 
+  {% if poems %}
+    <section>
+      <h2 class="subhead">Poemas</h2>
+      <ul class="article-list">
+        {% for p in poems %}
+          {% include "content/partials/_poem_card.html" %}
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
   {% if recordings %}
     <section>
       <h2 class="subhead">Registros</h2>

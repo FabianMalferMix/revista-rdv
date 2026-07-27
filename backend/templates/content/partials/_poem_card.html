@@ -1,0 +1,8 @@
+<li class="article-card poem-card">
+  <span class="kicker">Poema</span>
+  <h2><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h2>
+  {% if p.epigraph %}<p class="dek poem-epigraph">{{ p.epigraph }}</p>{% endif %}
+  <span class="meta">
+    {% for c in p.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.authors.all %} · {% endif %}{{ p.published_at|date:"j M Y" }}{% if p.recording %} · ♫ con registro{% endif %}
+  </span>
+</li>

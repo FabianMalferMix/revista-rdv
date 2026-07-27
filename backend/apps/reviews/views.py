@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404, render
 
-from apps.content.models import Article, ArticleStatus
+from apps.content.models import Article, EditorialStatus
 
 from .models import BookAuthor, Publisher, Work
 
 
 def _reviews_of(work_ids):
     return (
-        Article.objects.filter(status=ArticleStatus.PUBLISHED, reviewed_works__in=work_ids)
+        Article.objects.filter(status=EditorialStatus.PUBLISHED, reviewed_works__in=work_ids)
         .select_related("section")
         .prefetch_related("authors")
         .distinct()

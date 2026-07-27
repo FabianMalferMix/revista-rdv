@@ -11,7 +11,7 @@ class SiteSocialLinkInline(admin.TabularInline):
 @admin.register(SiteProfile)
 class SiteProfileAdmin(admin.ModelAdmin):
     inlines = [SiteSocialLinkInline]
-    autocomplete_fields = ["featured_recording"]
+    autocomplete_fields = ["featured_recording", "featured_poem"]
 
     def has_add_permission(self, request):
         # Singleton: solo se puede crear si aún no existe.

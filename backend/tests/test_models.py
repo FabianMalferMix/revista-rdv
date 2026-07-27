@@ -3,7 +3,7 @@ from django.contrib.postgres.search import SearchQuery
 from django.db import IntegrityError
 
 from apps.community.models import Comment
-from apps.content.models import Article, ArticleStatus
+from apps.content.models import Article, EditorialStatus
 from apps.people.models import Contributor, SocialLink
 
 pytestmark = pytest.mark.django_db
@@ -20,7 +20,7 @@ def test_reading_time_minimum_one(make_article):
 
 
 def test_search_vector_populated(make_article):
-    article = make_article(title="Reseña de poesía chilena", status=ArticleStatus.PUBLISHED)
+    article = make_article(title="Reseña de poesía chilena", status=EditorialStatus.PUBLISHED)
     match = Article.objects.filter(search_vector=SearchQuery("poesía", config="spanish"))
     assert article in match
 
