@@ -3,24 +3,47 @@
 {% block content %}
   <section class="hero">
     {% if site_profile.tagline %}<p class="hero-tagline">{{ site_profile.tagline }}</p>{% endif %}
+    {% if site_profile.manifesto %}
+      <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
+        <a href="{% url 'showcase:dossier' %}">Conócenos →</a></p>
+    {% endif %}
     <p class="hero-ctas">
       <a class="btn btn-primary" href="{% if site_profile.dossier_pdf %}{{ site_profile.dossier_pdf.url }}{% else %}{% url 'showcase:dossier' %}{% endif %}">Descargar dossier</a>
       {% if site_profile.booking_email %}
         <a class="btn" href="mailto:{{ site_profile.booking_email }}">Contacto de gestión</a>
       {% endif %}
     </p>
+    {% if stats.events or stats.years %}
+      <ul class="stats-strip hero-stats">
+        {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
+        {% if stats.events %}<li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>{% endif %}
+        {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</li>{% endif %}
+        <li><a href="{% url 'agenda:trayectoria' %}">Ver trayectoria →</a></li>
+      </ul>
+    {% endif %}
   </section>
 
-  {% if stats.events or stats.years %}
-    <ul class="stats-strip home-stats">
-      {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
-      {% if stats.events %}<li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>{% endif %}
-      <li><a href="{% url 'agenda:trayectoria' %}">Ver trayectoria →</a></li>
-    </ul>
+  {% if featured %}
+    <section class="home-block band featured">
+      {% if featured.kind == "recording" %}
+        <span class="kicker">Registro destacado</span>
+        <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
+        {% include "media/partials/_player.html" with r=featured.object %}
+        <p class="meta"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
+      {% else %}
+        <span class="kicker">Poema destacado</span>
+        <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
+        <div class="poem-body poem-excerpt">{{ featured.object.body|truncatechars:280 }}</div>
+        <p class="meta">
+          {% for c in featured.object.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+          · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>
+        </p>
+      {% endif %}
+    </section>
   {% endif %}
 
   {% if next_event %}
-    <section class="next-event">
+    <section class="home-block next-event">
       <span class="kicker">Próxima actividad</span>
       <h2><a href="{{ next_event.get_absolute_url }}">{{ next_event.title }}</a></h2>
       <p class="meta">
@@ -31,32 +54,28 @@
     </section>
   {% endif %}
 
-  {% if featured_poem %}
-    <section class="featured-poem">
-      <span class="kicker">Poema destacado</span>
-      <h2><a href="{{ featured_poem.get_absolute_url }}">{{ featured_poem.title }}</a></h2>
-      <div class="poem-body poem-excerpt">{{ featured_poem.body|truncatechars:280 }}</div>
-      <p class="meta">
-        {% for c in featured_poem.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-        · <a href="{{ featured_poem.get_absolute_url }}">Leer completo →</a>
-      </p>
+  {% if members %}
+    <section class="home-block band">
+      <h2 class="subhead">Integrantes</h2>
+      <ul class="member-grid">
+        {% for m in members %}
+          {% include "people/partials/_member_card.html" %}
+        {% endfor %}
+      </ul>
+      <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
     </section>
   {% endif %}
 
-  {% if featured_recording %}
-    <section class="featured-recording">
-      <span class="kicker">Registro destacado</span>
-      <h2><a href="{{ featured_recording.get_absolute_url }}">{{ featured_recording.title }}</a></h2>
-      {% include "media/partials/_player.html" with r=featured_recording %}
-      <p class="meta"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
+  {% if articles %}
+    <section class="home-block">
+      <h2 class="subhead">Textos recientes</h2>
+      {% include "content/partials/_article_list.html" %}
+      <p><a href="{% url 'content:text_archive' %}">Ver todos los textos →</a></p>
     </section>
   {% endif %}
-
-  <h1 class="page-title">Últimas publicaciones</h1>
-  {% include "content/partials/_article_list.html" %}
 
   {% if publications %}
-    <section class="members-strip">
+    <section class="home-block band">
       <h2 class="subhead">Publicaciones</h2>
       <ul class="pub-grid">
         {% for pub in publications %}
@@ -68,7 +87,7 @@
   {% endif %}
 
   {% if press_quotes %}
-    <section class="members-strip">
+    <section class="home-block">
       <h2 class="subhead">Han dicho de nosotros</h2>
       {% for m in press_quotes %}
         <blockquote class="press-quote home-quote">
@@ -80,20 +99,8 @@
     </section>
   {% endif %}
 
-  {% if members %}
-    <section class="members-strip">
-      <h2 class="subhead">Integrantes</h2>
-      <ul class="member-grid">
-        {% for m in members %}
-          {% include "people/partials/_member_card.html" %}
-        {% endfor %}
-      </ul>
-      <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
-    </section>
-  {% endif %}
-
   {% if partners %}
-    <section class="members-strip partners-strip">
+    <section class="home-block band partners-strip">
       <h2 class="subhead">Con el apoyo de</h2>
       <p class="meta">
         {% for p in partners %}{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }}</a>{% else %}{{ p.name }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}

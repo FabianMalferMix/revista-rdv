@@ -123,7 +123,7 @@ a{color:var(--accent); text-underline-offset:3px}
   font-family:var(--mono); font-size:13px; color:var(--muted); border-bottom:1px solid var(--border)}
 .stats-strip strong{font-size:20px; color:var(--ink); font-family:var(--serif); margin-right:4px}
 .home-stats{margin-top:18px}
-.next-event{margin:26px 0 4px; padding:18px 22px; border-left:3px solid var(--accent); background:var(--surface)}
+.next-event{margin:0; padding:16px 22px; border-left:3px solid var(--accent); background:var(--surface); border-radius:0 4px 4px 0}
 .next-event h2{margin:6px 0 4px; font-size:22px}
 .next-event h2 a{text-decoration:none; color:var(--ink)}
 .next-event h2 a:hover{color:var(--accent)}
@@ -180,14 +180,30 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .partner-item{display:flex; gap:14px; align-items:flex-start}
 .partner-logo{width:64px; height:64px; object-fit:contain; border:1px solid var(--border);
   border-radius:4px; background:#fff}
-.partners-strip{border-top:1px solid var(--border); padding-top:14px}
+.partners-strip .meta{font-size:13px}
 
 /* Hero de portada (CTA hacia gestores) */
-.hero{margin:26px 0 4px; padding-bottom:18px; border-bottom:1px solid var(--border)}
-.hero-tagline{font-size:clamp(19px,3vw,24px); font-style:italic; margin:0 0 14px; text-wrap:balance}
+.hero{margin:22px 0 0; padding:6px 0 24px; border-bottom:2px solid var(--ink)}
+.hero-tagline{font-size:clamp(22px,3.4vw,30px); font-style:italic; margin:0 0 12px; text-wrap:balance; line-height:1.25}
+.hero-manifesto{color:var(--muted); font-size:16px; max-width:62ch; margin:0 0 16px}
+.hero-manifesto a{white-space:nowrap}
 .hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:0}
 .btn-primary{background:var(--accent); color:var(--paper)}
 .btn-primary:hover{opacity:.9}
+.hero-stats{margin:18px 0 0; padding:0; border-bottom:0}
+
+/* Ritmo de portada: bloques con bandas alternadas a ancho completo.
+   box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin
+   provocar scroll horizontal (no usan 100vw ni overflow-x:hidden). */
+.home-block{padding:32px 0}
+.home-block > .subhead:first-child{margin-top:0}
+.band{background:var(--surface); box-shadow:0 0 0 100vmax var(--surface); clip-path:inset(0 -100vmax)}
+
+/* Destacado único, con más peso visual que las franjas secundarias. */
+.featured h2{margin:8px 0 14px; font-size:clamp(24px,3.4vw,32px); line-height:1.15}
+.featured h2 a{text-decoration:none; color:var(--ink)}
+.featured h2 a:hover{color:var(--accent)}
+.featured .poem-excerpt{font-size:18px}
 
 /* Dossier / kit de prensa (pantalla + impresión) */
 .dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}
