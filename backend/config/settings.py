@@ -175,8 +175,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 # CSP restrictiva (config.csp): con DJANGO_CSP_REPORT_ONLY=1 solo reporta, no bloquea.
 CSP_REPORT_ONLY = os.environ.get("DJANGO_CSP_REPORT_ONLY", "0") == "1"
-# El healthcheck interno pega por HTTP a /healthz/: que no se redirija a HTTPS.
-SECURE_REDIRECT_EXEMPT = [r"^healthz/?$"]
+# Las sondas internas pegan por HTTP a /healthz/ y /readyz/: que no se redirijan a HTTPS.
+SECURE_REDIRECT_EXEMPT = [r"^healthz/?$", r"^readyz/?$"]
 
 if not DEBUG:
     # Detrás de un proxy que termina TLS (nginx, etc.).
