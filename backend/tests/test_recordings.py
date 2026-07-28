@@ -105,6 +105,30 @@ def test_podcast_feed_only_audio_with_enclosure(client):
     assert audio.get_absolute_url() in content
 
 
+def test_podcast_enclosure_url_is_absolute(client):
+    """Contrato de podcast (hallazgo #07): el <enclosure> debe llevar URL ABSOLUTA
+    (esquema + host) o Apple/Spotify no descargan el audio y el episodio queda mudo."""
+    import xml.dom.minidom as minidom
+    from urllib.parse import urlparse
+
+    make_recording(
+        slug="audio-abs",
+        title="Audio Absoluto",
+        kind=Recording.Kind.AUDIO,
+        embed_url="",
+        file=SimpleUploadedFile("abs.mp3", b"ID3-fake-bytes"),
+    )
+    resp = client.get(reverse("recordings_feed"))
+    dom = minidom.parseString(resp.content)
+    enclosures = dom.getElementsByTagName("enclosure")
+    assert enclosures, "el feed debe emitir <enclosure> para audio con archivo"
+    url = enclosures[0].getAttribute("url")
+    parsed = urlparse(url)
+    assert parsed.scheme in ("http", "https"), f"enclosure no absoluto: {url}"
+    assert parsed.netloc, f"enclosure sin host: {url}"
+    assert parsed.path.startswith("/media/"), url
+
+
 def test_home_shows_featured_recording_when_published(client):
     profile = SiteProfile.load()
     rec = make_recording(slug="destacado", title="Registro En Portada")
