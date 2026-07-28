@@ -56,3 +56,13 @@ def test_purge_dry_run_deletes_nothing():
     _age(old, 300)
     call_command("purge_stale_data", days=180, dry_run=True)
     assert NewsletterSubscriber.objects.filter(pk=old.pk).exists()
+
+
+def test_purge_task_wraps_command():
+    # La tarea Celery (programada en beat, semanal) ejecuta la purga.
+    from apps.submissions.tasks import purge_stale_pii
+
+    old = NewsletterSubscriber.objects.create(email="task@x.cl", status=NS.PENDING)
+    _age(old, 300)
+    purge_stale_pii()
+    assert not NewsletterSubscriber.objects.filter(pk=old.pk).exists()

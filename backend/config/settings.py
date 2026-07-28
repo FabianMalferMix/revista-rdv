@@ -4,6 +4,8 @@ import os
 import sys
 from pathlib import Path
 
+from celery.schedules import crontab
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Seguridad ─────────────────────────────────────────────
@@ -200,6 +202,10 @@ CELERY_BEAT_SCHEDULE = {
     "publicar-piezas-programadas": {
         "task": "apps.content.tasks.publish_due_items",
         "schedule": 60.0,  # cada minuto (artículos y poemas)
+    },
+    "purgar-pii-caducada": {
+        "task": "apps.submissions.tasks.purge_stale_pii",
+        "schedule": crontab(hour=4, minute=30, day_of_week=1),  # lunes 04:30 (minimización)
     },
 }
 # En tests las tareas corren en el acto (síncronas): permite verificar el correo
