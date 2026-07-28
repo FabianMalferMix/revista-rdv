@@ -17,8 +17,21 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ site_profile.name|default:"Reseñas" }}">
     <meta property="og:description" content="{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}">
-    <meta name="twitter:card" content="summary">
+    {% if site_profile.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}">{% endif %}
+    <meta name="twitter:card" content="{% if site_profile.og_image %}summary_large_image{% else %}summary{% endif %}">
   {% endblock %}
+
+  {# Datos estructurados de la organización (site-wide). Nonce por la CSP restrictiva. #}
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/"{% if site_profile.og_image %},
+    "logo": "{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}"{% endif %}{% if site_profile.social_links.all %},
+    "sameAs": [{% for link in site_profile.social_links.all %}"{{ link.url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]{% endif %}
+  }
+  </script>
 
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   {# htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. #}
