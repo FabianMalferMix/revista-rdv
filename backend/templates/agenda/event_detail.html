@@ -70,8 +70,8 @@
                   {% responsive_img p.asset sizes="(max-width: 600px) 45vw, 280px" alt=p.caption %}
                 </a>
                 {% if p.caption %}<span class="muted">{{ p.caption }}</span>{% endif %}
-                <figure class="lightbox" id="lb-{{ event.slug }}-{{ forloop.counter }}"
-                        role="dialog" aria-modal="true" aria-label="{{ p.caption|default:p.asset.alt_text }}">
+                {# Vista ampliada honesta (CSS :target), no un modal: sin semántica de diálogo (no hay trampa de foco); la imagen lleva su alt y el figcaption la describe. #}
+                <figure class="lightbox" id="lb-{{ event.slug }}-{{ forloop.counter }}">
                   <a class="lightbox-back" href="#galeria-{{ event.slug }}" tabindex="-1" aria-label="Cerrar"></a>
                   <a class="lightbox-close" href="#galeria-{{ event.slug }}" aria-label="Cerrar">×</a>
                   {% responsive_img p.asset sizes="90vw" alt=p.caption %}
