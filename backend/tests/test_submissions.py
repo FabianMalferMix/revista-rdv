@@ -66,3 +66,19 @@ def test_rejects_oversized_file():
     form = SubmissionForm(data=_data(), files={"file": big})
     assert not form.is_valid()
     assert "file" in form.errors
+
+
+def test_submit_rate_limited_rehydrates_form(client):
+    """Al superar el rate-limit, el formulario conserva lo escrito por el usuario
+    (título y cuerpo) en vez de descartarlo — hallazgo #28."""
+    from django.urls import reverse
+
+    url = reverse("submissions:submit")
+    data = _data(title="Mi Título Único", body="Un cuerpo memorable y distinto.")
+    for _ in range(10):  # agota el rate 10/h
+        client.post(url, data)
+    resp = client.post(url, data)  # 11.º: limitado
+    content = resp.content.decode()
+    assert "demasiadas propuestas" in content
+    assert "Mi Título Único" in content  # el título vuelve rellenado
+    assert "Un cuerpo memorable y distinto." in content  # y el cuerpo

@@ -66,6 +66,42 @@ def test_subscribe_honeypot_sends_no_mail(client):
     assert len(mail.outbox) == 0
 
 
+def test_subscribe_long_email_rejected_cleanly_not_500(client):
+    """Un correo con formato válido pero de >254 caracteres se rechaza con error de
+    validación, no revienta en un HTTP 500 (DataError) al insertarse (hallazgo #03)."""
+    long_email = "a" * 250 + "@example.com"  # 262 caracteres, formato válido
+    resp = client.post(
+        reverse("community:subscribe"), {"email": long_email, "apodo": ""}, follow=True
+    )
+    assert resp.status_code == 200  # no 500
+    assert not NewsletterSubscriber.objects.filter(email=long_email).exists()
+    assert b"Revisa el correo" in resp.content
+
+
+@override_settings(EMAIL_BACKEND=LOCMEM)
+def test_subscribe_next_open_redirect_is_blocked(client):
+    """Un `next` hacia un host externo se ignora: la redirección se queda en el
+    sitio (evita el open redirect CWE-601, hallazgo #07)."""
+    resp = client.post(
+        reverse("community:subscribe"),
+        {"email": "safe@example.com", "apodo": "", "next": "https://evil.example/phish"},
+    )
+    assert resp.status_code == 302
+    assert "evil.example" not in resp["Location"]
+    assert resp["Location"] == reverse("content:home")
+
+
+@override_settings(EMAIL_BACKEND=LOCMEM)
+def test_subscribe_next_same_site_is_honored(client):
+    """Un `next` a una ruta del propio sitio sí se respeta."""
+    resp = client.post(
+        reverse("community:subscribe"),
+        {"email": "safe2@example.com", "apodo": "", "next": "/textos/"},
+    )
+    assert resp.status_code == 302
+    assert resp["Location"] == "/textos/"
+
+
 def test_legal_pages_published():
     from django.test import Client
 
