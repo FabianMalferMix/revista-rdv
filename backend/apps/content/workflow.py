@@ -64,6 +64,13 @@ def perform_transition(item, name, user, note=""):
         if locked.status not in froms:
             raise ValueError(f"No se puede '{name}' desde el estado '{locked.status}'.")
 
+        # Programar exige fecha futura: sin ella la pieza quedaría SCHEDULED para
+        # siempre (publish_due_items filtra published_at__lte=now, y NULL nunca lo cumple).
+        if name == "schedule" and (
+            locked.published_at is None or locked.published_at <= timezone.now()
+        ):
+            raise ValueError("Programar requiere una fecha de publicación futura.")
+
         from_status = locked.status
         locked.status = to_state
         if to_state == S.PUBLISHED and locked.published_at is None:

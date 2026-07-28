@@ -92,6 +92,28 @@ def test_publish_due_items_is_idempotent(make_article):
     assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
 
 
+def test_schedule_requires_future_published_at(editor, make_article):
+    # Sin fecha: rechazado (si no, quedaría SCHEDULED para siempre sin publicarse).
+    article = make_article(status=S.APPROVED)
+    assert article.published_at is None
+    with pytest.raises(ValueError):
+        workflow.perform_transition(article, "schedule", editor)
+    article.refresh_from_db()
+    assert article.status == S.APPROVED  # no transicionó
+
+    # Con fecha pasada: también rechazado.
+    article.published_at = timezone.now() - timedelta(minutes=5)
+    article.save(update_fields=["published_at"])
+    with pytest.raises(ValueError):
+        workflow.perform_transition(article, "schedule", editor)
+
+    # Con fecha futura: programa correctamente.
+    article.published_at = timezone.now() + timedelta(days=1)
+    article.save(update_fields=["published_at"])
+    workflow.perform_transition(article, "schedule", editor)
+    assert article.status == S.SCHEDULED
+
+
 def test_perform_transition_rechecks_state_under_lock(editor, make_article):
     # Dos instancias de la misma pieza; una queda obsoleta en memoria. Tras publicar
     # por una vía, el re-chequeo autoritativo bajo lock frena la segunda transición

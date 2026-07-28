@@ -55,8 +55,11 @@ class Work(models.Model):
         related_name="works",
     )
     publication_year = models.PositiveSmallIntegerField(null=True, blank=True)
-    # ISBN es clave candidata: null (no "") para permitir varias obras sin ISBN.
-    isbn = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    # ISBN es clave candidata OPCIONAL: se guarda NULL (no "") cuando falta —save() lo
+    # coacciona— para permitir varias obras sin ISBN; la unicidad se aplica solo sobre
+    # ISBN reales vía UniqueConstraint parcial (ver Meta), no con unique=True plano
+    # (que hacía chocar dos "" en el admin: IntegrityError/500).
+    isbn = models.CharField(max_length=20, null=True, blank=True)
     language = models.CharField(max_length=8, blank=True)
     cover_image = models.ForeignKey(
         "media.MediaAsset",
@@ -72,6 +75,18 @@ class Work(models.Model):
         ordering = ["title"]
         verbose_name = "obra"
         verbose_name_plural = "obras"
+        constraints = [
+            # Unicidad solo sobre ISBN reales (no NULL ni ""): clave candidata opcional.
+            models.UniqueConstraint(
+                fields=["isbn"],
+                condition=models.Q(isbn__isnull=False) & ~models.Q(isbn=""),
+                name="uniq_work_isbn",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        self.isbn = self.isbn or None  # "" → NULL: varias obras pueden no tener ISBN
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

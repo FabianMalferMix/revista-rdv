@@ -20,6 +20,10 @@ SECRET_KEY_FALLBACKS = [
     k for k in os.environ.get("DJANGO_SECRET_KEY_FALLBACKS", "").split(",") if k
 ]
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", _DEFAULT_HOSTS).split(",")
+# El healthcheck del contenedor pega a http://127.0.0.1:8000/healthz/ con Host=127.0.0.1;
+# el loopback siempre se permite (web no se publica al host y va tras Caddy, que envía el
+# Host real), para que la sonda no dé DisallowedHost→400 sin depender de DJANGO_ALLOWED_HOSTS.
+ALLOWED_HOSTS += [h for h in ("127.0.0.1", "localhost") if h not in ALLOWED_HOSTS]
 CSRF_TRUSTED_ORIGINS = [
     o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o
 ]
