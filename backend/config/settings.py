@@ -202,6 +202,23 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 60.0,  # cada minuto (artículos y poemas)
     },
 }
+# En tests las tareas corren en el acto (síncronas): permite verificar el correo
+# de confirmación por Celery sin worker. En dev/prod es asíncrono normal.
+CELERY_TASK_ALWAYS_EAGER = "pytest" in sys.modules
+
+# ── Caché ─────────────────────────────────────────────────
+# Redis en producción: los contadores de django-ratelimit se comparten entre los
+# workers de gunicorn y persisten entre recargas (db 2, distinta del broker/resultados).
+# En dev/tests, LocMem (hermético, sin dependencia externa; conftest limpia por test).
+if DEBUG:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": f"{_REDIS_BASE}/2",
+        }
+    }
 
 # ── Cabeceras de seguridad ────────────────────────────────
 SECURE_CONTENT_TYPE_NOSNIFF = True

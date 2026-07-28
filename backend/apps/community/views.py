@@ -1,7 +1,6 @@
 import secrets
 
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -11,6 +10,7 @@ from django_ratelimit.decorators import ratelimit
 
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
+from .tasks import send_confirmation_email
 
 S = NewsletterSubscriber.Status
 
@@ -54,19 +54,10 @@ def subscribe(request):
 
 
 def _send_confirmation(request, sub):
+    # Las URLs se arman con la request (host absoluto) y el envío va a Celery.
     confirm_url = request.build_absolute_uri(reverse("community:confirm", args=[sub.token]))
     unsub_url = request.build_absolute_uri(reverse("community:unsubscribe", args=[sub.token]))
-    send_mail(
-        subject="Confirma tu suscripción a las novedades",
-        message=(
-            "Gracias por suscribirte a las novedades del colectivo.\n\n"
-            f"Confirma tu suscripción aquí:\n{confirm_url}\n\n"
-            f"Si no fuiste tú, ignora este correo o date de baja:\n{unsub_url}\n"
-        ),
-        from_email=None,  # DEFAULT_FROM_EMAIL
-        recipient_list=[sub.email],
-        fail_silently=True,
-    )
+    send_confirmation_email.delay(sub.email, confirm_url, unsub_url)
 
 
 def confirm(request, token):
