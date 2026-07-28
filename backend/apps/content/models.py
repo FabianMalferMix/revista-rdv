@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVector, SearchVectorField
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.urls import reverse
 
@@ -152,10 +152,9 @@ class Article(EditorialItem):
         self.body = clean_html(self.body)
         self.reading_time = self._calc_reading_time()
         super().save(*args, **kwargs)
-        # Recalcula el vector de búsqueda (derivado, sin redundancia editable a mano).
-        type(self).objects.filter(pk=self.pk).update(
-            search_vector=SearchVector("title", "subtitle", "body", config="spanish")
-        )
+        # `search_vector` lo mantiene un trigger de Postgres (ver migración): se
+        # actualiza en TODA escritura de title/subtitle/body (también bulk_update),
+        # no solo al pasar por save().
 
 
 class ArticleContributor(models.Model):
@@ -220,10 +219,15 @@ class Poem(EditorialItem):
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
+    # Mantenido por un trigger de Postgres (ver migración): los poemas son buscables.
+    search_vector = SearchVectorField(null=True, editable=False)
 
     class Meta:
         ordering = ["-published_at", "-created_at"]
-        indexes = [models.Index(fields=["status", "-published_at"], name="poem_status_pub_idx")]
+        indexes = [
+            GinIndex(fields=["search_vector"], name="poem_search_gin"),
+            models.Index(fields=["status", "-published_at"], name="poem_status_pub_idx"),
+        ]
         verbose_name = "poema"
         verbose_name_plural = "poemas"
 

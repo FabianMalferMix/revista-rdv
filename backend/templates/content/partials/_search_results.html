@@ -1,10 +1,10 @@
 {% if q %}
   {% if results %}
     <ul class="search-list">
-      {% for a in results %}
+      {% for r in results %}
         <li>
-          <a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a>
-          <span class="kicker">{{ a.get_type_display }}</span>
+          <a href="{{ r.url }}">{{ r.title }}</a>
+          <span class="kicker">{{ r.kind }}</span>
         </li>
       {% endfor %}
     </ul>
