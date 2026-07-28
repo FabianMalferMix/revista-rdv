@@ -33,6 +33,10 @@
       </div>
     {% endfor %}
 
+    <p class="news-consent">Al enviar tu propuesta aceptas que tratemos tu nombre, correo y el
+      material adjunto para evaluarla, conforme a nuestra
+      <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.
+      Si tu propuesta se rechaza o la retiras, tus datos se eliminan pasado un tiempo.</p>
     <button type="submit">Enviar propuesta</button>
   </form>
 {% endblock %}

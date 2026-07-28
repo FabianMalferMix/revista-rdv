@@ -79,3 +79,11 @@ def test_footer_has_legal_links_and_consent(client):
     assert reverse("content:page_detail", args=["privacidad"]).encode() in content
     assert reverse("content:page_detail", args=["cookies"]).encode() in content
     assert b"pol\xc3\xadtica de privacidad" in content  # nota de consentimiento del form
+
+
+def test_privacy_page_cites_ley_21719(client):
+    # La política actualizada cita la Ley 21.719 (además de la 19.628).
+    resp = client.get(reverse("content:page_detail", args=["privacidad"]))
+    assert resp.status_code == 200
+    assert b"21.719" in resp.content
+    assert b"19.628" in resp.content
