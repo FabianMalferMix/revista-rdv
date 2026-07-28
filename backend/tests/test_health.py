@@ -12,6 +12,15 @@ def test_healthz_is_cheap_liveness(client):
     assert resp.content == b"ok"
 
 
+def test_loopback_always_allowed_for_internal_healthcheck():
+    # La sonda del contenedor pega con Host=127.0.0.1; el loopback debe estar
+    # permitido siempre para no dar DisallowedHost→400 en prod (Onda A).
+    from django.conf import settings
+
+    assert "127.0.0.1" in settings.ALLOWED_HOSTS
+    assert "localhost" in settings.ALLOWED_HOSTS
+
+
 def test_readyz_ready_when_all_up(client, monkeypatch):
     monkeypatch.setattr("apps.content.views._db_ok", lambda: True)
     monkeypatch.setattr("apps.content.views._broker_ok", lambda: True)
