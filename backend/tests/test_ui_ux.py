@@ -41,3 +41,9 @@ def test_event_gallery_renders_lightbox(client):
     # Vista ampliada honesta: no promete semántica de modal (sin trampa de foco).
     assert b"aria-modal" not in resp.content
     assert b'role="dialog"' not in resp.content
+
+
+def test_home_has_an_h1(client):
+    # La portada (la página más enlazada) debe tener su <h1> (SEO + encabezados a11y).
+    resp = client.get(reverse("content:home"))
+    assert b"<h1" in resp.content

@@ -74,6 +74,9 @@ a{color:var(--accent); text-underline-offset:3px}
   background:var(--accent); color:var(--paper); border-radius:3px; text-decoration:none;
   transition:top .15s}
 .skip:focus{top:8px}
+/* Visible solo para lectores de pantalla (encabezados/etiquetas sin cambio visual). */
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0}
 a:focus-visible, button:focus-visible, summary:focus-visible,
 input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   outline-offset:2px; border-radius:2px}

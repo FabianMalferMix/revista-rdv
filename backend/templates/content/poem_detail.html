@@ -7,10 +7,10 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="{{ poem.seo_title|default:poem.title }}">
   <meta property="og:description" content="{{ poem.seo_description|default:poem.epigraph|default:poem.title }}">
-  {% if poem.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ poem.og_image.file.url }}">{% endif %}
+  {% if poem.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ poem.og_image.file.url }}">{% elif site_profile.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}">{% endif %}
   <meta property="article:published_time" content="{{ poem.published_at|date:'c' }}">
   {% for c in poem.authors.all %}<meta property="article:author" content="{{ c.display_name }}">{% endfor %}
-  <meta name="twitter:card" content="{% if poem.og_image %}summary_large_image{% else %}summary{% endif %}">
+  <meta name="twitter:card" content="{% if poem.og_image or site_profile.og_image %}summary_large_image{% else %}summary{% endif %}">
 {% endblock %}
 
 {% block content %}

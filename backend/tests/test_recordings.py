@@ -136,3 +136,17 @@ def test_recording_with_file_only_is_valid():
         file=SimpleUploadedFile("registro.mp3", b"audio-bytes"),
     )
     assert r.pk is not None
+
+
+def test_podcast_feed_emits_itunes_namespace(client):
+    import xml.dom.minidom as minidom
+
+    make_recording(slug="audio-1", kind=Recording.Kind.AUDIO)
+    resp = client.get(reverse("recordings_feed"))
+    assert resp.status_code == 200
+    body = resp.content
+    minidom.parseString(body)  # XML válido
+    assert b'xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"' in body
+    assert b"<itunes:author>" in body
+    assert b"<itunes:category" in body
+    assert b"<itunes:explicit>false</itunes:explicit>" in body

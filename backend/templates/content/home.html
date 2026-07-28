@@ -2,6 +2,9 @@
 
 {% block content %}
   <section class="hero">
+    {# h1 de la portada (una por página): el nombre del colectivo. Oculto a la vista
+       para conservar el hero poético; visible para SEO y lectores de pantalla. #}
+    <h1 class="sr-only">{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}</h1>
     {% if site_profile.tagline %}<p class="hero-tagline">{{ site_profile.tagline }}</p>{% endif %}
     {% if site_profile.manifesto %}
       <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
