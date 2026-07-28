@@ -30,7 +30,7 @@ def test_subscribe_is_rate_limited_by_ip(client):
     # El sexto queda limitado: sin alta y con aviso.
     resp = client.post(url, {"email": "extra@example.com", "next": "/"}, follow=True)
     assert not NewsletterSubscriber.objects.filter(email="extra@example.com").exists()
-    assert "Demasiados intentos".encode() in resp.content
+    assert b"Demasiados intentos" in resp.content
 
 
 def test_subscribe_under_limit_still_works(client):
@@ -44,4 +44,4 @@ def test_submit_is_rate_limited_by_ip(client):
     for _ in range(10):  # rate 10/h
         client.post(url, {})
     resp = client.post(url, {})
-    assert "demasiadas propuestas".encode() in resp.content
+    assert b"demasiadas propuestas" in resp.content
