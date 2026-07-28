@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.agenda.models import Event
-from apps.agenda.views import stats as trajectory_stats
+from apps.agenda.services import stats as trajectory_stats
 from apps.people.models import Contributor
 from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
 

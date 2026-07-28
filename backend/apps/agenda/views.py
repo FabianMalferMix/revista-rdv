@@ -1,24 +1,9 @@
 from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
 
-from apps.showcase.models import Publication, SiteProfile
+from apps.showcase.models import Publication
 
 from .models import Event, Milestone
-
-
-def stats():
-    """Números de trayectoria (para /trayectoria/ y la portada)."""
-    profile = SiteProfile.load()
-    past = Event.past()
-    years = None
-    if profile.founded_year:
-        years = max(timezone.now().year - profile.founded_year, 1)
-    return {
-        "years": years,
-        "events": past.count(),
-        "festivals": past.filter(type__in=[Event.Type.FESTIVAL, Event.Type.FERIA]).count(),
-        "publications": Publication.objects.filter(published=True).count(),
-    }
+from .services import stats
 
 
 def agenda(request):

@@ -113,3 +113,14 @@ def test_home_shows_next_event_and_stats(client):
 def test_event_absolute_url(client):
     event = make_event(slug="ruta")
     assert event.get_absolute_url() == reverse("agenda:event_detail", args=["ruta"])
+
+
+def test_stats_service_shape_and_counts():
+    # `stats` vive en la capa de servicios (no en views): lo importan portada y dossier.
+    from apps.agenda.services import stats
+
+    make_event(slug="pasado-1", starts_at=timezone.now() - timedelta(days=10))
+    make_event(slug="pasado-2", starts_at=timezone.now() - timedelta(days=20))
+    result = stats()
+    assert set(result) == {"years", "events", "festivals", "publications"}
+    assert result["events"] == 2

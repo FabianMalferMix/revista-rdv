@@ -63,9 +63,7 @@ def test_responsive_img_tag_renders_all_attrs():
 
 def test_responsive_img_hero_is_not_lazy():
     a = _asset()
-    html = Template("{% load images %}{% responsive_img a lazy=False %}").render(
-        Context({"a": a})
-    )
+    html = Template("{% load images %}{% responsive_img a lazy=False %}").render(Context({"a": a}))
     assert "loading=" not in html  # imagen destacada (LCP): sin lazy
 
 

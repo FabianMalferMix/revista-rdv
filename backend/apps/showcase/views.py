@@ -40,7 +40,7 @@ def dossier(request):
     dicho la prensa y cómo contactarlos. Fuente única: la base de datos.
     """
     from apps.agenda.models import Event, Milestone
-    from apps.agenda.views import stats
+    from apps.agenda.services import stats
     from apps.people.models import Contributor
 
     profile = SiteProfile.load()
