@@ -25,6 +25,15 @@ def test_valid_form_is_not_spam():
     assert not form.is_spam
 
 
+def test_submit_page_shows_consent_note(client):
+    from django.urls import reverse
+
+    resp = client.get(reverse("submissions:submit"))
+    assert resp.status_code == 200
+    assert b"pol\xc3\xadtica de privacidad" in resp.content
+    assert reverse("content:page_detail", args=["privacidad"]).encode() in resp.content
+
+
 def test_honeypot_flags_spam():
     form = SubmissionForm(data=_data(apodo="soy-un-bot"))
     assert form.is_valid()
