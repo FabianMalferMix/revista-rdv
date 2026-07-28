@@ -27,3 +27,9 @@ db.sqlite3
 .DS_Store
 .idea/
 .vscode/
+
+# Cobertura (pytest-cov)
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml

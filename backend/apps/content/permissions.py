@@ -30,8 +30,3 @@ def can_edit_item(user, item):
     if is_editor(user):
         return True
     return is_owner(user, item) and item.status in EDITABLE_BY_OWNER
-
-
-def can_moderate_comments(user):
-    # Solo editor y superiores; el autor no modera su propio hilo.
-    return is_editor(user)

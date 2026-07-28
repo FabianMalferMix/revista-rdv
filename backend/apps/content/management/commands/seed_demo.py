@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from apps.agenda.models import Event, EventPhoto, Milestone
-from apps.community.models import Comment, NewsletterSubscriber
+from apps.community.models import NewsletterSubscriber
 from apps.content.models import (
     Article,
     ArticleContributor,
@@ -196,28 +196,6 @@ class Command(BaseCommand):
                 CollectionArticle.objects.get_or_create(
                     collection=collection, article=articles[slug], defaults={"position": i}
                 )
-
-        # ── Comentarios (moderación) ─────────────────────────
-        art = articles.get("resena-el-invierno-de-las-cosas")
-        if art:
-            Comment.objects.get_or_create(
-                article=art,
-                guest_name="Lector Anónimo",
-                defaults={
-                    "guest_email": "lector@example.com",
-                    "body": "Gran lectura del poemario. Gracias por la reseña.",
-                    "status": Comment.Status.APPROVED,
-                },
-            )
-            Comment.objects.get_or_create(
-                article=art,
-                guest_name="Comentario Pendiente",
-                defaults={
-                    "guest_email": "otro@example.com",
-                    "body": "¿Dónde se consigue el libro?",
-                    "status": Comment.Status.PENDING,
-                },
-            )
 
         # ── Newsletter ───────────────────────────────────────
         NewsletterSubscriber.objects.get_or_create(

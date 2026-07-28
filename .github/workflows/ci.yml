@@ -70,9 +70,10 @@ jobs:
         working-directory: backend
         run: python manage.py makemigrations --check --dry-run
 
-      - name: Ejecutar tests
+      - name: Ejecutar tests (con cobertura medida)
         working-directory: backend
-        run: pytest
+        # Umbral de cobertura: falla el CI si baja del 80% (config en pyproject.toml).
+        run: pytest --cov=apps --cov-report=term-missing --cov-fail-under=80
 
       - name: Validar configuración de producción (check --deploy)
         working-directory: backend

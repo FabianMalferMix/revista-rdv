@@ -39,11 +39,6 @@ def test_non_owner_cannot_edit(autor, make_article, django_user_model):
     assert not permissions.can_edit_item(other, article)
 
 
-def test_only_editor_moderates_comments(editor, autor):
-    assert permissions.can_moderate_comments(editor)
-    assert not permissions.can_moderate_comments(autor)
-
-
 def test_is_editor_flags(editor, autor):
     assert permissions.is_editor(editor)
     assert not permissions.is_editor(autor)

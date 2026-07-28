@@ -2,7 +2,6 @@ import pytest
 from django.contrib.postgres.search import SearchQuery
 from django.db import IntegrityError
 
-from apps.community.models import Comment
 from apps.content.models import Article, EditorialStatus
 from apps.people.models import Contributor, SocialLink
 
@@ -23,21 +22,6 @@ def test_search_vector_populated(make_article):
     article = make_article(title="Reseña de poesía chilena", status=EditorialStatus.PUBLISHED)
     match = Article.objects.filter(search_vector=SearchQuery("poesía", config="spanish"))
     assert article in match
-
-
-def test_comment_requires_user_xor_guest(make_article):
-    article = make_article()
-    # Ni usuario ni invitado → viola el CHECK XOR.
-    with pytest.raises(IntegrityError):
-        Comment.objects.create(article=article, body="texto")
-
-
-def test_comment_guest_is_valid(make_article):
-    article = make_article()
-    comment = Comment.objects.create(
-        article=article, guest_name="Ana", guest_email="ana@example.com", body="hola"
-    )
-    assert comment.pk is not None
 
 
 def test_body_is_sanitized_on_save(make_article):

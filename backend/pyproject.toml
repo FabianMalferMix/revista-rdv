@@ -7,3 +7,18 @@ extend-exclude = ["staticfiles", "**/migrations/*"]
 # E/W pycodestyle, F pyflakes, I isort, UP pyupgrade, B bugbear, C4 comprehensions.
 select = ["E", "W", "F", "I", "UP", "B", "C4"]
 ignore = ["E501"]  # el largo de línea lo gestiona el formateador
+
+# ── Cobertura (pytest-cov) ────────────────────────────────
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/__init__.py", "*/apps.py"]
+
+[tool.coverage.report]
+# Líneas que no cuentan como sin-cubrir (ramas defensivas, stubs, etc.).
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "def __str__",
+    "def __repr__",
+]
