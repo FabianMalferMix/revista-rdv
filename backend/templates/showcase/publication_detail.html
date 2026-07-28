@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}{{ publication.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ publication.synopsis|truncatechars:200|default:publication.title }}{% endblock %}
@@ -24,7 +25,7 @@
     </header>
 
     {% if publication.cover %}
-      <img class="pub-cover" src="{{ publication.cover.file.url }}" alt="{{ publication.cover.alt_text }}">
+      {% responsive_img publication.cover css_class="pub-cover" sizes="(max-width: 600px) 70vw, 360px" lazy=False %}
     {% endif %}
 
     {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}Aliados — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Fondos, instituciones y espacios que apoyan al colectivo.{% endblock %}
@@ -8,7 +9,7 @@
   <ul class="partner-list">
     {% for p in partners %}
       <li class="partner-item">
-        {% if p.logo %}<img class="partner-logo" src="{{ p.logo.file.url }}" alt="{{ p.logo.alt_text }}" loading="lazy">{% endif %}
+        {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="180px" %}{% endif %}
         <div>
           <span class="kicker">{{ p.get_kind_display }}</span>
           <strong>{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }} ↗</a>{% else %}{{ p.name }}{% endif %}</strong>

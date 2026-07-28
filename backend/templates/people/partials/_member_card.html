@@ -1,7 +1,8 @@
+{% load images %}
 <li class="member-card">
   <a href="{% url 'people:member_detail' m.slug %}">
     {% if m.photo %}
-      <img class="avatar" src="{{ m.photo.file.url }}" alt="{{ m.photo.alt_text }}" loading="lazy">
+      {% responsive_img m.photo css_class="avatar" sizes="(max-width: 600px) 40vw, 200px" %}
     {% else %}
       <span class="avatar avatar-fallback" aria-hidden="true">{{ m.display_name|slice:":1" }}</span>
     {% endif %}
