@@ -8,7 +8,7 @@
   <meta property="og:type" content="book">
   <meta property="og:title" content="{{ publication.title }}">
   <meta property="og:description" content="{{ publication.synopsis|truncatechars:200|default:publication.title }}">
-  {% if publication.cover %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ publication.cover.file.url }}">{% endif %}
+  {% if publication.cover %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ publication.cover.file.url }}">{% elif site_profile.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}">{% endif %}
   <meta name="twitter:card" content="{% if publication.cover %}summary_large_image{% else %}summary{% endif %}">
 {% endblock %}
 

@@ -34,6 +34,14 @@ class SiteProfile(models.Model):
         blank=True,
         help_text="PDF del kit de prensa (override manual opcional del dossier generado).",
     )
+    og_image = models.ForeignKey(
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Imagen social por defecto (og:image) y logo en los datos estructurados.",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

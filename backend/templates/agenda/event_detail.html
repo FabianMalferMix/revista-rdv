@@ -8,8 +8,30 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="{{ event.title }}">
   <meta property="og:description" content="{{ event.description|truncatechars:200|default:event.title }}">
-  {% if event.poster %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.poster.file.url }}">{% endif %}
+  {% if event.poster %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.poster.file.url }}">{% elif site_profile.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}">{% endif %}
   <meta name="twitter:card" content="{% if event.poster %}summary_large_image{% else %}summary{% endif %}">
+{% endblock %}
+
+{% block head_extra %}
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "{{ event.title|escapejs }}",
+    "startDate": "{{ event.starts_at|date:'c' }}",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    {% if event.venue_name or event.city or event.address %}"location": {
+      "@type": "Place",
+      "name": "{{ event.venue_name|default:event.city|default:'—'|escapejs }}"{% if event.address or event.city %},
+      "address": "{{ event.address|escapejs }}{% if event.address and event.city %}, {% endif %}{{ event.city|escapejs }}"{% endif %}
+    },{% endif %}
+    {% if event.poster %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ event.poster.file.url }}",{% endif %}
+    {% if event.description %}"description": "{{ event.description|truncatechars:300|escapejs }}",{% endif %}
+    "organizer": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"},
+    "url": "{{ request.build_absolute_uri }}"
+  }
+  </script>
 {% endblock %}
 
 {% block content %}
