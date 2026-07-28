@@ -2,6 +2,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from apps.agenda.models import Event
 from apps.agenda.views import stats as trajectory_stats
@@ -158,17 +159,39 @@ def page_detail(request, slug):
 
 
 def search(request):
-    """Buscador en vivo (htmx): devuelve solo el fragmento de resultados."""
+    """Buscador en vivo (htmx): busca en artículos y poemas publicados (FTS)."""
     q = request.GET.get("q", "").strip()
     results = []
     if q:
         query = SearchQuery(q, config="spanish")
-        results = (
+        articles = (
             _published()
             .filter(search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
-            .order_by("-rank")[:10]
         )
+        poems = (
+            _published_poems()
+            .filter(search_vector=query)
+            .annotate(rank=SearchRank("search_vector", query))
+        )
+        items = [
+            {
+                "url": reverse("content:article_detail", args=[a.slug]),
+                "title": a.title,
+                "kind": a.get_type_display(),
+                "rank": a.rank,
+            }
+            for a in articles
+        ] + [
+            {
+                "url": p.get_absolute_url(),
+                "title": p.title,
+                "kind": "Poema",
+                "rank": p.rank,
+            }
+            for p in poems
+        ]
+        results = sorted(items, key=lambda r: r["rank"], reverse=True)[:10]
     return render(
         request,
         "content/partials/_search_results.html",
