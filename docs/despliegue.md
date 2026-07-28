@@ -39,6 +39,8 @@ docker compose $COMPOSE up -d --build
 docker compose $COMPOSE run --rm --entrypoint python web manage.py migrate
 docker compose $COMPOSE run --rm --entrypoint python web manage.py setup_groups
 docker compose $COMPOSE run --rm --entrypoint python web manage.py createsuperuser
+# Si importas medios preexistentes, genera sus derivados responsivos (srcset):
+docker compose $COMPOSE run --rm --entrypoint python web manage.py generate_image_derivatives
 ```
 
 Caddy servirá el sitio por HTTPS en tu dominio. `web` no publica ningún puerto al host: solo el
@@ -50,6 +52,10 @@ proxy es accesible desde fuera.
 git pull
 docker compose $COMPOSE up -d --build
 docker compose $COMPOSE run --rm --entrypoint python web manage.py migrate   # si hubo migraciones
+# Genera los derivados responsivos (srcset) de las imágenes ya existentes.
+# Idempotente: solo crea los que falten. Correr tras subir imágenes en masa o
+# tras un cambio en MediaAsset.SRCSET_WIDTHS. Las nuevas imágenes los generan al guardarse.
+docker compose $COMPOSE run --rm --entrypoint python web manage.py generate_image_derivatives
 ```
 
 `web`, `worker`, `beat`, `db`, `redis` y `proxy` llevan `restart: unless-stopped`: se recuperan
