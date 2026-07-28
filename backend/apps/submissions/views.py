@@ -21,10 +21,13 @@ def submit(request):
     if request.method == "POST":
         if getattr(request, "limited", False):  # rate-limit por IP superado
             messages.error(request, "Has enviado demasiadas propuestas. Inténtalo más tarde.")
+            # Rehidratamos con lo escrito (como `initial`, sin marcar el form como
+            # enviado para no mostrar errores de validación espurios) para no perder
+            # el texto del usuario — hallazgo #28. El adjunto no se puede repoblar.
             return render(
                 request,
                 "submissions/submit.html",
-                {"form": SubmissionForm(), "call": _open_call()},
+                {"form": SubmissionForm(initial=request.POST.dict()), "call": _open_call()},
             )
         form = SubmissionForm(request.POST, request.FILES)
         if form.is_valid():

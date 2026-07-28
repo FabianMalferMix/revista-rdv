@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
@@ -22,13 +23,24 @@ def _by_token(token):
     return sub
 
 
+def _safe_next(request):
+    """Destino de redirección validado: solo rutas del propio sitio. Evita el open
+    redirect (CWE-601) de un `next` arbitrario (p. ej. //evil.com) — hallazgo #07."""
+    nxt = request.POST.get("next")
+    if nxt and url_has_allowed_host_and_scheme(
+        nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return nxt
+    return "content:home"
+
+
 @require_POST
 @ratelimit(key="ip", rate="5/m", method="POST", block=False)
 def subscribe(request):
     """Alta con **doble opt-in**: crea (o reusa) el suscriptor en 'pending' y envía un
     correo con enlace de confirmación. Solo tras confirmar se le puede escribir. El
     honeypot descarta bots en silencio."""
-    nxt = request.POST.get("next") or "content:home"
+    nxt = _safe_next(request)
     if getattr(request, "limited", False):  # rate-limit por IP superado
         messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
         return redirect(nxt)
