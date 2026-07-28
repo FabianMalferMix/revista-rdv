@@ -10,8 +10,21 @@ ignore = ["E501"]  # el largo de línea lo gestiona el formateador
 
 # ── Cobertura (pytest-cov) ────────────────────────────────
 [tool.coverage.run]
-source = ["apps"]
-omit = ["*/migrations/*", "*/tests/*", "*/__init__.py", "*/apps.py"]
+source = ["apps", "config"]
+branch = true
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__init__.py",
+    "*/apps.py",
+    # Arranque/config triviales y el storage de estáticos (solo se ejercita en el
+    # build de producción, no en pytest; validado por el smoke de collectstatic).
+    "config/settings.py",
+    "config/wsgi.py",
+    "config/asgi.py",
+    "config/urls.py",
+    "config/staticfiles.py",
+]
 
 [tool.coverage.report]
 # Líneas que no cuentan como sin-cubrir (ramas defensivas, stubs, etc.).

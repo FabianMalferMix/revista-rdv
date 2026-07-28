@@ -73,7 +73,8 @@ jobs:
       - name: Ejecutar tests (con cobertura medida)
         working-directory: backend
         # Umbral de cobertura: falla el CI si baja del 80% (config en pyproject.toml).
-        run: pytest --cov=apps --cov-report=term-missing --cov-fail-under=80
+        # Incluye apps y config (la middleware CSP y el logging entran al gate).
+        run: pytest --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
 
       - name: Validar configuración de producción (check --deploy)
         working-directory: backend
@@ -86,3 +87,32 @@ jobs:
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
         # --deploy corre las security.W*; --fail-level WARNING las hace bloqueantes.
         run: python manage.py check --deploy --fail-level WARNING
+
+  # Ejercita la imagen de producción y su lockfile de runtime (nunca cubiertos por
+  # el job `test`, que instala requirements-dev): construye el stage prod (con
+  # --require-hashes) y arranca gunicorn como smoke a /healthz/.
+  build-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir imagen de producción
+        run: docker build --target prod -t resenas-prod ./backend
+
+      - name: Smoke de arranque (gunicorn + /healthz/)
+        run: |
+          # DEBUG=1 evita el guard de producción y la validación de Host; --entrypoint
+          # salta el migrate (healthz no toca la BD). Corre como usuario no-root (uid 1000).
+          docker run -d --name prod-smoke -p 8000:8000 \
+            -e DJANGO_DEBUG=1 -e DJANGO_SECRET_KEY=ci-smoke-key \
+            --entrypoint gunicorn resenas-prod \
+            config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8000/healthz/ && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8000/healthz/ | grep -qx ok
+          echo "--- id del contenedor (debe ser uid 1000 no-root) ---"
+          docker exec prod-smoke id
+          docker logs prod-smoke
+          docker rm -f prod-smoke
