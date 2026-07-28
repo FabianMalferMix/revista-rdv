@@ -38,3 +38,6 @@ def test_event_gallery_renders_lightbox(client):
     assert b'class="lightbox"' in resp.content
     assert b"#lb-con-lightbox-1" in resp.content  # el thumbnail enlaza al overlay
     assert b'href="#galeria-con-lightbox"' in resp.content  # y el overlay cierra a la sección
+    # Vista ampliada honesta: no promete semántica de modal (sin trampa de foco).
+    assert b"aria-modal" not in resp.content
+    assert b'role="dialog"' not in resp.content
