@@ -12,7 +12,8 @@ from django.utils import timezone
 from PIL import Image
 
 from apps.agenda.models import Event
-from apps.media.models import MediaAsset
+from apps.content.models import EditorialStatus
+from apps.media.models import MediaAsset, Recording
 from apps.showcase.models import SiteProfile
 
 pytestmark = pytest.mark.django_db
@@ -70,3 +71,32 @@ def test_default_og_image_falls_back_to_siteprofile(client):
     profile.og_image = _asset()
     profile.save()
     assert b'property="og:image"' in client.get(url).content
+
+
+def test_poem_detail_falls_back_to_site_og_image(client, make_poem):
+    poem = make_poem(slug="poema-og", status=EditorialStatus.PUBLISHED)
+    poem.published_at = timezone.now()
+    poem.save()
+    profile = SiteProfile.load()
+    profile.og_image = _asset()
+    profile.save()
+    resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
+    assert resp.status_code == 200
+    assert b'property="og:image"' in resp.content  # cae a la imagen del sitio
+    assert b"summary_large_image" in resp.content
+
+
+def test_recording_detail_falls_back_to_site_og_image(client):
+    rec = Recording.objects.create(
+        slug="reg-og",
+        title="Registro OG",
+        embed_url="https://youtu.be/abc123",
+        published=True,
+        published_at=timezone.now(),
+    )
+    profile = SiteProfile.load()
+    profile.og_image = _asset()
+    profile.save()
+    resp = client.get(reverse("media:recording_detail", args=[rec.slug]))
+    assert resp.status_code == 200
+    assert b'property="og:image"' in resp.content
