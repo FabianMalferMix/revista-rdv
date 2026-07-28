@@ -21,6 +21,17 @@ def test_subscribe_sends_confirmation_with_link(client):
     assert reverse("community:confirm", args=[sub.token]) in mail.outbox[0].body
 
 
+@override_settings(EMAIL_BACKEND=LOCMEM)
+def test_confirmation_email_task_sends_message():
+    # El envío vive en una tarea Celery (fuera del hilo de la petición, con reintento).
+    from apps.community.tasks import send_confirmation_email
+
+    send_confirmation_email("a@example.com", "https://x/confirmar", "https://x/baja")
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == ["a@example.com"]
+    assert "https://x/confirmar" in mail.outbox[0].body
+
+
 def test_confirm_sets_confirmed(client):
     NewsletterSubscriber.objects.create(email="x@example.com", token="tok-confirm")
     resp = client.get(reverse("community:confirm", args=["tok-confirm"]))
