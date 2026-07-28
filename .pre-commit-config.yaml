@@ -1,0 +1,21 @@
+# Ganchos de pre-commit. Instalar una vez:  pip install pre-commit && pre-commit install
+# Correr sobre todo el repo:                 pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+
+  # ruff: linter + formateador. Se fija a la misma versión que el lockfile (0.16.0)
+  # para que el resultado local coincida con el del CI.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
