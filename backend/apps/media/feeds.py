@@ -60,6 +60,14 @@ class RecordingsFeed(Feed):
     def item_extra_kwargs(self, item):
         return {"itunes_summary": item.description or item.get_kind_display()}
 
+    def get_feed(self, obj, request):
+        # Capturamos la request para construir la URL ABSOLUTA del enclosure: Django
+        # solo aplica add_domain a los <link>, no al <enclosure>. El feed se sirve con
+        # workers sync (una request por proceso), así que guardarla en la instancia es
+        # seguro.
+        self.request = request
+        return super().get_feed(obj, request)
+
     def items(self):
         return Recording.objects.filter(published=True, kind=Recording.Kind.AUDIO).order_by(
             "-published_at", "-created_at"
@@ -79,7 +87,9 @@ class RecordingsFeed(Feed):
 
     # Enclosure solo para registros con archivo propio (los embeds van como enlace).
     def item_enclosure_url(self, item):
-        return item.file.url if item.file else None
+        # URL ABSOLUTA (esquema+host): los clientes de podcast exigen que el enclosure
+        # sea resoluble; una URL relativa deja el episodio sin audio en Apple/Spotify.
+        return self.request.build_absolute_uri(item.file.url) if item.file else None
 
     def item_enclosure_length(self, item):
         try:
