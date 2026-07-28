@@ -165,6 +165,14 @@ class Recording(models.Model):
         ordering = ["position", "-recorded_on", "-created_at"]
         verbose_name = "registro"
         verbose_name_plural = "registros"
+        constraints = [
+            # Debe existir una fuente: archivo O embed. Lo que clean() valida en el
+            # form, garantizado también en BD ante create()/update directos.
+            models.CheckConstraint(
+                name="recording_file_or_embed",
+                condition=~(models.Q(file="") & models.Q(embed_url="")),
+            )
+        ]
 
     def __str__(self):
         return self.title

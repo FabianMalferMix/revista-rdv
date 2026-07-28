@@ -115,3 +115,24 @@ def test_home_shows_featured_recording_when_published(client):
     rec.published = False
     rec.save(update_fields=["published"])
     assert b"Registro En Portada" not in client.get(reverse("content:home")).content
+
+
+# ── Integridad: fuente obligatoria (archivo O embed) a nivel de BD ──────────
+
+
+def test_recording_db_requires_file_or_embed():
+    from django.db import IntegrityError, transaction
+
+    # Sin file ni embed viola el CheckConstraint aunque no se invoque clean()
+    # (p. ej. Recording.objects.create directo).
+    with pytest.raises(IntegrityError), transaction.atomic():
+        Recording.objects.create(slug="sin-fuente", title="Sin fuente")
+
+
+def test_recording_with_file_only_is_valid():
+    r = make_recording(
+        slug="solo-archivo",
+        embed_url="",
+        file=SimpleUploadedFile("registro.mp3", b"audio-bytes"),
+    )
+    assert r.pk is not None
