@@ -13,3 +13,4 @@ whitenoise>=6,<7
 sentry-sdk>=2,<3
 django-axes>=8,<9
 django-ratelimit>=4,<5
+django-ipware>=7,<8

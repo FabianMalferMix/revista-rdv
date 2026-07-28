@@ -142,14 +142,18 @@ AXES_FAILURE_LIMIT = int(os.environ.get("AXES_FAILURE_LIMIT", "5"))
 AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
 AXES_LOCKOUT_PARAMETERS = ["ip_address"]  # bloquea la IP atacante
 AXES_RESET_ON_SUCCESS = True
-# Detrás del proxy (Caddy) la IP real llega en X-Forwarded-For.
-AXES_IPWARE_PROXY_COUNT = 0 if DEBUG else 1
+# La IP real del cliente la resuelve config.clientip.client_ip (mismo resolver que
+# django-ratelimit): tras Caddy, la entrada derecha de X-Forwarded-For. Este callable
+# tiene precedencia en axes, así que NO se usan los AXES_IPWARE_*.
+AXES_CLIENT_IP_CALLABLE = "config.clientip.client_ip"
 # En tests se desactiva (usan force_login); el test de bloqueo lo reactiva puntualmente.
 AXES_ENABLED = os.environ.get("AXES_ENABLED", "0" if "pytest" in sys.modules else "1") == "1"
 
-# django-ratelimit: contadores en la caché por defecto (LocMem). A escala de este
-# sitio es proporcionado; para límites entre procesos, apuntar a una caché compartida.
+# django-ratelimit: contadores en la caché por defecto (LocMem en dev, Redis en prod).
+# La IP se resuelve con el MISMO callable que axes para que ambos cuenten por la misma
+# IP tras el proxy (si divergen, el límite por IP se colapsa en un cubo global — #01).
 RATELIMIT_ENABLE = os.environ.get("RATELIMIT_ENABLE", "1") == "1"
+RATELIMIT_IP_META_KEY = "config.clientip.client_ip"
 
 # Límites de subida (defensa ante cuerpos de request abusivos; el proxy corta antes).
 # El adjunto de envíos permite hasta 10 MB (validado en el form); Caddy corta en 12 MB.
