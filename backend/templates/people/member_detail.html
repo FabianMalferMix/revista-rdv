@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}{{ member.display_name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ member.short_bio|default:member.display_name }}{% endblock %}
@@ -6,7 +7,7 @@
 {% block content %}
   <header class="index-head member-head">
     {% if member.photo %}
-      <img class="avatar avatar-lg" src="{{ member.photo.file.url }}" alt="{{ member.photo.alt_text }}">
+      {% responsive_img member.photo css_class="avatar avatar-lg" sizes="240px" lazy=False %}
     {% else %}
       <span class="avatar avatar-lg avatar-fallback" aria-hidden="true">{{ member.display_name|slice:":1" }}</span>
     {% endif %}

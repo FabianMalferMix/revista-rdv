@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}{{ event.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ event.description|truncatechars:200|default:event.title }}{% endblock %}
@@ -28,7 +29,7 @@
     </header>
 
     {% if event.poster %}
-      <img class="event-poster" src="{{ event.poster.file.url }}" alt="{{ event.poster.alt_text }}">
+      {% responsive_img event.poster css_class="event-poster" sizes="(max-width: 800px) 100vw, 760px" lazy=False %}
     {% endif %}
 
     {% if event.description %}<div class="member-about">{{ event.description|linebreaks }}</div>{% endif %}
@@ -66,14 +67,14 @@
             {% for p in photos %}
               <li>
                 <a href="#lb-{{ event.slug }}-{{ forloop.counter }}" aria-label="Ampliar foto">
-                  <img src="{{ p.asset.file.url }}" alt="{{ p.caption|default:p.asset.alt_text }}" loading="lazy">
+                  {% responsive_img p.asset sizes="(max-width: 600px) 45vw, 280px" alt=p.caption %}
                 </a>
                 {% if p.caption %}<span class="muted">{{ p.caption }}</span>{% endif %}
                 <figure class="lightbox" id="lb-{{ event.slug }}-{{ forloop.counter }}"
                         role="dialog" aria-modal="true" aria-label="{{ p.caption|default:p.asset.alt_text }}">
                   <a class="lightbox-back" href="#galeria-{{ event.slug }}" tabindex="-1" aria-label="Cerrar"></a>
                   <a class="lightbox-close" href="#galeria-{{ event.slug }}" aria-label="Cerrar">×</a>
-                  <img src="{{ p.asset.file.url }}" alt="{{ p.caption|default:p.asset.alt_text }}">
+                  {% responsive_img p.asset sizes="90vw" alt=p.caption %}
                   {% if p.caption %}<figcaption>{{ p.caption }}</figcaption>{% endif %}
                 </figure>
               </li>

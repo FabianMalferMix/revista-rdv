@@ -61,7 +61,12 @@ class Contributor(models.Model):
     @classmethod
     def members(cls):
         """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
-        return cls.objects.filter(is_member=True, active=True).order_by("position", "display_name")
+        # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).
+        return (
+            cls.objects.filter(is_member=True, active=True)
+            .select_related("photo")
+            .order_by("position", "display_name")
+        )
 
     def get_absolute_url(self):
         # Integrante → perfil rico; colaborador externo → página de byline.
