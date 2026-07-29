@@ -274,6 +274,42 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 
 ---
 
+## Estado de ejecución
+
+> Actualizado al cierre de la ola S1. **Olas S0 y S1 completas** (lotes `sec-1` … `sec-8`),
+> mergeadas en `main` con `--no-ff`. Suite: **249 → 292 tests**, cobertura 95 %.
+> Compuertas verificadas en local: ruff, `makemigrations --check`, bandit (sin medium/high),
+> gitleaks (81 commits, sin fugas), `caddy validate`.
+
+| Ítem | Lote | Estado |
+|---|---|---|
+| **S-01** XSS almacenado en `/media/` → escalada | `sec-1` | ✅ Cerrado en las dos capas (validadores + cabeceras de borde), con PoC antes/después |
+| **S-02** Guard no detecta placeholders | `sec-2` | ✅ Validación positiva en `config/envguard.py` |
+| **S-03** `seed_demo` sin guarda, contraseña publicada | `sec-3` | ✅ Guarda de `DEBUG` + contraseña aleatoria |
+| **S-05** Grabación inédita en la ficha de poema | `sec-4` | ✅ `Poem.published_recording` |
+| **S-04** Buscador sin `LIMIT` ni rate limit; 500 con NUL | `sec-5` | ✅ Los tres defectos |
+| **S-07** Slowloris con 3 conexiones | `sec-6` | ✅ Timeouts en Caddy + `gthread` |
+| **S-08** Sin límites de recursos ni endurecimiento | `sec-7` | ✅ Límites, `cap_drop`, `no-new-privileges` |
+| **S-22** 500 con Redis caído | `sec-8` | ✅ `config/cache.ResilientRedisCache` |
+| **S-23** Sin `EMAIL_TIMEOUT` ni límites de tarea | `sec-8` | ✅ |
+| **S-06** Respaldos legibles y sin cifrar | `sec-9` | ⏳ Ola S2 |
+| **S-24** Redis único caché+broker | — | 🟡 Parcial: una escritura rechazada ya no da 500; separar instancias queda pendiente |
+| **S-27** Estáticos servidos por gunicorn | — | ⏳ Exige un volumen compartido entre `web` y `proxy`; lote propio |
+
+**Hallazgos NUEVOS descubiertos durante la remediación** (no estaban en la auditoría):
+
+- **`seed_demo` llevaba roto contra una base limpia** desde la migración `media.0004`:
+  `get_or_create` insertaba el registro de audio con `file=''` y `embed_url=''`, violando
+  la restricción `recording_file_or_embed`. No lo cubría ninguna prueba porque nada lo
+  ejecutaba. Corregido en `sec-3`.
+- **Deprecación de Django 6.0 latente**: construir un form con `Recording.embed_url`
+  (`URLField`) emite `RemovedInDjango60Warning` por `assume_scheme`, que
+  `filterwarnings = error` convierte en error. Hoy no la dispara ningún test, pero
+  romperá al subir a Django 6. Se resuelve con `FORMS_URLFIELD_ASSUME_HTTPS = True`
+  —que además asume `https` en vez de `http`, mejor por defecto—. Pendiente, ola S4.
+- **El Caddyfile no lo validaba ni lo probaba nada.** Ahora el job `prod-runtime` corre
+  `caddy validate` y verifica las cabeceras de `/media/` sirviendo un archivo real.
+
 ## Plan de remediación
 
 Cinco olas, ordenadas por **riesgo residual eliminado por unidad de esfuerzo**. Cada ola es un lote independiente con el flujo habitual del proyecto (rama → tests → PR → merge `--no-ff`), y deja el CI verde.
