@@ -39,6 +39,17 @@ services:
       DJANGO_DEBUG: "0"
       DJANGO_COLLECTSTATIC: "1"
       DJANGO_SKIP_MIGRATE: "1"
+    # Aislamiento de recursos (hallazgo S-08): sin límites, un pico de `web` podía
+    # llevarse por delante a `db` en el mismo host y convertir una degradación en
+    # indisponibilidad total. Ajusta los valores a la RAM real de tu host: la suma de
+    # todos los servicios debe quedar holgadamente por debajo.
+    mem_limit: ${WEB_MEM_LIMIT:-768m}
+    cpus: ${WEB_CPUS:-1.5}
+    pids_limit: 256
+    # La imagen ya corre como usuario sin privilegios (uid 1000) y gunicorn escucha en
+    # el 8000, así que no necesita ninguna capacidad del kernel.
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
     healthcheck:
       test:
@@ -55,6 +66,11 @@ services:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SKIP_MIGRATE: "1"
+    mem_limit: ${WORKER_MEM_LIMIT:-512m}
+    cpus: ${WORKER_CPUS:-1.0}
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
     healthcheck:
       # Un worker colgado no responde al ping por el broker (a diferencia de un
@@ -69,6 +85,11 @@ services:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SKIP_MIGRATE: "1"
+    mem_limit: ${BEAT_MEM_LIMIT:-256m}
+    cpus: ${BEAT_CPUS:-0.5}
+    pids_limit: 128
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
     healthcheck:
       # Beat actualiza su archivo de agenda al programar; si se cuelga y deja de
@@ -80,6 +101,12 @@ services:
       start_period: 90s
 
   db:
+    mem_limit: ${DB_MEM_LIMIT:-1g}
+    cpus: ${DB_CPUS:-2.0}
+    # db y redis NO llevan cap_drop: ALL — sus imágenes oficiales arrancan como root
+    # para preparar el directorio de datos y luego bajan de usuario, lo que exige
+    # CHOWN/SETUID/SETGID/DAC_OVERRIDE. Se les aplica no-new-privileges, que sí es seguro.
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 
   # Redis autenticado (REDIS_PASSWORD obligatorio; ver .env.prod.example).
@@ -88,6 +115,11 @@ services:
     command: "redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requerido en produccion}"
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+    # Por encima del maxmemory de 256mb del propio Redis, para que sea él quien aplique
+    # su política y no el OOM killer del host quien mate el proceso.
+    mem_limit: ${REDIS_MEM_LIMIT:-384m}
+    cpus: ${REDIS_CPUS:-0.5}
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 
   # Proxy inverso con TLS automático. Sirve /media/ directo desde el volumen; el resto va a
@@ -106,6 +138,13 @@ services:
       - caddyconfig:/config
     depends_on:
       - web
+    mem_limit: ${PROXY_MEM_LIMIT:-128m}
+    cpus: ${PROXY_CPUS:-1.0}
+    pids_limit: 128
+    # Caddy sí necesita una capacidad: enlazar los puertos 80 y 443 (privilegiados).
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 
 volumes:
