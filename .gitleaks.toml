@@ -6,12 +6,23 @@ title = "Reseñas — configuración de gitleaks"
 [extend]
 useDefault = true
 
+# La allowlist está ACOTADA A RUTAS y los patrones van ANCLADOS (hallazgo S-31 de
+# secretos). Antes era global y sin anclar: cualquier hallazgo que contuviera una de
+# esas cadenas quedaba silenciado en TODO el repositorio, de modo que un secreto real
+# con el prefijo «ci-secret-key…» habría pasado desapercibido. Ahora solo se perdonan
+# esos valores exactos y solo donde de verdad viven: los workflows de CI, los tests que
+# replican sus entornos y las plantillas de entorno.
 [allowlist]
-description = "Secretos de prueba de CI (valores fijos, no reales)"
+description = "Secretos de prueba de CI (valores exactos, solo en los ficheros donde viven)"
+paths = [
+  '''^\.github/workflows/.*\.yml$''',
+  '''^backend/tests/test_envguard\.py$''',
+  '''^\.env(\.[a-z]+)?\.example$''',
+]
 regexes = [
-  '''ci-secret-key''',
-  '''ci-smoke-key''',
-  '''ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW''',
-  '''ci-strong-db-password''',
-  '''ci-strong-redis-password''',
+  '''^ci-secret-key$''',
+  '''^ci-smoke-key$''',
+  '''^ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW$''',
+  '''^ci-strong-db-password$''',
+  '''^ci-strong-redis-password$''',
 ]
