@@ -158,6 +158,13 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get("DJANGO_DATA_UPLOAD_MAX", str(3
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
 
 # ── Internacionalización ──────────────────────────────────
+# Django 6.0 cambiará el esquema que `forms.URLField` asume para una URL sin protocolo:
+# de http a https. Optar ya por el nuevo comportamiento silencia el
+# RemovedInDjango60Warning —que `filterwarnings = error` de pytest.ini convertiría en
+# fallo al subir de versión— y de paso es la opción segura: quien teclee «vimeo.com/123»
+# en el panel obtiene https, no texto plano.
+FORMS_URLFIELD_ASSUME_HTTPS = True
+
 LANGUAGE_CODE = "es"
 TIME_ZONE = "America/Santiago"
 USE_I18N = True

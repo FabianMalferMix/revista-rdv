@@ -20,6 +20,7 @@ from .models import (
     Tag,
 )
 from .permissions import can_edit_item, is_editor
+from .sanitize import clean_html
 
 
 class RichTextWidget(forms.Textarea):
@@ -42,7 +43,20 @@ class RichTextWidget(forms.Textarea):
         super().__init__(*args, **kwargs)
 
 
-class ArticleAdminForm(forms.ModelForm):
+class SanitizedBodyMixin:
+    """Sanea el cuerpo también en la capa de FORMULARIO.
+
+    El saneo vive en `Model.save()`, que es la garantía real. Pero eso lo convierte en una
+    convención de la capa Python: quien escriba por otro camino —una migración de datos,
+    un `bulk_create`, un import— la esquiva. Repetirlo aquí hace que el editor vea el
+    resultado ya depurado al guardar desde el panel, en vez de descubrirlo al releer.
+    """
+
+    def clean_body(self):
+        return clean_html(self.cleaned_data.get("body", ""))
+
+
+class ArticleAdminForm(SanitizedBodyMixin, forms.ModelForm):
     class Meta:
         model = Article
         fields = "__all__"
@@ -58,7 +72,7 @@ class PoemAdminForm(forms.ModelForm):
         widgets = {"body": forms.Textarea(attrs={"rows": 24, "class": "poem-source"})}
 
 
-class PageAdminForm(forms.ModelForm):
+class PageAdminForm(SanitizedBodyMixin, forms.ModelForm):
     class Meta:
         model = Page
         fields = "__all__"
