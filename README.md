@@ -60,8 +60,12 @@ docker compose exec web python manage.py seed_demo
 ```
 
 Crea secciones, editoriales, obras, colaboradores y varias reseñas —incluida una
-**programada** que Celery publica solo a los pocos minutos—. Usuarios demo `editora`
-y `autor1` (contraseña `demo12345`, solo para desarrollo).
+**programada** que Celery publica solo a los pocos minutos—. Crea también los usuarios
+demo `editora` y `autor1` con una **contraseña aleatoria que el comando imprime al
+terminar** (se muestra una sola vez; apúntala).
+
+Como crea cuentas de staff, el comando **se niega a correr con `DEBUG=0`** salvo que se
+le pase `--force` de forma explícita: nunca debe ejecutarse contra producción.
 
 Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale el grupo
 `editor` o `autor` desde el admin.

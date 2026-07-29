@@ -6,10 +6,12 @@ docker compose exec web python manage.py seed_demo
 from datetime import timedelta
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 
 from apps.agenda.models import Event, EventPhoto, Milestone
@@ -53,9 +55,28 @@ def body(*paras):
 class Command(BaseCommand):
     help = "Carga datos de demostración (idempotente)."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Permite ejecutarlo con DEBUG=0. Crea cuentas de STAFF: nunca en producción.",
+        )
+
     def handle(self, *args, **options):
+        # Guarda de producción (hallazgo S-03): el comando crea contenido ficticio y,
+        # sobre todo, CUENTAS DE STAFF. Correrlo contra producción dejaba dos cuentas de
+        # panel utilizables; como `editora` pertenece al grupo `editor`, encadenaba hasta
+        # superusuario. Se anunciaba como «idempotente», lo que invitaba a ejecutarlo.
+        if not settings.DEBUG and not options["force"]:
+            raise CommandError(
+                "seed_demo carga datos ficticios y crea cuentas de staff: no debe correr "
+                "en producción. Con DEBUG=0 exige --force explícito."
+            )
+
         User = get_user_model()
         now = timezone.now()
+        # Credenciales generadas en esta corrida, para mostrarlas al final.
+        self._credentials = []
 
         # ── Usuarios con rol ─────────────────────────────────
         editora = self._user(User, "editora", "editor")
@@ -457,22 +478,25 @@ class Command(BaseCommand):
             Milestone.objects.get_or_create(year=year, title=title, defaults={"description": desc})
 
         # ── Registro de audio (alimenta el feed podcast) ─────
-        audio, audio_created = Recording.objects.get_or_create(
-            slug="umbral-lectura",
-            defaults={
-                "title": "«Umbral» — lectura de la autora",
-                "kind": Recording.Kind.AUDIO,
-                "description": "Lectura del poema «Umbral», registrada en el recital.",
-                "published": True,
-                "published_at": now - timedelta(days=2),
-                "event": events["recital-nuevas-voces-lanzamiento"],
-                "position": 1,
-            },
-        )
-        if audio_created:
+        # El archivo se adjunta ANTES del INSERT: `get_or_create` insertaba la fila con
+        # file='' y embed_url='' y violaba la restricción `recording_file_or_embed`
+        # (migración media.0004), de modo que el comando fallaba contra una BD limpia.
+        audio = Recording.objects.filter(slug="umbral-lectura").first()
+        if audio is None:
             from django.core.files.base import ContentFile
 
-            audio.file.save("umbral-lectura.wav", ContentFile(self._audio_bytes()), save=True)
+            audio = Recording(
+                slug="umbral-lectura",
+                title="«Umbral» — lectura de la autora",
+                kind=Recording.Kind.AUDIO,
+                description="Lectura del poema «Umbral», registrada en el recital.",
+                published=True,
+                published_at=now - timedelta(days=2),
+                event=events["recital-nuevas-voces-lanzamiento"],
+                position=1,
+            )
+            audio.file.save("umbral-lectura.wav", ContentFile(self._audio_bytes()), save=False)
+            audio.save()
         audio.participants.add(contributors["Fernanda Soto"])
 
         # ── Catálogo de publicaciones (vitrina, sin pagos) ───
@@ -645,8 +669,13 @@ class Command(BaseCommand):
             defaults={"email": f"{username}@resenas.cl", "is_staff": True},
         )
         if created:
-            user.set_password("demo12345")
+            # Contraseña aleatoria por corrida: la anterior («demo12345») estaba
+            # publicada en el repositorio, así que django-axes no aportaba nada frente
+            # a quien la conociera. Se muestra por stdout al terminar.
+            password = get_random_string(16)
+            user.set_password(password)
             user.save()
+            self._credentials.append((username, password))
         group, _ = Group.objects.get_or_create(name=group_name)
         user.groups.add(group)
         return user
@@ -836,6 +865,16 @@ class Command(BaseCommand):
                 f"{Event.objects.count()} eventos, {Publication.objects.count()} publicaciones."
             )
         )
-        self.stdout.write(
-            "Usuarios demo: editora / autor1 (contraseña: demo12345, solo desarrollo)."
-        )
+        if self._credentials:
+            self.stdout.write(
+                self.style.WARNING(
+                    "Cuentas de demostración creadas (contraseña aleatoria, se muestra "
+                    "UNA sola vez — solo desarrollo):"
+                )
+            )
+            for username, password in self._credentials:
+                self.stdout.write(f"  {username} / {password}")
+        else:
+            self.stdout.write(
+                "Usuarios demo: editora / autor1 (ya existían; conservan su contraseña)."
+            )
