@@ -102,6 +102,52 @@ def test_subscribe_next_same_site_is_honored(client):
     assert resp["Location"] == "/textos/"
 
 
+def test_subscribe_degrades_gracefully_when_broker_is_down(client):
+    """Si el broker está caído al encolar el correo, el alta NO revienta con 500: el
+    suscriptor queda guardado y el fallo se registra (hallazgo: degradación Celery)."""
+    from unittest import mock
+
+    from kombu.exceptions import OperationalError
+
+    from apps.community import views
+
+    def enqueue_fail(*a, **k):
+        raise OperationalError("broker inaccesible")
+
+    with mock.patch.object(views.send_confirmation_email, "delay", enqueue_fail):
+        resp = client.post(
+            reverse("community:subscribe"), {"email": "broker@example.com", "apodo": ""}
+        )
+    assert resp.status_code == 302  # redirección normal, no 500
+    assert NewsletterSubscriber.objects.filter(email="broker@example.com").exists()
+
+
+def test_email_task_declares_retry_policy():
+    """La tarea de correo reintenta ante fallos transitorios de SMTP/red (política)."""
+    import smtplib
+
+    from apps.community.tasks import send_confirmation_email
+
+    assert smtplib.SMTPException in send_confirmation_email.autoretry_for
+    assert OSError in send_confirmation_email.autoretry_for
+    assert send_confirmation_email.retry_kwargs["max_retries"] == 3
+
+
+def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
+    """Sin fail_silently: un fallo definitivo de SMTP se propaga (sube a Sentry) en vez
+    de tragarse en silencio."""
+    import smtplib
+
+    from apps.community import tasks
+
+    def boom(*a, **k):
+        raise smtplib.SMTPException("smtp caído")
+
+    monkeypatch.setattr(tasks, "send_mail", boom)
+    with pytest.raises(smtplib.SMTPException):
+        tasks.send_confirmation_email("a@example.com", "http://c", "http://u")
+
+
 def test_legal_pages_published(legal_pages):
     from django.test import Client
 
