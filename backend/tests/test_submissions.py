@@ -61,9 +61,35 @@ def test_accepts_allowed_extension():
 
 def test_rejects_oversized_file():
     big = SimpleUploadedFile(
-        "grande.pdf", b"0" * (11 * 1024 * 1024), content_type="application/pdf"
+        "grande.pdf", b"%PDF-" + b"0" * (11 * 1024 * 1024), content_type="application/pdf"
     )
     form = SubmissionForm(data=_data(), files={"file": big})
+    assert not form.is_valid()
+    assert "file" in form.errors
+
+
+def test_rejects_content_not_matching_extension():
+    """Un archivo con extensión permitida pero contenido de otro tipo (binario
+    renombrado) se rechaza por firma, no solo por extensión (hallazgo #08)."""
+    fake = SimpleUploadedFile(
+        "malicioso.pdf", b"MZ\x90\x00fake-exe", content_type="application/pdf"
+    )
+    form = SubmissionForm(data=_data(), files={"file": fake})
+    assert not form.is_valid()
+    assert "file" in form.errors
+
+
+def test_accepts_pdf_with_valid_signature():
+    real = SimpleUploadedFile(
+        "doc.pdf", b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\ncontenido", content_type="application/pdf"
+    )
+    form = SubmissionForm(data=_data(), files={"file": real})
+    assert form.is_valid(), form.errors
+
+
+def test_rejects_binary_disguised_as_txt():
+    binbytes = SimpleUploadedFile("nota.txt", b"texto\x00\x01binario", content_type="text/plain")
+    form = SubmissionForm(data=_data(), files={"file": binbytes})
     assert not form.is_valid()
     assert "file" in form.errors
 
