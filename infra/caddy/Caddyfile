@@ -14,6 +14,20 @@
 			idle 120s
 		}
 	}
+
+	# Logger POR DEFECTO, que es del que cuelga el log de ERRORES. No basta con filtrar
+	# el log de acceso del sitio: cuando el upstream falla (un 500, un timeout), Caddy
+	# emite una entrada de error que incluye la petición entera, y ahí volvía a aparecer
+	# el token del boletín sin redactar. Se comprobó reproduciéndolo.
+	log {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request>uri regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+			}
+		}
+	}
 }
 
 # SITE_ADDRESS = dominio real en producción (Caddy obtiene TLS de Let's Encrypt
@@ -47,4 +61,20 @@
 	reverse_proxy web:8000
 
 	header -Server
+
+	# Log de acceso en el BORDE, no en gunicorn (residuo del hallazgo S-20 y del aviso
+	# de que el log de gunicorn registraba siempre la IP interna del proxy). Aquí sí se
+	# ve la IP real del cliente, y sobre todo se puede REDACTAR: los enlaces del boletín
+	# llevan el token en la ruta, así que un log sin filtrar entrega a quien lo lea la
+	# capacidad de dar de baja suscripciones ajenas. gunicorn no permitía esto, porque
+	# su formato de acceso no admite sustituciones.
+	log {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request>uri regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+			}
+		}
+	}
 }

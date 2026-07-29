@@ -74,7 +74,25 @@ services:
   backup:
     build: ./infra/backup   # postgres:16 + restic (off-site) + curl (alertas)
     profiles: ["backup"]
-    env_file: .env
+    # Entorno EXPLÍCITO en vez de `env_file: .env` (mínimo privilegio): antes recibía el
+    # fichero completo, incluida DJANGO_SECRET_KEY y las credenciales de SMTP, que no
+    # necesita para nada. Ojo al enumerar: RESTIC_PASSWORD y AWS_* no aparecen en los
+    # scripts porque los lee el propio binario `restic`, no el shell.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-resenas}
+      POSTGRES_USER: ${POSTGRES_USER:-resenas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resenas}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_PING_URL: ${BACKUP_PING_URL:-}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:-}
+      RESTIC_HOST: ${RESTIC_HOST:-resenas}
+      RESTIC_KEEP: ${RESTIC_KEEP:-30}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      RESTORE_CONFIRM: ${RESTORE_CONFIRM:-}
     volumes:
       - media:/volumes/media
       - private_media:/volumes/private_media

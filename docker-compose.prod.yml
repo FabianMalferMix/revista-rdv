@@ -33,8 +33,10 @@ services:
       - "100"
       - --forwarded-allow-ips
       - "*"
-      - --access-logfile
-      - "-"
+      # SIN --access-logfile: el log de acceso vive ahora en Caddy (ver Caddyfile). El de
+      # gunicorn registraba siempre la IP interna del proxy y, sobre todo, escribía la
+      # ruta completa —con el token del boletín— sin posibilidad de redactarla, porque su
+      # formato de acceso no admite sustituciones (residuo del hallazgo S-20).
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_COLLECTSTATIC: "1"
@@ -130,7 +132,10 @@ services:
       - "${PROXY_HTTP_PORT:-80}:80"
       - "${PROXY_HTTPS_PORT:-443}:443"
     environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      # Fail-fast: sin dominio, Caddy caía en silencio a «:80», es decir SIN TLS y
+      # respondiendo a cualquier Host. Un despliegue a medio configurar debe fallar,
+      # no quedarse sirviendo en claro.
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS (dominio) requerido en produccion}
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - media:/srv/media:ro
