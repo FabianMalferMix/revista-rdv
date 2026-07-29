@@ -17,8 +17,10 @@ omit = [
     "*/tests/*",
     "*/__init__.py",
     "*/apps.py",
-    # Arranque/config triviales y el storage de estáticos (solo se ejercita en el
-    # build de producción, no en pytest; validado por el smoke de collectstatic).
+    # Arranque/config triviales y el storage de estáticos: no se ejercitan en pytest
+    # (corre con DEBUG=1 → storage simple). config/staticfiles.py (el manifiesto de
+    # prod) se valida en CI, job build-prod: collectstatic con DEBUG=0 sobre la imagen
+    # de producción, afirmando hash de estáticos propios y exención de vendor/tinymce/.
     "config/settings.py",
     "config/wsgi.py",
     "config/asgi.py",
