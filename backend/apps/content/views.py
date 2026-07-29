@@ -1,3 +1,5 @@
+import unicodedata
+
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -158,12 +160,19 @@ def page_detail(request, slug):
     return render(request, "content/page_detail.html", {"page": page})
 
 
+def _strip_accents(text):
+    """Quita los diacríticos (á→a, ñ→n, …) para que la búsqueda sea insensible a
+    acentos: el search_vector se construye con unaccent() en el trigger, así que el
+    término debe ir igual de despojado para que ambos lados coincidan."""
+    return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
+
+
 def search(request):
     """Buscador en vivo (htmx): busca en artículos y poemas publicados (FTS)."""
     q = request.GET.get("q", "").strip()
     results = []
     if q:
-        query = SearchQuery(q, config="spanish")
+        query = SearchQuery(_strip_accents(q), config="spanish")
         articles = (
             _published()
             .filter(search_vector=query)

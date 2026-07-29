@@ -72,6 +72,23 @@ def test_article_search_vector_tracks_bulk_update(client, make_article):
     assert b"Rese\xc3\xb1a bulk" in resp.content
 
 
+# ── Búsqueda insensible a acentos (unaccent) ────────────────────────────────
+
+
+def test_search_unaccented_query_finds_accented_title(client, make_article):
+    """Buscar 'resena' (sin acento) encuentra 'reseña' (con acento)."""
+    _publish(make_article(slug="acentuado", title="La reseña de una novela chilena"))
+    resp = client.get(reverse("content:search"), {"q": "resena"})
+    assert "La reseña de una novela chilena".encode() in resp.content
+
+
+def test_search_accented_query_finds_unaccented_title(client, make_article):
+    """Buscar 'crónica' (con acento) encuentra 'cronica' (sin acento en la BD)."""
+    _publish(make_article(slug="sin-acento", title="Cronica urbana del invierno"))
+    resp = client.get(reverse("content:search"), {"q": "crónica"})
+    assert b"Cronica urbana del invierno" in resp.content
+
+
 # ── Degradación sin JavaScript (hallazgo #09) ───────────────────────────────
 
 
