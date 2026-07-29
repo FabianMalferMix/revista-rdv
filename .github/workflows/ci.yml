@@ -162,16 +162,13 @@ jobs:
           PY
 
       - name: Escaneo de vulnerabilidades de la imagen prod (trivy, informativo)
-        # Informativo por ahora (continue-on-error): surface de CVEs HIGH/CRITICAL con
-        # fix disponible en la imagen de producción. Promover a bloqueante cuando el
-        # equipo decida el umbral operativo.
-        uses: aquasecurity/trivy-action@0.28.0
+        # Informativo (continue-on-error): CVEs HIGH/CRITICAL con fix en la imagen.
+        # Se instala el CLI en vez de usar la acción (evita depender de una versión
+        # concreta de la action). Promover a bloqueante cuando se decida el umbral.
         continue-on-error: true
-        with:
-          image-ref: resenas-prod
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          format: table
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table resenas-prod
 
   # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
   # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
