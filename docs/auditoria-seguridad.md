@@ -276,14 +276,15 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 
 ## Estado de ejecución
 
-> Actualizado al cierre de la ola S2. **Olas S0, S1 y S2 completas** (lotes `sec-1` … `sec-13`),
-> mergeadas en `main` con `--no-ff`. Suite: **249 → 329 tests**, cobertura 93 % (piso: 80 %).
-> Compuertas verificadas en local sobre el estado final: ruff, `makemigrations --check`,
-> bandit (sin medium/high), gitleaks (sin fugas), `caddy validate`.
+> Actualizado al cierre de la ola S3. **Olas S0, S1, S2 y S3 completas** (lotes `sec-1` …
+> `sec-17`), mergeadas en `main` con `--no-ff`. Suite: **249 → 343 tests**, cobertura 93 %
+> (piso: 80 %). Compuertas verificadas en local sobre el estado final: ruff,
+> `makemigrations --check`, bandit (severidad medium/high = 0), gitleaks (sin fugas),
+> `caddy validate`, `docker compose config`.
 >
 > *Fe de erratas:* los mensajes de los commits `sec-11`, `sec-12` y `sec-13` citan 331, 343
 > y 350 tests. Son incorrectos —se leyeron de los puntos de progreso de pytest en vez de la
-> línea de resumen—. La cifra real al cierre de S2 es **329**.
+> línea de resumen—. La cifra real al cierre de S2 era **329**.
 
 | Ítem | Lote | Estado |
 |---|---|---|
@@ -306,8 +307,28 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 | **S-20** Tokens en logs y en Sentry | `sec-12` | 🟡 Redactados en el log de Django y en Sentry; el log de acceso de **gunicorn** sigue expuesto (ver abajo) |
 | **S-21** Correo del suscriptor en el log | `sec-11` | ✅ Se registra el `pk` |
 | **S-19** Embeds de terceros sin consentimiento | `sec-13` | ✅ Click-to-play; la portada ya no contacta con YouTube/Vimeo |
+| **S-33** CI sin `permissions`, código remoto sin verificar | `sec-14` | ✅ `contents: read`, checksums sha256, versiones fijadas, `schedule` semanal |
+| **S-31** Vendorizado sin canal de aviso | `sec-15`, `sec-17` | ✅ `VERSIONS.md` con sha256 + 8 tests anti-drift; `NOTICE.md` con licencias |
+| **S-32** htmx desactualizado | `sec-15` | ✅ 2.0.3 → 2.0.10, verificado por integridad sha512 de npm |
+| **S-34** Imágenes por tag mutable | `sec-16` | ✅ Cinco referencias por digest + test que impide desfijarlas |
 | **S-24** Redis único caché+broker | — | 🟡 Parcial: una escritura rechazada ya no da 500; separar instancias queda pendiente |
 | **S-27** Estáticos servidos por gunicorn | — | ⏳ Exige un volumen compartido entre `web` y `proxy`; lote propio |
+| **S-35** Imágenes de compose fuera de Dependabot | — | ⏳ Abierto a propósito (ver abajo) |
+
+**S-35 se dejó abierto deliberadamente.** El ecosistema `docker` de Dependabot analiza
+Dockerfiles; que admita ficheros compose depende de la versión de Dependabot y no se pudo
+verificar contra el esquema oficial (la descarga falló). Añadir una entrada a ciegas con un
+nombre de ecosistema inválido **detendría todas las actualizaciones**, que es peor que la
+carencia. Mitigación vigente: las tres imágenes van fijadas por digest (un cambio silencioso
+es imposible), `tests/test_image_pinning.py` impide desfijarlas y el CI programado pasa trivy
+semanalmente sobre la imagen construida. Para cerrarlo: comprobar si esta instalación admite
+`package-ecosystem: docker-compose`.
+
+**Licencia de TinyMCE — decisión pendiente del colectivo.** `sec-17` aplica la opción de
+coste cero (documentar en `NOTICE.md` y acotar `LICENSE`). Quedan como alternativas la
+licencia comercial de TinyMCE o sustituirlo por un editor permisivo. Conviene revisarlo con
+un abogado, igual que el texto de privacidad. Nota importante para no malinterpretarlo:
+GPLv2 **no** es AGPL, así que usar TinyMCE no obliga a liberar el código propio.
 
 **Residuo consciente de S-20.** El log de acceso de gunicorn (`--access-logfile -`) sigue
 escribiendo la ruta completa, y ahí viaja el token de baja. Lo emite su propio logger, que no
@@ -336,6 +357,11 @@ secreto de la ruta y pasarlo en el cuerpo del POST. Anotado para S4.
   `SiteProfile` fuerza `pk=1` por ser singleton y la comprobación por `pk` la tomaba por
   actualización. La detectó el presupuesto anti-N+1 de `test_performance.py`; se corrigió
   usando `_state.adding`. Es el argumento a favor de mantener esos presupuestos.
+- **El Dockerfile del sidecar de respaldos no lo cubría ninguna entrada de Dependabot**,
+  pese a manejar la base de datos completa. Corregido en `sec-16`.
+- **htmx era 0BSD y Fraunces OFL** — sin obligaciones problemáticas. El único componente
+  con copyleft es TinyMCE: el inventario de `NOTICE.md` acota el problema a un solo punto
+  en vez de dejarlo como una duda difusa sobre todo el árbol.
 
 ## Plan de remediación
 
