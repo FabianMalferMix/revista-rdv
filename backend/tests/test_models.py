@@ -39,6 +39,14 @@ def test_sanitizer_keeps_allowed_formatting(make_article):
     assert 'href="https://x.cl"' in article.body
 
 
+def test_clean_html_passes_through_empty_input():
+    """clean_html devuelve la entrada tal cual cuando es vacía o None (no llama a nh3)."""
+    from apps.content.sanitize import clean_html
+
+    assert clean_html("") == ""
+    assert clean_html(None) is None
+
+
 def test_sociallink_unique_per_platform():
     contributor = Contributor.objects.create(slug="c1", display_name="Colaboradora")
     SocialLink.objects.create(contributor=contributor, platform="twitter", url="https://x/a")

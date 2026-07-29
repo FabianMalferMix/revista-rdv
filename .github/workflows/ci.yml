@@ -76,6 +76,16 @@ jobs:
         # Incluye apps y config (la middleware CSP y el logging entran al gate).
         run: pytest --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
 
+      - name: Umbrales de cobertura por módulo (código sensible)
+        working-directory: backend
+        # Reutiliza el .coverage del paso anterior. Estos módulos —saneo de HTML,
+        # feeds y sitemap: superficie de seguridad y descubrimiento— deben mantenerse
+        # muy cubiertos; el piso global del 80% no basta para protegerlos.
+        run: |
+          coverage report --include="*/content/sanitize.py" --fail-under=100
+          coverage report --include="*/content/feeds.py" --fail-under=100
+          coverage report --include="*/content/sitemaps.py" --fail-under=90
+
       - name: Validar configuración de producción (check --deploy)
         working-directory: backend
         env:
@@ -150,3 +160,43 @@ jobs:
           assert all(m[k] == k for k in tiny), "vendor/tinymce/ fue hasheado (no debería)"
           print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
           PY
+
+      - name: Escaneo de vulnerabilidades de la imagen prod (trivy, informativo)
+        # Informativo por ahora (continue-on-error): surface de CVEs HIGH/CRITICAL con
+        # fix disponible en la imagen de producción. Promover a bloqueante cuando el
+        # equipo decida el umbral operativo.
+        uses: aquasecurity/trivy-action@0.28.0
+        continue-on-error: true
+        with:
+          image-ref: resenas-prod
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: table
+
+  # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
+  # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # gitleaks escanea todo el historial
+
+      - name: Escaneo de secretos (gitleaks, bloqueante)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks detect --no-banner --redact -c .gitleaks.toml
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: SAST (bandit, severidad media+, bloqueante)
+        run: |
+          python -m pip install --upgrade pip bandit
+          bandit -r backend/apps backend/config -ll
+
+      - name: Revisión de dependencias del PR (informativo)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/dependency-review-action@v4
