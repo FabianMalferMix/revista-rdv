@@ -1,8 +1,22 @@
 #!/usr/bin/env sh
-# Restauración desde un respaldo.  Uso: restore.sh <timestamp|latest>
-# ⚠️ En producción, detén el servicio `web` (y worker/beat) antes de restaurar,
-#    para evitar conexiones activas mientras se recrea el esquema.
+# Restauración desde un respaldo.  Uso:
+#   RESTORE_CONFIRM=SI-DESTRUIR-<base> restore.sh <timestamp|latest>
+#
+# ⚠️ DESTRUCTIVO: recrea el esquema (pg_restore --clean) y REEMPLAZA los volúmenes de
+#    medios. En producción, detén `web` (y worker/beat) antes, para evitar conexiones
+#    activas mientras se recrea el esquema.
 set -eu
+
+# Confirmación explícita (hallazgo S-06): antes bastaba con invocarlo sin argumentos
+# —`latest` era el valor por defecto— para arrasar la base y los medios de producción.
+# Se exige nombrar la base que se va a destruir, para que no ocurra por inercia.
+ESPERADO="SI-DESTRUIR-${POSTGRES_DB}"
+if [ "${RESTORE_CONFIRM:-}" != "$ESPERADO" ]; then
+  echo "✗ restore.sh DESTRUYE la base '${POSTGRES_DB}' y los volúmenes de medios."
+  echo "  Para confirmar, repite el nombre de la base:"
+  echo "      RESTORE_CONFIRM=$ESPERADO  restore.sh ${1:-latest}"
+  exit 1
+fi
 
 TS="${1:-latest}"
 if [ "$TS" = "latest" ]; then
