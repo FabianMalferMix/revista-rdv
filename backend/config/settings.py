@@ -213,6 +213,17 @@ CELERY_BEAT_SCHEDULE = {
 # de confirmación por Celery sin worker. En dev/prod es asíncrono normal.
 CELERY_TASK_ALWAYS_EAGER = "pytest" in sys.modules
 
+# Límites de tiempo por tarea (S-23): sin ellos, un SMTP que acepta la conexión pero
+# no responde dejaba el slot del worker ocupado indefinidamente. El soft dispara una
+# excepción capturable (permite el reintento); el duro mata el proceso como último
+# recurso. Se completa con EMAIL_TIMEOUT, más abajo.
+CELERY_TASK_SOFT_TIME_LIMIT = int(os.environ.get("CELERY_TASK_SOFT_TIME_LIMIT", "30"))
+CELERY_TASK_TIME_LIMIT = int(os.environ.get("CELERY_TASK_TIME_LIMIT", "60"))
+# Con acks_late, una tarea que muere por time limit se reencola en vez de perderse;
+# prefetch 1 evita que un worker acapare tareas que no va a poder atender.
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
 # ── Caché ─────────────────────────────────────────────────
 # Redis en producción: los contadores de django-ratelimit se comparten entre los
 # workers de gunicorn y persisten entre recargas (db 2, distinta del broker/resultados).
@@ -222,10 +233,17 @@ if DEBUG:
 else:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            # Backend tolerante: con Redis caído, django-ratelimit propagaba
+            # ConnectionError y los formularios públicos devolvían 500 (S-22).
+            "BACKEND": "config.cache.ResilientRedisCache",
             "LOCATION": f"{_REDIS_BASE}/2",
         }
     }
+
+# Política explícita cuando el contador de rate limit no está disponible: limitar
+# (fail-closed). Quedarse sin control anti-abuso es peor que rechazar temporalmente un
+# envío, y con Redis caído el sitio ya está degradado (Celery tampoco encola).
+RATELIMIT_FAIL_OPEN = False
 
 # ── Cabeceras de seguridad ────────────────────────────────
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -256,6 +274,9 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
+# Sin timeout, smtplib espera indefinidamente a un servidor que acepta la conexión y
+# luego calla: bastaba para inmovilizar los slots del worker (S-23).
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "20"))
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Reseñas <no-reply@resenas.cl>")
 
 # ── Logging a stdout (JSON en producción, texto plano legible en desarrollo) ──
