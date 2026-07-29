@@ -6,15 +6,16 @@ from pathlib import Path
 
 from celery.schedules import crontab
 
+from config import envguard
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Seguridad ─────────────────────────────────────────────
 # Fail-safe: DEBUG apagado por defecto; en producción exige credenciales propias.
 DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
-_INSECURE_SECRET = "dev-insecure-change-me"
-_INSECURE_DB_PASSWORD = "resenas"
-_DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
+_INSECURE_SECRET = envguard.INSECURE_SECRET
+_DEFAULT_HOSTS = envguard.DEFAULT_HOSTS
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", _INSECURE_SECRET)
 # Rotación de clave con solapamiento (las sesiones firmadas con claves previas siguen válidas).
@@ -31,21 +32,16 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Guard de producción: con DEBUG=0 rechaza arrancar con valores de ejemplo o inseguros.
+# La lógica vive en config.envguard (función pura, probada en tests/test_envguard.py):
+# valida que cada valor sea ACEPTABLE, en vez de compararlo con una lista de centinelas
+# conocidos — que era justo lo que dejaba pasar los placeholders de .env.prod.example.
 if not DEBUG:
     from django.core.exceptions import ImproperlyConfigured
 
-    _insecure = []
-    if SECRET_KEY == _INSECURE_SECRET:
-        _insecure.append("DJANGO_SECRET_KEY")
-    if os.environ.get("POSTGRES_PASSWORD", _INSECURE_DB_PASSWORD) in ("", _INSECURE_DB_PASSWORD):
-        _insecure.append("POSTGRES_PASSWORD")
-    if os.environ.get("DJANGO_ALLOWED_HOSTS", "") in ("", _DEFAULT_HOSTS):
-        _insecure.append("DJANGO_ALLOWED_HOSTS")
-    if not CSRF_TRUSTED_ORIGINS:
-        _insecure.append("DJANGO_CSRF_TRUSTED_ORIGINS")
+    _insecure = envguard.check_production_env(os.environ, SECRET_KEY, CSRF_TRUSTED_ORIGINS)
     if _insecure:
         raise ImproperlyConfigured(
-            "Configuración insegura con DEBUG=0 — define en el entorno: "
+            "Configuración insegura con DEBUG=0 — corrige en el entorno: "
             + ", ".join(_insecure)
             + "."
         )

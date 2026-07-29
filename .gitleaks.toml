@@ -13,4 +13,5 @@ regexes = [
   '''ci-smoke-key''',
   '''ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW''',
   '''ci-strong-db-password''',
+  '''ci-strong-redis-password''',
 ]
