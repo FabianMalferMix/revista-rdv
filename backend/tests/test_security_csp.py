@@ -117,3 +117,13 @@ def test_admin_article_add_selfhosts_tinymce(admin_client):
     assert b"vendor/tinymce/tinymce.min.js" in resp.content
     assert b"cdn.jsdelivr" not in resp.content
     assert CSP in resp  # el panel editorial también va protegido
+
+
+def test_permissions_policy_header_is_restrictive(client):
+    """Se emite una Permissions-Policy restrictiva en las respuestas (hallazgo #16)."""
+    resp = client.get(reverse("content:home"))
+    pp = resp.get("Permissions-Policy", "")
+    assert "geolocation=()" in pp
+    assert "camera=()" in pp
+    assert "microphone=()" in pp
+    assert "payment=()" in pp

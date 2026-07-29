@@ -47,3 +47,21 @@ def test_home_has_an_h1(client):
     # La portada (la página más enlazada) debe tener su <h1> (SEO + encabezados a11y).
     resp = client.get(reverse("content:home"))
     assert b"<h1" in resp.content
+
+
+def test_article_card_title_is_h3(client, make_article):
+    """El título de tarjeta baja a <h3>: cuelga de secciones <h2>, así la jerarquía
+    de encabezados no queda aplanada (hallazgo #13)."""
+    from apps.content.models import EditorialStatus
+
+    art = make_article(status=EditorialStatus.PUBLISHED, slug="card-h3", title="Tarjeta H3")
+    html = client.get(reverse("content:text_archive")).content.decode()
+    assert f'<h3><a href="{reverse("content:article_detail", args=[art.slug])}">' in html
+
+
+def test_submit_file_help_id_matches_aria_describedby(client):
+    """El aria-describedby del input de archivo referencia un id que SÍ existe: el
+    <small> de ayuda lleva ese id (antes la referencia ARIA estaba rota, #14)."""
+    html = client.get(reverse("submissions:submit")).content.decode()
+    assert 'aria-describedby="id_file_helptext"' in html
+    assert 'id="id_file_helptext"' in html

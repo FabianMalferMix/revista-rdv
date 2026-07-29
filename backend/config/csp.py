@@ -36,6 +36,11 @@ _DIRECTIVES = (
 )
 
 
+# El sitio no usa estas APIs del navegador; se deniegan explícitamente (defensa en
+# profundidad, y bloquea que un embed las solicite en nombre de la página).
+_PERMISSIONS_POLICY = "geolocation=(), camera=(), microphone=(), payment=()"
+
+
 def _new_nonce():
     return base64.b64encode(os.urandom(16)).decode("ascii")
 
@@ -61,6 +66,10 @@ class ContentSecurityPolicyMiddleware:
         # SimpleLazyObject: el nonce solo se materializa si la plantilla lo usa.
         request.csp_nonce = SimpleLazyObject(nonce)
         response = self.get_response(request)
+
+        # Permissions-Policy restrictiva en todas las respuestas (setdefault: una vista
+        # concreta puede fijar la suya). Se hace antes del posible early-return del CSP.
+        response.setdefault("Permissions-Policy", _PERMISSIONS_POLICY)
 
         # No pisar una CSP fijada aguas arriba (p. ej. por una vista concreta).
         if (

@@ -28,7 +28,7 @@
           {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
         </label>
         {{ field }}
-        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        {% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
         {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
       </div>
     {% endfor %}

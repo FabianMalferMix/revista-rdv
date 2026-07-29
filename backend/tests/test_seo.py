@@ -113,3 +113,51 @@ def test_canonical_preserves_pagination(client):
     """En listados paginados sí se preserva ?page= (cada página es un recurso)."""
     head = client.get("/?page=2").content.decode().split("</head>")[0]
     assert '<link rel="canonical" href="http://testserver/?page=2">' in head
+
+
+# ── image en JSON-LD, fallback de meta description, endDate de Event ─────────
+
+
+def test_article_jsonld_includes_image_when_og_available(client, make_article):
+    """El JSON-LD de Article incluye "image" cuando hay portada o og_image del sitio (#15)."""
+    profile = SiteProfile.load()
+    profile.og_image = _asset()
+    profile.save()
+    art = make_article(status=EditorialStatus.PUBLISHED, slug="art-img", title="Con Imagen")
+    data = _jsonld(client.get(reverse("content:article_detail", args=[art.slug])).content)
+    article_ld = next(d for d in data if d.get("@type") == "Article")
+    assert article_ld.get("image", "").startswith("http")
+
+
+def test_article_meta_description_falls_back_to_title(client, make_article):
+    """Sin seo_description ni subtitle, la meta description cae al título (no vacía, #30)."""
+    art = make_article(status=EditorialStatus.PUBLISHED, slug="sin-desc", title="Solo Título")
+    html = client.get(reverse("content:article_detail", args=[art.slug])).content.decode()
+    assert '<meta name="description" content="Solo Título">' in html
+
+
+def test_event_jsonld_includes_enddate_when_present(client):
+    """El JSON-LD de Event declara endDate cuando el evento tiene hora de fin (#31)."""
+    start = timezone.now() + timedelta(days=5)
+    ev = Event.objects.create(
+        slug="ev-end",
+        title="Evento Con Fin",
+        starts_at=start,
+        ends_at=start + timedelta(hours=2),
+        published=True,
+    )
+    data = _jsonld(client.get(reverse("agenda:event_detail", args=[ev.slug])).content)
+    event_ld = next(d for d in data if d.get("@type") == "Event")
+    assert "endDate" in event_ld
+
+
+def test_event_jsonld_omits_enddate_when_absent(client):
+    ev = Event.objects.create(
+        slug="ev-noend",
+        title="Sin Fin",
+        starts_at=timezone.now() + timedelta(days=5),
+        published=True,
+    )
+    data = _jsonld(client.get(reverse("agenda:event_detail", args=[ev.slug])).content)
+    event_ld = next(d for d in data if d.get("@type") == "Event")
+    assert "endDate" not in event_ld
