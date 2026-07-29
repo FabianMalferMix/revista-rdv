@@ -14,9 +14,19 @@
 	}
 
 	# Medios servidos directamente desde el volumen (cierra A3: MEDIA en producción).
+	# OJO: estas respuestas NO pasan por Django, así que ni el SecurityMiddleware ni
+	# config.csp las tocan. Las cabeceras se emiten aquí para que un archivo subido
+	# desde el panel no pueda ejecutarse como HTML/JS en el origen del sitio (S-01);
+	# es la capa que además protege lo ya subido, sin migrar datos.
 	handle_path /media/* {
 		root * /srv/media
 		file_server
+		header {
+			X-Content-Type-Options nosniff
+			Content-Security-Policy "default-src 'none'; sandbox"
+			Referrer-Policy no-referrer
+			X-Frame-Options DENY
+		}
 	}
 
 	# Todo lo demás va a gunicorn; los estáticos los sirve WhiteNoise dentro de la app.

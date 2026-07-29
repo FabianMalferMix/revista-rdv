@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.media.validators import validate_pdf_extension
+
 
 class SiteProfile(models.Model):
     """Identidad del colectivo (fila única). Alimenta cabecera, pie y dossier.
@@ -32,6 +34,7 @@ class SiteProfile(models.Model):
     dossier_pdf = models.FileField(
         upload_to="dossier/",
         blank=True,
+        validators=[validate_pdf_extension],
         help_text="PDF del kit de prensa (override manual opcional del dossier generado).",
     )
     og_image = models.ForeignKey(
@@ -112,6 +115,7 @@ class Publication(models.Model):
     pdf = models.FileField(
         upload_to="publications/",
         blank=True,
+        validators=[validate_pdf_extension],
         help_text="PDF de descarga gratuita (plaquettes/fanzines digitales).",
     )
     featured = models.BooleanField(default=False)

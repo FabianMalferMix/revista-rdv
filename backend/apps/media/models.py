@@ -7,6 +7,8 @@ from django.core.files.base import ContentFile
 from django.db import models
 from PIL import Image
 
+from .validators import validate_audio_video_extension
+
 
 class MediaAsset(models.Model):
     """Biblioteca de imágenes. width/height son derivados del archivo (no editables)."""
@@ -135,7 +137,11 @@ class Recording(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
     kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.VIDEO)
-    file = models.FileField(upload_to="recordings/%Y/%m/", blank=True)
+    file = models.FileField(
+        upload_to="recordings/%Y/%m/",
+        blank=True,
+        validators=[validate_audio_video_extension],
+    )
     embed_url = models.URLField(
         blank=True, help_text="URL de YouTube/Vimeo/SoundCloud/Bandcamp (alternativa al archivo)."
     )
