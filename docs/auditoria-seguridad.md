@@ -276,10 +276,14 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 
 ## Estado de ejecución
 
-> Actualizado al cierre de la ola S1. **Olas S0 y S1 completas** (lotes `sec-1` … `sec-8`),
-> mergeadas en `main` con `--no-ff`. Suite: **249 → 292 tests**, cobertura 95 %.
-> Compuertas verificadas en local: ruff, `makemigrations --check`, bandit (sin medium/high),
-> gitleaks (81 commits, sin fugas), `caddy validate`.
+> Actualizado al cierre de la ola S2. **Olas S0, S1 y S2 completas** (lotes `sec-1` … `sec-13`),
+> mergeadas en `main` con `--no-ff`. Suite: **249 → 329 tests**, cobertura 93 % (piso: 80 %).
+> Compuertas verificadas en local sobre el estado final: ruff, `makemigrations --check`,
+> bandit (sin medium/high), gitleaks (sin fugas), `caddy validate`.
+>
+> *Fe de erratas:* los mensajes de los commits `sec-11`, `sec-12` y `sec-13` citan 331, 343
+> y 350 tests. Son incorrectos —se leyeron de los puntos de progreso de pytest en vez de la
+> línea de resumen—. La cifra real al cierre de S2 es **329**.
 
 | Ítem | Lote | Estado |
 |---|---|---|
@@ -292,9 +296,24 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 | **S-08** Sin límites de recursos ni endurecimiento | `sec-7` | ✅ Límites, `cap_drop`, `no-new-privileges` |
 | **S-22** 500 con Redis caído | `sec-8` | ✅ `config/cache.ResilientRedisCache` |
 | **S-23** Sin `EMAIL_TIMEOUT` ni límites de tarea | `sec-8` | ✅ |
-| **S-06** Respaldos legibles y sin cifrar | `sec-9` | ⏳ Ola S2 |
+| **S-06** Respaldos legibles y sin cifrar | `sec-9` | ✅ `umask 077` + `chmod 700`; `restore.sh` exige confirmación |
+| **S-13** Ficheros huérfanos al borrar | `sec-10` | ✅ Señales `post_delete`/`pre_save` en los 5 campos con archivo |
+| **S-14** EXIF con GPS en los originales | `sec-10` | ✅ `MediaAsset.strip_metadata()` |
+| **S-15** Tokens sin caducidad ni un solo uso | `sec-11` | ✅ `confirm_token` (48 h, un uso) separado del de baja |
+| **S-16** Confirmar/dar de baja por GET | `sec-11` | ✅ Mutación por POST + un-clic RFC 8058 |
+| **S-17** Oráculo de pertenencia en el alta | `sec-11` | ✅ Respuesta neutra en las cuatro ramas |
+| **S-18** Purga incompleta de PII | `sec-12` | ✅ Cubre bajas y registros de axes (90 días) |
+| **S-20** Tokens en logs y en Sentry | `sec-12` | 🟡 Redactados en el log de Django y en Sentry; el log de acceso de **gunicorn** sigue expuesto (ver abajo) |
+| **S-21** Correo del suscriptor en el log | `sec-11` | ✅ Se registra el `pk` |
+| **S-19** Embeds de terceros sin consentimiento | `sec-13` | ✅ Click-to-play; la portada ya no contacta con YouTube/Vimeo |
 | **S-24** Redis único caché+broker | — | 🟡 Parcial: una escritura rechazada ya no da 500; separar instancias queda pendiente |
 | **S-27** Estáticos servidos por gunicorn | — | ⏳ Exige un volumen compartido entre `web` y `proxy`; lote propio |
+
+**Residuo consciente de S-20.** El log de acceso de gunicorn (`--access-logfile -`) sigue
+escribiendo la ruta completa, y ahí viaja el token de baja. Lo emite su propio logger, que no
+admite un formato que redacte. Cerrarlo exige una de tres: mover el log de acceso al borde
+(Caddy) y quitar el de gunicorn, sustituir su `logger-class`, o —solución de fondo— sacar el
+secreto de la ruta y pasarlo en el cuerpo del POST. Anotado para S4.
 
 **Hallazgos NUEVOS descubiertos durante la remediación** (no estaban en la auditoría):
 
@@ -309,6 +328,14 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
   —que además asume `https` en vez de `http`, mejor por defecto—. Pendiente, ola S4.
 - **El Caddyfile no lo validaba ni lo probaba nada.** Ahora el job `prod-runtime` corre
   `caddy validate` y verifica las cabeceras de `/media/` sirviendo un archivo real.
+- **El job `backup-restore` no ejecutaba los scripts de respaldo**: imitaba `pg_dump` con
+  los mismos flags, así que nada cubría `backup.sh` ni `restore.sh`. Ahora corre `backup.sh`
+  de verdad, afirma los permisos de los tres artefactos y comprueba que `restore.sh` se
+  niega a destruir sin confirmación.
+- **La señal `pre_save` de `sec-10` introdujo una consulta de más** en cada alta, porque
+  `SiteProfile` fuerza `pk=1` por ser singleton y la comprobación por `pk` la tomaba por
+  actualización. La detectó el presupuesto anti-N+1 de `test_performance.py`; se corrigió
+  usando `_state.adding`. Es el argumento a favor de mantener esos presupuestos.
 
 ## Plan de remediación
 
