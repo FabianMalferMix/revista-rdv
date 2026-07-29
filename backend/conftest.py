@@ -44,6 +44,23 @@ def autor(db, groups):
 
 
 @pytest.fixture
+def legal_pages(db):
+    """Re-crea las páginas legales que siembran las migraciones de datos (0007 y la
+    actualización a Ley 21.719 de 0010), reutilizando sus funciones RunPython. Lo
+    necesitan los tests que consultan esas páginas directamente, porque un test
+    transaccional previo (transaction=True) pudo vaciar la tabla."""
+    import importlib
+
+    from django.apps import apps as django_apps
+
+    for module, func in (
+        ("apps.content.migrations.0007_legal_pages", "create_pages"),
+        ("apps.content.migrations.0010_privacy_ley_21719", "update_privacy"),
+    ):
+        getattr(importlib.import_module(module), func)(django_apps, None)
+
+
+@pytest.fixture
 def make_article(db):
     """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
     from apps.content.models import Article, EditorialStatus

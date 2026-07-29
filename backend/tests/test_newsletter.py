@@ -102,7 +102,7 @@ def test_subscribe_next_same_site_is_honored(client):
     assert resp["Location"] == "/textos/"
 
 
-def test_legal_pages_published():
+def test_legal_pages_published(legal_pages):
     from django.test import Client
 
     c = Client()
@@ -117,7 +117,7 @@ def test_footer_has_legal_links_and_consent(client):
     assert b"pol\xc3\xadtica de privacidad" in content  # nota de consentimiento del form
 
 
-def test_privacy_page_cites_ley_21719(client):
+def test_privacy_page_cites_ley_21719(client, legal_pages):
     # La política actualizada cita la Ley 21.719 (además de la 19.628).
     resp = client.get(reverse("content:page_detail", args=["privacidad"]))
     assert resp.status_code == 200
