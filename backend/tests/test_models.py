@@ -19,8 +19,10 @@ def test_reading_time_minimum_one(make_article):
 
 
 def test_search_vector_populated(make_article):
+    # El vector se construye con unaccent() (migración 0011): el título acentuado se
+    # encuentra con un término sin acento, que es como consulta la vista.
     article = make_article(title="Reseña de poesía chilena", status=EditorialStatus.PUBLISHED)
-    match = Article.objects.filter(search_vector=SearchQuery("poesía", config="spanish"))
+    match = Article.objects.filter(search_vector=SearchQuery("poesia", config="spanish"))
     assert article in match
 
 
