@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar{% if q %}: {{ q }}{% endif %} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Buscar textos y poemas del colectivo.{% endblock %}
+
+{% block content %}
+  <h1>Búsqueda</h1>
+  <form class="search-page" role="search" action="{% url 'content:search' %}" method="get">
+    <label for="q-page" class="sr-only">Buscar textos y poemas</label>
+    <input id="q-page" type="search" name="q" value="{{ q }}" placeholder="Buscar textos…" autocomplete="off">
+    <button type="submit">Buscar</button>
+  </form>
+
+  {% if q %}<p class="search-summary">Resultados para «{{ q }}»</p>{% endif %}
+  {% include "content/partials/_search_results.html" %}
+{% endblock %}

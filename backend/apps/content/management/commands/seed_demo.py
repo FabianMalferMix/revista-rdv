@@ -750,7 +750,7 @@ class Command(BaseCommand):
             {
                 "slug": "resena-la-casa-vacia",
                 "title": "La casa vacía: el regreso como forma del duelo",
-                "subtitle": "Programada — se publicará automáticamente en unos minutos.",
+                "subtitle": "Vergara vuelve a la casa de la infancia: el duelo como arqueología doméstica.",
                 "type": ArticleType.RESENA,
                 "section": "Reseñas",
                 "status": EditorialStatus.SCHEDULED,

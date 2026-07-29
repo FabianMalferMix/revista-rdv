@@ -43,7 +43,9 @@
   <header class="masthead">
     <div class="wrap top">
       <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
-      <form class="search" role="search" action="{% url 'content:home' %}">
+      {# Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
+         el input hace la búsqueda en vivo en el overlay. #}
+      <form class="search" role="search" action="{% url 'content:search' %}">
         <input type="search" name="q" placeholder="Buscar textos…"
                hx-get="{% url 'content:search' %}"
                hx-trigger="keyup changed delay:300ms, search"

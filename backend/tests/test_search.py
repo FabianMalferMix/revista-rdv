@@ -77,3 +77,26 @@ def test_article_search_vector_tracks_bulk_update(client, make_article):
     Article.objects.filter(pk=art.pk).update(body="quetzalcoatl emplumado")
     resp = client.get(reverse("content:search"), {"q": "quetzalcoatl"})
     assert b"Rese\xc3\xb1a bulk" in resp.content
+
+
+# ── Degradación sin JavaScript (hallazgo #09) ───────────────────────────────
+
+
+def test_search_without_js_returns_full_page(client, make_article):
+    """Una navegación normal (sin htmx) recibe la página completa con layout, no un
+    fragmento suelto: la búsqueda funciona sin JavaScript."""
+    _publish(make_article(slug="fts-page", title="Reseña navegable"))
+    html = client.get(reverse("content:search"), {"q": "navegable"}).content.decode()
+    assert "<h1>Búsqueda</h1>" in html  # cabecera de la página completa
+    assert "</html>" in html  # layout de base presente
+    assert "Reseña navegable" in html  # el resultado aparece
+
+
+def test_search_with_htmx_returns_fragment_only(client, make_article):
+    """Con htmx (HX-Request) se devuelve solo el fragmento, sin el layout."""
+    _publish(make_article(slug="fts-frag", title="Reseña fragmento"))
+    resp = client.get(reverse("content:search"), {"q": "fragmento"}, headers={"HX-Request": "true"})
+    html = resp.content.decode()
+    assert "Reseña fragmento" in html
+    assert "<h1>Búsqueda</h1>" not in html  # sin cabecera de página
+    assert "</html>" not in html  # sin layout
