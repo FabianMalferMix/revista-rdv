@@ -5,6 +5,12 @@ Este código es propietario. No se concede licencia para usar, copiar, modificar
 fusionar, publicar ni distribuir el código sin autorización expresa y por escrito
 de sus titulares.
 
+EXCEPCIÓN — componentes de terceros: lo anterior se aplica al código PROPIO de este
+proyecto. El árbol incluye además componentes de terceros (entre ellos TinyMCE, bajo
+GPLv2-or-later, y la tipografía Fraunces, bajo SIL OFL 1.1) que se redistribuyen bajo
+SUS PROPIAS licencias y no quedan cubiertos por la declaración anterior. El inventario
+completo, con sus obligaciones, está en NOTICE.md.
+
 Nota para el colectivo:
 - Si prefieren publicar el CÓDIGO bajo una licencia de código abierto (p. ej. MIT,
   Apache-2.0 o AGPL-3.0), reemplacen este archivo por el texto de esa licencia.
