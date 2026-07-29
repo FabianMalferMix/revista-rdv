@@ -1,10 +1,13 @@
+import logging
 import unicodedata
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
+from django.db import DatabaseError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
 from apps.agenda.services import stats as trajectory_stats
@@ -23,6 +26,8 @@ from .models import (
     Section,
     Tag,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _published():
@@ -173,40 +178,72 @@ def _strip_accents(text):
     return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
 
+# Tope de resultados mostrados y de candidatos que se traen de cada tabla.
+SEARCH_RESULTS = 10
+# Longitud máxima de la consulta: por encima de esto no aporta precisión y solo
+# encarece el `to_tsquery`.
+SEARCH_MAX_QUERY = 120
+
+
+@ratelimit(key="ip", rate="60/m", method="GET", block=False)
 def search(request):
-    """Buscador en vivo (htmx): busca en artículos y poemas publicados (FTS)."""
-    q = request.GET.get("q", "").strip()
+    """Buscador en vivo (htmx): busca en artículos y poemas publicados (FTS).
+
+    Endurecido tras el hallazgo S-04: era el endpoint público más caro del sitio y el
+    único sin ningún control anti-abuso. Además, el recorte a 10 se hacía en Python
+    DESPUÉS de materializar todas las filas que casaban —con el cuerpo entero de cada
+    artículo—, así que el SQL salía sin LIMIT y el coste crecía con el archivo.
+
+    El rate (60/m) deja holgura al buscador en vivo, que dispara una petición por
+    pulsación con 300 ms de rebote, y acota el abuso sostenido.
+    """
+    # El byte NUL no lo admite un campo de texto de PostgreSQL: llegaba hasta el driver
+    # y producía un DataError no capturado, es decir un 500 público con `?q=%00`.
+    q = request.GET.get("q", "").replace("\x00", "")[:SEARCH_MAX_QUERY].strip()
     results = []
-    if q:
+    limited = bool(getattr(request, "limited", False))
+    if q and not limited:
         query = SearchQuery(_strip_accents(q), config="spanish")
+        # `[:SEARCH_RESULTS]` en cada queryset hace que el LIMIT viaje al SQL, y
+        # `defer("body")` evita traer el texto completo de cada pieza para nada.
         articles = (
             _published()
             .filter(search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
+            .defer("body")
+            .order_by("-rank")[:SEARCH_RESULTS]
         )
         poems = (
             _published_poems()
             .filter(search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
+            .defer("body")
+            .order_by("-rank")[:SEARCH_RESULTS]
         )
-        items = [
-            {
-                "url": reverse("content:article_detail", args=[a.slug]),
-                "title": a.title,
-                "kind": a.get_type_display(),
-                "rank": a.rank,
-            }
-            for a in articles
-        ] + [
-            {
-                "url": p.get_absolute_url(),
-                "title": p.title,
-                "kind": "Poema",
-                "rank": p.rank,
-            }
-            for p in poems
-        ]
-        results = sorted(items, key=lambda r: r["rank"], reverse=True)[:10]
+        try:
+            items = [
+                {
+                    "url": reverse("content:article_detail", args=[a.slug]),
+                    "title": a.title,
+                    "kind": a.get_type_display(),
+                    "rank": a.rank,
+                }
+                for a in articles
+            ] + [
+                {
+                    "url": p.get_absolute_url(),
+                    "title": p.title,
+                    "kind": "Poema",
+                    "rank": p.rank,
+                }
+                for p in poems
+            ]
+        except DatabaseError:
+            # Red de seguridad: cualquier término que el motor de FTS rechace devuelve
+            # «sin resultados» en vez de un 500 público.
+            logger.warning("Consulta de búsqueda rechazada por la BD", exc_info=True)
+            items = []
+        results = sorted(items, key=lambda r: r["rank"], reverse=True)[:SEARCH_RESULTS]
     # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
     # recibe la página completa con layout, para que la búsqueda degrade con gracia.
     template = (
@@ -214,7 +251,7 @@ def search(request):
         if request.headers.get("HX-Request")
         else "content/search.html"
     )
-    return render(request, template, {"results": results, "q": q})
+    return render(request, template, {"results": results, "q": q, "limited": limited})
 
 
 def healthz(request):

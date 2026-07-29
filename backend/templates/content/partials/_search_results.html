@@ -1,4 +1,6 @@
-{% if q %}
+{% if limited %}
+  <p class="empty">Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo.</p>
+{% elif q %}
   {% if results %}
     <ul class="search-list">
       {% for r in results %}
