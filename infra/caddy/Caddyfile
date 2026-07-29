@@ -1,5 +1,19 @@
 {
 	admin off
+
+	# Timeouts de borde (hallazgo S-07). Sin ellos, Caddy sostenía indefinidamente una
+	# conexión lenta y la reenviaba a gunicorn, que corre con workers de tipo sync: unas
+	# pocas conexiones bastaban para ocupar todos los procesos y tumbar el sitio
+	# (slowloris). Con read_body/read_header acotados, Caddy absorbe o corta el cuerpo
+	# ANTES de tocar la aplicación.
+	servers {
+		timeouts {
+			read_body 30s
+			read_header 10s
+			write 60s
+			idle 120s
+		}
+	}
 }
 
 # SITE_ADDRESS = dominio real en producción (Caddy obtiene TLS de Let's Encrypt

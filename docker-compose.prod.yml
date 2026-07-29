@@ -18,8 +18,15 @@ services:
       - 0.0.0.0:8000
       - --workers
       - ${GUNICORN_WORKERS:-3}
+      # Con hilos, gunicorn usa la clase gthread en vez de sync: una petición lenta ya
+      # no bloquea un proceso entero, así que el paralelismo efectivo pasa de 3 a 12
+      # (hallazgo S-07). Los timeouts del borde están en infra/caddy/Caddyfile.
+      - --threads
+      - ${GUNICORN_THREADS:-4}
       - --timeout
-      - "60"
+      - "30"
+      - --graceful-timeout
+      - "30"
       - --max-requests
       - "1000"
       - --max-requests-jitter
