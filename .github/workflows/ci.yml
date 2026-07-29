@@ -273,3 +273,48 @@ jobs:
           docker exec prod-worker sh -c 'celery -A config inspect ping -d celery@$(hostname) -t 10 >/dev/null 2>&1'
           docker exec prod-beat python -c "import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)"
           echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
+
+  # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
+  # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
+  # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.
+  backup-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir imagen de producción
+        run: docker build --target prod -t resenas-prod ./backend
+
+      - name: Roundtrip de respaldo/restauración (pg_dump → pg_restore)
+        run: |
+          docker network create bknet
+          docker run -d --name bk-db --network bknet \
+            -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password postgres:16
+          for i in $(seq 1 30); do
+            docker exec bk-db pg_isready -U resenas >/dev/null 2>&1 && break
+            sleep 2
+          done
+          # Migra el esquema REAL con la imagen prod (triggers FTS, extensión unaccent,
+          # páginas legales de migración).
+          docker run --rm --network bknet \
+            -e DJANGO_DEBUG=0 \
+            -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
+            -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password \
+            -e DJANGO_ALLOWED_HOSTS=localhost -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
+            --entrypoint python resenas-prod manage.py migrate
+          PG="docker exec -e PGPASSWORD=ci-strong-db-password bk-db"
+          ORIG=$($PG psql -U resenas -d resenas -tAc "SELECT count(*) FROM content_page;")
+          # Respaldo: pg_dump --format=custom (igual que backup.sh).
+          $PG pg_dump -U resenas -d resenas --format=custom --file=/tmp/db.dump
+          # Restauración en BD limpia con los flags de restore.sh.
+          $PG psql -U resenas -d postgres -qc "CREATE DATABASE restored;"
+          $PG pg_restore -U resenas -d restored --clean --if-exists --no-owner --no-acl /tmp/db.dump
+          REST=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM content_page;")
+          TRG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_trigger WHERE tgname LIKE '%search_vector_trg';")
+          EXT=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_extension WHERE extname='unaccent';")
+          echo "content_page orig=$ORIG restaurado=$REST | triggers FTS=$TRG | unaccent=$EXT"
+          test "$ORIG" = "$REST" && test "$ORIG" -gt 0 && test "$TRG" = "2" && test "$EXT" = "1"
+          echo "OK: respaldo restaurado íntegro (datos + triggers FTS + extensión)"
+          docker rm -f bk-db >/dev/null && docker network rm bknet >/dev/null
