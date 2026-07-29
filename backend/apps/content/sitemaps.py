@@ -10,6 +10,39 @@ from apps.showcase.models import Publication
 from .models import Article, Collection, EditorialStatus, Page, Poem, PublishStatus, Section
 
 
+class StaticViewSitemap(Sitemap):
+    """Portada y páginas índice/aterrizaje (estables, sin modelo). Antes el sitemap
+    solo listaba el detalle de cada pieza y omitía estas rutas de navegación (#12)."""
+
+    changefreq = "weekly"
+
+    # Nombres de URL de las landing públicas y estables.
+    _views = [
+        "content:home",
+        "content:text_archive",
+        "content:poem_index",
+        "content:collection_index",
+        "people:member_index",
+        "agenda:agenda",
+        "agenda:trayectoria",
+        "agenda:gallery",
+        "media:recording_index",
+        "showcase:publication_index",
+        "showcase:press_index",
+        "showcase:partner_index",
+        "showcase:dossier",
+    ]
+
+    def items(self):
+        return self._views
+
+    def location(self, item):
+        return reverse(item)
+
+    def priority(self, item):
+        return 1.0 if item == "content:home" else 0.6
+
+
 class ArticleSitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.8
@@ -146,6 +179,7 @@ class BookAuthorSitemap(_ReviewsSitemap):
 
 
 SITEMAPS = {
+    "estaticas": StaticViewSitemap,
     "articulos": ArticleSitemap,
     "poemas": PoemSitemap,
     "secciones": SectionSitemap,
