@@ -116,3 +116,37 @@ jobs:
           docker exec prod-smoke id
           docker logs prod-smoke
           docker rm -f prod-smoke
+
+      - name: Smoke del pipeline de estáticos de producción (collectstatic + manifiesto)
+        env:
+          DJANGO_SECRET_KEY: ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW
+          POSTGRES_PASSWORD: ci-strong-db-password
+          DJANGO_ALLOWED_HOSTS: ci.example.com
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
+        run: |
+          # Ejercita la ruta REAL de estáticos de producción, que el smoke de gunicorn
+          # NO cubre (corre con DEBUG=1 y --entrypoint gunicorn, saltándose el
+          # entrypoint donde vive collectstatic). Con DEBUG=0 el entrypoint corre
+          # collectstatic con VendoredStaticFilesStorage (hash + manifiesto WhiteNoise,
+          # con vendor/tinymce/ exento del hash). Sin BD: DJANGO_SKIP_MIGRATE=1.
+          docker run --name prod-static \
+            -e DJANGO_DEBUG=0 -e DJANGO_SKIP_MIGRATE=1 -e DJANGO_COLLECTSTATIC=1 \
+            -e DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
+            -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            -e DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
+            -e DJANGO_CSRF_TRUSTED_ORIGINS="$DJANGO_CSRF_TRUSTED_ORIGINS" \
+            resenas-prod true
+          docker cp prod-static:/app/staticfiles/staticfiles.json staticfiles.json
+          docker rm -f prod-static
+          python3 - <<'PY'
+          import json
+          m = json.load(open("staticfiles.json"))["paths"]
+          # 1) Un estático propio queda hasheado (el manifiesto lo mapea a otro nombre).
+          site = [k for k in m if k.endswith("css/site.css")]
+          assert site and m[site[0]] != site[0], "css/site.css no quedó hasheado"
+          # 2) TinyMCE queda SIN hash: su carga perezosa relativa se rompería si no.
+          tiny = [k for k in m if k.startswith("vendor/tinymce/")]
+          assert tiny, "no hay entradas de vendor/tinymce/ en el manifiesto"
+          assert all(m[k] == k for k in tiny), "vendor/tinymce/ fue hasheado (no debería)"
+          print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
+          PY
