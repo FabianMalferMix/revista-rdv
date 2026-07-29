@@ -19,11 +19,6 @@ from apps.showcase.models import SiteProfile
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture(autouse=True)
-def _isolated_media(settings, tmp_path):
-    settings.MEDIA_ROOT = str(tmp_path)
-
-
 def _jsonld(content):
     blocks = re.findall(rb'<script type="application/ld\+json"[^>]*>(.*?)</script>', content, re.S)
     return [json.loads(b.decode()) for b in blocks]
