@@ -22,3 +22,16 @@ def embed_src(url):
     if match:
         return f"https://player.vimeo.com/video/{match.group(1)}"
     return ""
+
+
+@register.filter
+def embed_provider(url):
+    """Nombre legible del proveedor, para poder avisar a quién se conecta el visitante
+    antes de que ocurra (hallazgo S-19). Cadena vacía si no se reconoce."""
+    if not url:
+        return ""
+    if _YOUTUBE.search(url):
+        return "YouTube"
+    if _VIMEO.search(url):
+        return "Vimeo"
+    return ""

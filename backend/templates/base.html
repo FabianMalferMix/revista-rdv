@@ -36,6 +36,8 @@
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   {# htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. #}
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+  {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa (S-19). #}
+  <script src="{% static 'js/embeds.js' %}" defer></script>
   {% block head_extra %}{% endblock %}
 </head>
 <body>
