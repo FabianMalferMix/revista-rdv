@@ -95,3 +95,27 @@ def test_articles_feed_lists_published_hides_draft(client, make_article):
     content = client.get(reverse("feed")).content.decode()
     assert reverse("content:article_detail", args=[pub.slug]) in content
     assert reverse("content:article_detail", args=["feed-draft"]) not in content
+
+
+# ── Escala: cap de ítems del feed y sitemap sin truncado silencioso ──────────
+
+
+def test_articles_feed_caps_at_twenty_items(client, make_article):
+    """El RSS de artículos limita a 20 ítems (items()[:20]), aunque haya más."""
+    import xml.dom.minidom as minidom
+
+    for i in range(25):
+        make_article(status=EditorialStatus.PUBLISHED, published_at=timezone.now(), slug=f"cap-{i}")
+    dom = minidom.parseString(client.get(reverse("feed")).content)
+    assert len(dom.getElementsByTagName("item")) == 20
+
+
+def test_sitemap_lists_all_items_without_truncation(client, make_article):
+    """El sitemap emite todas las piezas publicadas (sin truncado silencioso) cuando
+    su número supera el de una página típica pero no el límite de 50k de Django."""
+    slugs = []
+    for i in range(55):
+        art = make_article(status=EditorialStatus.PUBLISHED, slug=f"volumen-{i}")
+        slugs.append(art.slug)
+    content = client.get(reverse("sitemap")).content.decode()
+    assert all(reverse("content:article_detail", args=[s]) in content for s in slugs)
