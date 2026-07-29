@@ -200,3 +200,68 @@ jobs:
         if: github.event_name == 'pull_request'
         continue-on-error: true
         uses: actions/dependency-review-action@v4
+
+  # Ejercita el CAMINO DE PRODUCCIÓN real (DEBUG=0) sirviendo peticiones, que la
+  # suite (DEBUG=1) y el smoke de gunicorn (DEBUG=1, solo /healthz/) no cubren:
+  # cabeceras de seguridad, /readyz/ con BD+broker, estático hasheado por WhiteNoise
+  # y los healthchecks de compose de web/worker/beat (#23, #24, #25). Levanta db y
+  # redis como contenedores en una red propia (misma receta validada localmente).
+  prod-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir imagen de producción
+        run: docker build --target prod -t resenas-prod ./backend
+
+      - name: Camino de producción DEBUG=0 + healthchecks de compose
+        run: |
+          docker network create qa13net
+          docker run -d --name qa13-db --network qa13net \
+            -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password postgres:16
+          docker run -d --name qa13-redis --network qa13net redis:7
+          for i in $(seq 1 30); do
+            docker exec qa13-db pg_isready -U resenas >/dev/null 2>&1 && break
+            sleep 2
+          done
+
+          COMMON="-e DJANGO_DEBUG=0 \
+            -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
+            -e POSTGRES_HOST=qa13-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password \
+            -e CELERY_BROKER_URL=redis://qa13-redis:6379/0 \
+            -e CELERY_RESULT_BACKEND=redis://qa13-redis:6379/1 \
+            -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
+            -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost"
+
+          # web (DEBUG=0): el entrypoint migra + collectstatic (VendoredStaticFilesStorage).
+          docker run -d --name prod-web --network qa13net $COMMON \
+            -e DJANGO_COLLECTSTATIC=1 -e DJANGO_SECURE_SSL_REDIRECT=0 resenas-prod
+
+          echo "Esperando a gunicorn (migrate + collectstatic)..."
+          for i in $(seq 1 40); do
+            docker exec prod-web python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/',timeout=3)" 2>/dev/null && break
+            sleep 3
+          done
+
+          echo "--- /healthz/ = ok ---"
+          docker exec prod-web python -c "import urllib.request as u; assert u.urlopen('http://127.0.0.1:8000/healthz/',timeout=5).read().strip()==b'ok'"
+          echo "--- /readyz/ = 200 ready (BD + broker) ---"
+          docker exec prod-web python -c "import urllib.request as u,json; r=u.urlopen('http://127.0.0.1:8000/readyz/',timeout=5); assert r.status==200 and json.load(r)['status']=='ready'"
+          echo "--- / con cabeceras de seguridad (camino DEBUG=0) ---"
+          docker exec prod-web python -c "import urllib.request as u,sys; h=u.urlopen('http://127.0.0.1:8000/',timeout=5).headers; sys.exit(0 if all(h.get(x) for x in ['Content-Security-Policy','X-Frame-Options','X-Content-Type-Options','Permissions-Policy']) else 1)"
+          echo "--- estático hasheado servido por WhiteNoise ---"
+          docker exec prod-web python -c "import json,urllib.request as u; hh=json.load(open('/app/staticfiles/staticfiles.json'))['paths']['css/site.css']; assert u.urlopen('http://127.0.0.1:8000/static/'+hh,timeout=5).status==200"
+          echo "--- healthcheck web de compose ---"
+          docker exec prod-web python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5).status==200 else 1)"
+
+          echo "--- worker y beat + sus healthchecks de compose ---"
+          docker run -d --name prod-worker --network qa13net $COMMON -e DJANGO_SKIP_MIGRATE=1 \
+            --entrypoint celery resenas-prod -A config worker -l warning
+          docker run -d --name prod-beat --network qa13net $COMMON -e DJANGO_SKIP_MIGRATE=1 \
+            --entrypoint celery resenas-prod -A config beat -l warning --schedule /app/celerybeat-schedule
+          sleep 20
+          docker exec prod-worker sh -c 'celery -A config inspect ping -d celery@$(hostname) -t 10 >/dev/null 2>&1'
+          docker exec prod-beat python -c "import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)"
+          echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
