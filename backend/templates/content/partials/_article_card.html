@@ -2,7 +2,7 @@
   <span class="kicker">
     {% if a.section %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.section.name }}</a> · {% endif %}{{ a.get_type_display }}
   </span>
-  <h2><a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a></h2>
+  <h3><a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a></h3>
   {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
   <span class="meta">
     {% for c in a.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if a.authors.all %} · {% endif %}{{ a.reading_time }} min · {{ a.published_at|date:"j M Y" }}
