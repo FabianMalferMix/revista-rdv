@@ -287,10 +287,14 @@ LOGGING = {
         "plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
         "json": {"()": "config.logformat.JsonFormatter"},
     },
+    # Los enlaces del boletín llevan el token en la ruta: se redacta antes de escribir
+    # nada al log (S-20).
+    "filters": {"redact_tokens": {"()": "config.redaction.RedactTokensFilter"}},
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "plain" if DEBUG else "json",
+            "filters": ["redact_tokens"],
         }
     },
     "root": {
@@ -307,10 +311,16 @@ SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 if SENTRY_DSN:
     import sentry_sdk
 
+    from config.redaction import sentry_before_breadcrumb, sentry_before_send
+
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         environment=os.environ.get("SENTRY_ENVIRONMENT", "production" if not DEBUG else "dev"),
         release=os.environ.get("SENTRY_RELEASE") or None,
         traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
         send_default_pii=False,
+        # Sin esto, el token de baja del boletín viajaba a un TERCERO dentro del nombre
+        # de la transacción y de la URL del evento (S-20).
+        before_send=sentry_before_send,
+        before_breadcrumb=sentry_before_breadcrumb,
     )
