@@ -3,7 +3,7 @@
 #   pip-compile --generate-hashes --strip-extras requirements-dev.in
 # Regenerar tras editar este archivo o requirements.in.
 -r requirements.in
-pytest>=8,<9
+pytest>=9.1.1,<10
 pytest-django>=4.8,<5
 pytest-cov>=5,<8
 pytest-randomly>=3.15,<4
