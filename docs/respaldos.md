@@ -85,6 +85,17 @@ del arranque queda como no-op.
 > argumentos (`latest` era el valor por defecto) para arrasar la base y los medios. Ahora exige
 > `RESTORE_CONFIRM=SI-DESTRUIR-<nombre-de-la-base>`, que debe coincidir con `POSTGRES_DB`.
 >
+> **Endurecimiento pendiente del sidecar (requiere una decisión sobre tu host).** El
+> contenedor de respaldos corre como **root** y monta `media`/`private_media` en
+> lectura-escritura. Ambas cosas se pueden cerrar, pero no a ciegas: añadir `user: postgres`
+> (uid 999) exige que `BACKUP_DIR` pertenezca a ese uid en el host —si no, los respaldos
+> dejan de escribirse **en silencio**—, y montar los volúmenes `:ro` rompería `restore.sh`,
+> que necesita escribirlos. Un respaldo roto es peor que un contenedor con privilegios, así
+> que se deja como paso manual: `chown -R 999:999 "$BACKUP_DIR"` y luego `user: postgres`
+> en el servicio; y si se quiere `:ro`, separar el sidecar programado del servicio de
+> restauración. Lo que sí está hecho: el sidecar ya **no** recibe el `.env` completo (antes
+> le llegaban `DJANGO_SECRET_KEY` y las credenciales de SMTP, que no necesita).
+>
 > **Permisos.** `backup.sh` corre con `umask 077` y deja los artefactos en `0600` dentro de un
 > directorio `0700`: contienen la base completa (correos, PII de envíos, hashes) y los manuscritos
 > privados. `BACKUP_DIR` debe pertenecer a un usuario dedicado y **nunca** apuntar al directorio del

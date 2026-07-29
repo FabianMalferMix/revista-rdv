@@ -11,3 +11,22 @@ media
 private_media
 celerybeat-schedule
 .env
+.env.*
+# Utillaje de test: no pinta nada en la imagen de producción.
+#
+# Dos exclusiones que NO se hacen, a propósito, aunque la auditoría las sugería:
+#  · `requirements-dev.txt` — el stage `dev` lo instala (Dockerfile 14 y 19); sin él ese
+#    stage no construye. Acaba también en la imagen de producción por el `COPY . .` del
+#    stage prod, y no hay forma de evitarlo sin sacarlo del contexto (se intentó copiarlo
+#    solo en `dev` y no sirve de nada). Se acepta: es una lista de versiones fijadas con
+#    hashes, sin secretos.
+#  · `pyproject.toml` — es la configuración de ruff y de cobertura. Excluirlo dejaría al
+#    stage `dev` ejecutando esas herramientas con los valores por defecto en silencio, a
+#    cambio de un beneficio de seguridad nulo (es un fichero de texto sin secretos).
+tests
+conftest.py
+pytest.ini
+requirements-dev.in
+.coverage
+.coverage.*
+htmlcov
