@@ -32,18 +32,32 @@ AUTHOR_PERMS = [
 class Command(BaseCommand):
     help = "Crea los grupos admin/editor/autor y asigna sus permisos."
 
-    def handle(self, *args, **options):
-        admin_group, _ = Group.objects.get_or_create(name="admin")
-        editor_group, _ = Group.objects.get_or_create(name="editor")
-        author_group, _ = Group.objects.get_or_create(name="autor")
-
-        # admin: todos los permisos.
-        admin_group.permissions.set(Permission.objects.all())
-
-        # editor: todo lo de las apps del proyecto.
-        editor_group.permissions.set(
-            Permission.objects.filter(content_type__app_label__in=EDITOR_APPS)
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--reset",
+            action="store_true",
+            help=(
+                "Reemplaza los permisos del grupo en vez de añadirlos. DESTRUCTIVO: "
+                "descarta cualquier ajuste hecho a mano desde el admin."
+            ),
         )
+
+    def handle(self, *args, **options):
+        # SIEMBRA, no sincronización (hallazgo S-12). El entrypoint ejecuta este comando
+        # en CADA arranque y usaba `.set()`, así que cualquier permiso retirado a mano
+        # desde el admin —por ejemplo, quitarle a un editor la capacidad de borrar envíos
+        # tras un incidente— reaparecía en el siguiente despliegue, en silencio.
+        #
+        # OJO: pasar de `set()` a `add()` NO basta, porque vuelve a añadir el conjunto
+        # entero y con él el permiso retirado. La única forma de respetar una decisión del
+        # operador es no tocar un grupo ya configurado: se siembra cuando el grupo se
+        # acaba de crear o está vacío, y se reemplaza solo con --reset (que el entrypoint
+        # no usa).
+        reset = options["reset"]
+
+        admin_group, admin_nuevo = Group.objects.get_or_create(name="admin")
+        editor_group, editor_nuevo = Group.objects.get_or_create(name="editor")
+        author_group, autor_nuevo = Group.objects.get_or_create(name="autor")
 
         # autor: conjunto acotado.
         author_perms = []
@@ -54,8 +68,45 @@ class Command(BaseCommand):
             ).first()
             if perm:
                 author_perms.append(perm)
-        author_group.permissions.set(author_perms)
 
+        resultados = {
+            "admin": self._sembrar(
+                admin_group, Permission.objects.all(), reset=reset, nuevo=admin_nuevo
+            ),
+            "editor": self._sembrar(
+                editor_group,
+                Permission.objects.filter(content_type__app_label__in=EDITOR_APPS),
+                reset=reset,
+                nuevo=editor_nuevo,
+            ),
+            "autor": self._sembrar(author_group, author_perms, reset=reset, nuevo=autor_nuevo),
+        }
+
+        for nombre, que_paso in resultados.items():
+            if que_paso == "conservados":
+                self.stdout.write(
+                    f"  {nombre}: ya configurado; se conservan sus permisos "
+                    f"(--reset para reemplazarlos)."
+                )
+        if reset:
+            self.stdout.write(
+                self.style.WARNING("--reset: se reemplazaron los permisos de los tres grupos.")
+            )
+
+        self._resumen(admin_group, editor_group, author_group)
+
+    @staticmethod
+    def _sembrar(group, perms, *, reset, nuevo):
+        """Asigna los permisos solo si procede. Devuelve qué se hizo."""
+        if reset:
+            group.permissions.set(perms)
+            return "reemplazados"
+        if nuevo or not group.permissions.exists():
+            group.permissions.set(perms)
+            return "sembrados"
+        return "conservados"
+
+    def _resumen(self, admin_group, editor_group, author_group):
         self.stdout.write(
             self.style.SUCCESS(
                 "Grupos listos — "

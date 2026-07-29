@@ -147,15 +147,19 @@ class EditorialItemAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(owner=request.user)  # el autor solo ve lo suyo
 
+    # Las comprobaciones por rol/estado COMPONEN con el permiso de modelo de Django, no
+    # lo sustituyen: antes, retirar `content.change_article` a alguien del grupo editor
+    # no surtía efecto, porque la respuesta se decidía solo por pertenencia al grupo. Con
+    # el `and super()...` delante, revocar el permiso en el admin vuelve a bastar.
     def has_change_permission(self, request, obj=None):
+        if not super().has_change_permission(request, obj):
+            return False
         if obj is None:
-            return super().has_change_permission(request)
-        if is_editor(request.user):
             return True
-        return can_edit_item(request.user, obj)
+        return is_editor(request.user) or can_edit_item(request.user, obj)
 
     def has_delete_permission(self, request, obj=None):
-        return is_editor(request.user)
+        return super().has_delete_permission(request, obj) and is_editor(request.user)
 
     def get_readonly_fields(self, request, obj=None):
         # `status` es readonly SIEMPRE (también para editores): solo cambia por las

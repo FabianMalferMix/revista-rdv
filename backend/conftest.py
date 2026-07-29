@@ -24,9 +24,17 @@ def _isolated_media(settings, tmp_path):
 
 @pytest.fixture
 def groups(db):
-    return {
-        name: Group.objects.get_or_create(name=name)[0] for name in ["admin", "editor", "autor"]
-    }
+    """Los tres grupos CON sus permisos, como en producción.
+
+    Antes se creaban vacíos, así que los tests del admin trabajaban con un editor sin
+    `content.change_article`: una situación que no se da en ningún despliegue, porque el
+    entrypoint ejecuta `setup_groups`. La diferencia dejó de ser inocua al hacer que las
+    comprobaciones por rol COMPONGAN con los permisos de modelo de Django (S-20).
+    """
+    from django.core.management import call_command
+
+    call_command("setup_groups", verbosity=0)
+    return {name: Group.objects.get(name=name) for name in ["admin", "editor", "autor"]}
 
 
 @pytest.fixture
