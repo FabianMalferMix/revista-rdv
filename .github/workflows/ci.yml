@@ -4,6 +4,18 @@ on:
   push:
     branches: [main]
   pull_request:
+  # pip-audit y trivy solo corrían al haber commits: un CVE publicado sobre el código
+  # ya fijado no se detectaba mientras el repositorio estuviera quieto (S-34).
+  schedule:
+    - cron: "0 6 * * 1" # lunes 06:00 UTC
+
+# Mínimo privilegio para el GITHUB_TOKEN (hallazgo S-33). Sin este bloque, el token
+# hereda los permisos por defecto del repositorio, que en muchas configuraciones
+# incluyen escritura sobre el contenido: un paso comprometido —y este workflow ejecuta
+# binarios descargados de terceros— podría empujar commits. Los jobs que necesiten más
+# lo declaran ellos mismos.
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -57,7 +69,7 @@ jobs:
 
       - name: Auditoría de dependencias (pip-audit, bloqueante)
         run: |
-          pip install pip-audit
+          pip install "pip-audit==2.10.1"  # versión fijada: resultado reproducible (S-33)
           # Audita el lockfile completo (runtime + dev). Bloqueante: falla el CI
           # ante cualquier CVE conocido en una dependencia fijada. Se ignora, de
           # forma documentada, una única advertencia SOLO de desarrollo:
@@ -175,25 +187,50 @@ jobs:
 
       - name: Escaneo de vulnerabilidades de la imagen prod (trivy, informativo)
         # Informativo (continue-on-error): CVEs HIGH/CRITICAL con fix en la imagen.
-        # Se instala el CLI en vez de usar la acción (evita depender de una versión
-        # concreta de la action). Promover a bloqueante cuando se decida el umbral.
+        # Promover a bloqueante cuando se decida el umbral.
+        #
+        # El binario se descarga de una release FIJADA y se verifica su sha256 antes de
+        # ejecutarlo (S-33). Antes se hacía `curl … /main/contrib/install.sh | sh`: código
+        # traído de una rama MUTABLE de un tercero y ejecutado sin comprobar nada, en un
+        # runner con acceso al repositorio.
         continue-on-error: true
+        env:
+          TRIVY_VERSION: "0.72.0"
+          TRIVY_SHA256: "bbb64b9695866ce4a7a8f5c9592002c5961cab378577fa3f8a040df362b9b2ea"
         run: |
-          curl -sSfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table resenas-prod
+          TARBALL="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -sSfL -o "$TARBALL" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${TARBALL}"
+          echo "${TRIVY_SHA256}  ${TARBALL}" | sha256sum -c -
+          tar -xzf "$TARBALL" trivy
+          ./trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table resenas-prod
 
   # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
   # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
   security:
     runs-on: ubuntu-latest
+    # dependency-review-action necesita leer el PR además del contenido; se le concede
+    # solo a este job en vez de subir el permiso a todo el workflow.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # gitleaks escanea todo el historial
 
       - name: Escaneo de secretos (gitleaks, bloqueante)
+        # Se verifica el sha256 del tarball ANTES de extraerlo y ejecutarlo (S-33): antes
+        # se canalizaba directo a `tar -xz`, sin comprobar nada.
+        env:
+          GITLEAKS_VERSION: "8.21.2"
+          GITLEAKS_SHA256: "5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba"
         run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz gitleaks
+          TARBALL="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$TARBALL" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${TARBALL}"
+          echo "${GITLEAKS_SHA256}  ${TARBALL}" | sha256sum -c -
+          tar -xzf "$TARBALL" gitleaks
           ./gitleaks detect --no-banner --redact -c .gitleaks.toml
 
       - uses: actions/setup-python@v7
@@ -201,8 +238,12 @@ jobs:
           python-version: "3.12"
 
       - name: SAST (bandit, severidad media+, bloqueante)
+        # Versión fijada: un job que exige --require-hashes al resto de las dependencias
+        # no debería instalar sus propias herramientas desde la última versión que haya
+        # ese día (S-33). Fijarla hace además reproducible el resultado del SAST.
         run: |
-          python -m pip install --upgrade pip bandit
+          python -m pip install --upgrade pip
+          python -m pip install "bandit==1.9.4"
           bandit -r backend/apps backend/config -ll
 
       - name: Revisión de dependencias del PR (informativo)
