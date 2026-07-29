@@ -276,11 +276,15 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 
 ## Estado de ejecución
 
-> Actualizado al cierre de la ola S3. **Olas S0, S1, S2 y S3 completas** (lotes `sec-1` …
-> `sec-17`), mergeadas en `main` con `--no-ff`. Suite: **249 → 343 tests**, cobertura 93 %
-> (piso: 80 %). Compuertas verificadas en local sobre el estado final: ruff,
-> `makemigrations --check`, bandit (severidad medium/high = 0), gitleaks (sin fugas),
-> `caddy validate`, `docker compose config`.
+> **Las cinco olas del plan (S0–S4) están COMPLETAS**: lotes `sec-1` … `sec-22`, mergeados
+> en `main` con `--no-ff`. Suite: **249 → 385 tests**. Compuertas verificadas en local sobre
+> el estado final: ruff, `makemigrations --check`, bandit (severidad medium/high = 0),
+> gitleaks (sin fugas), `caddy validate`, `docker compose config`.
+>
+> **PENDIENTE DE EMPUJAR:** nada de esto está en `origin`. El `git push` lo bloqueó el
+> clasificador de permisos y el usuario indicó que lo haría a mano. No se creó ningún PR.
+> Al retomar: `git push origin main` y verificar el CI en GitHub — hay cambios que solo el
+> CI ejercita (jobs nuevos de `/media/` y de `backup.sh`, `permissions:`, checksums).
 >
 > *Fe de erratas:* los mensajes de los commits `sec-11`, `sec-12` y `sec-13` citan 331, 343
 > y 350 tests. Son incorrectos —se leyeron de los puntos de progreso de pytest en vez de la
@@ -314,6 +318,20 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 | **S-24** Redis único caché+broker | — | 🟡 Parcial: una escritura rechazada ya no da 500; separar instancias queda pendiente |
 | **S-27** Estáticos servidos por gunicorn | — | ⏳ Exige un volumen compartido entre `web` y `proxy`; lote propio |
 | **S-35** Imágenes de compose fuera de Dependabot | — | ⏳ Abierto a propósito (ver abajo) |
+| Ola **S4** completa | `sec-18` … `sec-22` | ✅ Contrato del saneo + deuda Django 6; `style-src` estricto en público; admin (S-11, S-12, permisos que componen); operación (S-28, S-29, residuo de S-20); feed por petición (S-36) |
+
+**Lo que S4 dejó abierto, con su motivo:**
+
+- **Sidecar de respaldos como root y con volúmenes en lectura-escritura.** `user: postgres`
+  exige que `BACKUP_DIR` pertenezca al uid 999 en el host —si no, los respaldos dejan de
+  escribirse **en silencio**— y `:ro` rompería `restore.sh`. Un respaldo roto es peor que un
+  contenedor con privilegios. Queda como paso manual en `docs/respaldos.md`, con el `chown`
+  previo. Lo que sí se hizo: el sidecar ya no recibe el `.env` completo.
+- **`requirements-dev.txt` en la imagen de producción.** Lo reintroduce el `COPY . .` del
+  stage prod; se intentó copiarlo solo en el stage `dev` y no sirvió de nada, así que se
+  revirtió. Se acepta: lista de versiones con hashes, sin secretos.
+- **`/readyz` sin restringir** (#27, ya diferido de antes) y **S-24 / S-27**, que necesitan
+  infraestructura (separar Redis, volumen compartido para estáticos).
 
 **S-35 se dejó abierto deliberadamente.** El ecosistema `docker` de Dependabot analiza
 Dockerfiles; que admita ficheros compose depende de la versión de Dependabot y no se pudo
