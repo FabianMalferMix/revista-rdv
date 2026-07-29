@@ -1,3 +1,4 @@
+import logging
 import secrets
 
 from django.contrib import messages
@@ -8,12 +9,14 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
+from kombu.exceptions import OperationalError as BrokerError
 
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 from .tasks import send_confirmation_email
 
 S = NewsletterSubscriber.Status
+logger = logging.getLogger(__name__)
 
 
 def _by_token(token):
@@ -69,7 +72,13 @@ def _send_confirmation(request, sub):
     # Las URLs se arman con la request (host absoluto) y el envío va a Celery.
     confirm_url = request.build_absolute_uri(reverse("community:confirm", args=[sub.token]))
     unsub_url = request.build_absolute_uri(reverse("community:unsubscribe", args=[sub.token]))
-    send_confirmation_email.delay(sub.email, confirm_url, unsub_url)
+    try:
+        send_confirmation_email.delay(sub.email, confirm_url, unsub_url)
+    except BrokerError:
+        # Broker inaccesible al encolar: el suscriptor ya quedó guardado, así que no
+        # rompemos la suscripción con un 500. Se registra (sube a Sentry) para que la
+        # operación lo atienda; el usuario puede reintentar el alta si no llega el correo.
+        logger.exception("No se pudo encolar el correo de confirmación para %s", sub.email)
 
 
 def confirm(request, token):

@@ -126,3 +126,13 @@ def test_perform_transition_rechecks_state_under_lock(editor, make_article):
         workflow.perform_transition(stale, "publish", editor)
 
     assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
+
+
+def test_publish_due_items_declares_resilience_policy():
+    """La tarea de publicación programada reintenta ante errores transitorios de BD y
+    usa acks_late (si el worker muere, la tarea se re-encola en vez de perderse)."""
+    from django.db import OperationalError
+
+    assert OperationalError in publish_due_items.autoretry_for
+    assert publish_due_items.retry_kwargs["max_retries"] == 3
+    assert publish_due_items.acks_late is True
