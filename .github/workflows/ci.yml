@@ -249,7 +249,7 @@ jobs:
       - name: Revisión de dependencias del PR (informativo)
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
 
   # Ejercita el CAMINO DE PRODUCCIÓN real (DEBUG=0) sirviendo peticiones, que la
   # suite (DEBUG=1) y el smoke de gunicorn (DEBUG=1, solo /healthz/) no cubren:
