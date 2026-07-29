@@ -192,11 +192,14 @@ def search(request):
             for p in poems
         ]
         results = sorted(items, key=lambda r: r["rank"], reverse=True)[:10]
-    return render(
-        request,
-        "content/partials/_search_results.html",
-        {"results": results, "q": q},
+    # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
+    # recibe la página completa con layout, para que la búsqueda degrade con gracia.
+    template = (
+        "content/partials/_search_results.html"
+        if request.headers.get("HX-Request")
+        else "content/search.html"
     )
+    return render(request, template, {"results": results, "q": q})
 
 
 def healthz(request):
