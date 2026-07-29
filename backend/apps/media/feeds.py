@@ -61,10 +61,16 @@ class RecordingsFeed(Feed):
         return {"itunes_summary": item.description or item.get_kind_display()}
 
     def get_feed(self, obj, request):
-        # Capturamos la request para construir la URL ABSOLUTA del enclosure: Django
-        # solo aplica add_domain a los <link>, no al <enclosure>. El feed se sirve con
-        # workers sync (una request por proceso), así que guardarla en la instancia es
-        # seguro.
+        # Capturamos la request para construir la URL ABSOLUTA del enclosure: Django solo
+        # aplica add_domain a los <link>, no al <enclosure>, y `item_enclosure_url` no
+        # recibe la request.
+        #
+        # Guardarlo en `self` solo es seguro si la instancia NO se comparte. Lo era
+        # mientras gunicorn corría con workers sync (una petición por proceso), pero ese
+        # supuesto dejó de valer al pasar a gthread con 4 hilos (hallazgo S-07): con la
+        # instancia única que creaba urls.py, dos peticiones concurrentes se pisaban la
+        # request y el enclosure podía salir con el host de la otra. Por eso el feed se
+        # registra ahora mediante `recordings_feed`, que instancia por petición.
         self.request = request
         return super().get_feed(obj, request)
 
@@ -101,3 +107,14 @@ class RecordingsFeed(Feed):
         if not item.file:
             return None
         return mimetypes.guess_type(item.file.name)[0] or "audio/mpeg"
+
+
+def recordings_feed(request, *args, **kwargs):
+    """Vista del feed: crea una instancia NUEVA por petición.
+
+    `path("feed/registros/", RecordingsFeed(), ...)` construía una sola instancia
+    compartida por todo el proceso. Como el feed guarda la request en `self` (ver
+    `get_feed`), dos peticiones concurrentes en el mismo worker se la pisaban. Con
+    workers de tipo sync no ocurría; con gthread y 4 hilos, sí.
+    """
+    return RecordingsFeed()(request, *args, **kwargs)
