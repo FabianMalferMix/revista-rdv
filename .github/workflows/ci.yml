@@ -274,6 +274,33 @@ jobs:
           docker exec prod-beat python -c "import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)"
           echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
 
+      # Caddy sirve /media/ FUERA de Django: ni SecurityMiddleware ni config.csp tocan
+      # esas respuestas, así que ningún test de la suite las cubre. Se verifica con el
+      # Caddyfile REAL que un archivo subible desde el panel no puede ejecutarse como
+      # HTML/JS en el origen del sitio (hallazgo de seguridad S-01).
+      - name: Cabeceras defensivas de /media/ servidas por Caddy (S-01)
+        run: |
+          mkdir -p /tmp/mediatest
+          printf '<script>alert(document.domain)</script>' > /tmp/mediatest/evil.html
+          docker run -d --name prod-proxy --network qa13net -p 8081:80 \
+            -e SITE_ADDRESS=:80 \
+            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            -v /tmp/mediatest:/srv/media:ro \
+            caddy:2-alpine
+
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://127.0.0.1:8081/media/evil.html && break
+            sleep 2
+          done
+
+          H=$(curl -sS -D - -o /dev/null http://127.0.0.1:8081/media/evil.html)
+          echo "$H"
+          echo "$H" | grep -iq 'X-Content-Type-Options: *nosniff' \
+            || { echo "FALLO: /media/ se sirve sin nosniff"; exit 1; }
+          echo "$H" | grep -iq "Content-Security-Policy: *default-src 'none'; sandbox" \
+            || { echo "FALLO: /media/ se sirve sin CSP de aislamiento"; exit 1; }
+          echo "OK: /media/ se sirve con nosniff + CSP sandbox (S-01 cerrado en el borde)"
+
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
   # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
   # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.
