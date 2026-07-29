@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models
-from PIL import Image
+from PIL import Image, ImageOps
 
 from .validators import validate_audio_video_extension
 
@@ -50,11 +50,66 @@ class MediaAsset(models.Model):
     # ── Imágenes responsivas (srcset) ─────────────────────────
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        # El orden importa: limpiar el original ANTES de derivar, para que las copias
+        # se generen a partir de la imagen ya despojada y con la orientación aplicada.
+        self.strip_metadata()
         self.ensure_derivatives()
 
     def _derivative_name(self, width):
         p = PurePosixPath(self.file.name)
         return str(p.with_name(f"{p.stem}__{width}w{p.suffix}"))
+
+    def derivative_names(self):
+        """Nombres de las copias reducidas. Lo consume apps.media.filecleanup para que
+        al borrar el recurso no queden derivados huérfanos en el almacenamiento."""
+        if not self.file or not self.file.name:
+            return []
+        return [self._derivative_name(w) for w in self.SRCSET_WIDTHS]
+
+    def strip_metadata(self):
+        """Reescribe el original sin metadatos EXIF (hallazgo S-14).
+
+        Las derivadas ya salían limpias porque Pillow no copia el EXIF al guardarlas,
+        pero el ORIGINAL —que es el que se sirve a tamaño completo— conservaba la
+        geolocalización, la fecha y el modelo de cámara. Publicar la ubicación exacta
+        de un recital o del domicilio donde se tomó una foto es una fuga real.
+
+        Solo reescribe si el archivo trae metadatos, para no recomprimir en cada
+        guardado; y aplica antes `exif_transpose`, de modo que la orientación quede
+        grabada en los píxeles y la imagen no se vea girada al perder la etiqueta.
+        """
+        if not self.file:
+            return
+        try:
+            with self.file.open("rb") as fh:
+                img = Image.open(fh)
+                img.load()
+                fmt = (img.format or "").upper()
+                tiene_metadatos = bool(img.getexif()) or "exif" in img.info
+                if not tiene_metadatos or fmt not in ("JPEG", "MPO", "WEBP", "TIFF", "PNG"):
+                    return
+                limpia = ImageOps.exif_transpose(img)
+        except Exception:
+            return  # archivo ilegible o formato no rasterizable: no romper el guardado
+
+        fmt_out, kwargs = {
+            "JPEG": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
+            "MPO": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
+            "TIFF": ("TIFF", {}),
+            "WEBP": ("WEBP", {"quality": 92}),
+            "PNG": ("PNG", {"optimize": True}),
+        }[fmt]
+        if fmt_out == "JPEG" and limpia.mode not in ("RGB", "L"):
+            limpia = limpia.convert("RGB")
+
+        buf = BytesIO()
+        limpia.save(buf, format=fmt_out, **kwargs)  # sin `exif=`: los metadatos se pierden
+        name = self.file.name
+        # Sobrescribe conservando el nombre (el valor de la columna no cambia).
+        self.file.storage.delete(name)
+        self.file.storage.save(name, ContentFile(buf.getvalue()))
+        self.width, self.height = limpia.width, limpia.height
+        type(self).objects.filter(pk=self.pk).update(width=limpia.width, height=limpia.height)
 
     def ensure_derivatives(self):
         """Repara width/height ausentes y genera (si faltan) las copias reducidas para
