@@ -1,0 +1,16 @@
+title = "Reseñas — configuración de gitleaks"
+
+# Usa el conjunto de reglas por defecto de gitleaks y añade una allowlist para los
+# secretos de PRUEBA usados solo en CI (no son credenciales reales: existen para
+# satisfacer el guard `check --deploy` y los smokes con DEBUG=0).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Secretos de prueba de CI (valores fijos, no reales)"
+regexes = [
+  '''ci-secret-key''',
+  '''ci-smoke-key''',
+  '''ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW''',
+  '''ci-strong-db-password''',
+]
