@@ -154,6 +154,7 @@ jobs:
             -e DJANGO_DEBUG=0 -e DJANGO_SKIP_MIGRATE=1 -e DJANGO_COLLECTSTATIC=1 \
             -e DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
             -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
             -e DJANGO_CSRF_TRUSTED_ORIGINS="$DJANGO_CSRF_TRUSTED_ORIGINS" \
             resenas-prod true
@@ -329,6 +330,7 @@ jobs:
             -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
             -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
             -e POSTGRES_PASSWORD=ci-strong-db-password \
+            -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS=localhost -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
             --entrypoint python resenas-prod manage.py migrate
           PG="docker exec -e PGPASSWORD=ci-strong-db-password bk-db"
