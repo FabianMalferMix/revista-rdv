@@ -68,7 +68,9 @@ abuelo-padre-hijo usar `restic forget --keep-daily/--keep-weekly/--keep-monthly`
 docker compose stop web worker beat
 
 # 2. Restaurar el último respaldo (o un timestamp concreto)
-docker compose run --rm --entrypoint sh backup /scripts/restore.sh latest
+#    Exige confirmación explícita nombrando la base que se va a destruir.
+docker compose run --rm --entrypoint sh -e RESTORE_CONFIRM=SI-DESTRUIR-resenas \
+  backup /scripts/restore.sh latest
 #   … o: /scripts/restore.sh 20260709-030000
 
 # 3. Volver a levantar
@@ -78,6 +80,15 @@ docker compose up -d
 `restore.sh` usa `pg_restore --clean --if-exists` (recrea el esquema y los datos) y reemplaza el
 contenido de `media`/`private_media`. Como el dump incluye la tabla `django_migrations`, el `migrate`
 del arranque queda como no-op.
+
+> **Confirmación obligatoria.** `restore.sh` es destructivo y antes bastaba con invocarlo sin
+> argumentos (`latest` era el valor por defecto) para arrasar la base y los medios. Ahora exige
+> `RESTORE_CONFIRM=SI-DESTRUIR-<nombre-de-la-base>`, que debe coincidir con `POSTGRES_DB`.
+>
+> **Permisos.** `backup.sh` corre con `umask 077` y deja los artefactos en `0600` dentro de un
+> directorio `0700`: contienen la base completa (correos, PII de envíos, hashes) y los manuscritos
+> privados. `BACKUP_DIR` debe pertenecer a un usuario dedicado y **nunca** apuntar al directorio del
+> repositorio. El cifrado en reposo lo aporta restic en el off-site; el respaldo local va en claro.
 
 **Recuperación total desde cero** (host nuevo): clonar el repo, copiar `BACKUP_DIR` desde el
 almacenamiento externo, `docker compose up -d db`, restaurar, `docker compose up -d`.
@@ -90,7 +101,8 @@ Un respaldo no probado no cuenta. Verificación de extremo a extremo (destruye y
 docker compose run --rm --entrypoint sh backup /scripts/backup.sh   # 1. respaldar
 docker compose down -v                                              # 2. simular pérdida total
 docker compose up -d db redis                                       # 3. base vacía
-docker compose run --rm --entrypoint sh backup /scripts/restore.sh latest   # 4. restaurar
+docker compose run --rm --entrypoint sh -e RESTORE_CONFIRM=SI-DESTRUIR-resenas \
+  backup /scripts/restore.sh latest                                 # 4. restaurar
 docker compose up -d                                                # 5. levantar app
 # 6. verificar que el contenido volvió (home con artículos, adjuntos presentes)
 ```

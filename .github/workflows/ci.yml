@@ -352,4 +352,43 @@ jobs:
           echo "content_page orig=$ORIG restaurado=$REST | triggers FTS=$TRG | unaccent=$EXT"
           test "$ORIG" = "$REST" && test "$ORIG" -gt 0 && test "$TRG" = "2" && test "$EXT" = "1"
           echo "OK: respaldo restaurado íntegro (datos + triggers FTS + extensión)"
+
+          # ── backup.sh REAL: permisos de los artefactos (S-06) ──
+          # El bloque anterior imita pg_dump, pero nunca ejecutaba el script. Los
+          # artefactos llevan la BD completa y los manuscritos privados: deben quedar
+          # cerrados. postgres:16 basta (restic y curl son opcionales en el script).
+          mkdir -p /tmp/bk /tmp/bkmedia /tmp/bkpriv
+          echo "manuscrito" > /tmp/bkpriv/privado.txt
+          docker run --rm --network bknet \
+            -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password \
+            -v "$PWD/infra/backup:/scripts:ro" -v /tmp/bk:/backups \
+            -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media \
+            postgres:16 sh /scripts/backup.sh
+
+          # Los artefactos los crea root dentro del contenedor: se leen desde otro
+          # contenedor en vez de con sudo (portable y sin depender del runner).
+          docker run --rm -v /tmp/bk:/backups alpine sh -c '
+            set -eu
+            D=$(find /backups -name db.dump | head -1)
+            test -n "$D" || { echo "FALLO: backup.sh no generó el dump"; exit 1; }
+            DIR=$(dirname "$D")
+            echo "permisos → dir=$(stat -c %a "$DIR") dump=$(stat -c %a "$D") priv=$(stat -c %a "$DIR/private_media.tar.gz")"
+            test "$(stat -c %a "$DIR")" = "700" || { echo "FALLO: el directorio no es 700"; exit 1; }
+            test "$(stat -c %a "$D")" = "600" || { echo "FALLO: el dump no es 600"; exit 1; }
+            test "$(stat -c %a "$DIR/private_media.tar.gz")" = "600" || { echo "FALLO: el tar privado no es 600"; exit 1; }
+          '
+          echo "OK: los respaldos no son legibles por otros usuarios del host"
+
+          # ── restore.sh exige confirmación explícita (S-06) ──
+          if docker run --rm --network bknet \
+            -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
+            -e POSTGRES_PASSWORD=ci-strong-db-password \
+            -v "$PWD/infra/backup:/scripts:ro" -v /tmp/bk:/backups \
+            -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media \
+            postgres:16 sh /scripts/restore.sh latest; then
+            echo "FALLO: restore.sh se ejecutó sin confirmación"; exit 1
+          fi
+          echo "OK: restore.sh se niega a destruir sin RESTORE_CONFIRM"
+
           docker rm -f bk-db >/dev/null && docker network rm bknet >/dev/null

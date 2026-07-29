@@ -4,6 +4,12 @@
 # Se ejecuta dentro de un contenedor con pg_dump/restic/curl y acceso a los volúmenes.
 set -eu
 
+# Los artefactos que genera este script contienen la BASE DE DATOS COMPLETA (correos de
+# suscriptores, PII de envíos, hashes de contraseñas) y los MANUSCRITOS privados. Sin
+# umask quedaban 0644 en un bind-mount del host, legibles por cualquier usuario local
+# (hallazgo S-06). 077 los deja 0600 y los directorios 0700.
+umask 077
+
 # ── Alerta de fallo (dead-man's-switch tipo healthchecks.io) ──
 # Si BACKUP_PING_URL está definido: se hace GET a esa URL al terminar OK, y a
 # "<URL>/fail" si el respaldo aborta por cualquier motivo (set -e + trap EXIT).
@@ -16,6 +22,9 @@ trap notify_fail EXIT INT TERM
 TS=$(date +%Y%m%d-%H%M%S)
 DEST="/backups/$TS"
 mkdir -p "$DEST"
+# Explícito además del umask: si /backups viene de un bind-mount con permisos laxos,
+# al menos el directorio del respaldo queda cerrado.
+chmod 700 "$DEST"
 
 echo "→ pg_dump de '$POSTGRES_DB'"
 PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
