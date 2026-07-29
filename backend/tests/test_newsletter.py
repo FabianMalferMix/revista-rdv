@@ -4,6 +4,7 @@ import pytest
 from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.community.models import NewsletterSubscriber
 
@@ -16,9 +17,11 @@ LOCMEM = "django.core.mail.backends.locmem.EmailBackend"
 def test_subscribe_sends_confirmation_with_link(client):
     client.post(reverse("community:subscribe"), {"email": "nuevo@example.com", "apodo": ""})
     sub = NewsletterSubscriber.objects.get(email="nuevo@example.com")
-    assert sub.status == S.PENDING and sub.token
+    # Dos tokens de vida distinta: el de baja es permanente, el de confirmación caduca.
+    assert sub.status == S.PENDING and sub.token and sub.confirm_token
     assert len(mail.outbox) == 1
-    assert reverse("community:confirm", args=[sub.token]) in mail.outbox[0].body
+    assert reverse("community:confirm", args=[sub.confirm_token]) in mail.outbox[0].body
+    assert reverse("community:unsubscribe", args=[sub.token]) in mail.outbox[0].body
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
@@ -43,8 +46,14 @@ def test_confirmation_email_task_sends_message():
 
 
 def test_confirm_sets_confirmed(client):
-    NewsletterSubscriber.objects.create(email="x@example.com", token="tok-confirm")
-    resp = client.get(reverse("community:confirm", args=["tok-confirm"]))
+    # La confirmación muta por POST (S-16); el GET solo muestra el botón.
+    NewsletterSubscriber.objects.create(
+        email="x@example.com",
+        token="tok-baja",
+        confirm_token="tok-confirm",
+        confirm_token_at=timezone.now(),
+    )
+    resp = client.post(reverse("community:confirm", args=["tok-confirm"]))
     assert resp.status_code == 200
     sub = NewsletterSubscriber.objects.get(email="x@example.com")
     assert sub.status == S.CONFIRMED and sub.confirmed_at is not None
@@ -52,7 +61,7 @@ def test_confirm_sets_confirmed(client):
 
 def test_unsubscribe_sets_unsubscribed(client):
     NewsletterSubscriber.objects.create(email="y@example.com", token="tok-baja", status=S.CONFIRMED)
-    resp = client.get(reverse("community:unsubscribe", args=["tok-baja"]))
+    resp = client.post(reverse("community:unsubscribe", args=["tok-baja"]))
     assert resp.status_code == 200
     sub = NewsletterSubscriber.objects.get(email="y@example.com")
     assert sub.status == S.UNSUBSCRIBED
