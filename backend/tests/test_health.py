@@ -56,8 +56,10 @@ def test_db_check_hits_real_database(client):
     assert _db_ok() is True
 
 
+@pytest.mark.integration
 def test_readyz_real_infra_returns_ready(client):
     # En dev/CI la BD y el broker (Redis) están arriba: readiness real 200.
+    # Requiere Redis vivo (broker); marcado como integration (no hermetico).
     resp = client.get(reverse("readyz"))
     assert resp.status_code == 200
     assert resp.json()["status"] == "ready"

@@ -4,35 +4,11 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.agenda.models import Event, EventPhoto, Milestone
-from apps.media.models import MediaAsset, Recording
+from apps.agenda.models import Milestone
+from apps.media.models import Recording
+from tests.factories import make_event, make_photo  # noqa: E402
 
 pytestmark = pytest.mark.django_db
-
-
-def make_event(**kwargs):
-    n = Event.objects.count()
-    defaults = {
-        "slug": f"evento-{n}",
-        "title": f"Evento {n}",
-        "starts_at": timezone.now() + timedelta(days=7),
-        "published": True,
-    }
-    defaults.update(kwargs)
-    return Event.objects.create(**defaults)
-
-
-def make_photo(event, position=0):
-    from io import BytesIO
-
-    from django.core.files.base import ContentFile
-    from PIL import Image
-
-    buffer = BytesIO()
-    Image.new("RGB", (40, 25), (10, 20, 30)).save(buffer, format="JPEG")
-    asset = MediaAsset(alt_text=f"foto-{event.slug}-{position}")
-    asset.file.save(f"foto-{event.slug}-{position}.jpg", ContentFile(buffer.getvalue()))
-    return EventPhoto.objects.create(event=event, asset=asset, position=position)
 
 
 def test_agenda_lists_upcoming_published_only(client):

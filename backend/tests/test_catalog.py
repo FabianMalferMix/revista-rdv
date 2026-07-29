@@ -3,16 +3,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from apps.people.models import Contributor
-from apps.showcase.models import Partner, PressMention, Publication, WhereToBuy
+from apps.showcase.models import Partner, PressMention, WhereToBuy
+from tests.factories import make_publication  # noqa: E402
 
 pytestmark = pytest.mark.django_db
-
-
-def make_publication(**kwargs):
-    n = Publication.objects.count()
-    defaults = {"slug": f"pub-{n}", "title": f"Publicación {n}", "published": True, "year": 2023}
-    defaults.update(kwargs)
-    return Publication.objects.create(**defaults)
 
 
 def test_publication_index_lists_published_only(client):
