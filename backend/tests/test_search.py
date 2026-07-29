@@ -2,19 +2,12 @@
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.content.models import Article, EditorialStatus, Poem
+from tests.factories import publish as _publish
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
-
-
-def _publish(article):
-    article.status = EditorialStatus.PUBLISHED
-    article.published_at = timezone.now()
-    article.save()
-    return article
 
 
 def test_search_finds_published_match(client, make_article):

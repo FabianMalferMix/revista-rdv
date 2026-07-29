@@ -110,7 +110,7 @@ def test_poem_body_is_escaped(client, make_poem):
 
 
 def test_collection_merges_articles_and_poems_by_position(client, make_article, make_poem):
-    from tests.test_views import _publish
+    from tests.factories import publish as _publish
 
     collection = Collection.objects.create(
         slug="mixta", title="Colección Mixta", status=PublishStatus.PUBLISHED

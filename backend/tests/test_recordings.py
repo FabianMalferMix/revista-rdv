@@ -6,21 +6,9 @@ from django.utils import timezone
 from apps.media.models import Recording
 from apps.media.templatetags.embeds import embed_src
 from apps.showcase.models import SiteProfile
+from tests.factories import make_recording  # noqa: E402
 
 pytestmark = pytest.mark.django_db
-
-
-def make_recording(**kwargs):
-    n = Recording.objects.count()
-    defaults = {
-        "slug": f"registro-{n}",
-        "title": f"Registro {n}",
-        "embed_url": "https://www.youtube.com/watch?v=abc123xyz",
-        "published": True,
-        "published_at": timezone.now(),
-    }
-    defaults.update(kwargs)
-    return Recording.objects.create(**defaults)
 
 
 # ── Filtro de embeds ─────────────────────────────────────────

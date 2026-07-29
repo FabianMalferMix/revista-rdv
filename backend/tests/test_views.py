@@ -1,19 +1,12 @@
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.content.models import EditorialStatus, ReviewedWork
 from apps.reviews.models import Publisher, Work
 from apps.submissions.models import Submission
+from tests.factories import publish as _publish
 
 pytestmark = pytest.mark.django_db
-
-
-def _publish(article):
-    article.status = EditorialStatus.PUBLISHED
-    article.published_at = timezone.now()
-    article.save()
-    return article
 
 
 def test_home_shows_published_hides_drafts(client, make_article):

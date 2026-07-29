@@ -4,7 +4,7 @@ import pytest
 from django.conf import settings
 from django.urls import reverse
 
-from tests.test_agenda import make_event, make_photo
+from tests.factories import make_event, make_photo
 
 pytestmark = pytest.mark.django_db
 
@@ -50,18 +50,28 @@ def test_home_has_an_h1(client):
 
 
 def test_article_card_title_is_h3(client, make_article):
-    """El título de tarjeta baja a <h3>: cuelga de secciones <h2>, así la jerarquía
-    de encabezados no queda aplanada (hallazgo #13)."""
+    """El título de tarjeta es <h3>: cuelga de secciones <h2>, así la jerarquía de
+    encabezados no queda aplanada (hallazgo #13). Aserción estructural con bs4."""
+    from bs4 import BeautifulSoup
+
     from apps.content.models import EditorialStatus
 
     art = make_article(status=EditorialStatus.PUBLISHED, slug="card-h3", title="Tarjeta H3")
-    html = client.get(reverse("content:text_archive")).content.decode()
-    assert f'<h3><a href="{reverse("content:article_detail", args=[art.slug])}">' in html
+    soup = BeautifulSoup(client.get(reverse("content:text_archive")).content, "html.parser")
+    card = soup.select_one("li.article-card")
+    assert card is not None, "no se renderizó ninguna tarjeta de artículo"
+    heading = card.find(["h1", "h2", "h3", "h4", "h5", "h6"])
+    assert heading.name == "h3"
+    assert art.title in heading.get_text()
 
 
-def test_submit_file_help_id_matches_aria_describedby(client):
-    """El aria-describedby del input de archivo referencia un id que SÍ existe: el
-    <small> de ayuda lleva ese id (antes la referencia ARIA estaba rota, #14)."""
-    html = client.get(reverse("submissions:submit")).content.decode()
-    assert 'aria-describedby="id_file_helptext"' in html
-    assert 'id="id_file_helptext"' in html
+def test_submit_file_help_aria_reference_resolves(client):
+    """El aria-describedby del input de archivo apunta a un id que EXISTE en el
+    documento (antes la referencia ARIA estaba rota, #14). Verificado con bs4."""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(client.get(reverse("submissions:submit")).content, "html.parser")
+    file_input = soup.find("input", {"type": "file"})
+    described_by = file_input.get("aria-describedby")
+    assert described_by, "el input de archivo debe declarar aria-describedby"
+    assert soup.find(id=described_by) is not None, f"id '{described_by}' no existe en el HTML"
