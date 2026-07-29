@@ -281,6 +281,12 @@ jobs:
       # HTML/JS en el origen del sitio (hallazgo de seguridad S-01).
       - name: Cabeceras defensivas de /media/ servidas por Caddy (S-01)
         run: |
+          # El Caddyfile no lo validaba nada: un error de sintaxis solo se descubría al
+          # desplegar. `caddy validate` lo comprueba antes de levantar nada.
+          docker run --rm -e SITE_ADDRESS=:80 \
+            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
           mkdir -p /tmp/mediatest
           printf '<script>alert(document.domain)</script>' > /tmp/mediatest/evil.html
           docker run -d --name prod-proxy --network qa13net -p 8081:80 \
