@@ -22,6 +22,16 @@ def test_subscribe_sends_confirmation_with_link(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
+def test_confirmation_email_carries_list_unsubscribe_header():
+    """El correo lleva la cabecera List-Unsubscribe (RFC 8058) con el enlace de baja,
+    para que el cliente de correo ofrezca un botón de darse de baja."""
+    from apps.community.tasks import send_confirmation_email
+
+    send_confirmation_email("a@example.com", "https://x/confirmar", "https://x/baja")
+    assert mail.outbox[0].extra_headers["List-Unsubscribe"] == "<https://x/baja>"
+
+
+@override_settings(EMAIL_BACKEND=LOCMEM)
 def test_confirmation_email_task_sends_message():
     # El envío vive en una tarea Celery (fuera del hilo de la petición, con reintento).
     from apps.community.tasks import send_confirmation_email
@@ -138,12 +148,14 @@ def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
     de tragarse en silencio."""
     import smtplib
 
+    from django.core.mail import EmailMessage
+
     from apps.community import tasks
 
-    def boom(*a, **k):
+    def boom(self, *a, **k):
         raise smtplib.SMTPException("smtp caído")
 
-    monkeypatch.setattr(tasks, "send_mail", boom)
+    monkeypatch.setattr(EmailMessage, "send", boom)
     with pytest.raises(smtplib.SMTPException):
         tasks.send_confirmation_email("a@example.com", "http://c", "http://u")
 
