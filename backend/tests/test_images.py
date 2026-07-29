@@ -13,13 +13,6 @@ from apps.people.models import Contributor
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture(autouse=True)
-def _isolated_media(settings, tmp_path):
-    """MEDIA_ROOT temporal por test: nombres predecibles (sin sufijo por colisión) y
-    sin ensuciar el volumen de medios de desarrollo."""
-    settings.MEDIA_ROOT = str(tmp_path)
-
-
 def _img_upload(name="test.jpg", size=(1000, 600)):
     buf = BytesIO()
     Image.new("RGB", size, (120, 120, 120)).save(buf, format="JPEG")

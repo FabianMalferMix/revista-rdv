@@ -14,6 +14,14 @@ def _clear_cache():
     cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _isolated_media(settings, tmp_path):
+    """MEDIA_ROOT temporal por test: los archivos subidos en los tests no contaminan
+    el MEDIA_ROOT real ni se acumulan como huérfanos entre corridas, y los nombres son
+    predecibles (sin sufijo por colisión). Autouse global (hallazgo #11)."""
+    settings.MEDIA_ROOT = str(tmp_path)
+
+
 @pytest.fixture
 def groups(db):
     return {
