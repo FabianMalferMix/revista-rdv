@@ -6,7 +6,7 @@ name: resenas
 
 services:
   db:
-    image: postgres:16
+    image: postgres:16@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-resenas}
       POSTGRES_USER: ${POSTGRES_USER:-resenas}
@@ -20,7 +20,7 @@ services:
       retries: 12
 
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
     # noeviction: como broker de Celery, Redis NUNCA debe descartar tareas encoladas
     # bajo presión de memoria (rechaza escrituras en su lugar). No se usa como caché.
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction

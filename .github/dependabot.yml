@@ -27,6 +27,11 @@ updates:
   # Imagen base del Dockerfile. La versión de Python (3.12) se cambia de forma
   # deliberada: se ignoran los saltos major/minor (3.13/3.14) y solo se aceptan
   # reconstrucciones de parche.
+  #
+  # Las imágenes van fijadas por DIGEST (sha256), no solo por tag: así Dependabot puede
+  # proponer la actualización del digest cuando la base se reconstruye con parches del
+  # sistema operativo. Con un tag sin componente de parche («3.12-slim») esta entrada era
+  # inerte por construcción (hallazgo S-34).
   - package-ecosystem: docker
     directory: /backend
     schedule:
@@ -35,3 +40,24 @@ updates:
       - dependency-name: "python"
         update-types:
           ["version-update:semver-major", "version-update:semver-minor"]
+
+  # El Dockerfile del sidecar de respaldos no lo cubría ninguna entrada: quedaba fuera
+  # del radar pese a manejar la base de datos completa.
+  - package-ecosystem: docker
+    directory: /infra/backup
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
+
+  # NOTA (hallazgo S-35): las imágenes declaradas en los docker-compose (postgres, redis,
+  # caddy) NO están cubiertas aquí. El ecosistema `docker` de Dependabot analiza
+  # Dockerfiles; el soporte de ficheros compose depende de la versión de Dependabot y no
+  # se pudo verificar contra el esquema oficial, así que no se añade una entrada a ciegas:
+  # un dependabot.yml inválido detendría TODAS las actualizaciones, que es peor que la
+  # carencia. Mitigación mientras tanto: las tres imágenes van fijadas por digest (un
+  # cambio silencioso es imposible), `tests/test_image_pinning.py` impide que alguien
+  # las desfije, y el CI programado semanalmente pasa trivy sobre la imagen construida.
+  # Para cerrarlo del todo: comprobar si esta instalación admite
+  # `package-ecosystem: docker-compose` y, en tal caso, añadir la entrada.
