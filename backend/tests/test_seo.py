@@ -100,3 +100,21 @@ def test_recording_detail_falls_back_to_site_og_image(client):
     resp = client.get(reverse("media:recording_detail", args=[rec.slug]))
     assert resp.status_code == 200
     assert b'property="og:image"' in resp.content
+
+
+# ── Canonical / og:url sin query string (hallazgo #06) ──────────────────────
+
+
+def test_canonical_and_og_url_strip_tracking_query(client):
+    """El canonical y og:url no arrastran query strings (utm_*, q, …) que
+    ensuciarían la señal de canonicalización."""
+    head = client.get("/?q=zzz&utm_source=news").content.decode().split("</head>")[0]
+    assert '<link rel="canonical" href="http://testserver/">' in head
+    assert '<meta property="og:url" content="http://testserver/">' in head
+    assert "utm_source" not in head
+
+
+def test_canonical_preserves_pagination(client):
+    """En listados paginados sí se preserva ?page= (cada página es un recurso)."""
+    head = client.get("/?page=2").content.decode().split("</head>")[0]
+    assert '<link rel="canonical" href="http://testserver/?page=2">' in head
