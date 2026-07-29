@@ -17,11 +17,23 @@ import os
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
-# Directivas fijas. `script-src` se completa por petición con el nonce (abajo).
+# Marcador interno para la directiva que depende de la ruta.
+_STYLE_MARKER = object()
+
+# El admin de Django y TinyMCE inyectan estilos en línea y no hay forma de ponerles un
+# nonce. El SITIO PÚBLICO, en cambio, no tiene ni un solo atributo `style=` ni un bloque
+# <style> —el CSS propio va en un fichero estático, y el saneo nh3 descarta el atributo
+# `style` del HTML autoral—, así que ahí no hace falta relajar nada. Emitir
+# 'unsafe-inline' solo bajo /admin/ reduce lo que un XSS podría hacer en las páginas que
+# ve el público (superposiciones de secuestro de clic, exfiltración por selectores CSS).
+_STYLE_PUBLICO = "'self'"
+_STYLE_ADMIN = "'self' 'unsafe-inline'"
+
+# Directivas fijas. `script-src` y `style-src` se completan por petición (abajo).
 _DIRECTIVES = (
     ("default-src", "'self'"),
     ("script-src", None),  # marcador: se rellena con 'self' [+ nonce]
-    ("style-src", "'self' 'unsafe-inline'"),
+    ("style-src", _STYLE_MARKER),  # marcador: 'unsafe-inline' solo bajo /admin/
     ("img-src", "'self' data:"),
     ("font-src", "'self' data:"),
     ("connect-src", "'self'"),
@@ -46,7 +58,17 @@ def _new_nonce():
 
 
 class ContentSecurityPolicyMiddleware:
-    """Fija la cabecera CSP; genera el nonce solo si la plantilla lo usa."""
+    """Fija la cabecera CSP; genera el nonce solo si la plantilla lo usa.
+
+    POR QUÉ VA DESPUÉS DE WhiteNoise (y no antes): así los estáticos no llevan CSP. Se
+    evaluó moverlo delante para cubrirlos y NO compensa — los navegadores ignoran la CSP
+    en subrecursos (hoja de estilos, script, imagen): solo la aplican a documentos. El
+    único caso con valor sería navegar directamente a un documento servido desde
+    STATIC_ROOT, y ahí no hay ninguno: el árbol de estáticos son .js, .css, .md y .txt.
+    A cambio, moverlo añadiría una cabecera a cada petición de estático (TinyMCE solo ya
+    son 14 archivos). `tests/test_security_csp.py` fija esa suposición: si alguien añade
+    un .html o .svg a los estáticos, el test avisa para reconsiderarlo.
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -82,6 +104,15 @@ class ContentSecurityPolicyMiddleware:
         if state["nonce"] is not None:
             script_src += f" 'nonce-{state['nonce']}'"
 
-        parts = [f"{name} {script_src if value is None else value}" for name, value in _DIRECTIVES]
+        # El panel necesita estilos en línea; el sitio público no (ver arriba).
+        style_src = _STYLE_ADMIN if request.path.startswith("/admin/") else _STYLE_PUBLICO
+
+        parts = []
+        for name, value in _DIRECTIVES:
+            if value is None:
+                value = script_src
+            elif value is _STYLE_MARKER:
+                value = style_src
+            parts.append(f"{name} {value}")
         response[self.header] = "; ".join(parts)
         return response
