@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}{% endblock %}">
-  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <link rel="canonical" href="{{ canonical_url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — textos" href="{% url 'feed' %}">
   <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — registros (podcast)" href="{% url 'recordings_feed' %}">
 
   <meta property="og:site_name" content="{{ site_profile.name|default:"Reseñas" }}">
   <meta property="og:locale" content="es_CL">
-  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:url" content="{{ canonical_url }}">
   {% block opengraph %}
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ site_profile.name|default:"Reseñas" }}">
