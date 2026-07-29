@@ -25,15 +25,17 @@
     {# Texto plano autoescapado; pre-wrap preserva versos, sangrías y espacios. #}
     <div class="poem-body">{{ poem.body }}</div>
 
-    {% if poem.recording %}
-      <aside class="poem-audio">
-        <h2 class="subhead">Escuchar el poema</h2>
-        {% if poem.recording.file %}
-          <audio controls preload="none" src="{{ poem.recording.file.url }}"></audio>
-        {% elif poem.recording.embed_url %}
-          <p><a href="{{ poem.recording.embed_url }}" rel="noopener" target="_blank">{{ poem.recording.title }} ↗</a></p>
-        {% endif %}
-      </aside>
-    {% endif %}
+    {% with rec=poem.published_recording %}
+      {% if rec %}
+        <aside class="poem-audio">
+          <h2 class="subhead">Escuchar el poema</h2>
+          {% if rec.file %}
+            <audio controls preload="none" src="{{ rec.file.url }}"></audio>
+          {% elif rec.embed_url %}
+            <p><a href="{{ rec.embed_url }}" rel="noopener" target="_blank">{{ rec.title }} ↗</a></p>
+          {% endif %}
+        </aside>
+      {% endif %}
+    {% endwith %}
   </article>
 {% endblock %}
