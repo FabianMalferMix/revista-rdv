@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Darse de baja — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <h1>Darse de baja</h1>
+    <p class="dek">Confirma que quieres dejar de recibir nuestras novedades.</p>
+  </header>
+
+  {# Por POST para que ningún escáner de enlaces ni prefetch del cliente de correo dé
+     de baja a nadie por su cuenta. El un-clic de RFC 8058 llega también por POST. #}
+  <form method="post" action="{% url 'community:unsubscribe' token %}">
+    {% csrf_token %}
+    <button type="submit" class="btn">Darme de baja</button>
+  </form>
+
+  <p><a href="{% url 'content:home' %}">← Volver al inicio</a></p>
+{% endblock %}

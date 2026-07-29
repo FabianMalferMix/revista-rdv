@@ -27,6 +27,12 @@ def send_confirmation_email(email, confirm_url, unsub_url):
         ),
         from_email=None,  # DEFAULT_FROM_EMAIL
         to=[email],
-        headers={"List-Unsubscribe": f"<{unsub_url}>"},
+        headers={
+            "List-Unsubscribe": f"<{unsub_url}>",
+            # RFC 8058: habilita el botón de baja en un clic del cliente de correo, que
+            # envía un POST con este cuerpo. Sin esta cabecera, el cliente visitaría la
+            # URL por GET —que ya no muta nada— y la baja no llegaría a ejecutarse.
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
     )
     message.send(fail_silently=False)

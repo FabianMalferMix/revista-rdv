@@ -11,6 +11,7 @@
     <p class="meta">
       ¿No quieres seguir recibiendo correos?
       <a href="{% url 'community:unsubscribe' unsubscribe_token %}">Darme de baja</a>.
+      {# El enlace lleva a una página con botón: la baja se ejecuta por POST. #}
     </p>
   {% endif %}
   <p><a href="{% url 'content:home' %}">← Volver al inicio</a></p>

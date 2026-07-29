@@ -1,4 +1,11 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
+
+# Ventana de validez del enlace de confirmación (hallazgo S-15). El de BAJA no caduca
+# nunca: un enlace de baja que deja de funcionar es un problema legal, no una mejora.
+CONFIRM_TOKEN_TTL = timedelta(hours=48)
 
 
 class NewsletterSubscriber(models.Model):
@@ -18,7 +25,13 @@ class NewsletterSubscriber(models.Model):
 
     email = models.EmailField(unique=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    token = models.CharField(max_length=64, blank=True)
+    # Token de BAJA: permanente y estable, para que el enlace de cualquier correo ya
+    # enviado siga funcionando siempre.
+    token = models.CharField(max_length=64, blank=True, db_index=True)
+    # Token de CONFIRMACIÓN: de un solo uso y con caducidad. Se separa del de baja
+    # porque tenían el mismo ciclo de vida y ninguno caducaba (S-15).
+    confirm_token = models.CharField(max_length=64, blank=True, db_index=True)
+    confirm_token_at = models.DateTimeField(null=True, blank=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -29,3 +42,9 @@ class NewsletterSubscriber(models.Model):
 
     def __str__(self):
         return self.email
+
+    def confirm_token_is_valid(self):
+        """True si el token de confirmación existe y no ha caducado."""
+        if not self.confirm_token or self.confirm_token_at is None:
+            return False
+        return timezone.now() - self.confirm_token_at <= CONFIRM_TOKEN_TTL

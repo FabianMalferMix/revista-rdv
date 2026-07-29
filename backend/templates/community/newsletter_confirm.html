@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar suscripción — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+
+{% block content %}
+  <header class="index-head">
+    <h1>Confirmar suscripción</h1>
+    {% if caducado %}
+      <p class="dek">Este enlace ya no es válido: los enlaces de confirmación caducan a las 48 horas, o ya se usó. Vuelve a suscribirte para recibir uno nuevo.</p>
+    {% else %}
+      <p class="dek">Pulsa el botón para confirmar que quieres recibir nuestras novedades.</p>
+    {% endif %}
+  </header>
+
+  {% if not caducado %}
+    {# La confirmación se hace por POST a propósito: los escáneres de enlaces de los
+       clientes de correo visitan por GET todo lo que llega en un mensaje y confirmaban
+       la suscripción solos, vaciando de sentido el doble opt-in. #}
+    <form method="post" action="{% url 'community:confirm' token %}">
+      {% csrf_token %}
+      <button type="submit" class="btn">Confirmar mi suscripción</button>
+    </form>
+  {% endif %}
+
+  <p><a href="{% url 'content:home' %}">← Volver al inicio</a></p>
+{% endblock %}
