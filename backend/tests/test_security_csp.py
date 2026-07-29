@@ -29,7 +29,8 @@ def test_sets_enforcing_header_by_default():
     for directive in [
         "default-src 'self'",
         "script-src 'self'",
-        "style-src 'self' 'unsafe-inline'",
+        # En el sitio público, sin 'unsafe-inline' (ver test_style_src_* más abajo).
+        "style-src 'self'",
         "img-src 'self' data:",
         "object-src 'none'",
         "base-uri 'self'",
@@ -38,6 +39,47 @@ def test_sets_enforcing_header_by_default():
         "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com",
     ]:
         assert directive in policy
+
+
+def test_no_hay_documentos_navegables_entre_los_estaticos():
+    """Fija la suposición que justifica dejar el middleware CSP DESPUÉS de WhiteNoise.
+
+    Los navegadores ignoran la CSP en subrecursos (css/js/imágenes) y solo la aplican a
+    documentos, así que cubrir los estáticos solo valdría si alguno fuera navegable. Hoy
+    no lo es. Si alguien añade un .html o .svg al árbol de estáticos, este test falla y
+    obliga a reconsiderar el orden del middleware.
+    """
+    from pathlib import Path
+
+    static = Path(__file__).resolve().parent.parent / "static"
+    navegables = [
+        p.relative_to(static)
+        for p in static.rglob("*")
+        if p.suffix.lower() in {".html", ".htm", ".xhtml", ".svg", ".xml"}
+    ]
+    assert navegables == [], (
+        f"hay documentos navegables en static/ ({navegables}): revisar si la CSP debe "
+        "cubrir los estáticos moviendo el middleware por delante de WhiteNoise"
+    )
+
+
+def test_style_src_no_relaja_nada_en_el_sitio_publico():
+    """El sitio público no tiene ni un atributo `style=` ni un bloque <style> —el CSS va
+    en un fichero estático y el saneo nh3 descarta `style` del HTML autoral—, así que no
+    hay motivo para permitir estilos en línea justo en las páginas que ve el público."""
+    for ruta in ["/", "/textos/", "/buscar/", "/registros/"]:
+        policy = _mw()(RequestFactory().get(ruta))[CSP]
+        assert "style-src 'self';" in policy or policy.endswith("style-src 'self'")
+        assert "'unsafe-inline'" not in policy
+
+
+def test_style_src_se_relaja_solo_en_el_panel():
+    """El admin de Django y TinyMCE inyectan estilos en línea y no admiten nonce."""
+    policy = _mw()(RequestFactory().get("/admin/content/article/"))[CSP]
+    assert "style-src 'self' 'unsafe-inline'" in policy
+    # Relajar los estilos no debe arrastrar a los scripts.
+    assert "script-src 'self'" in policy
+    assert "script-src 'self' 'unsafe-inline'" not in policy
 
 
 def test_no_nonce_when_template_does_not_use_it():
