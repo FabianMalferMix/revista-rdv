@@ -70,6 +70,17 @@ jobs:
         working-directory: backend
         run: python manage.py makemigrations --check --dry-run
 
+      - name: Reversibilidad de migraciones (ida y vuelta)
+        working-directory: backend
+        # makemigrations --check solo detecta migraciones faltantes, no su
+        # reversibilidad. Aquí se aplica todo, se revierte hasta 0008 —ejercitando el
+        # reverse_sql de las migraciones no triviales: triggers FTS de 0009/0011 y los
+        # datos de 0010— y se reaplica, sobre la BD limpia del servicio (no la de tests).
+        run: |
+          python manage.py migrate
+          python manage.py migrate content 0008
+          python manage.py migrate
+
       - name: Ejecutar tests (con cobertura medida)
         working-directory: backend
         # Umbral de cobertura: falla el CI si baja del 80% (config en pyproject.toml).
