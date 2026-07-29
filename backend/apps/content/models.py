@@ -237,6 +237,19 @@ class Poem(EditorialItem):
     def get_absolute_url(self):
         return reverse("content:poem_detail", args=[self.slug])
 
+    @property
+    def published_recording(self):
+        """El registro asociado, SOLO si está publicado (hallazgo S-05).
+
+        La ficha del poema era el único consumidor de `Recording` que no filtraba por
+        estado: publicaba el audio y el enlace de embed de una grabación con
+        `published=False`, en el HTML de una página indexada. Además rompía la
+        reversibilidad de «despublicar». Se filtra aquí, en la capa de datos, para que
+        ninguna plantilla tenga que acordarse.
+        """
+        recording = self.recording
+        return recording if recording is not None and recording.published else None
+
 
 class PoemContributor(models.Model):
     """Puente Poema ↔ Colaborador. `position` = orden de firma (coautoría)."""

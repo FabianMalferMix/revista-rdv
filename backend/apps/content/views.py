@@ -34,7 +34,13 @@ def _published():
 
 
 def _published_poems():
-    return Poem.objects.filter(status=EditorialStatus.PUBLISHED).prefetch_related("authors")
+    # select_related("recording"): `published_recording` lo consulta en las fichas y en
+    # las tarjetas de los listados; sin esto sería una consulta por poema.
+    return (
+        Poem.objects.filter(status=EditorialStatus.PUBLISHED)
+        .select_related("recording")
+        .prefetch_related("authors")
+    )
 
 
 def _paginate(request, queryset, per_page=12):
