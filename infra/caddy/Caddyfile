@@ -57,7 +57,23 @@
 		}
 	}
 
-	# Todo lo demás va a gunicorn; los estáticos los sirve WhiteNoise dentro de la app.
+	# Estáticos servidos en el BORDE (hallazgo S-27). Antes los servía WhiteNoise dentro
+	# de la app, así que cada CSS, cada JS y los ~14 archivos de TinyMCE atravesaban los
+	# workers de gunicorn: consumo del recurso más escaso del sistema para devolver
+	# ficheros inmutables, y superficie extra para el agotamiento de workers (S-07).
+	#
+	# Los nombres llevan hash del contenido (manifiesto de WhiteNoise), así que la caché
+	# puede ser inmutable y eterna: un cambio de contenido cambia el nombre.
+	handle_path /static/* {
+		root * /srv/static
+		file_server
+		header {
+			Cache-Control "public, max-age=31536000, immutable"
+			X-Content-Type-Options nosniff
+		}
+	}
+
+	# Todo lo demás va a gunicorn.
 	reverse_proxy web:8000
 
 	header -Server

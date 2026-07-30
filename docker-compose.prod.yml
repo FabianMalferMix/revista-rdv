@@ -139,6 +139,9 @@ services:
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - media:/srv/media:ro
+      # Estáticos recolectados por `web` (DJANGO_COLLECTSTATIC=1). En :ro — el proxy
+      # solo los sirve; quien los escribe es la app.
+      - staticfiles:/srv/static:ro
       - caddydata:/data
       - caddyconfig:/config
     depends_on:

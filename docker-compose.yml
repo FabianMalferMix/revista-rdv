@@ -40,6 +40,9 @@ services:
     volumes:
       - media:/app/mediafiles
       - private_media:/app/private_media
+      # Los estáticos ya recolectados se comparten con el proxy, que los sirve en el
+      # borde en vez de hacerlos atravesar los workers de gunicorn (hallazgo S-27).
+      - staticfiles:/app/staticfiles
     depends_on:
       db:
         condition: service_healthy
@@ -108,4 +111,5 @@ volumes:
   pgdata:
   media:
   private_media:
+  staticfiles:
   redisdata:
