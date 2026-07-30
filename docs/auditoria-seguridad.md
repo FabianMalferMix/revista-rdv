@@ -317,7 +317,8 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 | **S-34** Imágenes por tag mutable | `sec-16` | ✅ Cinco referencias por digest + test que impide desfijarlas |
 | **S-24** Redis único caché+broker | — | 🟡 Parcial: una escritura rechazada ya no da 500; separar instancias queda pendiente |
 | **S-27** Estáticos servidos por gunicorn | — | ⏳ Exige un volumen compartido entre `web` y `proxy`; lote propio |
-| **S-35** Imágenes de compose fuera de Dependabot | — | ⏳ Abierto a propósito (ver abajo) |
+| **S-35** Imágenes de compose fuera de Dependabot | `sec-24` | ✅ Entrada `docker-compose`, validada contra el esquema oficial antes de añadirla |
+| **S-27** Estáticos servidos por gunicorn | `sec-23` | ✅ Volumen compartido + `handle_path /static/*` en Caddy, probado con el stack de producción real |
 | Ola **S4** completa | `sec-18` … `sec-22` | ✅ Contrato del saneo + deuda Django 6; `style-src` estricto en público; admin (S-11, S-12, permisos que componen); operación (S-28, S-29, residuo de S-20); feed por petición (S-36) |
 
 **Lo que S4 dejó abierto, con su motivo:**
@@ -333,14 +334,13 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 - **`/readyz` sin restringir** (#27, ya diferido de antes) y **S-24 / S-27**, que necesitan
   infraestructura (separar Redis, volumen compartido para estáticos).
 
-**S-35 se dejó abierto deliberadamente.** El ecosistema `docker` de Dependabot analiza
-Dockerfiles; que admita ficheros compose depende de la versión de Dependabot y no se pudo
-verificar contra el esquema oficial (la descarga falló). Añadir una entrada a ciegas con un
-nombre de ecosistema inválido **detendría todas las actualizaciones**, que es peor que la
-carencia. Mitigación vigente: las tres imágenes van fijadas por digest (un cambio silencioso
-es imposible), `tests/test_image_pinning.py` impide desfijarlas y el CI programado pasa trivy
-semanalmente sobre la imagen construida. Para cerrarlo: comprobar si esta instalación admite
-`package-ecosystem: docker-compose`.
+**S-35, cerrado después.** Se dejó abierto un día por no poder verificar el nombre del
+ecosistema (la descarga del esquema falló) y no querer añadir una entrada a ciegas: un
+`dependabot.yml` inválido **detendría todas las actualizaciones**, que es peor que la
+carencia. Al reintentarlo, `docker-compose` resultó ser un ecosistema propio y válido,
+confirmado en dos fuentes y con el fichero completo validado contra el esquema oficial.
+Añadido en `sec-24`. Como las imágenes van fijadas por digest, lo que Dependabot propone
+son actualizaciones de digest: justo lo que recoge los parches del sistema operativo.
 
 **Licencia de TinyMCE — decisión pendiente del colectivo.** `sec-17` aplica la opción de
 coste cero (documentar en `NOTICE.md` y acotar `LICENSE`). Quedan como alternativas la

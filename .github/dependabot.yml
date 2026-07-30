@@ -51,13 +51,25 @@ updates:
       - dependency-name: "postgres"
         update-types: ["version-update:semver-major"]
 
-  # NOTA (hallazgo S-35): las imágenes declaradas en los docker-compose (postgres, redis,
-  # caddy) NO están cubiertas aquí. El ecosistema `docker` de Dependabot analiza
-  # Dockerfiles; el soporte de ficheros compose depende de la versión de Dependabot y no
-  # se pudo verificar contra el esquema oficial, así que no se añade una entrada a ciegas:
-  # un dependabot.yml inválido detendría TODAS las actualizaciones, que es peor que la
-  # carencia. Mitigación mientras tanto: las tres imágenes van fijadas por digest (un
-  # cambio silencioso es imposible), `tests/test_image_pinning.py` impide que alguien
-  # las desfije, y el CI programado semanalmente pasa trivy sobre la imagen construida.
-  # Para cerrarlo del todo: comprobar si esta instalación admite
-  # `package-ecosystem: docker-compose` y, en tal caso, añadir la entrada.
+  # Imágenes declaradas en los docker-compose (postgres, redis, caddy), que el
+  # ecosistema `docker` NO cubre porque solo analiza Dockerfiles (hallazgo S-35).
+  # `docker-compose` es un ecosistema propio y verificado contra el esquema oficial de
+  # SchemaStore antes de añadirlo: una entrada con un nombre inválido detendría TODAS
+  # las actualizaciones, que sería peor que la carencia.
+  #
+  # Como las imágenes van fijadas por DIGEST, lo que propone son actualizaciones de
+  # digest: exactamente lo que interesa para recoger los parches del sistema operativo
+  # de la imagen base.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Los saltos de versión mayor se deciden a mano (postgres 16→17 exige migrar el
+      # directorio de datos; redis y caddy pueden cambiar comportamiento).
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "redis"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "caddy"
+        update-types: ["version-update:semver-major"]
