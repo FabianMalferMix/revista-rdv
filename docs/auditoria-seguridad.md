@@ -281,10 +281,11 @@ Lo que se atacó y resistió. Se documenta para que futuras auditorías no lo re
 > el estado final: ruff, `makemigrations --check`, bandit (severidad medium/high = 0),
 > gitleaks (sin fugas), `caddy validate`, `docker compose config`.
 >
-> **PENDIENTE DE EMPUJAR:** nada de esto está en `origin`. El `git push` lo bloqueó el
-> clasificador de permisos y el usuario indicó que lo haría a mano. No se creó ningún PR.
-> Al retomar: `git push origin main` y verificar el CI en GitHub — hay cambios que solo el
-> CI ejercita (jobs nuevos de `/media/` y de `backup.sh`, `permissions:`, checksums).
+> **CI VERIFICADO EN VERDE.** Tras empujar las olas S0–S4 (commit `b1105e3`), los cinco
+> jobs pasaron: `test`, `build-prod`, `security`, `prod-runtime` y `backup-restore`. Se
+> confirmaron en ejecución real los pasos que hasta entonces solo se habían probado en
+> local: el que levanta Caddy y afirma las cabeceras defensivas de `/media/`, trivy y
+> gitleaks con sus checksums fijados, y bandit y pip-audit con versión fijada.
 >
 > *Fe de erratas:* los mensajes de los commits `sec-11`, `sec-12` y `sec-13` citan 331, 343
 > y 350 tests. Son incorrectos —se leyeron de los puntos de progreso de pytest en vez de la
