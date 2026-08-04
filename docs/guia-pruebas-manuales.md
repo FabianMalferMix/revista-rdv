@@ -74,7 +74,10 @@ no una plantilla vacía.
       respetan (`pre-wrap`).
 - [ ] **`/seccion/<slug>/`** — p. ej. `/seccion/resenas/`.
 - [ ] **`/etiqueta/<slug>/`**
-- [ ] **`/colaborador/<slug>/`** — Perfil con su obra.
+- [ ] **`/colaborador/<slug>/`** — Perfil con su obra. **Ojo:** si esa persona es
+      integrante del colectivo, responde **302** y redirige a `/integrante/<slug>/`. Es
+      deliberado —una URL canónica por persona—, no un fallo. Solo se queda en
+      `/colaborador/` quien colabora sin ser integrante.
 - [ ] **`/colecciones/`** y **`/coleccion/<slug>/`** — Colección mixta (artículos y poemas).
 - [ ] **`/pagina/privacidad/`**, **`/pagina/cookies/`**, **`/pagina/terminos/`** — Las tres
       páginas legales. La de privacidad debe citar la **Ley 21.719**.
