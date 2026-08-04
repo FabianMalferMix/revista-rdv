@@ -64,8 +64,14 @@ a{color:var(--accent); text-underline-offset:3px}
   text-decoration:none; color:var(--muted)}
 .nav a:hover{color:var(--accent)}
 @media (min-width:720px){
-  /* En escritorio se oculta el toggle y la nav se muestra siempre en línea. */
+  /* En escritorio se oculta el toggle y la nav se muestra siempre en línea.
+     OJO: no basta con forzar `display` en el hijo. Desde Chrome 131 el contenido de un
+     <details> cerrado vive en el pseudo-elemento ::details-content con
+     content-visibility:hidden, que gana a cualquier display del hijo — la navegación
+     desaparecía por completo en escritorio. Hay que abrir ese pseudo-elemento.
+     Los navegadores que no lo soporten ignoran la regla y siguen con la de abajo. */
   .nav-disclosure summary{display:none}
+  .nav-disclosure::details-content{content-visibility:visible; block-size:auto}
   .nav-disclosure > .nav{display:flex !important; padding-top:14px}
 }
 
