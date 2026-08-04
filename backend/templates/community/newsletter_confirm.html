@@ -13,9 +13,11 @@
   </header>
 
   {% if not caducado %}
-    {# La confirmación se hace por POST a propósito: los escáneres de enlaces de los
+    {% comment %}
+       La confirmación se hace por POST a propósito: los escáneres de enlaces de los
        clientes de correo visitan por GET todo lo que llega en un mensaje y confirmaban
-       la suscripción solos, vaciando de sentido el doble opt-in. #}
+       la suscripción solos, vaciando de sentido el doble opt-in.
+    {% endcomment %}
     <form method="post" action="{% url 'community:confirm' token %}">
       {% csrf_token %}
       <button type="submit" class="btn">Confirmar mi suscripción</button>
