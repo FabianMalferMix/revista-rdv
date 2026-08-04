@@ -8,8 +8,10 @@
     <p class="dek">Confirma que quieres dejar de recibir nuestras novedades.</p>
   </header>
 
-  {# Por POST para que ningún escáner de enlaces ni prefetch del cliente de correo dé
-     de baja a nadie por su cuenta. El un-clic de RFC 8058 llega también por POST. #}
+  {% comment %}
+     Por POST para que ningún escáner de enlaces ni prefetch del cliente de correo dé
+     de baja a nadie por su cuenta. El un-clic de RFC 8058 llega también por POST.
+  {% endcomment %}
   <form method="post" action="{% url 'community:unsubscribe' token %}">
     {% csrf_token %}
     <button type="submit" class="btn">Darme de baja</button>

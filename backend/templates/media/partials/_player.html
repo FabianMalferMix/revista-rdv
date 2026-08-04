@@ -1,10 +1,12 @@
 {% load embeds %}
 {% with src=r.embed_url|embed_src proveedor=r.embed_url|embed_provider %}
   {% if src %}
-    {# Click-to-play (hallazgo S-19). El iframe NO se inserta hasta que la persona lo
+    {% comment %}
+       Click-to-play (hallazgo S-19). El iframe NO se inserta hasta que la persona lo
        pide: cargarlo de entrada contactaba con YouTube/Vimeo —enviándoles IP, agente y
        referente— en cuanto se abría la página, incluida la PORTADA, mientras
-       /cookies/ afirma que no se comparte información con terceros. #}
+       /cookies/ afirma que no se comparte información con terceros.
+    {% endcomment %}
     <div class="player-frame player-consent" data-embed-src="{{ src }}" data-embed-title="{{ r.title }}">
       <button type="button" class="embed-play">▶ Reproducir</button>
       <p class="meta embed-note">Al reproducir se conecta con {{ proveedor|default:"el proveedor de video" }}, que podrá registrar tu visita.</p>

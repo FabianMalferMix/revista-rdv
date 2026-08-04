@@ -45,8 +45,10 @@
   <header class="masthead">
     <div class="wrap top">
       <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
-      {# Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
-         el input hace la búsqueda en vivo en el overlay. #}
+      {% comment %}
+         Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
+         el input hace la búsqueda en vivo en el overlay.
+      {% endcomment %}
       <form class="search" role="search" action="{% url 'content:search' %}">
         <input type="search" name="q" placeholder="Buscar textos…"
                hx-get="{% url 'content:search' %}"
@@ -59,8 +61,10 @@
         <div id="search-results" role="region" aria-live="polite" aria-label="Resultados de búsqueda"></div>
       </form>
     </div>
-    {# Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
-       En móvil colapsa en un disclosure nativo «Menú»; en escritorio va en línea. #}
+    {% comment %}
+       Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
+       En móvil colapsa en un disclosure nativo «Menú»; en escritorio va en línea.
+    {% endcomment %}
     <details class="nav-disclosure wrap">
       <summary>Menú</summary>
       <nav class="nav" aria-label="Principal">
