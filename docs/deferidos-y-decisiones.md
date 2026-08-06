@@ -137,6 +137,13 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
 - **Índice `Event(published, starts_at)`**, `LIMIT` explícito en la consulta FTS,
   `prefers-reduced-motion`, epigraph en el trigger FTS de Poem — micro-optimizaciones de
   la auditoría #2, sin impacto observado.
+- **Páginas 404 y 500 con la identidad del sitio.** En producción se sirve el 404 por
+  defecto de Django: 179 bytes, en inglés, sin cabecera, sin pie y **sin salida** —quien
+  llegue a un enlace roto se queda sin forma de volver—. Es cosmético, no de seguridad:
+  se verificó que en `DEBUG=0` no filtra ninguna ruta interna ni el nombre de la vista
+  (en desarrollo sí, pero ahí es deliberado). Para cerrarlo bastan dos plantillas,
+  `404.html` y `500.html`, extendiendo `base.html`. *Detectado en las pruebas manuales
+  del §3, 2026-08-06.*
 
 ---
 
