@@ -134,6 +134,35 @@ class EditorialItemAdmin(admin.ModelAdmin):
         "do_restore",
     ]
 
+    # Nombre de acción del panel -> nombre de transición en workflow.TRANSITIONS.
+    _TRANSICION_DE = {f"do_{nombre}": nombre for nombre in workflow.TRANSITIONS}
+
+    def get_actions(self, request):
+        """Retira del desplegable las transiciones que este ROL no podrá ejecutar nunca.
+
+        Es comodidad, no control: la guarda está en `workflow.perform_transition` y sigue
+        ahí para cualquier otro camino (shell, importación, una vista futura). Si algún
+        día se quita este filtro, no se abre nada; solo vuelven los avisos de rechazo.
+
+        Se filtra por ROL y jamás por estado. Que 'accept' no aplique a un borrador
+        depende del objeto, y la selección puede ser mixta —piezas donde la transición
+        vale junto a otras donde no—: esconder la acción por el estado de una dejaría a
+        quien corresponde sin manera de moverlas. Un autor, en cambio, tiene vedadas
+        ocho de las nueve contra cualquier pieza y en cualquier estado; eso sí se sabe
+        sin mirar ninguna.
+        """
+        acciones = super().get_actions(request)
+        if is_editor(request.user):
+            return acciones
+        return {
+            nombre: accion
+            for nombre, accion in acciones.items()
+            # Lo que no es una transición (p. ej. delete_selected) se queda: lo rige su
+            # propio permiso de modelo, que ya resolvió has_delete_permission.
+            if nombre not in self._TRANSICION_DE
+            or "owner" in workflow.TRANSITIONS[self._TRANSICION_DE[nombre]][2]
+        }
+
     # ── Permisos por objeto y estado ─────────────────────────
     def save_model(self, request, obj, form, change):
         # Al crear, el dueño es quien lo crea (habilita "mis borradores").
