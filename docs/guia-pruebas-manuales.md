@@ -64,47 +64,47 @@ no una plantilla vacía.
       recientes, integrantes, publicaciones, prensa y aliados.
 - [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2` y `?page=999`
       (este último **no debe reventar**).
-- [ ] **`/poemas/`** — Índice de poemas.
+- [x] **`/poemas/`** — Índice de poemas.
 
 ### 1.2 Fichas de contenido
 
-- [ ] **`/articulo/<slug>/`** — Entra desde la portada. Debe mostrar cuerpo, autoría,
+- [x] **`/articulo/<slug>/`** — Entra desde la portada. Debe mostrar cuerpo, autoría,
       tiempo de lectura y datos estructurados JSON-LD.
-- [ ] **`/poema/<slug>/`** — Ojo a la tipografía: los saltos y sangrías del poema se
+- [x] **`/poema/<slug>/`** — Ojo a la tipografía: los saltos y sangrías del poema se
       respetan (`pre-wrap`).
-- [ ] **`/seccion/<slug>/`** — p. ej. `/seccion/resenas/`.
-- [ ] **`/etiqueta/<slug>/`**
-- [ ] **`/colaborador/<slug>/`** — Perfil con su obra. **Ojo:** si esa persona es
+- [x] **`/seccion/<slug>/`** — p. ej. `/seccion/resenas/`.
+- [x] **`/etiqueta/<slug>/`**
+- [x] **`/colaborador/<slug>/`** — Perfil con su obra. **Ojo:** si esa persona es
       integrante del colectivo, responde **302** y redirige a `/integrante/<slug>/`. Es
       deliberado —una URL canónica por persona—, no un fallo. Solo se queda en
       `/colaborador/` quien colabora sin ser integrante.
-- [ ] **`/colecciones/`** y **`/coleccion/<slug>/`** — Colección mixta (artículos y poemas).
-- [ ] **`/pagina/privacidad/`**, **`/pagina/cookies/`**, **`/pagina/terminos/`** — Las tres
+- [x] **`/colecciones/`** y **`/coleccion/<slug>/`** — Colección mixta (artículos y poemas).
+- [x] **`/pagina/privacidad/`**, **`/pagina/cookies/`**, **`/pagina/terminos/`** — Las tres
       páginas legales. La de privacidad debe citar la **Ley 21.719**.
 
 ### 1.3 El colectivo
 
-- [ ] **`/integrantes/`** y **`/integrante/<slug>/`**
-- [ ] **`/publicaciones/`** y **`/publicacion/<slug>/`** — Catálogo. **No hay pagos**: los
+- [x] **`/integrantes/`** y **`/integrante/<slug>/`**
+- [x] **`/publicaciones/`** y **`/publicacion/<slug>/`** — Catálogo. **No hay pagos**: los
       enlaces llevan a puntos de venta externos.
-- [ ] **`/prensa/`** — Menciones de prensa.
-- [ ] **`/aliados/`** — Aliados y espacios.
-- [ ] **`/dossier/`** — Kit de prensa. **Pulsa «Imprimir»** o `Ctrl+P`: la vista de
+- [x] **`/prensa/`** — Menciones de prensa.
+- [x] **`/aliados/`** — Aliados y espacios.
+- [x] **`/dossier/`** — Kit de prensa. **Pulsa «Imprimir»** o `Ctrl+P`: la vista de
       impresión debe quedar limpia (sin nav ni pie).
 
 ### 1.4 Agenda y registros
 
-- [ ] **`/agenda/`** — Solo eventos **futuros**.
-- [ ] **`/trayectoria/`** — Eventos **pasados** + hitos + publicaciones, con números.
-- [ ] **`/galeria/`** — Fotos por evento. **Pulsa una foto**: se amplía sin JavaScript
+- [x] **`/agenda/`** — Solo eventos **futuros**.
+- [x] **`/trayectoria/`** — Eventos **pasados** + hitos + publicaciones, con números.
+- [x] **`/galeria/`** — Fotos por evento. **Pulsa una foto**: se amplía sin JavaScript
       (CSS `:target`). Pulsa fuera para cerrar.
-- [ ] **`/evento/<slug>/`** — Ficha con fotos y registros del evento.
-- [ ] **`/registros/`** y **`/registro/<slug>/`** — Ver §6.3 para el reproductor.
+- [x] **`/evento/<slug>/`** — Ficha con fotos y registros del evento.
+- [x] **`/registros/`** y **`/registro/<slug>/`** — Ver §6.3 para el reproductor.
 
 ### 1.5 Catálogo bibliográfico
 
-- [ ] **`/obra/<slug>/`** — Libro reseñado, con sus reseñas publicadas.
-- [ ] **`/editorial/<slug>/`** y **`/autor/<slug>/`**
+- [x] **`/obra/<slug>/`** — Libro reseñado, con sus reseñas publicadas.
+- [x] **`/editorial/<slug>/`** y **`/autor/<slug>/`**
 
 ---
 
@@ -131,19 +131,19 @@ no una plantilla vacía.
 > Hazlo en **desarrollo**: el correo se imprime en el log, así que puedes seguir el flujo
 > entero. Ten abierto `docker compose logs -f worker`.
 
-- [ ] **3.1 Alta.** En el pie del sitio, escribe un correo y envía. Debe redirigir con el
+- [x] **3.1 Alta.** En el pie del sitio, escribe un correo y envía. Debe redirigir con el
       mensaje **«Si la dirección es válida, te enviamos un correo…»**.
-- [ ] **3.2 El correo.** En el log del worker aparece el mensaje completo. Comprueba que
+- [x] **3.2 El correo.** En el log del worker aparece el mensaje completo. Comprueba que
       trae **dos enlaces** (confirmar y baja) y las cabeceras `List-Unsubscribe` y
       `List-Unsubscribe-Post`.
-- [ ] **3.3 Un GET no confirma.** Abre el enlace de **confirmar**: debe mostrar una página
+- [x] **3.3 Un GET no confirma.** Abre el enlace de **confirmar**: debe mostrar una página
       con un **botón**, y el suscriptor sigue en `pending`. *(Esto impide que un escáner
       antivirus de correo confirme la suscripción por su cuenta.)*
-- [ ] **3.4 Confirmar.** Pulsa el botón → «Suscripción confirmada».
-- [ ] **3.5 Un solo uso.** Recarga ese mismo enlace y vuelve a pulsar: ahora da **404**.
-- [ ] **3.6 Sin oráculo.** Da de alta **el mismo correo** otra vez y luego uno nuevo. El
+- [x] **3.4 Confirmar.** Pulsa el botón → «Suscripción confirmada».
+- [x] **3.5 Un solo uso.** Recarga ese mismo enlace y vuelve a pulsar: ahora da **404**.
+- [x] **3.6 Sin oráculo.** Da de alta **el mismo correo** otra vez y luego uno nuevo. El
       mensaje debe ser **idéntico** en ambos casos: no debe revelar quién ya estaba.
-- [ ] **3.7 Baja.** Abre el enlace de baja → página con botón → pulsa → «Te diste de baja».
+- [x] **3.7 Baja.** Abre el enlace de baja → página con botón → pulsa → «Te diste de baja».
 - [ ] **3.8 Honeypot.** Con las herramientas del navegador, rellena el campo oculto
       `apodo` y envía. Responde igual, pero **no se crea** el suscriptor.
 - [ ] **3.9 Rate limit.** Más de 5 altas en un minuto → «Demasiados intentos».
