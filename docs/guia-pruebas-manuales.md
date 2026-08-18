@@ -334,19 +334,26 @@ docker compose exec web python manage.py generate_image_derivatives
 
 ## 7. Sindicación y SEO
 
-- [ ] **`/feed/`** — RSS de textos.
-- [ ] **`/feed/registros/`** — Podcast. El `<enclosure>` debe llevar **URL absoluta**
+- [x] **`/feed/`** — RSS de textos.
+- [x] **`/feed/registros/`** — Podcast. El `<enclosure>` debe llevar **URL absoluta**
       (`http://…`), no relativa, y el feed declarar el namespace **iTunes**.
-- [ ] **`/sitemap.xml`** — Debe incluir la portada, los 12 índices y las fichas publicadas;
+- [x] **`/sitemap.xml`** — Debe incluir la portada, los 12 índices y las fichas publicadas;
       **no** borradores.
-- [ ] **`/robots.txt`** — Debe hacer `Disallow: /admin/` y apuntar al sitemap.
-- [ ] **Canonical:** en cualquier ficha, `<link rel="canonical">` no debe arrastrar la
+- [x] **`/robots.txt`** — Debe hacer `Disallow: /admin/` y apuntar al sitemap.
+- [x] **Canonical:** en cualquier ficha, `<link rel="canonical">` no debe arrastrar la
       query string, salvo `?page=`.
-- [ ] **Open Graph y JSON-LD:** ver el código fuente de la portada y de un artículo.
+- [x] **Open Graph y JSON-LD:** ver el código fuente de la portada y de un artículo.
 
 ```bash
 curl -s http://127.0.0.1:8000/feed/registros/ | grep -o '<enclosure[^>]*>'
 ```
+
+> **Cuidado al contar con `grep -c`:** el sitemap y los feeds salen en **una sola línea**,
+> y `grep -c` cuenta líneas, no coincidencias. Devuelve 1 aunque haya 59 URLs. Usa
+> `grep -o '<loc>' | wc -l`.
+>
+> El JSON-LD va en `<script type="application/ld+json" nonce="…">`: una expresión que
+> espere `>` justo tras `ld+json"` no lo encuentra y hace creer que falta.
 
 ---
 
