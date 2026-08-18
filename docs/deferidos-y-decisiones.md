@@ -158,6 +158,16 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   `verbose_name` de campo que aparecen como cabecera. Nada se comporta mal: es
   presentación. *Detectado en las pruebas manuales del §5, 2026-08-18.*
 
+- **La firma de archivo no distingue un `.docx` de un ZIP cualquiera.** `SubmissionForm`
+  valida que los bytes iniciales correspondan a la extensión declarada —lo que rechaza un
+  PNG renombrado a `.pdf`, comprobado a mano—, pero `docx` y `odt` **son** contenedores
+  ZIP, así que su firma `PK\x03\x04` la cumple cualquier ZIP. Cerrarlo exigiría abrir el
+  contenedor y exigir `[Content_Types].xml` y `word/document.xml` dentro. Gravedad baja y
+  por eso queda diferido: el archivo va a almacenamiento privado, solo lo descarga quien
+  tiene rol de editor por `/envios/<pk>/archivo/`, y se sirve con `nosniff` y CSP
+  `sandbox`; nunca se ejecuta ni se interpreta. *Detectado en las pruebas manuales del §4,
+  2026-08-18.*
+
 - **`Article` no tiene `get_absolute_url`.** Consecuencia práctica: el panel no ofrece el
   botón «Ver en el sitio» en la ficha, así que quien acaba de publicar no tiene forma de
   saltar a la página pública y ha de componer la URL de memoria —el slug no se deriva del

@@ -180,18 +180,26 @@ docker compose exec web python manage.py shell -c \
 
 ## 4. Envío de propuestas
 
-- [ ] **4.1** Abre **`/enviar/`**. Debe verse el formulario y la nota de consentimiento
+- [x] **4.1** Abre **`/enviar/`**. Debe verse el formulario y la nota de consentimiento
       con enlace a la política de privacidad.
-- [ ] **4.2 Envío válido.** Rellena y adjunta un **PDF** real → redirige a
+- [x] **4.2 Envío válido.** Rellena y adjunta un **PDF** real → redirige a
       `/enviar/gracias/`.
-- [ ] **4.3 Formato prohibido.** Adjunta un `.exe` o un `.jpg` → **rechazado**.
-- [ ] **4.4 Contenido que no cuadra.** Renombra un `.png` a `.pdf` y adjúntalo → rechazado
+- [x] **4.3 Formato prohibido.** Adjunta un `.exe` o un `.jpg` → **rechazado**.
+- [x] **4.4 Contenido que no cuadra.** Renombra un `.png` a `.pdf` y adjúntalo → rechazado
       («el contenido no coincide con su extensión»): se validan los **bytes mágicos**.
-- [ ] **4.5 Tamaño.** Un archivo de más de 10 MB → rechazado.
-- [ ] **4.6 Rate limit.** Más de 10 envíos en una hora → aviso, **y no se pierde el texto
+- [x] **4.5 Tamaño.** Un archivo de más de 10 MB → rechazado.
+- [x] **4.6 Rate limit.** Más de 10 envíos en una hora → aviso, **y no se pierde el texto
       escrito**.
-- [ ] **4.7 El adjunto es privado.** Comprueba que **no** es accesible por URL pública:
+- [x] **4.7 El adjunto es privado.** Comprueba que **no** es accesible por URL pública:
       vive fuera de `MEDIA_ROOT`.
+- [x] **4.8 Un `.txt` con bytes nulos** → rechazado. El texto plano no tiene firma, así que
+      la comprobación es otra: exige que no parezca binario.
+- [ ] **4.9 Límite conocido: un ZIP cualquiera renombrado a `.docx` SE ACEPTA.** No es un
+      descuido —un `.docx` *es* un ZIP, y la firma `PK\x03\x04` no puede distinguirlos—.
+      Rechazarlo exigiría abrir el contenedor y buscar dentro `[Content_Types].xml` y
+      `word/document.xml`. Queda sin marcar a propósito: es el comportamiento actual, no
+      una prueba superada. Gravedad baja: el archivo va a almacenamiento privado, solo lo
+      descarga un editor, y se sirve con `nosniff` y CSP `sandbox`.
 
 ```bash
 docker compose exec web ls -R /app/private_media | head
