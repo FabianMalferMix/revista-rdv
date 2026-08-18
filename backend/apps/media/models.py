@@ -118,10 +118,25 @@ class MediaAsset(models.Model):
         original y `width/height` quedan como estén)."""
         if not self.file:
             return
+        # Lo que hay REALMENTE en la columna, no lo que muestra la instancia. `ImageField`
+        # conecta `update_dimension_fields` a la señal `post_init`, que al cargar una fila
+        # con la columna a NULL abre el archivo y rellena `self.width`/`self.height` en
+        # memoria (sin escribir). Mirar el atributo, como se hacía antes, dejaba esta
+        # función convencida de que las dimensiones ya estaban guardadas: la reparación
+        # resultaba inalcanzable justo en el caso para el que se escribió, y la fila se
+        # quedaba en NULL para siempre pagando una apertura de archivo por instanciación.
+        # `values_list` no instancia el modelo, así que no dispara `post_init`.
+        guardadas = (
+            type(self).objects.filter(pk=self.pk).values_list("width", "height").first()
+            if self.pk
+            else None
+        )
+        ancho_guardado, alto_guardado = guardadas or (None, None)
+
         # ¿Hace falta abrir el archivo? Solo si faltan dimensiones o algún derivado.
-        need_open = not self.width or not self.height
-        if self.width and not need_open:
-            targets = [w for w in self.SRCSET_WIDTHS if w < self.width]
+        need_open = not ancho_guardado or not alto_guardado
+        if not need_open:
+            targets = [w for w in self.SRCSET_WIDTHS if w < ancho_guardado]
             need_open = any(not self.file.storage.exists(self._derivative_name(w)) for w in targets)
         if not need_open:
             return
@@ -132,9 +147,10 @@ class MediaAsset(models.Model):
         except Exception:
             return
         # Repara dimensiones (fuente única: el archivo real).
-        if self.width != img.width or self.height != img.height:
+        if (ancho_guardado, alto_guardado) != (img.width, img.height):
             self.width, self.height = img.width, img.height
-            type(self).objects.filter(pk=self.pk).update(width=img.width, height=img.height)
+            if self.pk:
+                type(self).objects.filter(pk=self.pk).update(width=img.width, height=img.height)
 
         fmt = (img.format or "JPEG").upper()
         if fmt in ("JPEG", "JPG", "MPO"):
