@@ -45,6 +45,25 @@ docker compose logs -f web worker      # deja esto abierto en otra terminal
 > Las de producción las generó `seed_demo --force` **al azar** y las imprimió una sola
 > vez. Las de desarrollo conservan `demo12345` porque se crearon antes de ese cambio.
 
+**`admin` no lo crea `seed_demo`**, solo `editora` y `autor1`. El superusuario se hace a
+mano con `createsuperuser`, así que su contraseña no está en ninguna parte del repositorio
+y no se puede recuperar. Si se olvida:
+
+```bash
+docker compose exec web python manage.py changepassword admin
+```
+
+Dos advertencias sobre resembrar, ambas descubiertas en las pruebas manuales del §5:
+
+- **La contraseña aleatoria solo se genera al CREAR el usuario.** Resembrar no la cambia:
+  `_user()` solo entra en `set_password` cuando `get_or_create` devuelve `created=True`.
+  Por eso `editora` y `autor1` siguen con `demo12345` por muchas veces que se resiembre.
+- **Resembrar pisa el estado editorial.** Los artículos se cargan con `update_or_create`
+  escribiendo `status` directo, sin pasar por el flujo, así que una pieza publicada a mano
+  vuelve al estado que dicta el guion. La bitácora, en cambio, no se borra: quedan
+  transiciones huérfanas que ya no explican el estado actual. Se ve en «La casa vacía»,
+  con dos `scheduled → published` de dos siembras distintas.
+
 ### Volver a empezar
 
 ```bash
@@ -186,15 +205,15 @@ docker compose exec web ls -R /app/private_media | head
 
 Entra en **`/admin/`** con cada cuenta y compara lo que ve cada una.
 
-- [ ] **`autor1`** — Solo debe ver **sus propios** artículos. Puede crear y editar
+- [x] **`autor1`** — Solo debe ver **sus propios** artículos. Puede crear y editar
       **borradores**; no puede borrar; no toca la fecha de publicación ni el dueño.
 
-- [ ] **`editora`** — Ve **todo** el contenido, y las apps de envíos, boletín, medios y
+- [x] **`editora`** — Ve **todo** el contenido, y las apps de envíos, boletín, medios y
       personas. No ve la configuración del sitio (app *showcase*).
 
-- [ ] **`admin`** — Lo ve todo, incluida la identidad del sitio y los usuarios.
+- [x] **`admin`** — Lo ve todo, incluida la identidad del sitio y los usuarios.
 
-- [ ] **El desplegable «estado» es de solo lectura para todos**, incluido el admin: el
+- [x] **El desplegable «estado» es de solo lectura para todos**, incluido el admin: el
       estado solo cambia por las acciones del flujo.
 
 ### 5.2 Flujo editorial de principio a fin
@@ -202,27 +221,32 @@ Entra en **`/admin/`** con cada cuenta y compara lo que ve cada una.
 Con `autor1`, crea un artículo. Después, en el listado, selecciona la fila y usa el menú
 **Acciones**:
 
-- [ ] **Enviar a revisión** (`autor1`) — borrador → en revisión.
-- [ ] **Pedir cambios** (`editora`) — en revisión → cambios solicitados.
-- [ ] **Enviar a revisión** otra vez (`autor1`).
-- [ ] **Aceptar** (`editora`) — en revisión → aprobado.
-- [ ] **Programar** (`editora`) — pon una fecha de publicación **futura** y programa.
+- [x] **Enviar a revisión** (`autor1`) — borrador → en revisión.
+- [x] **Pedir cambios** (`editora`) — en revisión → cambios solicitados.
+- [ ] **Enviar a revisión** otra vez (`autor1`) — el ciclo completo de devolución:
+      tras *Pedir cambios*, el propio autor la reenvía. En la pasada del 18/08 el
+      segundo envío lo hizo `editora` sobre otra pieza, así que esto queda sin cubrir.
+- [x] **Aceptar** (`editora`) — en revisión → aprobado.
+- [x] **Programar** (`editora`) — pon una fecha de publicación **futura** y programa.
       Con fecha pasada o vacía **debe negarse**.
-- [ ] **Publicar** (`editora`) — aprobado o programado → publicado. Compruébalo en el sitio.
-- [ ] **Despublicar**, **Archivar**, **Restaurar**.
-- [ ] **Guardas de rol:** intenta *Aceptar* con `autor1` → debe rechazarlo.
-- [ ] **Bitácora:** en la ficha del artículo, el historial de transiciones debe listar cada
+- [x] **Publicar** (`editora`) — aprobado o programado → publicado. Compruébalo en el sitio.
+- [x] **Despublicar**, **Archivar**, **Restaurar**.
+- [x] **Guardas de rol:** intenta *Aceptar* con `autor1` → debe rechazarlo.
+- [x] **Bitácora:** en la ficha del artículo, el historial de transiciones debe listar cada
       movimiento con actor y fecha, y **no ser editable**.
 
 ### 5.3 Publicación programada (automática)
 
-- [ ] Programa un artículo para **dentro de 2 minutos** y espera. La tarea de Celery corre
+- [x] Programa un artículo para **dentro de 2 minutos** y espera. La tarea de Celery corre
       **cada minuto** y debe publicarlo solo. Verás la traza en `docker compose logs worker`.
 
 ### 5.4 Adjunto de un envío
 
-- [ ] Con `editora`, entra en un envío y descarga el adjunto (`/envios/<pk>/archivo/`).
-- [ ] **Cierra sesión** y abre esa misma URL → debe **denegarte** el acceso.
+- [x] Con `editora`, entra en un envío y descarga el adjunto (`/envios/<pk>/archivo/`).
+- [x] Con **`autor1`** —que es staff y tiene sesión válida— abre esa misma URL → **404**.
+      La vista exige *editor*, no solo *staff*. Y responde 404 y no 403 a propósito: un
+      403 confirmaría que el envío y su archivo existen.
+- [x] **Cierra sesión** y abre esa misma URL → **302** a `/admin/login/`.
 
 ---
 

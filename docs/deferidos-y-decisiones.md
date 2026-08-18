@@ -145,6 +145,29 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   `404.html` y `500.html`, extendiendo `base.html`. *Detectado en las pruebas manuales
   del §3, 2026-08-06.*
 
+- **Rótulos del panel a medias en inglés.** Conviven «MEDIOS» y «ENVÍOS» (con
+  `verbose_name`) con «CONTENT», «PEOPLE», «REVIEWS» y «COMMUNITY» sin traducir, y los
+  modelos de relación y auditoría tampoco lo tienen: en la ficha de un artículo se lee
+  «EDITORIAL TRANSITIONS», «FROM STATUS», «TO STATUS», «CREATED AT», «REVIEWED WORKS»,
+  «EDITORIAL NOTES», y en el formulario «Status», «Published at», «Owner». El patrón se
+  entiende —se tradujo lo que el equipo abre a diario y quedaron fuera los modelos que no
+  se navegan— pero para un colectivo que trabaja en español es un roce constante. Se cierra
+  con `verbose_name`/`verbose_name_plural` en los `AppConfig` de content, people, reviews y
+  community, y en los `Meta` de ArticleContributor, ReviewedWork, CollectionArticle,
+  CollectionPoem, PoemContributor, EditorialTransition y EditorialNote, más los
+  `verbose_name` de campo que aparecen como cabecera. Nada se comporta mal: es
+  presentación. *Detectado en las pruebas manuales del §5, 2026-08-18.*
+
+- **`Article` no tiene `get_absolute_url`.** Consecuencia práctica: el panel no ofrece el
+  botón «Ver en el sitio» en la ficha, así que quien acaba de publicar no tiene forma de
+  saltar a la página pública y ha de componer la URL de memoria —el slug no se deriva del
+  título del artículo sino de la obra reseñada, así que adivinarlo falla—. Lo mismo aplica
+  a `Page` y `Collection`. No es un fallo: los cuatro sitemaps que llaman
+  `get_absolute_url()` lo hacen sobre Poem, Event, Publication y Recording, que sí lo
+  tienen, y Page/Collection resuelven con `reverse()`; `/sitemap.xml` responde 200. Es
+  inconsistencia con un costo de uso. *Detectado en las pruebas manuales del §5,
+  2026-08-18.*
+
 ---
 
 ## 5. Supuestos y advertencias (leer antes de tocar producción)
