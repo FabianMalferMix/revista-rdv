@@ -262,14 +262,14 @@ Con `autor1`, crea un artículo. Después, en el listado, selecciona la fila y u
 
 ### 6.1 Subida de imágenes
 
-- [ ] Sube un JPG grande (>1440 px) en **Recursos**. Debe rellenar solo el alto y el ancho.
-- [ ] **Derivadas:** se generan copias de 480, 960 y 1440 px (solo las menores al original).
+- [x] Sube un JPG grande (>1440 px) en **Recursos**. Debe rellenar solo el alto y el ancho.
+- [x] **Derivadas:** se generan copias de 480, 960 y 1440 px (solo las menores al original).
 
 ```bash
 docker compose exec web ls /app/mediafiles/assets/$(date +%Y)/$(date +%m)/
 ```
 
-- [ ] **Metadatos:** sube una foto **con GPS** (una de tu móvil sirve). El original
+- [x] **Metadatos:** sube una foto **con GPS** (una de tu móvil sirve). El original
       publicado **no debe conservar el EXIF**.
 
 ```bash
@@ -279,18 +279,18 @@ from PIL import Image; print(dict(Image.open('/app/mediafiles/assets/AAAA/MM/tu-
 
 ### 6.2 Validación de subidas *(este era el hallazgo ALTO de la auditoría)*
 
-- [ ] En **Registros**, intenta subir un **`.html`** como archivo → **rechazado**.
-- [ ] Prueba también `.svg` → rechazado. Un `.mp3` o `.mp4` → aceptado.
-- [ ] En **Publicaciones**, el PDF solo admite `.pdf`.
+- [x] En **Registros**, intenta subir un **`.html`** como archivo → **rechazado**.
+- [x] Prueba también `.svg` → rechazado. Un `.mp3` o `.mp4` → aceptado.
+- [x] En **Publicaciones**, el PDF solo admite `.pdf`.
 
 ### 6.3 Reproductores y click-to-play
 
-- [ ] En `/registro/<slug>/` de un registro **con embed** (YouTube/Vimeo): **no debe haber
+- [x] En `/registro/<slug>/` de un registro **con embed** (YouTube/Vimeo): **no debe haber
       iframe** al cargar. Verás un botón **«▶ Reproducir»** y el aviso de a qué proveedor
       te conecta.
-- [ ] Pulsa el botón → aparece el reproductor. *(Comprueba en la pestaña **Red** que la
+- [x] Pulsa el botón → aparece el reproductor. *(Comprueba en la pestaña **Red** que la
       conexión al tercero ocurre **solo entonces**.)*
-- [ ] Un registro **con archivo** de audio muestra el reproductor nativo.
+- [x] Un registro **con archivo** de audio muestra el reproductor nativo.
 - [ ] **Grabación inédita:** enlaza a un poema publicado un registro **sin publicar**. En
       `/poema/<slug>/` **no debe aparecer** ni el audio ni el enlace.
 
@@ -300,7 +300,22 @@ from PIL import Image; print(dict(Image.open('/app/mediafiles/assets/AAAA/MM/tu-
 docker compose exec web python manage.py generate_image_derivatives
 ```
 
-- [ ] Debe generar las derivadas que falten y reparar dimensiones nulas, sin duplicar.
+- [x] Debe generar las derivadas que falten y reparar dimensiones nulas, sin duplicar.
+
+> La reparación de dimensiones **no funcionaba** y no se notaba: `post_init` de Django
+> rellena `width`/`height` en memoria al cargar una fila con la columna a NULL, así que la
+> condición que decidía reparar nunca se cumplía. El sitio se veía bien y el comando decía
+> «Derivados verificados», pero 10 de los 11 recursos tenían la columna vacía y cada carga
+> abría la imagen del disco. Arreglado en `fix-dimensiones-nulas`; para comprobarlo, mira
+> la **columna** y no el atributo:
+>
+> ```bash
+> docker compose exec web python -c "
+> import django,os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings'); django.setup()
+> from django.db import connection
+> with connection.cursor() as c:
+>     c.execute('SELECT count(*) FILTER (WHERE width IS NULL) FROM media_mediaasset'); print(c.fetchone())"
+> ```
 
 ---
 
