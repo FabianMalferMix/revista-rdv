@@ -129,19 +129,32 @@ no una plantilla vacía.
 
 ## 2. Buscador
 
-- [ ] **Con JavaScript:** escribe «poesia» en la caja de la cabecera. Los resultados
-      aparecen **en vivo** en un overlay, sin recargar (htmx, 300 ms de rebote).
-- [ ] **Sin acentos:** busca `poesia` y luego `poesía`. **Ambas deben encontrar lo mismo**
-      (extensión `unaccent`).
-- [ ] **Sin JavaScript:** ve directo a **`/buscar/?q=umbral`**. Debe salir la **página
+> Los términos de abajo están elegidos contra los datos que siembra `seed_demo`. El que
+> proponía antes esta guía —«poesia»— devuelve **cero resultados**, así que la prueba de
+> acentos no demostraba nada: dos búsquedas vacías también «encuentran lo mismo».
+
+- [x] **Con JavaScript:** escribe `oficio` en la caja de la cabecera. Los resultados
+      aparecen **en vivo** en un overlay, sin recargar (htmx, 300 ms de rebote). Deben
+      salir dos: «Sobre el oficio de la crítica» y «Oficio de la lluvia».
+- [x] **Sin acentos:** busca `critica` y luego `crítica`. **Ambas deben encontrar lo
+      mismo** (extensión `unaccent`): los mismos dos resultados. Con la eñe igual:
+      `resena` y `reseña`.
+- [x] **Sin JavaScript:** ve directo a **`/buscar/?q=umbral`**. Debe salir la **página
       completa** con cabecera y pie, no un fragmento suelto.
-- [ ] **Busca en poemas y artículos a la vez:** un término que solo esté en un poema debe
-      encontrarlo.
-- [ ] **Borradores excluidos:** un texto no publicado **no** debe aparecer.
-- [ ] **Entrada hostil:** `/buscar/?q=%00` debe responder **200**, no un error 500.
-- [ ] **Consulta larga:** pega 5.000 caracteres. Debe responder 200 (se trunca a 120).
-- [ ] **Rate limit:** recarga `/buscar/?q=a` más de 60 veces en un minuto. Debe aparecer
-      «Demasiadas búsquedas seguidas», **no** un error.
+- [x] **Busca en poemas y artículos a la vez:** `oficio` devuelve uno de cada — «Sobre el
+      oficio de la crítica» es artículo y «Oficio de la lluvia» es poema.
+- [x] **Borradores excluidos:** busca `borrador` → **cero resultados**, aunque haya dos
+      piezas sin publicar con esa palabra **en el título** (el poema «Borrador de
+      invierno» y el artículo «Antología del margen (borrador)»). Ese es el punto: no
+      basta con que no salgan, es que ni el título asoma.
+- [x] **Entrada hostil:** `/buscar/?q=%00` debe responder **200**, no un error 500.
+- [x] **Consulta larga:** pega 5.000 caracteres. Debe responder 200 (se trunca a 120).
+      Puede devolver cero resultados aunque el término existiera: el corte a 120 parte la
+      última palabra y deja un token suelto que, con Y lógico, no casa con nada. Es
+      consecuencia del truncado, no un fallo.
+- [x] **Rate limit:** recarga `/buscar/?q=a` más de 60 veces en un minuto. Debe aparecer
+      «Demasiadas búsquedas seguidas» con **HTTP 200**, no un 429 ni un error. Ojo: deja
+      el navegador limitado el resto del minuto; se pasa solo.
 
 ---
 
