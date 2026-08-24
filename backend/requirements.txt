@@ -46,9 +46,9 @@ click-repl==0.3.0 \
     --hash=sha256:17849c23dba3d667247dc4defe1757fff98694e90fe37474f3feebb69ced26a9 \
     --hash=sha256:fb7e06deb8da8de86180a33a9da97ac316751c094c6899382da7feeeeb51b812
     # via celery
-django==5.2.16 \
-    --hash=sha256:04f354bf9d807a86ad1a8392fe3808d362358a8eafc322848e0e43e59b24371d \
-    --hash=sha256:59ea02020c3136fce14bef0bbece21a10a4febef5eed1c51c22ae468efa22200
+django==5.2.17 \
+    --hash=sha256:9d4d93be539a18ab80d058eb515900e10951e04c537c5a6b394fc49528d3251f \
+    --hash=sha256:f04fb3b36ee119e1af4fa1d397d5fd6cf12700f49321e84d4f4c642c5b1973db
     # via
     #   -r requirements.in
     #   django-axes
@@ -277,9 +277,9 @@ redis==5.3.1 \
     --hash=sha256:ca49577a531ea64039b5a36db3d6cd1a0c7a60c34124d46924a45b956e8cf14c \
     --hash=sha256:dc1909bd24669cc31b5f67a039700b16ec30571096c5f1f0d9d2324bff31af97
     # via -r requirements.in
-sentry-sdk==2.66.1 \
-    --hash=sha256:86002793161d9a95ef04bdd8d442e9bfece5d989b755f05d6360215094a7aff6 \
-    --hash=sha256:f882fb08710c5f8bfc603aafa3e901b384009a19cc3f76a572b863392ee81cdc
+sentry-sdk==2.68.0 \
+    --hash=sha256:538e56c2d03679d42f7c0cb5f1af73a7a510b00abc7e296c13ac49b107b713a4 \
+    --hash=sha256:648c58e9887311a03470a41539e24bdbbf64a30ca4f5336f7e3dcc87276400b3
     # via -r requirements.in
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
