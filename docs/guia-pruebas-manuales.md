@@ -1,5 +1,10 @@
 # Guía de pruebas manuales
 
+> **¿Retomas esto en otra máquina o tras una pausa larga?** Lee primero
+> [retomar-barrido.md](retomar-barrido.md): dice en qué punto va el barrido, qué no
+> viaja con el repositorio (volúmenes, `.env`, credenciales, la vista previa de
+> producción) y cómo está decidido abordar §10.
+
 Recorrido paso a paso de **todo lo que se puede ejercitar a mano** en «Reseñas». Cada
 bloque dice qué probar, cómo hacerlo y **qué debe ocurrir**. Marca la casilla cuando el
 resultado coincida; si no coincide, eso es un hallazgo.
