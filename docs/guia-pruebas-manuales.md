@@ -436,15 +436,29 @@ docker compose exec web python manage.py seed_demo
 docker compose exec web python manage.py generate_image_derivatives
 ```
 
-- [ ] **`setup_groups`** — Correrlo dos veces no cambia nada. **Si le quitas un permiso a
+- [x] **`setup_groups`** — Correrlo dos veces no cambia nada. **Si le quitas un permiso a
       mano a un grupo, no debe restaurarlo.** Con `--reset` sí lo reemplaza.
-- [ ] **`purge_stale_data`** — Con `--dry-run` solo informa. Purga suscriptores nunca
+- [x] **`purge_stale_data`** — Con `--dry-run` solo informa. Purga suscriptores nunca
       confirmados, **los dados de baja**, envíos resueltos (con su adjunto) y los intentos
       de acceso de más de 90 días.
-- [ ] **`seed_demo`** — En producción (`DEBUG=0`) **debe negarse** sin `--force`, y las
+- [x] **`seed_demo`** — En producción (`DEBUG=0`) **debe negarse** sin `--force`, y las
       contraseñas que genera son **aleatorias**.
-- [ ] **Tareas automáticas:** `publish_due_items` cada minuto y `purge_stale_pii` los lunes
+- [x] **Tareas automáticas:** `publish_due_items` cada minuto y `purge_stale_pii` los lunes
       a las 04:30 (`docker compose logs beat`).
+
+> **Para probar `purge_stale_data` hay que envejecer registros a mano**: con datos de demo
+> recién sembrados no hay nada más antiguo que `--days` y el comando informa de cero, lo
+> que parece un éxito y no prueba nada. Retrasa `created_at` y comprueba las dos mitades:
+> que se borre lo caducado **y que un suscriptor CONFIRMADO de la misma antigüedad
+> sobreviva** —el consentimiento dado no caduca por el paso del tiempo—.
+>
+> ```bash
+> docker compose exec web python -c "
+> import django,os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings'); django.setup()
+> from django.utils import timezone; from datetime import timedelta
+> from apps.community.models import NewsletterSubscriber as N
+> N.objects.filter(status='pending')[:2].update(created_at=timezone.now()-timedelta(days=400))"
+> ```
 
 ---
 
