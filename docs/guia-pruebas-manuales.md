@@ -361,6 +361,14 @@ curl -s http://127.0.0.1:8000/feed/registros/ | grep -o '<enclosure[^>]*>'
 
 > Estos van en la **vista previa de producción** (`:8090`), que es donde están Caddy y
 > `DEBUG=0`.
+>
+> **Ojo al levantarla en local:** el compose base carga `env_file: .env`, que son valores
+> de DESARROLLO, y ese fichero fija `CELERY_BROKER_URL` y `CELERY_RESULT_BACKEND` **sin
+> credenciales**, pisando las que `settings.py` construye a partir de `REDIS_PASSWORD`.
+> Resultado: `/readyz/` responde 503 con `broker: false` aunque Redis esté sano. No es un
+> defecto del proyecto —`.env.prod.example` no define esas URLs justo para que se
+> calculen—, pero la vista previa no es fiel si no se reponen. La configuración usada aquí
+> vive en `~/.local/share/resenas-prodlocal/override.yml`.
 
 ### 8.1 Cabeceras
 
@@ -368,9 +376,9 @@ curl -s http://127.0.0.1:8000/feed/registros/ | grep -o '<enclosure[^>]*>'
 curl -sS -D - -o /dev/null http://127.0.0.1:8090/ | grep -iE 'content-security|x-frame|nosniff|referrer|permissions'
 ```
 
-- [ ] Deben aparecer CSP, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy` y
+- [x] Deben aparecer CSP, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy` y
       `Permissions-Policy`. **No** debe aparecer la cabecera `Server`.
-- [ ] **CSP más estricta en público:** `style-src 'self'` en `/`, pero
+- [x] **CSP más estricta en público:** `style-src 'self'` en `/`, pero
       `style-src 'self' 'unsafe-inline'` en `/admin/login/`.
 
 ### 8.2 Archivos subidos *(la otra mitad del hallazgo ALTO)*
@@ -379,7 +387,7 @@ curl -sS -D - -o /dev/null http://127.0.0.1:8090/ | grep -iE 'content-security|x
 curl -sS -D - -o /dev/null http://127.0.0.1:8090/media/<algun-archivo>
 ```
 
-- [ ] Debe traer `X-Content-Type-Options: nosniff` y
+- [x] Debe traer `X-Content-Type-Options: nosniff` y
       `Content-Security-Policy: default-src 'none'; sandbox`.
 
 ### 8.3 Estáticos desde el borde
@@ -388,13 +396,13 @@ curl -sS -D - -o /dev/null http://127.0.0.1:8090/media/<algun-archivo>
 curl -sS -D - -o /dev/null http://127.0.0.1:8090/static/css/site.<hash>.css
 ```
 
-- [ ] `Cache-Control: public, max-age=31536000, immutable`.
-- [ ] **Prueba decisiva:** para el contenedor `web`. Los estáticos deben **seguir
+- [x] `Cache-Control: public, max-age=31536000, immutable`.
+- [x] **Prueba decisiva:** para el contenedor `web`. Los estáticos deben **seguir
       respondiendo 200** mientras `/` da 502 → no pasan por gunicorn.
 
 ### 8.4 Anti-fuerza-bruta
 
-- [ ] En `/admin/login/`, falla la contraseña **6 veces**. A partir del quinto intento
+- [x] En `/admin/login/`, falla la contraseña **6 veces**. A partir del quinto intento
       debe bloquearte (django-axes, bloqueo por IP durante 1 hora).
 
 ```bash
@@ -403,18 +411,18 @@ docker compose exec web python manage.py axes_reset      # para desbloquearte
 
 ### 8.5 Guard de arranque
 
-- [ ] Intenta levantar producción con la clave de ejemplo: **debe negarse a arrancar** con
+- [x] Intenta levantar producción con la clave de ejemplo: **debe negarse a arrancar** con
       un mensaje que nombre las variables mal puestas.
 
 ### 8.6 Redacción de secretos en los logs
 
-- [ ] Abre `/novedades/baja/UN-TOKEN-CUALQUIERA/` en `:8090` y luego mira el log del proxy:
+- [x] Abre `/novedades/baja/UN-TOKEN-CUALQUIERA/` en `:8090` y luego mira el log del proxy:
       la ruta debe salir como `/novedades/baja/<redactado>/`.
 
 ### 8.7 Salud
 
-- [ ] **`/healthz/`** → `ok` (no toca la base).
-- [ ] **`/readyz/`** → JSON con el estado de base y broker. **Para Redis** y debe pasar a
+- [x] **`/healthz/`** → `ok` (no toca la base).
+- [x] **`/readyz/`** → JSON con el estado de base y broker. **Para Redis** y debe pasar a
       **503**.
 
 ---

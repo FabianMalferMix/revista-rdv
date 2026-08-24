@@ -158,6 +158,12 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   `verbose_name` de campo que aparecen como cabecera. Nada se comporta mal: es
   presentación. *Detectado en las pruebas manuales del §5, 2026-08-18.*
 
+  **Ampliación (§8.4, 2026-08-24):** el caso más visible no está en el panel sino en la
+  pantalla de acceso. Al bloquear por intentos fallidos, django-axes responde
+  «Account locked: too many login attempts. Please try again later.» — en inglés, y a
+  cualquiera que llegue a `/admin/login/`, no solo al equipo. Se cierra con
+  `AXES_LOCKOUT_TEMPLATE` (una plantilla propia) o `AXES_LOCKOUT_URL`.
+
 - **La firma de archivo no distingue un `.docx` de un ZIP cualquiera.** `SubmissionForm`
   valida que los bytes iniciales correspondan a la extensión declarada —lo que rechaza un
   PNG renombrado a `.pdf`, comprobado a mano—, pero `docx` y `odt` **son** contenedores
