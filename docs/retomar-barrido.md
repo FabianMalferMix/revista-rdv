@@ -92,6 +92,16 @@ docker compose exec web sh -c 'echo MARCADOR-RESPALDO-lote1 > /app/private_media
 §8, §10 y parte de §11 necesitan Caddy y `DEBUG=0`, que el entorno de desarrollo no tiene
 (sus cinco contenedores son web, worker, beat, db y redis: **sin proxy**).
 
+> **Usa mejor la receta del §11 de la guía** («Recrear la vista previa de producción»),
+> que es más limpia que lo de abajo: con `env_file: !override [...]` el fichero de
+> desarrollo se **sustituye** en vez de fusionarse, así que no hay que ir reponiendo
+> variables una a una. Comprobado: con `!override`, `CELERY_BROKER_URL` desaparece del
+> servicio y `settings.py` la calcula con la contraseña. Aplícalo a **web, worker y beat**:
+> si se deja fuera al worker, este conserva el broker sin autenticar.
+>
+> Lo de abajo se conserva porque es lo que se usó de hecho durante §8 y §10, y describe
+> qué variables acaban haciendo falta.
+
 La configuración vive **fuera del repositorio** y hay que recrearla. Guárdala en
 `~/.local/share/resenas-prodlocal/override.yml` (no en `/tmp`, que se limpia):
 
