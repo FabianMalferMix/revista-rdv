@@ -520,15 +520,33 @@ docker compose --profile backup run --rm --entrypoint sh \
 ## 11. Desarrollo y CI
 
 ```bash
-docker compose exec web python -m pytest -q                 # 385 tests
+docker compose exec web python -m pytest -q                 # 472 tests
 docker compose exec web python -m pytest -m integration     # solo los de concurrencia
 docker compose exec web sh -c "cd /app && ruff check . && ruff format --check ."
 docker compose exec web python manage.py makemigrations --check --dry-run
 docker compose exec web python manage.py check --deploy
 ```
 
-- [ ] La suite pasa entera. El orden se **aleatoriza** en cada corrida.
-- [ ] Los warnings son errores: si aparece una deprecación, la suite se pone roja.
+- [x] La suite pasa entera. El orden se **aleatoriza** en cada corrida.
+- [x] Los warnings son errores: si aparece una deprecación, la suite se pone roja.
+
+> Ninguna de las dos se comprueba leyendo la configuración. Para la primera, mira dónde
+> caen los tests **saltados** en varias corridas: si el bloque se mueve, el orden cambia
+> (`addopts = -q` oculta la línea de la semilla). Para la segunda hace falta un **canario**
+> temporal, que se borra después:
+>
+> ```python
+> # backend/tests/test_canario_warning.py — NO confirmar al repo
+> import warnings
+> def test_canario():
+>     warnings.warn("deprecación de mentira", DeprecationWarning, stacklevel=2)
+> ```
+>
+> Debe **fallar**. Si pasa, `filterwarnings = error` no está surtiendo efecto y la suite
+> lleva quién sabe cuánto tragándose deprecaciones en silencio.
+>
+> `check --deploy` avisa de `SECURE_HSTS_SECONDS` y `SECURE_SSL_REDIRECT` en la vista
+> previa local: es correcto, están desactivadas a propósito para poder probar por HTTP.
 - [ ] **CI:** cinco jobs en GitHub Actions — `test`, `build-prod`, `security`,
       `prod-runtime` y `backup-restore`.
 
