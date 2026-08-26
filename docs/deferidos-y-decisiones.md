@@ -174,6 +174,18 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   `sandbox`; nunca se ejecuta ni se interpreta. *Detectado en las pruebas manuales del §4,
   2026-08-18.*
 
+- **El endurecimiento de permisos no alcanza a los respaldos ya existentes.** `backup.sh`
+  aplica `umask 077` desde el lote sec-6, así que los respaldos NUEVOS quedan en `700`/`600`
+  —verificado—. Pero los anteriores a esa corrección siguen como se crearon: en la máquina
+  de desarrollo había tres directorios de julio en `755` con sus archivos en `644`, es
+  decir el volcado completo de la base —correos de suscriptores, hashes de contraseñas— y
+  los manuscritos, legibles por cualquier usuario local. Una corrección de permisos no es
+  retroactiva y eso es fácil de pasar por alto: en un servidor real la exposición sobrevive
+  a la remediación que supuestamente la cerró. Se cierra con `chmod -R go-rwx` sobre el
+  directorio de respaldos, y conviene comprobarlo tras cualquier despliegue que cambie el
+  usuario o el `umask` del sidecar. *Detectado en las pruebas manuales del §10, 2026-08-26;
+  los del entorno local ya se ajustaron.*
+
 - **`Article` no tiene `get_absolute_url`.** Consecuencia práctica: el panel no ofrece el
   botón «Ver en el sitio» en la ficha, así que quien acaba de publicar no tiene forma de
   saltar a la página pública y ha de componer la URL de memoria —el slug no se deriva del

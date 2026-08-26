@@ -474,16 +474,41 @@ docker compose --profile backup run --rm --entrypoint sh backup /scripts/backup.
 ls -la ./backups/           # o tu BACKUP_DIR
 ```
 
-- [ ] Se crea una carpeta con `db.dump`, `media.tar.gz` y `private_media.tar.gz`.
-- [ ] **Permisos:** el directorio debe ser `700` y los archivos `600` — contienen la base
+- [x] Se crea una carpeta con `db.dump`, `media.tar.gz` y `private_media.tar.gz`.
+- [x] **Permisos:** el directorio debe ser `700` y los archivos `600` — contienen la base
       completa y los manuscritos.
-- [ ] **Restauración sin confirmar** → **debe negarse**:
+- [x] **Restauración sin confirmar** → **debe negarse**:
 
 ```bash
 docker compose --profile backup run --rm --entrypoint sh backup /scripts/restore.sh latest
 ```
 
-- [ ] **Restauración confirmada** (⚠️ destructiva, hazla solo en la vista previa):
+> **Restaurar sobre un estado idéntico no demuestra nada.** Si respaldas y restauras sin
+> tocar nada en medio, el estado final coincide con el inicial — indistinguible de que el
+> guion no haya hecho absolutamente nada. Hay que **romper el estado a propósito** entre
+> ambas cosas y verificar cuatro marcadores:
+>
+> | Se rompe así | Debe quedar |
+> |---|---|
+> | crear un artículo DESPUÉS del respaldo | **ausente** tras restaurar |
+> | borrar un artículo que sí está en el respaldo | **presente** |
+> | borrar `private_media/MARCADOR.txt` | **presente**, con su contenido |
+> | borrar una imagen de `mediafiles` | **presente** |
+>
+> Crear uno y borrar otro deja el **recuento igual**, así que hay que comprobar por título:
+> un total correcto no prueba nada.
+>
+> **Antes de respaldar, siembra el marcador privado.** `private_media` puede estar vacío
+> —lo estaba en la vista previa— y entonces `private_media.tar.gz` pesa 113 bytes y solo
+> contiene `./`: se marcaría la casilla sin haber probado que los manuscritos viajan.
+>
+> ```bash
+> docker exec <web> sh -c 'echo MARCADOR-RESPALDO > /app/private_media/MARCADOR.txt'
+> ```
+>
+> Y **para `web`, `worker` y `beat`** antes de restaurar, como pide el propio guion.
+
+- [x] **Restauración confirmada** (⚠️ destructiva, hazla solo en la vista previa):
 
 ```bash
 docker compose --profile backup run --rm --entrypoint sh \
