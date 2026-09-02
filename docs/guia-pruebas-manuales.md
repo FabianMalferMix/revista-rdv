@@ -181,10 +181,10 @@ no una plantilla vacía.
 - [x] **3.6 Sin oráculo.** Da de alta **el mismo correo** otra vez y luego uno nuevo. El
       mensaje debe ser **idéntico** en ambos casos: no debe revelar quién ya estaba.
 - [x] **3.7 Baja.** Abre el enlace de baja → página con botón → pulsa → «Te diste de baja».
-- [ ] **3.8 Honeypot.** Con las herramientas del navegador, rellena el campo oculto
+- [x] **3.8 Honeypot.** Con las herramientas del navegador, rellena el campo oculto
       `apodo` y envía. Responde igual, pero **no se crea** el suscriptor.
-- [ ] **3.9 Rate limit.** Más de 5 altas en un minuto → «Demasiados intentos».
-- [ ] **3.10 Correo largo.** Un correo válido de 260 caracteres → error de validación
+- [x] **3.9 Rate limit.** Más de 5 altas en un minuto → «Demasiados intentos».
+- [x] **3.10 Correo largo.** Un correo válido de 260 caracteres → error de validación
       limpio, **no** un 500.
 
 Comprobar el estado en la base:
@@ -249,7 +249,7 @@ Con `autor1`, crea un artículo. Después, en el listado, selecciona la fila y u
 
 - [x] **Enviar a revisión** (`autor1`) — borrador → en revisión.
 - [x] **Pedir cambios** (`editora`) — en revisión → cambios solicitados.
-- [ ] **Enviar a revisión** otra vez (`autor1`) — el ciclo completo de devolución:
+- [x] **Enviar a revisión** otra vez (`autor1`) — el ciclo completo de devolución:
       tras *Pedir cambios*, el propio autor la reenvía. En la pasada del 18/08 el
       segundo envío lo hizo `editora` sobre otra pieza, así que esto queda sin cubrir.
 - [x] **Aceptar** (`editora`) — en revisión → aprobado.
@@ -309,8 +309,14 @@ from PIL import Image; print(dict(Image.open('/app/mediafiles/assets/AAAA/MM/tu-
 - [x] Pulsa el botón → aparece el reproductor. *(Comprueba en la pestaña **Red** que la
       conexión al tercero ocurre **solo entonces**.)*
 - [x] Un registro **con archivo** de audio muestra el reproductor nativo.
-- [ ] **Grabación inédita:** enlaza a un poema publicado un registro **sin publicar**. En
+- [x] **Grabación inédita:** enlaza a un poema publicado un registro **sin publicar**. En
       `/poema/<slug>/` **no debe aparecer** ni el audio ni el enlace.
+
+> **Comprueba también un poema que SÍ tenga registro publicado.** Sin ese control positivo
+> no se distingue «el filtro funciona» de «la página no muestra registros nunca». Y busca
+> el marcador correcto: un registro con archivo renderiza `<audio>`, pero uno con embed
+> sale como un simple **enlace** bajo el encabezado «Escuchar el poema». Buscando `<audio>`
+> las dos páginas parecen vacías y el filtro parece funcionar por la razón equivocada.
 
 ### 6.4 Comando de derivadas
 
