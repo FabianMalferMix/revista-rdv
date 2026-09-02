@@ -1,0 +1,40 @@
+{% load static %}<!doctype html>
+{% comment %}
+  Error del servidor. NO extiende base.html, y es deliberado.
+
+  Django renderiza esta plantilla con `template.render()` SIN contexto y sin `request`:
+  no corren los procesadores de contexto. Y eso es una suerte, porque `site_profile`
+  hace `SiteProfile.load()`, una consulta a la base de datos. La causa más común de un
+  500 es justamente que la base no responde, así que una página de error que la
+  consultara fallaría en el único momento en que se la necesita.
+
+  Por eso aquí no hay ninguna variable de contexto, ninguna consulta y ningún dato del
+  sitio: solo la hoja de estilos (que sirve el borde, no la aplicación) y enlaces
+  escritos a mano. Debe poder dibujarse con la aplicación medio caída.
+
+  Sin estilos en línea: la CSP de producción es `style-src 'self'`.
+{% endcomment %}
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Error del servidor — Reseñas</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+  <main class="wrap" id="main">
+    <article class="error-page">
+      <p class="kicker">Error 500</p>
+      <h1>Algo se rompió de nuestro lado</h1>
+      <p>
+        No es culpa tuya: ha fallado el servidor. Ya quedó registrado y lo estamos
+        mirando. Vuelve a intentarlo en unos minutos.
+      </p>
+      <ul class="error-links">
+        <li><a href="/">Volver a la portada</a></li>
+      </ul>
+    </article>
+  </main>
+</body>
+</html>

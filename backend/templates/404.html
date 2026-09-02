@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% comment %}
+  Página no encontrada. Extiende base.html a propósito: en un 404 el sitio está SANO
+  —lo que falla es la dirección— y Django renderiza esta plantilla con `request` y con
+  los procesadores de contexto, así que la cabecera, el buscador y el pie funcionan.
+  Eso importa más que el diseño: el 404 por defecto de Django son 179 bytes sin salida,
+  y quien llega desde un enlace roto se queda encerrado.
+
+  El 500 es otra cosa y va aparte: ver 500.html.
+{% endcomment %}
+
+{% block title %}Página no encontrada — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}La dirección que buscas no existe o cambió de sitio.{% endblock %}
+
+{% block content %}
+  <article class="error-page">
+    <p class="kicker">Error 404</p>
+    <h1>Esta página no existe</h1>
+    <p>
+      Puede que la dirección esté mal escrita, o que el texto que buscabas se haya
+      movido. No se ha perdido nada: sigue estando todo a un clic.
+    </p>
+    <ul class="error-links">
+      <li><a href="{% url 'content:home' %}">Volver a la portada</a></li>
+      <li><a href="{% url 'content:text_archive' %}">Ver todos los textos</a></li>
+      <li><a href="{% url 'content:poem_index' %}">Ver los poemas</a></li>
+      <li><a href="{% url 'content:search' %}">Buscar en el sitio</a></li>
+    </ul>
+  </article>
+{% endblock %}
