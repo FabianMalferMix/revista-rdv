@@ -163,15 +163,19 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   tr). Cerrarlo exigiría mantener un catálogo propio de una app de terceros que solo ve el
   superusuario. Se deja así a conciencia.
 
-- **La firma de archivo no distingue un `.docx` de un ZIP cualquiera.** `SubmissionForm`
-  valida que los bytes iniciales correspondan a la extensión declarada —lo que rechaza un
-  PNG renombrado a `.pdf`, comprobado a mano—, pero `docx` y `odt` **son** contenedores
-  ZIP, así que su firma `PK\x03\x04` la cumple cualquier ZIP. Cerrarlo exigiría abrir el
-  contenedor y exigir `[Content_Types].xml` y `word/document.xml` dentro. Gravedad baja y
-  por eso queda diferido: el archivo va a almacenamiento privado, solo lo descarga quien
-  tiene rol de editor por `/envios/<pk>/archivo/`, y se sirve con `nosniff` y CSP
-  `sandbox`; nunca se ejecuta ni se interpreta. *Detectado en las pruebas manuales del §4,
-  2026-08-18.*
+- ~~**La firma de archivo no distingue un `.docx` de un ZIP cualquiera.**~~ **CERRADO**
+  (`fix-firma-zip`, 2026-09-02). Para docx y odt ya no basta la firma `PK`: se lee el
+  ÍNDICE del contenedor y se exigen las piezas que el formato obliga a llevar
+  —`[Content_Types].xml` y `word/document.xml`; `META-INF/manifest.xml` y `content.xml`—.
+
+  Solo se llama a `namelist()`, es decir el directorio central: no se extrae ni se
+  descomprime nada, así que un zip bomba no tiene por dónde entrar. Y el tamaño ya está
+  acotado antes, porque `clean_file` comprueba extensión, luego tamaño y solo después
+  contenido.
+
+  La mitad que más importaba de las pruebas es la contraria: que un .docx y un .odt
+  legítimos sigan entrando. Una validación más estricta que rechace envíos reales sería
+  peor que la laxa.
 
 - **El endurecimiento de permisos no alcanza a los respaldos ya existentes.** `backup.sh`
   aplica `umask 077` desde el lote sec-6, así que los respaldos NUEVOS quedan en `700`/`600`

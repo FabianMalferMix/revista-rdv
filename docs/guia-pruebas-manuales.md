@@ -212,12 +212,11 @@ docker compose exec web python manage.py shell -c \
       vive fuera de `MEDIA_ROOT`.
 - [x] **4.8 Un `.txt` con bytes nulos** → rechazado. El texto plano no tiene firma, así que
       la comprobación es otra: exige que no parezca binario.
-- [ ] **4.9 Límite conocido: un ZIP cualquiera renombrado a `.docx` SE ACEPTA.** No es un
-      descuido —un `.docx` *es* un ZIP, y la firma `PK\x03\x04` no puede distinguirlos—.
-      Rechazarlo exigiría abrir el contenedor y buscar dentro `[Content_Types].xml` y
-      `word/document.xml`. Queda sin marcar a propósito: es el comportamiento actual, no
-      una prueba superada. Gravedad baja: el archivo va a almacenamiento privado, solo lo
-      descarga un editor, y se sirve con `nosniff` y CSP `sandbox`.
+- [x] **4.9 Un ZIP cualquiera renombrado a `.docx` se RECHAZA.** Antes se aceptaba: un
+      `.docx` *es* un ZIP y comparte su firma `PK`. Ahora se lee el índice del contenedor
+      y se exigen `[Content_Types].xml` y `word/document.xml` (para `.odt`,
+      `META-INF/manifest.xml` y `content.xml`). Comprueba también que un `.docx` de
+      verdad **sí entra**: esa es la mitad que puede romperse al apretar la validación.
 
 ```bash
 docker compose exec web ls -R /app/private_media | head
