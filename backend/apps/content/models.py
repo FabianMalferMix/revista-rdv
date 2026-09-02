@@ -143,6 +143,9 @@ class Article(EditorialItem):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse("content:article_detail", args=[self.slug])
+
     def _calc_reading_time(self):
         text = re.sub(r"<[^>]+>", " ", self.body or "")
         words = len(text.split())
@@ -303,6 +306,9 @@ class Collection(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse("content:collection_detail", args=[self.slug])
+
 
 class CollectionArticle(models.Model):
     """Puente Colección ↔ Artículo. `position` = secuencia curada."""
@@ -353,6 +359,9 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("content:page_detail", args=[self.slug])
 
     def save(self, *args, **kwargs):
         self.body = clean_html(self.body)
