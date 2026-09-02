@@ -71,12 +71,13 @@ jobs:
         run: |
           pip install "pip-audit==2.10.1"  # versión fijada: resultado reproducible (S-33)
           # Audita el lockfile completo (runtime + dev). Bloqueante: falla el CI
-          # ante cualquier CVE conocido en una dependencia fijada. Se ignora, de
-          # forma documentada, una única advertencia SOLO de desarrollo:
-          #   PYSEC-2026-1845 — carrera en /tmp de pytest (herramienta de test
-          #   local; nunca entra en la imagen de producción, que instala solo
-          #   requirements.txt). Revisar al subir pytest a >=9.0.3.
-          pip-audit -r backend/requirements-dev.txt --ignore-vuln PYSEC-2026-1845
+          # ante cualquier CVE conocido en una dependencia fijada.
+          #
+          # Ya NO se ignora PYSEC-2026-1845 (carrera en /tmp de pytest): la nota que
+          # había aquí decía «revisar al subir pytest a >=9.0.3», y con pytest 9.1.1 la
+          # advertencia desaparece. Sin exclusiones: cada una es un punto ciego que
+          # sobrevive a su motivo si nadie la revisa.
+          pip-audit -r backend/requirements-dev.txt
 
       - name: Verificar migraciones al día
         working-directory: backend
