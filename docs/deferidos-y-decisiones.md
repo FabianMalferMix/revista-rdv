@@ -137,32 +137,31 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
 - **Índice `Event(published, starts_at)`**, `LIMIT` explícito en la consulta FTS,
   `prefers-reduced-motion`, epigraph en el trigger FTS de Poem — micro-optimizaciones de
   la auditoría #2, sin impacto observado.
-- **Páginas 404 y 500 con la identidad del sitio.** En producción se sirve el 404 por
-  defecto de Django: 179 bytes, en inglés, sin cabecera, sin pie y **sin salida** —quien
-  llegue a un enlace roto se queda sin forma de volver—. Es cosmético, no de seguridad:
-  se verificó que en `DEBUG=0` no filtra ninguna ruta interna ni el nombre de la vista
-  (en desarrollo sí, pero ahí es deliberado). Para cerrarlo bastan dos plantillas,
-  `404.html` y `500.html`, extendiendo `base.html`. *Detectado en las pruebas manuales
-  del §3, 2026-08-06.*
+- ~~**Páginas 404 y 500 con la identidad del sitio.**~~ **CERRADO** (`fix-paginas-error`,
+  2026-09-02). El 404 pasa de 179 a 5117 bytes con cabecera, pie y cuatro salidas.
 
-- **Rótulos del panel a medias en inglés.** Conviven «MEDIOS» y «ENVÍOS» (con
-  `verbose_name`) con «CONTENT», «PEOPLE», «REVIEWS» y «COMMUNITY» sin traducir, y los
-  modelos de relación y auditoría tampoco lo tienen: en la ficha de un artículo se lee
-  «EDITORIAL TRANSITIONS», «FROM STATUS», «TO STATUS», «CREATED AT», «REVIEWED WORKS»,
-  «EDITORIAL NOTES», y en el formulario «Status», «Published at», «Owner». El patrón se
-  entiende —se tradujo lo que el equipo abre a diario y quedaron fuera los modelos que no
-  se navegan— pero para un colectivo que trabaja en español es un roce constante. Se cierra
-  con `verbose_name`/`verbose_name_plural` en los `AppConfig` de content, people, reviews y
-  community, y en los `Meta` de ArticleContributor, ReviewedWork, CollectionArticle,
-  CollectionPoem, PoemContributor, EditorialTransition y EditorialNote, más los
-  `verbose_name` de campo que aparecen como cabecera. Nada se comporta mal: es
-  presentación. *Detectado en las pruebas manuales del §5, 2026-08-18.*
+  Las dos plantillas se tratan **distinto a propósito**: 404.html extiende `base.html`
+  —`page_not_found` renderiza con request y procesadores de contexto, y en un 404 el sitio
+  está sano—, pero **500.html no hereda de nada**. `server_error` renderiza sin contexto, y
+  el procesador `site_profile` hace `SiteProfile.load()`, una CONSULTA: la causa más común
+  de un 500 es que la base no responda, así que una página de error que la consultara
+  fallaría justo cuando se la necesita. La prueba usa `django_assert_num_queries(0)` para
+  que nadie "unifique" ambas más adelante.
 
-  **Ampliación (§8.4, 2026-08-24):** el caso más visible no está en el panel sino en la
-  pantalla de acceso. Al bloquear por intentos fallidos, django-axes responde
-  «Account locked: too many login attempts. Please try again later.» — en inglés, y a
-  cualquiera que llegue a `/admin/login/`, no solo al equipo. Se cierra con
-  `AXES_LOCKOUT_TEMPLATE` (una plantilla propia) o `AXES_LOCKOUT_URL`.
+- ~~**Rótulos del panel a medias en inglés.**~~ **CERRADO** (`i18n-rotulos-panel`,
+  2026-09-02). `verbose_name` en los AppConfig de content, people, reviews y community
+  —que ni siquiera tenían `apps.py`—, en los nueve modelos de relación y auditoría, y en
+  los campos que se leen como cabecera de la ficha. El índice queda entero en español.
+
+  Se tradujo además la pantalla de bloqueo por intentos fallidos vía
+  `AXES_LOCKOUT_TEMPLATE`, que era el rótulo sin traducir **más visible del proyecto**: no
+  está en el panel sino en `/admin/login/`, y la veía cualquiera, no solo el equipo.
+
+  **Residuo conocido:** la sección «Axes» y sus tres modelos siguen en inglés.
+  `LANGUAGE_CODE = "es"` y `USE_I18N = True` están bien puestos; el motivo es que
+  django-axes **no distribuye traducción al español** (trae ar, de, fa, fr, id, pl, ru,
+  tr). Cerrarlo exigiría mantener un catálogo propio de una app de terceros que solo ve el
+  superusuario. Se deja así a conciencia.
 
 - **La firma de archivo no distingue un `.docx` de un ZIP cualquiera.** `SubmissionForm`
   valida que los bytes iniciales correspondan a la extensión declarada —lo que rechaza un
@@ -186,37 +185,11 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   usuario o el `umask` del sidecar. *Detectado en las pruebas manuales del §10, 2026-08-26;
   los del entorno local ya se ajustaron.*
 
-- **`Article` no tiene `get_absolute_url`.** Consecuencia práctica: el panel no ofrece el
-  botón «Ver en el sitio» en la ficha, así que quien acaba de publicar no tiene forma de
-  saltar a la página pública y ha de componer la URL de memoria —el slug no se deriva del
-  título del artículo sino de la obra reseñada, así que adivinarlo falla—. Lo mismo aplica
-  a `Page` y `Collection`. No es un fallo: los cuatro sitemaps que llaman
-  `get_absolute_url()` lo hacen sobre Poem, Event, Publication y Recording, que sí lo
-  tienen, y Page/Collection resuelven con `reverse()`; `/sitemap.xml` responde 200. Es
-  inconsistencia con un costo de uso. *Detectado en las pruebas manuales del §5,
-  2026-08-18.*
-
----
-
-## 5. Supuestos y advertencias (leer antes de tocar producción)
-
-1. **Caddy es el único proxy de borde.** La resolución de IP (`config/clientip.py`) confía
-   en la entrada derecha de `X-Forwarded-For`. Un CDN/LB delante lo rompe → revisar.
-2. **El usuario de la BD puede `CREATE EXTENSION unaccent`.** Vale para el Postgres propio
-   (superusuario); en BD gestionada, pre-crear la extensión.
-3. **La política de privacidad es un borrador legal** — revisar con abogado.
-4. **La suite es hermética por diseño** (Celery eager, cache LocMem): la concurrencia, los
-   reintentos y el camino de producción DEBUG=0 se prueban en jobs/tests aparte
-   (`test_concurrency.py`, `prod-runtime`, `backup-restore`), no en la suite normal.
-5. **Al tocar `filterwarnings`, tooling o migraciones**, validar en condiciones de CI
-   (runner limpio: sin `staticfiles/`, BD e imagen frescas) ANTES de mergear, y verificar
-   el CI en GitHub tras el merge. Lección aprendida de PRs #61/#62.
-
----
-
-## 6. Estado del CI (contexto para futuros cambios)
-
-`.github/workflows/ci.yml` tiene **5 jobs**, todos bloqueantes salvo lo indicado:
+- ~~**`Article` no tiene `get_absolute_url`.**~~ **CERRADO** (`fix-get-absolute-url`,
+  2026-09-02). Añadido a Article, Page y Collection siguiendo el patrón de Poem, así que
+  el panel vuelve a ofrecer «Ver en el sitio». La prueba sigue la redirección
+  `/admin/r/<tipo>/<id>/` con sesión de staff y afirma dónde aterriza: que el método
+  devolviera una cadena con buena pinta no bastaba.
 
 - **test** — ruff, pip-audit, `makemigrations --check`, **reversibilidad de migraciones**,
   pytest con cobertura (piso 80% + **umbrales por-módulo** para sanitize/feeds/sitemaps),

@@ -139,6 +139,9 @@ AXES_FAILURE_LIMIT = int(os.environ.get("AXES_FAILURE_LIMIT", "5"))
 AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
 AXES_LOCKOUT_PARAMETERS = ["ip_address"]  # bloquea la IP atacante
 AXES_RESET_ON_SUCCESS = True
+# Sin esto, axes responde «Account locked: too many login attempts» en inglés, y en
+# una pantalla PÚBLICA: la ve cualquiera que llegue a /admin/login/.
+AXES_LOCKOUT_TEMPLATE = "axes_lockout.html"
 # La IP real del cliente la resuelve config.clientip.client_ip (mismo resolver que
 # django-ratelimit): tras Caddy, la entrada derecha de X-Forwarded-For. Este callable
 # tiene precedencia en axes, así que NO se usan los AXES_IPWARE_*.

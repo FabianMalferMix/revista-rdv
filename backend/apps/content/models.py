@@ -81,10 +81,13 @@ class EditorialItem(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="owned_%(class)ss",
+        verbose_name="dueño",
     )
-    published_at = models.DateTimeField(null=True, blank=True, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(
+        "fecha de publicación", null=True, blank=True, db_index=True
+    )
+    created_at = models.DateTimeField("creado", auto_now_add=True)
+    updated_at = models.DateTimeField("actualizado", auto_now=True)
 
     # Acceso inverso a la bitácora (p. ej. article.transitions / poem.editorial_notes);
     # related_query_name habilita EditorialTransition.objects.filter(article=…) y (poem=…).
@@ -168,6 +171,8 @@ class ArticleContributor(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "autoría de artículo"
+        verbose_name_plural = "autorías de artículo"
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(
@@ -186,6 +191,8 @@ class ReviewedWork(models.Model):
     is_primary = models.BooleanField(default=False)
 
     class Meta:
+        verbose_name = "obra reseñada"
+        verbose_name_plural = "obras reseñadas"
         constraints = [
             models.UniqueConstraint(fields=["article", "work"], name="uniq_article_work")
         ]
@@ -262,6 +269,8 @@ class PoemContributor(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "autoría de poema"
+        verbose_name_plural = "autorías de poema"
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(fields=["poem", "contributor"], name="uniq_poem_contributor")
@@ -318,6 +327,8 @@ class CollectionArticle(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "artículo de la colección"
+        verbose_name_plural = "artículos de la colección"
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(
@@ -334,6 +345,8 @@ class CollectionPoem(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "poema de la colección"
+        verbose_name_plural = "poemas de la colección"
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(fields=["collection", "poem"], name="uniq_collection_poem")
@@ -378,19 +391,22 @@ class EditorialTransition(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
     object_id = models.PositiveBigIntegerField()
     item = GenericForeignKey("content_type", "object_id")
-    from_status = models.CharField(max_length=20)
-    to_status = models.CharField(max_length=20)
+    from_status = models.CharField("estado de origen", max_length=20)
+    to_status = models.CharField("estado de destino", max_length=20)
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="editorial_transitions",
+        verbose_name="actor",
     )
-    note = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    note = models.TextField("nota", blank=True)
+    created_at = models.DateTimeField("fecha", auto_now_add=True)
 
     class Meta:
+        verbose_name = "transición editorial"
+        verbose_name_plural = "transiciones editoriales"
         ordering = ["-created_at"]
         indexes = [models.Index(fields=["content_type", "object_id"], name="edtransition_item_idx")]
 
@@ -411,5 +427,7 @@ class EditorialNote(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = "nota editorial"
+        verbose_name_plural = "notas editoriales"
         ordering = ["created_at"]
         indexes = [models.Index(fields=["content_type", "object_id"], name="ednote_item_idx")]

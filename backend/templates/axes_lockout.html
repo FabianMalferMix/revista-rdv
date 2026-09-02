@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% comment %}
+  Pantalla de bloqueo por intentos fallidos (django-axes, AXES_LOCKOUT_TEMPLATE).
+
+  Por defecto axes responde «Account locked: too many login attempts. Please try again
+  later.» — en inglés y en una pantalla PÚBLICA: la ve cualquiera que llegue a
+  /admin/login/, no solo el equipo. Era el rótulo sin traducir más visible del proyecto.
+
+  No se dice cuánto dura el bloqueo ni cuántos intentos quedaban: eso solo ayudaría a
+  quien esté probando contraseñas a calibrar el ritmo.
+{% endcomment %}
+
+{% block title %}Acceso bloqueado — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block description %}Acceso temporalmente bloqueado por intentos fallidos.{% endblock %}
+
+{% block content %}
+  <article class="error-page">
+    <p class="kicker">Acceso bloqueado</p>
+    <h1>Demasiados intentos fallidos</h1>
+    <p>
+      Se ha bloqueado temporalmente el acceso desde esta conexión. Vuelve a intentarlo
+      más tarde.
+    </p>
+    <p>
+      Si eres parte del colectivo y no recuerdas tu contraseña, escribe a quien
+      administra el sitio en vez de seguir probando.
+    </p>
+    <ul class="error-links">
+      <li><a href="{% url 'content:home' %}">Volver a la portada</a></li>
+    </ul>
+  </article>
+{% endblock %}
