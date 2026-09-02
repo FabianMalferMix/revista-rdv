@@ -1,0 +1,17 @@
+# Hallazgos históricos reconocidos, UNO POR HUELLA (commit:fichero:regla:línea).
+#
+# Se usa esto y no la allowlist de `.gitleaks.toml` a propósito: una entrada de allowlist
+# perdona una ruta o un patrón para siempre y en todo el repositorio, mientras que una
+# huella queda clavada a un commit y una línea concretos. Si el mismo literal reapareciera
+# en otro sitio —o si alguien añadiera un secreto de verdad a ese mismo fichero—, gitleaks
+# lo seguiría marcando.
+#
+# La entrada de abajo es la constante de cabecera de `test_log_redaccion_extra.py` tal como
+# se confirmó en b632eba: un valor INVENTADO para comprobar que el formateador de logs
+# redacta los campos extra. Nunca fue una credencial. En el árbol de trabajo ya se
+# sustituyó por un literal anodino, pero el commit no se puede cambiar sin reescribir un
+# historial ya publicado.
+#
+# No se transcribe aquí el valor antiguo: hacerlo lo reintroduce en el repositorio y vuelve
+# a disparar la misma regla sobre ESTE fichero.
+b632eba04f7708184c3b17481f0793e8824e82df:backend/tests/test_log_redaccion_extra.py:generic-api-key:20

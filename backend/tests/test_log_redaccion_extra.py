@@ -17,8 +17,13 @@ import pytest
 
 from config.logformat import JsonFormatter
 
-TOKEN = "SECRETO-DE-PRUEBA-abc123xyz"
-RUTA = f"/novedades/baja/{TOKEN}/"
+# Valor deliberadamente ANODINO: minúsculas, con guiones y sin entropía. Un literal con
+# pinta de credencial —mayúsculas, dígitos, longitud— hacía saltar la regla
+# `generic-api-key` de gitleaks y dejaba el job `security` en rojo. Silenciarlo con la
+# allowlist habría funcionado, pero cada excepción es una rendija permanente en el
+# escáner; sale más barato que la prueba no parezca un secreto.
+VALOR_INVENTADO = "no-es-una-credencial"
+RUTA = f"/novedades/baja/{VALOR_INVENTADO}/"
 
 
 class _PeticionFalsa:
@@ -50,12 +55,12 @@ def test_el_mensaje_va_redactado():
 def test_el_objeto_request_no_filtra_el_token():
     """El caso real: `django.request` pasa `extra={'request': <WSGIRequest ...>}`."""
     salida = _formatea(request=_PeticionFalsa(), status_code=404)
-    assert TOKEN not in json.dumps(salida)
+    assert VALOR_INVENTADO not in json.dumps(salida)
     assert "<redactado>" in salida["request"]
 
 
 def test_un_extra_de_texto_tampoco():
-    assert TOKEN not in json.dumps(_formatea(ruta_original=RUTA))
+    assert VALOR_INVENTADO not in json.dumps(_formatea(ruta_original=RUTA))
 
 
 def test_la_traza_tampoco():
@@ -68,7 +73,7 @@ def test_la_traza_tampoco():
             "django.request", logging.ERROR, __file__, 1, "boom", (), sys.exc_info()
         )
         salida = json.loads(JsonFormatter().format(registro))
-    assert TOKEN not in json.dumps(salida)
+    assert VALOR_INVENTADO not in json.dumps(salida)
 
 
 def test_no_se_redacta_lo_que_no_es_un_token():
