@@ -547,8 +547,26 @@ docker compose exec web python manage.py check --deploy
 >
 > `check --deploy` avisa de `SECURE_HSTS_SECONDS` y `SECURE_SSL_REDIRECT` en la vista
 > previa local: es correcto, están desactivadas a propósito para poder probar por HTTP.
-- [ ] **CI:** cinco jobs en GitHub Actions — `test`, `build-prod`, `security`,
+- [x] **CI:** cinco jobs en GitHub Actions — `test`, `build-prod`, `security`,
       `prod-runtime` y `backup-restore`.
+
+> **Consúltalo de verdad, no lo deduzcas de los gates locales.** El bucle habitual
+> (`pytest`, `ruff`, `bandit`) **no cubre** los dos pasos bloqueantes que más se caen solos:
+> `pip-audit`, que se pone rojo cuando se publica un CVE contra dependencias que nadie
+> tocó, y `gitleaks`, que escanea el **historial** y por tanto sigue marcando un literal ya
+> confirmado aunque lo arregles en el árbol de trabajo. Por eso CI estuvo en rojo del
+> 2026-08-17 al 2026-09-02 mientras cada lote pasaba sus gates en verde.
+>
+> El repositorio es público, así que la API responde sin credenciales:
+>
+> ```bash
+> curl -s "https://api.github.com/repos/<usuario>/<repo>/actions/runs?branch=main&per_page=10" \
+>  | python3 -c "import sys,json;[print(r['created_at'][:16],r['head_sha'][:7],r['event'],r['conclusion']) for r in json.load(sys.stdin)['workflow_runs'] if r['name']=='CI']"
+> ```
+>
+> **Filtra por `name == "CI"`.** Las ejecuciones de Dependabot salen con `event: dynamic`
+> y sus «success» se confunden con las del proyecto: cuatro de ellas me hicieron dar CI por
+> verde cuando la única ejecución real estaba en rojo.
 
 ### Recrear la vista previa de producción
 
