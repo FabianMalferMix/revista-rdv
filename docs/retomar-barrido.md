@@ -105,10 +105,14 @@ docker compose exec web sh -c 'echo MARCADOR-RESPALDO-lote1 > /app/private_media
 La configuración vive **fuera del repositorio** y hay que recrearla. Guárdala en
 `~/.local/share/resenas-prodlocal/override.yml` (no en `/tmp`, que se limpia):
 
+> **Los puertos NO van en el override.** Las listas `ports` se **suman** entre ficheros
+> compose en vez de sustituirse, así que declarar `8090:80` deja también el `80:80` de
+> `docker-compose.prod.yml` y el proxy no arranca («address already in use»). `prod.yml`
+> ya los parametriza: pásalos como variables, `PROXY_HTTP_PORT=8090` y
+> `PROXY_HTTPS_PORT=8443`.
+
 ```yaml
 services:
-  proxy:
-    ports: ["8090:80", "8443:443"]
   web:
     environment:
       DJANGO_DEBUG: "0"
@@ -137,6 +141,7 @@ Para levantarla:
 export REDIS_PASSWORD=local-prod-demo-redis-password \
        POSTGRES_PASSWORD=local-prod-demo-db-password \
        SITE_ADDRESS=:80 \
+       PROXY_HTTP_PORT=8090 PROXY_HTTPS_PORT=8443 \
        DJANGO_SECRET_KEY=local-prod-demo-9f3Kx7mQ2vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN \
        DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
        DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost
