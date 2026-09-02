@@ -4,7 +4,7 @@
 # Regenerar tras editar este archivo (ver README/CONTRIBUTING).
 Django>=5.2,<5.3
 psycopg[binary]>=3.1,<4
-gunicorn>=21,<23
+gunicorn>=26,<27
 celery>=5.3,<6
 redis>=8.1.0,<9
 Pillow>=12.3,<13
