@@ -86,6 +86,8 @@ class SocialLink(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "red social"
+        verbose_name_plural = "redes sociales"
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(

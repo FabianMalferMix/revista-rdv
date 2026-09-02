@@ -76,6 +76,8 @@ class SiteSocialLink(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name = "red social del sitio"
+        verbose_name_plural = "redes sociales del sitio"
         ordering = ["position", "platform"]
 
     def __str__(self):
