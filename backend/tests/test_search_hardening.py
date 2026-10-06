@@ -59,7 +59,14 @@ def test_el_limit_viaja_al_sql(client, make_article):
     assert consultas_fts, "no se emitió ninguna consulta de búsqueda"
     for sql in consultas_fts:
         assert "LIMIT 10" in sql, f"consulta FTS sin LIMIT: {sql[:200]}"
-    assert resp.content.count(b"<li>") <= 10
+    # Acotado a la lista de resultados: contar <li> en toda la página medía también el
+    # mapa del sitio del pie, que tiene los suyos. La aserción parecía sobre la búsqueda
+    # y era sobre la plantilla entera.
+    import re
+
+    lista = re.search(rb'<ul class="search-list">.*?</ul>', resp.content, re.S)
+    assert lista, "no se renderizó la lista de resultados"
+    assert lista.group(0).count(b"<li>") <= 10
 
 
 def test_el_coste_no_crece_con_el_tamano_del_archivo(client, make_article):
