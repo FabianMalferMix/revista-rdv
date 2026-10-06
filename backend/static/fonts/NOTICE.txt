@@ -1,8 +1,12 @@
-fraunces.woff2 — Fraunces (subset latino, eje variable opsz+wght).
+syne.woff2 — Syne (subset latino, eje variable wght 400-800).
 
-Copyright 2019 The Fraunces Project Authors
-https://github.com/undercasetype/Fraunces
+Copyright The Syne Project Authors — Bonjour Monde / Lucas Descroix
+https://gitlab.com/bonjour-monde/fonderie/syne-typeface
 
 Licencia: SIL Open Font License 1.1 — https://openfontlicense.org
 Se puede empaquetar y servir libremente. Archivo obtenido desde Google Fonts
-(fonts.gstatic.com), subset latino.
+(fonts.gstatic.com), subset latino: 223 glifos, verificado con fontTools que
+cubre tildes, eñes, signos de apertura, comillas latinas y raya.
+
+Se autoaloja por obligación, no por gusto: la CSP del sitio declara
+font-src 'self', así que un CDN de fuentes quedaría bloqueado.

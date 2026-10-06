@@ -31,7 +31,7 @@ def test_nav_links_intact_in_disclosure(client):
 
 
 def test_font_file_is_bundled():
-    font = settings.BASE_DIR / "static" / "fonts" / "fraunces.woff2"
+    font = settings.BASE_DIR / "static" / "fonts" / "syne.woff2"
     assert font.exists()
     assert font.read_bytes()[:4] == b"wOF2"  # firma woff2 válida
 
@@ -39,9 +39,24 @@ def test_font_file_is_bundled():
 def test_css_declares_self_hosted_display_font():
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
     assert "@font-face" in css
-    assert "fraunces.woff2" in css  # url() relativa (la reescribe WhiteNoise)
+    assert "syne.woff2" in css  # url() relativa (la reescribe WhiteNoise)
     assert "--display" in css
     assert "font-display:swap" in css
+
+
+def test_no_hay_fuentes_huerfanas():
+    """Toda fuente empaquetada debe estar referenciada por el CSS.
+
+    Un .woff2 que ya nadie pide no rompe nada visible: simplemente viaja en la
+    imagen y en el manifiesto de estáticos. Fraunces pesaba 67 KB y se quedó
+    sin empleo al cambiar la tipografía de titular; esta prueba evita que la
+    próxima sustitución deje otro archivo muerto detrás.
+    """
+    fuentes = sorted((settings.BASE_DIR / "static" / "fonts").glob("*.woff2"))
+    assert fuentes, "no hay ninguna fuente empaquetada"
+    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    huerfanas = [f.name for f in fuentes if f.name not in css]
+    assert not huerfanas, f"fuentes que el CSS no referencia: {huerfanas}"
 
 
 # Las dos parciales que producen una tarjeta de listado. El titular de la tarjeta
