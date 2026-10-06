@@ -100,25 +100,57 @@
         <span class="news-consent">Confirmamos por correo (doble opt-in). Al suscribirte aceptas la
           <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.</span>
       </form>
-      <p class="foot-links">
-        {% if site_profile.booking_email %}
-          Gestión y contrataciones:
-          <a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a> ·
-        {% endif %}
-        {% for link in site_profile.social_links.all %}
-          <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a> ·
-        {% endfor %}
-        <a href="{% url 'showcase:dossier' %}">Dossier</a> ·
-        <a href="{% url 'agenda:agenda' %}">Agenda</a> ·
-        <a href="{% url 'agenda:trayectoria' %}">Trayectoria</a> ·
-        <a href="{% url 'agenda:gallery' %}">Galería</a> ·
-        <a href="{% url 'showcase:press_index' %}">Prensa</a> ·
-        <a href="{% url 'content:text_archive' %}">Textos</a> ·
-        <a href="{% url 'content:collection_index' %}">Colecciones</a> ·
-        <a href="{% url 'submissions:submit' %}">Convocatorias</a> ·
-        <a href="{% url 'feed' %}">RSS</a> ·
-        <a href="{% url 'recordings_feed' %}">Podcast</a>
-      </p>
+      {% comment %}
+         Mapa del sitio agrupado. Antes era una sola fila de once enlaces separados por
+         puntos: el mismo problema que tenía la barra principal, mudado al pie. Los
+         rótulos dan a cada enlace un lugar donde buscarlo en vez de obligar a leerlos
+         todos. Se repiten aquí los cuatro de la barra: quien llega al final de una
+         página larga no debería tener que volver arriba.
+      {% endcomment %}
+      <nav class="foot-groups" aria-label="Mapa del sitio">
+        <div class="foot-group">
+          <h2>El colectivo</h2>
+          <ul>
+            <li><a href="{% url 'people:member_index' %}">Integrantes</a></li>
+            <li><a href="{% url 'agenda:agenda' %}">Agenda</a></li>
+            <li><a href="{% url 'agenda:trayectoria' %}">Trayectoria</a></li>
+            <li><a href="{% url 'agenda:gallery' %}">Galería</a></li>
+          </ul>
+        </div>
+        <div class="foot-group">
+          <h2>La obra</h2>
+          <ul>
+            <li><a href="{% url 'content:poem_index' %}">Poemas</a></li>
+            <li><a href="{% url 'content:text_archive' %}">Textos</a></li>
+            <li><a href="{% url 'content:collection_index' %}">Colecciones</a></li>
+            <li><a href="{% url 'showcase:publication_index' %}">Publicaciones</a></li>
+            <li><a href="{% url 'media:recording_index' %}">Registros</a></li>
+          </ul>
+        </div>
+        <div class="foot-group">
+          <h2>Prensa y gestión</h2>
+          <ul>
+            <li><a href="{% url 'showcase:dossier' %}">Dossier</a></li>
+            <li><a href="{% url 'showcase:press_index' %}">Prensa</a></li>
+            <li><a href="{% url 'submissions:submit' %}">Convocatorias</a></li>
+            {% if site_profile.booking_email %}
+              <li><a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a></li>
+            {% elif site_profile.general_email %}
+              <li><a href="mailto:{{ site_profile.general_email }}">{{ site_profile.general_email }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="foot-group">
+          <h2>Seguir</h2>
+          <ul>
+            {% for link in site_profile.social_links.all %}
+              <li><a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a></li>
+            {% endfor %}
+            <li><a href="{% url 'feed' %}">RSS</a></li>
+            <li><a href="{% url 'recordings_feed' %}">Podcast</a></li>
+          </ul>
+        </div>
+      </nav>
       <p class="foot-legal">
         <a href="{% url 'content:page_detail' 'privacidad' %}">Privacidad</a> ·
         <a href="{% url 'content:page_detail' 'cookies' %}">Cookies</a> ·
