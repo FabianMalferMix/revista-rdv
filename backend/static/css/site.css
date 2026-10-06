@@ -3,8 +3,16 @@
      oscuro seguiría pintando oscuros los controles nativos —campos, desplegables,
      barras de desplazamiento— sobre un fondo claro. */
   color-scheme: light;
-  --paper:#edf0f3; --surface:#ffffff; --ink:#16202b; --muted:#586674;
-  --accent:#1d4e73; --border:#d6dde4;
+  /* Paleta del colectivo, tomada de sus carteles risográficos. El papel es el celeste
+     del afiche: MISMO tono que el gris azulado anterior (210°) pero con 65% de
+     saturación en vez de 20%. Esa era toda la diferencia entre «corporativo» y
+     «impreso» — el azul nunca fue el problema, lo era su palidez.
+     El magenta #B8086B es el del cartel oscurecido lo justo para que un enlace alcance
+     4,5:1 sobre el papel; el magenta literal (#E40C9C) solo vale para titulares
+     grandes. El amarillo del cartel NO entra aquí: sobre fondo claro da 1,29:1 y es
+     un color de fondo, nunca de texto. */
+  --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
+  --accent:#b8086b; --border:#c2d8ee;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --display:"Fraunces",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
