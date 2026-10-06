@@ -15,14 +15,48 @@ def _nav(content):
     return re.search(rb"<nav[^>]*>.*?</nav>", content, re.S).group(0)
 
 
+# La barra principal lleva CUATRO enlaces, decididos por el colectivo (2026-10-06).
+# Antes eran nueve, y con nueve una barra solo puede verse como una lista: agrandarlos
+# para darles carácter lo habría empeorado, porque el tamaño multiplica la presencia de
+# cada elemento. La lista se fija aquí para que ampliarla vuelva a ser una decisión
+# explícita y no una acumulación.
+NAV_PRINCIPAL = [
+    "people:member_index",
+    "media:recording_index",
+    "showcase:publication_index",
+    "content:poem_index",
+]
+
+# Lo que salió de la barra. Ninguno puede quedar huérfano: `Dossier` solo era alcanzable
+# además desde el botón de la portada, así que perderlo del pie lo dejaría sin camino
+# para quien entre por cualquier otra página.
+NAV_DEGRADADOS = [
+    "showcase:dossier",
+    "agenda:agenda",
+    "agenda:trayectoria",
+    "agenda:gallery",
+    "showcase:press_index",
+]
+
+
 def test_nav_curated_for_managers(client):
-    resp = client.get(reverse("content:home"))
-    nav = _nav(resp.content)
-    for expected in [b"Poemas", b"Integrantes", b"Trayectoria", b"Prensa", b"Dossier"]:
-        assert expected in nav
-    # Lo editorial fino y las convocatorias salen de la nav principal (van al pie).
+    """La barra es EXACTAMENTE esos cuatro enlaces, ni uno más."""
+    nav = _nav(client.get(reverse("content:home")).content)
+    for nombre in NAV_PRINCIPAL:
+        assert reverse(nombre).encode() in nav, f"falta {nombre} en la barra"
+    assert nav.count(b"<a ") == len(NAV_PRINCIPAL), (
+        f"la barra tiene {nav.count(b'<a ')} enlaces y debería tener {len(NAV_PRINCIPAL)}"
+    )
+    # Lo editorial fino y las convocatorias siguen fuera de la barra principal.
     assert reverse("submissions:submit").encode() not in nav
     assert reverse("content:collection_index").encode() not in nav
+
+
+def test_lo_que_sale_de_la_nav_sigue_alcanzable(client):
+    """Degradar un enlace es moverlo, no esconderlo."""
+    footer = client.get(reverse("content:home")).content.split(b"site-foot")[1]
+    for nombre in NAV_DEGRADADOS:
+        assert reverse(nombre).encode() in footer, f"{nombre} quedó huérfano"
 
 
 def test_footer_keeps_secondary_links(client):

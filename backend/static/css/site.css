@@ -46,9 +46,13 @@ a{color:var(--accent); text-underline-offset:3px}
 }
 
 /* Masthead */
-.masthead{border-bottom:2px solid var(--ink); padding:18px 0 0; margin-bottom:8px}
+.masthead{border-bottom:1px solid var(--border); padding:18px 0 0; margin-bottom:8px}
 .masthead .top{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
-.brand{font-weight:700; font-size:26px; text-decoration:none; color:var(--ink); letter-spacing:-.01em}
+.brand{font-weight:700; font-size:24px; text-decoration:none; letter-spacing:-.01em;
+  /* Sello: el nombre vive dentro de un bloque de color, como un timbre impreso. Blanco
+     sobre el magenta da 5,12:1, por encima del mínimo incluso para texto normal. */
+  display:inline-block; background:var(--accent); color:#fff; padding:6px 14px 8px;
+  border-radius:2px}
 .search{display:flex; align-items:center; gap:8px; position:relative}
 .search input{font-family:var(--serif); font-size:15px; padding:7px 12px;
   border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--ink); min-width:210px}
@@ -65,10 +69,15 @@ a{color:var(--accent); text-underline-offset:3px}
 .nav-disclosure summary::after{content:"▾"; font-size:10px}
 .nav-disclosure[open] summary::after{content:"▴"}
 .nav-disclosure summary:hover{color:var(--accent)}
-.nav{display:flex; flex-wrap:wrap; gap:6px 18px; padding:0 0 14px}
-.nav a{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
-  text-decoration:none; color:var(--muted)}
-.nav a:hover{color:var(--accent)}
+.nav{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 0; padding:0 0 14px}
+.nav a{font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.06em;
+  text-transform:uppercase; text-decoration:none; color:var(--accent)}
+.nav a:hover{color:var(--ink)}
+/* Separador de cartel entre enlaces. El `/ ""` del `content` marca el punto como
+   DECORATIVO para los lectores de pantalla: sin eso, se anuncia «punto medio» entre cada
+   enlace. Los navegadores que no soportan esa sintaxis lo ignoran y solo lo dibujan. */
+.nav a:not(:last-child)::after{content:"·" / ""; color:var(--muted); margin:0 12px;
+  font-weight:400}
 @media (min-width:720px){
   /* En escritorio se oculta el toggle y la nav se muestra siempre en línea.
      OJO: no basta con forzar `display` en el hijo. Desde Chrome 131 el contenido de un
