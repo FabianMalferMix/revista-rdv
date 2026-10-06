@@ -274,15 +274,26 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   border-radius:4px; background:#fff}
 .partners-strip .meta{font-size:13px}
 
-/* Hero de portada (CTA hacia gestores) */
-.hero{margin:22px 0 0; padding:6px 0 24px; border-bottom:2px solid var(--ink)}
-.hero-tagline{font-size:clamp(22px,3.4vw,30px); margin:0 0 12px; text-wrap:balance; line-height:1.25}
-.hero-manifesto{color:var(--muted); font-size:16px; max-width:62ch; margin:0 0 16px}
+/* Hero de portada (CTA hacia gestores).
+   El lema es el TITULAR de la portada, no una línea de apoyo: de ahí el salto
+   de escala. El <h1> con el nombre sigue oculto (sr-only) porque el nombre ya
+   vive en el sello de la cabecera; lo que crece aquí es el lema. */
+.hero{margin:22px 0 0; padding:26px 0 34px; border-bottom:2px solid var(--ink)}
+.hero-tagline{font-size:clamp(44px,9vw,104px); font-weight:700; line-height:.92;
+  letter-spacing:-.035em; margin:0 0 24px; max-width:13ch; text-wrap:balance}
+.hero-manifesto{color:var(--ink); font-size:19px; max-width:54ch; margin:0 0 16px}
 .hero-manifesto a{white-space:nowrap}
-.hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:0}
+.hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 0}
 .btn-primary{background:var(--accent); color:var(--paper)}
 .btn-primary:hover{opacity:.9}
-.hero-stats{margin:18px 0 0; padding:0; border-bottom:0}
+/* Las cifras se leen como dato de revista: número grande, etiqueta debajo,
+   enmarcadas entre su filete superior y el borde inferior del hero.
+   Acotado a .hero-stats A PROPÓSITO: .stats-strip se reutiliza tal cual en
+   /dossier/ y /trayectoria/, donde un número a 42px no tiene sentido. */
+.hero-stats{margin:30px 0 0; padding:18px 0 0; border-top:2px solid var(--ink);
+  border-bottom:0; gap:14px 52px; align-items:end}
+.hero-stats strong{display:block; font-family:var(--display); font-size:42px;
+  line-height:.95; margin:0 0 2px}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin

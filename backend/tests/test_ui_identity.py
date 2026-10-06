@@ -92,3 +92,47 @@ def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
             f"{parcial} emite <{etiqueta.group(1)}> pero la regla de titulares "
             f"no lo cubre; el título caerá a la serif del cuerpo"
         )
+
+
+# El hero de portada trata el lema como titular y las cifras como dato de
+# revista. `.stats-strip` se reutiliza tal cual en /dossier/ y /trayectoria/,
+# así que la marca `.hero-stats` es la frontera entre un estilo y el otro.
+
+
+def test_la_cifra_grande_esta_acotada_a_la_portada():
+    """Ninguna regla puede agrandar el <strong> de una tira de cifras sin acotarla.
+
+    Si la regla del número grande se moviera de `.hero-stats strong` a
+    `.stats-strip strong`, /dossier/ y /trayectoria/ pasarían a mostrar cifras
+    de portada sin que nadie lo hubiera pedido. No se comprueba un tamaño
+    concreto —puede ajustarse— sino que cualquier tamaño de titular esté
+    acotado a la portada.
+    """
+    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    reglas = re.findall(r"([^{}]*strong[^{}]*)\{([^{}]*)\}", css)
+    grandes = []
+    for selector, cuerpo in reglas:
+        if "stats" not in selector:
+            continue
+        tam = re.search(r"font-size:\s*(\d+)px", cuerpo)
+        if tam and int(tam.group(1)) > 24:
+            grandes.append(selector.strip())
+    assert grandes, "ya no hay ninguna cifra de portada agrandada"
+    for selector in grandes:
+        assert ".hero-stats" in selector, (
+            f"la cifra grande dejó de estar acotada a la portada: «{selector}»; "
+            f"así se filtra a /dossier/ y /trayectoria/"
+        )
+
+
+def test_solo_la_portada_usa_la_tira_de_cifras_de_portada():
+    """`hero-stats` marca la tira que recibe el estilo de portada."""
+    tpl = settings.BASE_DIR / "templates"
+    portada = (tpl / "content" / "home.html").read_text(encoding="utf-8")
+    assert "stats-strip hero-stats" in portada, "la portada perdió su marca hero-stats"
+    for otra in ("showcase/dossier.html", "agenda/trayectoria.html"):
+        texto = (tpl / otra).read_text(encoding="utf-8")
+        assert "stats-strip" in texto, f"{otra} ya no usa la tira de cifras"
+        assert "hero-stats" not in texto, (
+            f"{otra} adoptó la marca de portada y heredará la cifra grande"
+        )
