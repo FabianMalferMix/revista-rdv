@@ -7,10 +7,12 @@
      del afiche: MISMO tono que el gris azulado anterior (210°) pero con 65% de
      saturación en vez de 20%. Esa era toda la diferencia entre «corporativo» y
      «impreso» — el azul nunca fue el problema, lo era su palidez.
-     El magenta #B8086B es el del cartel oscurecido lo justo para que un enlace alcance
-     4,5:1 sobre el papel; el magenta literal (#E40C9C) solo vale para titulares
-     grandes. El amarillo del cartel NO entra aquí: sobre fondo claro da 1,29:1 y es
-     un color de fondo, nunca de texto. */
+     El magenta #B8086B es el del cartel oscurecido hasta superar el mínimo de 4,5:1
+     sobre el papel: da 5,12:1. El magenta literal (#E40C9C) se queda en 3,48:1, que
+     solo alcanza para texto grande. El amarillo del cartel (#FCE43C) NO entra aquí:
+     da 1,29:1 sobre blanco y es un color de fondo, nunca de texto.
+     Los ratios de esta paleta los recalcula test_contraste_de_la_paleta desde estos
+     mismos valores; si cambias un color y baja de AA, esa prueba falla. */
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -52,7 +54,9 @@ a{color:var(--accent); text-underline-offset:3px}
 .masthead .top{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
 .brand{font-weight:700; font-size:24px; text-decoration:none; letter-spacing:-.01em;
   /* Sello: el nombre vive dentro de un bloque de color, como un timbre impreso. Blanco
-     sobre el magenta da 5,12:1, por encima del mínimo incluso para texto normal. */
+     sobre el magenta da 6,39:1, por encima del mínimo incluso para texto normal.
+     (Decía 5,12:1, que es el contraste del enlace magenta SOBRE el papel: el número
+     estaba bien calculado pero puesto en el par equivocado.) */
   display:inline-block; background:var(--accent); color:#fff; padding:6px 14px 8px;
   border-radius:2px}
 .search{display:flex; align-items:center; gap:8px; position:relative}
