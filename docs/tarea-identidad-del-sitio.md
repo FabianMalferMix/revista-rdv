@@ -41,36 +41,37 @@ Las redes sociales **no tienen entrada propia en el panel**: `SiteSocialLink` se
 
 ---
 
-## 3. Los campos, con su valor actual
+## 3. Estado de los campos
 
-Verificado el 2026-09-02 con `SiteProfile.load()`.
+**Aplicado en el entorno de desarrollo el 2026-10-06**, con valores dados por el usuario.
+Verificado con `SiteProfile.load()` y con los cuatro comandos del §5.
 
-| Campo | Obligatorio | Valor actual | Qué hacer |
-|---|---|---|---|
-| `name` | **sí** | `Reseñas` | nombre real del colectivo |
-| `tagline` | no | `Colectivo de poesía · crítica y difusión literaria.` | lema corto; sale en el `<title>`, en Open Graph y **en el título del RSS** |
-| `manifesto` | no | texto genérico de 2 líneas | quién sois y qué hacéis |
-| `founded_year` | no | `2019` | confirmar o corregir |
-| `location` | no | `Santiago, Chile` | confirmar o corregir |
-| `general_email` | no | `hola@resenas.cl` | correo real de contacto |
-| `booking_email` | no | `gestion@resenas.cl` | correo para gestión/contrataciones |
-| `phone` | no | vacío | opcional |
-| `featured_recording` | no | apunta a un registro sembrado | revisar cuando haya contenido real |
-| `featured_poem` | no | apunta a un poema sembrado | ídem |
-| `dossier_pdf` | no | vacío | kit de prensa en PDF, si existe |
-| `og_image` | no | vacío | imagen para redes; se elige de **Medios → Recursos** |
-
-### Redes sociales (inline, al final del formulario)
-
-| `platform` | `url` actual | |
+| Campo | Valor | |
 |---|---|---|
-| Instagram | `https://instagram.com/` | portada genérica: **no es el perfil del colectivo** |
-| YouTube | `https://youtube.com/` | ídem |
+| `name` | `Repitentes del Verso` | ✅ |
+| `tagline` | `Colectivo de poesía` | ✅ |
+| `founded_year` | `2023` | ✅ el dossier calcula los años de trabajo desde aquí |
+| `general_email` | `repitentesdelverso@gmail.com` | ✅ |
+| `location` | `Chile` | ✅ |
+| Instagram | `https://www.instagram.com/repitentesdelverso` | ✅ única red configurada |
 
-Sustituye las URLs por los perfiles reales, borra la fila de la red que no se use y añade
-las que falten. El campo `position` ordena cómo salen en el pie.
+### Lo que falta
 
----
+| Campo | Estado | Qué hacer |
+|---|---|---|
+| `manifesto` | **provisional** | Hay un texto escueto de 21 palabras que no afirma nada que no se sepa. Sale **recortado a 28 palabras en la portada** y completo en `/dossier/`, así que debe leerse bien de las dos formas. El usuario lo escribirá. |
+| `og_image` | vacío | Imagen al compartir en redes. Es clave foránea a `media.MediaAsset`: **sube la imagen primero** en Medios → Recursos y luego selecciónala. |
+| `booking_email` | **vaciado a propósito** | Tenía `gestion@resenas.cl`, un dominio que no es del colectivo. Publicar una dirección en un dominio ajeno es peor que no publicar ninguna. Ponlo solo si existe de verdad. |
+| YouTube | **eliminado** | Apuntaba a `https://youtube.com/` a secas. Si hay canal, añádelo como `SiteSocialLink`. |
+| `phone` | vacío | Opcional. |
+| `featured_recording` / `featured_poem` | apuntan a piezas sembradas | Revisar cuando haya contenido real. |
+| `dossier_pdf` | vacío | Kit de prensa, si existe. |
+
+> **Esto está SOLO en el entorno de desarrollo.** La vista previa de `:8090` tiene su
+> propia base de datos y conserva los datos antiguos. El despliegue real tendrá la suya.
+
+> **`seed_demo` lo borra todo.** Usa `update_or_create` y reescribe el perfil. No lo
+> ejecutes después de aplicar esto.
 
 ## 4. Cómo aplicarlo
 
@@ -126,8 +127,8 @@ for m in re.findall(r'<script type=\"application/ld\+json\"[^>]*>(.*?)</script>'
 curl -s http://127.0.0.1:8000/ | grep -cE 'resenas\.cl|https://instagram\.com/"|https://youtube\.com/"'
 ```
 
-Salida actual del punto 3, para que sepas qué estás sustituyendo:
-`['https://instagram.com/', 'https://youtube.com/']`
+Salida esperada del punto 3 tras lo aplicado el 2026-10-06:
+`['https://www.instagram.com/repitentesdelverso']`
 
 El punto 2 importa más de lo que parece: hasta hace poco el feed llevaba el título escrito
 a fuego y **no leía `SiteProfile`**, así que configurar la identidad no lo cambiaba. Se
