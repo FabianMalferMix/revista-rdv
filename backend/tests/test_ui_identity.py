@@ -1,5 +1,7 @@
 """Identidad tipográfica y nav responsive (Lote UI-2)."""
 
+import re
+
 import pytest
 from django.conf import settings
 from django.urls import reverse
@@ -40,3 +42,38 @@ def test_css_declares_self_hosted_display_font():
     assert "fraunces.woff2" in css  # url() relativa (la reescribe WhiteNoise)
     assert "--display" in css
     assert "font-display:swap" in css
+
+
+# Las dos parciales que producen una tarjeta de listado. El titular de la tarjeta
+# es la superficie donde más se repite la tipografía de titular en todo el sitio.
+TARJETAS = [
+    "content/partials/_article_card.html",
+    "content/partials/_poem_card.html",
+]
+
+
+def _selectores_de_titular(css):
+    """Lista de selectores de la regla que fija font-family:var(--display)."""
+    m = re.search(r"([^{}]+)\{[^{}]*font-family:var\(--display\)", css)
+    assert m, "no se encontró la regla que fija la tipografía de titular"
+    return m.group(1)
+
+
+def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
+    """El CSS debe nombrar la etiqueta que la plantilla emite de verdad.
+
+    La regla apuntaba a `.article-card h2` mientras ambas parciales emiten
+    `<h3>`, así que el selector estaba muerto y los títulos de todos los
+    listados caían a `--serif`, la pila con Georgia. Con una serif de titular
+    la diferencia era casi invisible; con cualquier otra familia, evidente.
+    """
+    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    selectores = _selectores_de_titular(css)
+    for parcial in TARJETAS:
+        html = (settings.BASE_DIR / "templates" / parcial).read_text(encoding="utf-8")
+        etiqueta = re.search(r"<(h[1-6])[\s>]", html)
+        assert etiqueta, f"{parcial} ya no emite ningún titular"
+        assert f".article-card {etiqueta.group(1)}" in selectores, (
+            f"{parcial} emite <{etiqueta.group(1)}> pero la regla de titulares "
+            f"no lo cubre; el título caerá a la serif del cuerpo"
+        )

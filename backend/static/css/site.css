@@ -39,7 +39,7 @@ a{color:var(--accent); text-underline-offset:3px}
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
 .brand, .hero-tagline,
 .index-head h1, .article h1, .poem h1, .dossier-head h1,
-.article-card h2, .featured h2, .next-event h2,
+.article-card h3, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .press-item h2,
 .member-name, .pub-title{
   font-family:var(--display); letter-spacing:-.01em;
