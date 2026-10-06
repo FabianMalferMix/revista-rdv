@@ -1,15 +1,13 @@
 :root{
+  /* El sitio tiene UNA sola paleta, clara. Sin esta declaración, un sistema en modo
+     oscuro seguiría pintando oscuros los controles nativos —campos, desplegables,
+     barras de desplazamiento— sobre un fondo claro. */
+  color-scheme: light;
   --paper:#edf0f3; --surface:#ffffff; --ink:#16202b; --muted:#586674;
   --accent:#1d4e73; --border:#d6dde4;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --display:"Fraunces",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    --paper:#0f151b; --surface:#161f28; --ink:#e7edf2; --muted:#94a3b1;
-    --accent:#74aadd; --border:#293643;
-  }
 }
 
 /* Display serif auto-hospedada (Fraunces variable, OFL) para marca y títulos.
@@ -353,7 +351,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .form button{align-self:flex-start; font-family:var(--mono); font-size:13px; letter-spacing:.04em;
   background:var(--accent); color:#fff; border:0; border-radius:3px; padding:11px 22px; cursor:pointer}
 .form button:hover{opacity:.92}
-@media (prefers-color-scheme:dark){ .form button{color:var(--paper)} .form .error{color:#e18a82} }
 
 /* Footer */
 .site-foot{border-top:1px solid var(--border); margin-top:40px; padding:24px 0;
