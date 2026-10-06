@@ -100,6 +100,7 @@ TEMPLATES = [
                 "apps.content.context_processors.nav",
                 "apps.content.context_processors.canonical",
                 "apps.showcase.context_processors.site_profile",
+                "config.context_processors.version_estaticos",
             ],
         },
     },
