@@ -14,17 +14,19 @@
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
-  --display:"Fraunces",var(--serif);
+  --display:"Syne",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 
-/* Display serif auto-hospedada (Fraunces variable, OFL) para marca y títulos.
+/* Display auto-hospedada (Syne variable, eje wght 400-800, OFL) para marca y
+   títulos. Autoalojada por obligación: la CSP declara font-src 'self', así que
+   un CDN de fuentes quedaría bloqueado.
    La url() es RELATIVA: CompressedManifestStaticFilesStorage la reescribe con
    hash en collectstatic (no usar {% static %}: el CSS no es plantilla). */
 @font-face{
-  font-family:"Fraunces";
-  src:url("../fonts/fraunces.woff2") format("woff2");
-  font-weight:400 700;
+  font-family:"Syne";
+  src:url("../fonts/syne.woff2") format("woff2");
+  font-weight:400 800;
   font-style:normal;
   font-display:swap;
 }
@@ -274,7 +276,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 
 /* Hero de portada (CTA hacia gestores) */
 .hero{margin:22px 0 0; padding:6px 0 24px; border-bottom:2px solid var(--ink)}
-.hero-tagline{font-size:clamp(22px,3.4vw,30px); font-style:italic; margin:0 0 12px; text-wrap:balance; line-height:1.25}
+.hero-tagline{font-size:clamp(22px,3.4vw,30px); margin:0 0 12px; text-wrap:balance; line-height:1.25}
 .hero-manifesto{color:var(--muted); font-size:16px; max-width:62ch; margin:0 0 16px}
 .hero-manifesto a{white-space:nowrap}
 .hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:0}
