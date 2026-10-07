@@ -52,6 +52,14 @@ def _paginate(request, queryset, per_page=12):
     return Paginator(queryset, per_page).get_page(request.GET.get("page"))
 
 
+# Por debajo de este número, la rejilla ya enseña a todo el mundo a la vez y una
+# cinta enseñaría MENOS, no más. Por encima no caben y la cinta gana.
+UMBRAL_CINTA = 12
+# Tope de la cinta: con 16 la vuelta completa dura 96s; a partir de ahí el enlace
+# «Conoce al colectivo» se hace cargo del resto.
+TOPE_CINTA = 16
+
+
 def home(request):
     profile = SiteProfile.load()  # garantiza la fila singleton (nunca None)
     featured_poem = profile.featured_poem
@@ -66,12 +74,15 @@ def home(request):
         featured = {"kind": "recording", "object": featured_recording}
     elif featured_poem:
         featured = {"kind": "poem", "object": featured_poem}
+    # Se materializa para poder contar sin una segunda consulta.
+    _members = list(Contributor.members()[:TOPE_CINTA])
     return render(
         request,
         "content/home.html",
         {
             "articles": _published()[:5],  # portada curada; el archivo vive en /textos/
-            "members": Contributor.members()[:8],
+            "members": _members,
+            "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),

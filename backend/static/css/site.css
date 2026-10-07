@@ -429,3 +429,79 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .error-links{list-style:none; padding:0; margin:24px 0 0; display:flex; flex-wrap:wrap; gap:8px 20px}
 .error-links a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent}
 .error-links a:hover{border-bottom-color:var(--accent)}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Cinta de integrantes. Se monta solo por encima de UMBRAL_CINTA (views.py).
+
+   Sin JavaScript: el sitio ya resuelve el menú con <details> y la galería con
+   CSS. Así no hay nonce que gestionar con la CSP ni nada que falle si un
+   script no carga.
+
+   WCAG 2.2.2 «Pausar, detener, ocultar» es nivel A y OBLIGATORIO en cuanto
+   algo se mueve solo más de 5 segundos junto a otro contenido: de ahí la
+   casilla, que es un control real, enfocable y etiquetado. :hover y
+   :focus-within pausan además por comodidad.
+   ────────────────────────────────────────────────────────────────────────── */
+.cinta-caja{position:relative; margin:18px 0 0; padding:14px 16px 10px;
+  border:1px solid transparent; border-radius:5px;
+  transition:background-color .18s ease, border-color .18s ease}
+.cinta-caja:hover, .cinta-caja:focus-within{
+  background:var(--paper); border-color:var(--border); cursor:pointer}
+/* Los bordes se difuminan: sin esto las tarjetas se cortan en seco al entrar
+   y salir, que es lo que delata una cinta mal hecha. */
+.cinta{overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+  mask-image:linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent)}
+/* La duración se escala con el número de integrantes: translateX(-50%) recorre
+   una distancia proporcional al reparto, así que con duración fija la cinta
+   iría más rápida cuanto más gente hubiera. 6s por integrante mantiene
+   constante la VELOCIDAD, no el tiempo de vuelta. */
+/* Solo existen 12..16: por debajo no hay cinta y TOPE_CINTA corta en 16. */
+.cinta-n12{--cinta-n:12} .cinta-n13{--cinta-n:13} .cinta-n14{--cinta-n:14}
+.cinta-n15{--cinta-n:15} .cinta-n16{--cinta-n:16}
+.cinta-pista{display:flex; flex-wrap:nowrap; width:max-content; gap:28px;
+  grid-template-columns:none;
+  animation:cinta-desliza calc(var(--cinta-n,12) * 6s) linear infinite}
+/* El apilado vertical vivía en `.member-card a`, y esta tarjeta ya no tiene
+   enlace: hay que repetirlo aquí o el nombre se va al lado de la foto. */
+.cinta-card{flex:0 0 190px; width:190px;
+  display:flex; flex-direction:column; align-items:flex-start; gap:8px}
+/* Los nombres de dos palabras largas rompen a dos líneas y empujan el rol hacia
+   abajo, dejándolo a alturas distintas en cada tarjeta. Reservar el alto de dos
+   líneas iguala la retícula sin recortar ningún nombre. */
+.cinta-card .member-name{min-height:2.4em; line-height:1.2}
+.cinta-card .avatar{width:96px; height:96px}
+/* La copia duplica el ancho exacto, así que -50% cae justo en la costura. */
+@keyframes cinta-desliza{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+.cinta:hover .cinta-pista, .cinta:focus-within .cinta-pista{animation-play-state:paused}
+
+.cinta-pausa-casilla{position:absolute; width:1px; height:1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap}
+.cinta-pausa{display:inline-block; cursor:pointer; font-family:var(--mono);
+  font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+  border-bottom:1px solid var(--border); padding-bottom:2px; margin-bottom:12px}
+.cinta-pausa:hover{color:var(--accent); border-bottom-color:var(--accent)}
+.cinta-pausa-casilla:focus-visible + .cinta-pausa{outline:2px solid var(--accent); outline-offset:3px}
+.cinta-pausa-casilla:checked + .cinta-pausa{color:var(--accent); border-bottom-color:var(--accent)}
+.cinta-pausa-casilla:checked ~ .cinta .cinta-pista{animation-play-state:paused}
+
+/* El enlace extendido. La capa cubre el componente entero; la etiqueta de
+   pausa se eleva por encima para seguir siendo pulsable. */
+.cinta-pie{margin:10px 0 0; text-align:right}
+.cinta-pie a{font-family:var(--mono); font-size:11px; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--muted); text-decoration:none}
+.cinta-pie a::after{content:""; position:absolute; inset:0; border-radius:5px}
+.cinta-pie a span{display:inline-block; transition:transform .18s ease}
+.cinta-caja:hover .cinta-pie a, .cinta-pie a:focus-visible{color:var(--accent)}
+.cinta-caja:hover .cinta-pie a span{transform:translateX(4px)}
+.cinta-pie a:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.cinta-pausa{position:relative; z-index:1}
+
+/* Quien pide menos movimiento no lo recibe. Y como entonces no se desplaza
+   nada, la cinta pasa a poder arrastrarse a mano: el contenido sigue siendo
+   alcanzable, que es lo que importa. */
+@media (prefers-reduced-motion: reduce){
+  .cinta-pista{animation:none}
+  .cinta{overflow-x:auto}
+  .cinta-pausa{display:none}
+}
