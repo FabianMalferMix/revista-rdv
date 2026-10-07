@@ -136,3 +136,32 @@ def test_solo_la_portada_usa_la_tira_de_cifras_de_portada():
         assert "hero-stats" not in texto, (
             f"{otra} adoptó la marca de portada y heredará la cifra grande"
         )
+
+
+def test_ninguna_regla_estiliza_un_titular_que_las_tarjetas_no_emiten():
+    """Caza TODAS las reglas con el selector muerto, no solo una.
+
+    `test_titulo_de_tarjeta_usa_la_tipografia_de_titular` solo vigilaba la
+    regla de la familia tipográfica. Otras tres —tamaño, color y subrayado—
+    siguieron apuntando a `.article-card h2`, que ninguna plantilla emite, así
+    que el título del listado caía al estilo global de enlace (magenta y
+    subrayado) y al cuerpo por defecto del navegador para un h3: 18,7px frente
+    a los 26 previstos, apenas un 17% por encima del resumen.
+
+    Una regla con selector muerto no da error: simplemente no se aplica. Por
+    eso hace falta comprobarlo, y comprobarlo entero.
+    """
+    tpl = settings.BASE_DIR / "templates"
+    emitidas = set()
+    for parcial in TARJETAS:
+        html = (tpl / parcial).read_text(encoding="utf-8")
+        emitidas.update(re.findall(r"<(h[1-6])[\s>]", html))
+    assert emitidas, "las parciales de tarjeta ya no emiten ningún titular"
+
+    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    estilizadas = set(re.findall(r"\.article-card\s+(h[1-6])\b", css))
+    muertas = estilizadas - emitidas
+    assert not muertas, (
+        f"el CSS estiliza .article-card {sorted(muertas)} pero las parciales emiten "
+        f"{sorted(emitidas)}: esas reglas no se aplican a nada"
+    )
