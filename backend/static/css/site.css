@@ -437,10 +437,14 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    CSS. Así no hay nonce que gestionar con la CSP ni nada que falle si un
    script no carga.
 
-   WCAG 2.2.2 «Pausar, detener, ocultar» es nivel A y OBLIGATORIO en cuanto
-   algo se mueve solo más de 5 segundos junto a otro contenido: de ahí la
-   casilla, que es un control real, enfocable y etiquetado. :hover y
-   :focus-within pausan además por comodidad.
+   SIN control de pausa, por decisión expresa del usuario. Eso significa que
+   la portada NO cumple WCAG 2.2.2 «Pausar, detener, ocultar», que es nivel A
+   —el mínimo— para lo que se mueve solo más de 5 segundos junto a otro
+   contenido: con :hover y :focus-within se detiene, pero quien navegue desde
+   un móvil no tiene ninguna forma de pararla.
+   Lo que sigue protegiendo a quien declara sensibilidad al movimiento en su
+   sistema es la media query prefers-reduced-motion de abajo. Es el ÚNICO
+   resguardo que queda: si se toca, no queda nada.
    ────────────────────────────────────────────────────────────────────────── */
 .cinta-caja{position:relative; margin:18px 0 0; padding:14px 16px 10px;
   border:1px solid transparent; border-radius:5px;
@@ -478,16 +482,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 @keyframes cinta-desliza{from{transform:translateX(0)} to{transform:translateX(-50%)}}
 .cinta:hover .cinta-pista, .cinta:focus-within .cinta-pista{animation-play-state:paused}
 
-.cinta-pausa-casilla{position:absolute; width:1px; height:1px; overflow:hidden;
-  clip:rect(0,0,0,0); white-space:nowrap}
-.cinta-pausa{display:inline-block; cursor:pointer; font-family:var(--mono);
-  font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
-  border-bottom:1px solid var(--border); padding-bottom:2px; margin-bottom:12px}
-.cinta-pausa:hover{color:var(--accent); border-bottom-color:var(--accent)}
-.cinta-pausa-casilla:focus-visible + .cinta-pausa{outline:2px solid var(--accent); outline-offset:3px}
-.cinta-pausa-casilla:checked + .cinta-pausa{color:var(--accent); border-bottom-color:var(--accent)}
-.cinta-pausa-casilla:checked ~ .cinta .cinta-pista{animation-play-state:paused}
-
 /* El enlace extendido. La capa cubre el componente entero; la etiqueta de
    pausa se eleva por encima para seguir siendo pulsable. */
 .cinta-pie{margin:10px 0 0; text-align:right}
@@ -498,7 +492,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .cinta-caja:hover .cinta-pie a, .cinta-pie a:focus-visible{color:var(--accent)}
 .cinta-caja:hover .cinta-pie a span{transform:translateX(4px)}
 .cinta-pie a:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-.cinta-pausa{position:relative; z-index:1}
 
 /* Quien pide menos movimiento no lo recibe. Y como entonces no se desplaza
    nada, la cinta pasa a poder arrastrarse a mano: el contenido sigue siendo
@@ -506,5 +499,4 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 @media (prefers-reduced-motion: reduce){
   .cinta-pista{animation:none}
   .cinta{overflow-x:auto}
-  .cinta-pausa{display:none}
 }

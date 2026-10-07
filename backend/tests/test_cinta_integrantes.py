@@ -8,6 +8,7 @@ condición que hace que el componente valga la pena.
 import re
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 
 from apps.content.views import TOPE_CINTA, UMBRAL_CINTA
@@ -79,12 +80,25 @@ def test_la_copia_del_bucle_no_se_anuncia_dos_veces(client):
     )
 
 
-def test_la_cinta_trae_su_control_de_pausa(client):
-    """WCAG 2.2.2 es nivel A: algo que se mueve solo DEBE poder detenerse."""
-    _integrantes(UMBRAL_CINTA)
-    html = _portada(client)
-    assert 'id="pausa-cinta"' in html, "la cinta se mueve sola y no se puede parar"
-    assert 'for="pausa-cinta"' in html, "el control de pausa no tiene etiqueta asociada"
+def test_la_cinta_se_detiene_con_prefers_reduced_motion():
+    """El único resguardo que queda tras retirar el control de pausa.
+
+    El control visible se retiró por decisión expresa del usuario, así que la
+    portada ya NO cumple WCAG 2.2.2 «Pausar, detener, ocultar» (nivel A): con
+    ratón se detiene al pasar por encima, pero desde un móvil no hay forma de
+    pararla. Lo que sigue protegiendo a quien declara sensibilidad al
+    movimiento en su sistema es esta media query. Si desaparece, no queda
+    nada, y por eso se vigila aquí.
+    """
+    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    bloque = re.search(r"@media \(prefers-reduced-motion: reduce\)\{(.*?)\n\}", css, re.S)
+    assert bloque, "desapareció el bloque de prefers-reduced-motion"
+    assert "animation:none" in bloque.group(1), (
+        "prefers-reduced-motion ya no detiene la animación de la cinta"
+    )
+    assert "overflow-x:auto" in bloque.group(1), (
+        "sin animación la cinta debe poder arrastrarse a mano, o su contenido queda inalcanzable"
+    )
 
 
 def test_la_cinta_no_crece_sin_limite(client):
