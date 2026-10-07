@@ -464,13 +464,16 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   animation:cinta-desliza calc(var(--cinta-n,12) * 6s) linear infinite}
 /* El apilado vertical vivía en `.member-card a`, y esta tarjeta ya no tiene
    enlace: hay que repetirlo aquí o el nombre se va al lado de la foto. */
-.cinta-card{flex:0 0 190px; width:190px;
+/* 230px: con 28 de hueco, 3 tarjetas ocupan 746 de los 748 útiles del contenedor
+   (820 del .wrap menos sus 40 de padding, menos los 32 de .cinta-caja). La cuarta
+   arranca fuera, así que se ven TRES a la vez y ninguna asoma a medias. */
+.cinta-card{flex:0 0 230px; width:230px;
   display:flex; flex-direction:column; align-items:flex-start; gap:8px}
 /* Los nombres de dos palabras largas rompen a dos líneas y empujan el rol hacia
    abajo, dejándolo a alturas distintas en cada tarjeta. Reservar el alto de dos
    líneas iguala la retícula sin recortar ningún nombre. */
 .cinta-card .member-name{min-height:2.4em; line-height:1.2}
-.cinta-card .avatar{width:96px; height:96px}
+.cinta-card .avatar{width:108px; height:108px}
 /* La copia duplica el ancho exacto, así que -50% cae justo en la costura. */
 @keyframes cinta-desliza{from{transform:translateX(0)} to{transform:translateX(-50%)}}
 .cinta:hover .cinta-pista, .cinta:focus-within .cinta-pista{animation-play-state:paused}
