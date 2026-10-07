@@ -102,26 +102,4 @@
     </section>
   {% endif %}
 
-  {% if press_quotes %}
-    <section class="home-block">
-      <h2 class="subhead">Han dicho de nosotros</h2>
-      {% for m in press_quotes %}
-        <blockquote class="press-quote home-quote">
-          «{{ m.quote }}»
-          <cite>— {{ m.outlet }}{% if m.published_on %}, {{ m.published_on|date:"Y" }}{% endif %}</cite>
-        </blockquote>
-      {% endfor %}
-      <p><a href="{% url 'showcase:press_index' %}">Toda la prensa →</a></p>
-    </section>
-  {% endif %}
-
-  {% if partners %}
-    <section class="home-block band partners-strip">
-      <h2 class="subhead">Con el apoyo de</h2>
-      <p class="meta">
-        {% for p in partners %}{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }}</a>{% else %}{{ p.name }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}
-        &nbsp;·&nbsp;<a href="{% url 'showcase:partner_index' %}">Aliados →</a>
-      </p>
-    </section>
-  {% endif %}
 {% endblock %}
