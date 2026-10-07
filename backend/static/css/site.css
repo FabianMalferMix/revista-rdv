@@ -15,6 +15,10 @@
      mismos valores; si cambias un color y baja de AA, esa prueba falla. */
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
+  /* Carátula del reproductor: el azul del cartel (tono 210°, saturación 73%,
+     igual que --paper) hundido a luminosidad 45%. A la luminosidad original
+     del cartel, 61%, el blanco encima solo daba 2,90:1; aquí da 4,84:1. */
+  --caratula:#1f73c7; --caratula-rotulo:#0e3358;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --display:"Syne",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -234,13 +238,22 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .player-frame{position:relative; aspect-ratio:16/9; border:1px solid var(--border);
   border-radius:4px; overflow:hidden; background:#000}
 .player-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
-/* Estado previo al consentimiento: el iframe aún no existe (click-to-play, S-19). */
+/* Estado previo al consentimiento: el iframe aún no existe (click-to-play, S-19).
+   Mientras no existe, la placa NO es un vídeo: es una carátula. En negro se leía
+   como un hueco, y con razón —ningún registro tiene cartel todavía—, así que el
+   negro queda para el vídeo real y la carátula toma el azul del colectivo.
+   El botón va en blanco sólido: sobre un fondo de luminosidad media, un bloque
+   oscuro queda a 51 puntos de luminosidad y 41 de saturación de la placa y se
+   lee como un agujero perforado. El blanco no se lee como otro color sino como
+   ausencia de color, y por eso se apoya sin competir. */
 .player-consent{display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:8px; padding:16px; text-align:center}
-.embed-play{font:inherit; font-size:1rem; padding:10px 20px; border-radius:4px; cursor:pointer;
-  color:#fff; background:transparent; border:1px solid rgba(255,255,255,.55)}
-.embed-play:hover{background:rgba(255,255,255,.12)}
-.embed-note{margin:0; color:rgba(255,255,255,.72); max-width:46ch}
+  gap:8px; padding:16px; text-align:center;
+  background:var(--caratula); border-color:var(--caratula)}
+.embed-play{font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; padding:12px 26px; border-radius:4px; cursor:pointer;
+  color:var(--caratula-rotulo); background:#fff; border:1px solid #fff}
+.embed-play:hover{opacity:.88}
+.embed-note{margin:0; color:#fff; max-width:46ch}
 audio, video{width:100%; margin:6px 0}
 video{border:1px solid var(--border); border-radius:4px; background:#000}
 .recording-list{list-style:none; padding:0; margin:18px 0 0; display:flex; flex-direction:column; gap:34px}
@@ -311,6 +324,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .featured h2 a{text-decoration:none; color:var(--ink)}
 .featured h2 a:hover{color:var(--accent)}
 .featured .poem-excerpt{font-size:18px}
+/* Ficha del registro destacado: los datos que el modelo ya tenía. */
+.rec-ficha{margin:0 0 10px}
+.rec-ficha a{text-decoration:none; border-bottom:1px solid var(--border)}
+.rec-sumario{margin:0 0 16px; font-size:17px; color:var(--ink)}
 
 /* Dossier / kit de prensa (pantalla + impresión) */
 .dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}

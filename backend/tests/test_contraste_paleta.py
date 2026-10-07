@@ -43,7 +43,7 @@ def _paleta():
     raiz = re.search(r":root\{(.*?)\n\}", css, re.S)
     assert raiz, "no se encontró el bloque :root"
     colores = dict(re.findall(r"--([a-z-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;", raiz.group(1)))
-    for nombre in ("paper", "surface", "ink", "muted", "accent"):
+    for nombre in ("paper", "surface", "ink", "muted", "accent", "caratula", "caratula-rotulo"):
         assert nombre in colores, f"la paleta ya no declara --{nombre}"
     return colores
 
@@ -63,6 +63,11 @@ PARES = [
     ("texto secundario sobre las bandas", "muted", "surface", AA_NORMAL),
     ("enlace magenta sobre el papel", "accent", "paper", AA_NORMAL),
     ("enlace magenta sobre las bandas", "accent", "surface", AA_NORMAL),
+    # La carátula del reproductor lleva el aviso de privacidad en blanco encima,
+    # y el botón es blanco sólido. Al azul original del cartel (luminosidad 61%)
+    # ese blanco daba 2,90:1; por eso la carátula va hundida a 45%.
+    ("aviso en blanco sobre la carátula", "surface", "caratula", AA_NORMAL),
+    ("rótulo del botón sobre su fondo blanco", "caratula-rotulo", "surface", AA_NORMAL),
 ]
 
 

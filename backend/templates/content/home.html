@@ -33,6 +33,17 @@
       {% if featured.kind == "recording" %}
         <span class="kicker">Registro destacado</span>
         <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
+        {% comment %}
+           El modelo ya guardaba evento, fecha, ciudad, participantes y descripción
+           —la ficha del registro los muestra— y la portada enseñaba solo el título.
+        {% endcomment %}
+        <p class="meta rec-ficha">
+          {% if featured.object.event %}<a href="{{ featured.object.event.get_absolute_url }}">{{ featured.object.event.title }}</a>{% endif %}
+          {% if featured.object.event.starts_at %} · {{ featured.object.event.starts_at|date:"j M Y" }}{% endif %}
+          {% if featured.object.event.city %} · {{ featured.object.event.city }}{% endif %}
+          {% with gente=featured.object.participants.all %}{% if gente %} · {% for c in gente %}{{ c.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}
+        </p>
+        {% if featured.object.description %}<p class="rec-sumario">{{ featured.object.description }}</p>{% endif %}
         {% include "media/partials/_player.html" with r=featured.object %}
         <p class="meta"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
       {% else %}

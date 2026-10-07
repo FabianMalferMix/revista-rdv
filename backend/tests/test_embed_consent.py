@@ -6,6 +6,8 @@ de registro y también la PORTADA, sin que nadie hubiera pulsado nada, mientras
 /cookies/ afirma que «no compartimos información con terceros».
 """
 
+import re
+
 import pytest
 from django.template import Context, Template
 from django.urls import reverse
@@ -100,3 +102,26 @@ def test_el_filtro_sigue_resolviendo_la_url_de_incrustacion():
     assert embed_provider(YOUTUBE) == "YouTube"
     assert embed_provider(VIMEO) == "Vimeo"
     assert embed_provider("https://example.com/x") == ""
+
+
+def test_la_ficha_sin_fecha_no_abre_con_un_separador_suelto(client):
+    """El · separa fecha y evento; sin fecha no debe encabezar la línea.
+
+    `recorded_on` es opcional y el registro destacado no lo tiene, así que la
+    línea de metadatos abría con «· Recital «Nuevas voces»». El separador
+    estaba escrito dentro del bloque del evento en vez de depender de que
+    hubiera algo delante.
+    """
+    from tests.factories import make_event
+
+    evento = make_event(title="Recital de prueba")
+    registro = _recording(recorded_on=None, event=evento)
+    html = client.get(registro.get_absolute_url()).content.decode()
+
+    bloque = re.search(r'<p class="meta">(.*?)</p>', html, re.S)
+    assert bloque, "la ficha ya no tiene línea de metadatos"
+    texto = re.sub(r"<[^>]+>", "", bloque.group(1)).strip()
+    assert not texto.startswith("·"), (
+        f"la línea de metadatos abre con un separador suelto: {texto!r}"
+    )
+    assert "Recital de prueba" in texto, "el evento dejó de mostrarse"

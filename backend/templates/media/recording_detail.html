@@ -18,7 +18,8 @@
       <h1>{{ recording.title }}</h1>
       <p class="meta">
         {% if recording.recorded_on %}{{ recording.recorded_on|date:"j M Y" }}{% endif %}
-        {% if recording.event %} · <a href="{{ recording.event.get_absolute_url }}">{{ recording.event.title }}</a>{% endif %}
+        {# el · va ENTRE fecha y evento: sin fecha abría la línea con un separador suelto #}
+        {% if recording.event %}{% if recording.recorded_on %} · {% endif %}<a href="{{ recording.event.get_absolute_url }}">{{ recording.event.title }}</a>{% endif %}
       </p>
     </header>
 
