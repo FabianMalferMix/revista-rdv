@@ -132,9 +132,13 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .kicker{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--accent)}
 .kicker a{color:var(--accent); text-decoration:none}
 .kicker a:hover{text-decoration:underline}
-.article-card h2{margin:8px 0 6px; font-size:26px; line-height:1.15}
-.article-card h2 a{text-decoration:none; color:var(--ink)}
-.article-card h2 a:hover{color:var(--accent)}
+/* h3: es la etiqueta que emiten las dos parciales. Con `h2` estas tres reglas
+   no se aplicaban a nada y el título caía al estilo global de enlace —magenta
+   y subrayado— y al cuerpo por defecto del navegador para un h3, 18,7px, que
+   apenas supera los 16px del resumen. A 26px la proporción es 1,63. */
+.article-card h3{margin:8px 0 6px; font-size:26px; line-height:1.15}
+.article-card h3 a{text-decoration:none; color:var(--ink)}
+.article-card h3 a:hover{color:var(--accent)}
 .dek{color:var(--muted); margin:6px 0}
 .meta{font-family:var(--mono); font-size:12px; color:var(--muted)}
 .meta a{color:var(--muted)}
