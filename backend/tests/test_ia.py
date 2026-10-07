@@ -36,6 +36,7 @@ NAV_DEGRADADOS = [
     "agenda:trayectoria",
     "agenda:gallery",
     "showcase:press_index",
+    "showcase:partner_index",
 ]
 
 

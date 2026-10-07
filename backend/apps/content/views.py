@@ -12,7 +12,7 @@ from django_ratelimit.decorators import ratelimit
 from apps.agenda.models import Event
 from apps.agenda.services import stats as trajectory_stats
 from apps.people.models import Contributor
-from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
+from apps.showcase.models import Publication, SiteProfile
 
 from .models import (
     Article,
@@ -76,8 +76,6 @@ def home(request):
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),
             "publications": Publication.objects.filter(published=True).select_related("cover")[:4],
-            "press_quotes": PressMention.objects.filter(published=True).exclude(quote="")[:2],
-            "partners": Partner.objects.filter(active=True)[:6],
         },
     )
 

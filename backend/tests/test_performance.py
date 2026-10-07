@@ -16,7 +16,7 @@ pytestmark = pytest.mark.django_db
 
 # vista -> techo de consultas (medido hoy + holgura)
 BUDGETS = {
-    "content:home": 24,  # medido 18
+    "content:home": 24,  # medido 16
     "content:text_archive": 10,  # 6
     "content:poem_index": 10,  # 6
     "people:member_index": 8,  # 4
