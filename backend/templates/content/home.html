@@ -73,12 +73,47 @@
   {% if members %}
     <section class="home-block band">
       <h2 class="subhead">Integrantes</h2>
-      <ul class="member-grid">
-        {% for m in members %}
-          {% include "people/partials/_member_card.html" %}
-        {% endfor %}
-      </ul>
-      <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+      {% comment %}
+         La cinta solo se monta por encima de UMBRAL_CINTA integrantes. Por debajo
+         la rejilla los enseña a todos de golpe y una cinta enseñaría MENOS: haría
+         esperar para ver lo que ya se veía.
+      {% endcomment %}
+      {% if cinta_integrantes %}
+        <div class="cinta-caja">
+          <input type="checkbox" id="pausa-cinta" class="cinta-pausa-casilla">
+          <label for="pausa-cinta" class="cinta-pausa">Pausar el desplazamiento</label>
+          <div class="cinta">
+            {% comment %}
+               cinta-n<N>: la duración se escala con el número de integrantes para que
+               la VELOCIDAD no cambie al crecer el colectivo. No puede ir en un
+               style= inline: la CSP del sitio público no admite estilos en línea.
+            {% endcomment %}
+            <ul class="member-grid cinta-pista cinta-n{{ members|length }}">
+              {% for m in members %}{% include "people/partials/_member_card_cinta.html" %}{% endfor %}
+              {% comment %}
+                 Copia para que el bucle no tenga costura. aria-hidden: quien use
+                 lector de pantalla no debe oír a cada integrante dos veces.
+              {% endcomment %}
+              {% for m in members %}{% include "people/partials/_member_card_cinta.html" with copia=True %}{% endfor %}
+            </ul>
+          </div>
+          {% comment %}
+             El enlace es REAL y tiene texto real; la capa de .cinta-pie a::after
+             extiende su zona pulsable a todo el componente. Envolver todo en <a>
+             habría metido la casilla de pausa dentro de un enlace, que es marcado
+             inválido, y habría dado al enlace un nombre accesible compuesto por
+             todos los nombres de la cinta.
+          {% endcomment %}
+          <p class="cinta-pie"><a href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
+        </div>
+      {% else %}
+        <ul class="member-grid">
+          {% for m in members %}
+            {% include "people/partials/_member_card.html" %}
+          {% endfor %}
+        </ul>
+        <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+      {% endif %}
     </section>
   {% endif %}
 
