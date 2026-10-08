@@ -1,0 +1,83 @@
+{
+ "titulo": "Enviar una propuesta — Reseñas",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1740,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Enviar una propuesta",
+  "familia": "Syne",
+  "px": 28,
+  "peso": "700",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "Recibimos propuestas de reseñas, ensayos y entrevistas durante todo el",
+  "familia": "Iowan Old Style",
+  "px": 16,
+  "peso": "400",
+  "interlinea": "25.6px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "Enviar propuesta",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": false,
+  "ancho": 178
+ },
+ "texto": {
+  "ancho": 344,
+  "razon": 0.88,
+  "elementos": 54,
+  "porTipo": {
+   "mono": 49,
+   "display": 2,
+   "lectura": 3
+  },
+  "mayusculas": 22,
+  "bajo12": 13
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 43,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 47,
+  "bajo24": 34,
+  "bajo44": 44
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/enviar/",
+ "estado": 200,
+ "desborde320": false
+}

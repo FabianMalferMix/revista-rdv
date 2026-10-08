@@ -1,0 +1,91 @@
+{
+ "titulo": "Registros — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1379,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "REGISTROS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "Recital «Nuevas voces» (registro)",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "35.2px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Lecturas y recitales en audio y video · Podcast RSS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "19.2px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "▶ REPRODUCIR",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "700",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 157
+ },
+ "texto": {
+  "ancho": 340,
+  "razon": 0.87,
+  "elementos": 47,
+  "porTipo": {
+   "mono": 43,
+   "display": 3,
+   "lectura": 1
+  },
+  "mayusculas": 12,
+  "bajo12": 10
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 39,
+  "bajo24": 29,
+  "bajo44": 36
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/registros/",
+ "estado": 200,
+ "desborde320": false
+}

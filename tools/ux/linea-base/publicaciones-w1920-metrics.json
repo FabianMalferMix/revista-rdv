@@ -1,0 +1,102 @@
+{
+ "titulo": "Publicaciones — Repitentes del Verso",
+ "viewport": [
+  1920,
+  1080
+ ],
+ "altoPagina": 2003,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "PUBLICACIONES",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 780
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": null,
+ "nav": {
+  "texto": "INTEGRANTES",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "600",
+  "interlinea": "20.8px",
+  "mayus": true,
+  "ancho": 127
+ },
+ "boton": {
+  "texto": "SUSCRIBIRME",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 117
+ },
+ "texto": {
+  "ancho": 679,
+  "razon": 0.35,
+  "elementos": 42,
+  "porTipo": {
+   "mono": 37,
+   "display": 4,
+   "lectura": 1
+  },
+  "mayusculas": 10,
+  "bajo12": 10
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 3,
+  "desviadas": 3,
+  "muestra": [
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 35,
+  "bajo24": 27,
+  "bajo44": 31
+ },
+ "cabecera": {
+  "alto": 120,
+  "posicion": "static"
+ },
+ "ruta": "/publicaciones/",
+ "estado": 200
+}

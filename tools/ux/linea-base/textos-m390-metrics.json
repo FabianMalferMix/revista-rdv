@@ -1,0 +1,91 @@
+{
+ "titulo": "Textos — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 2133,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "TEXTOS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": {
+  "texto": "La casa vacía: el regreso como forma del duelo",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "parrafo": {
+  "texto": "Vergara vuelve a la casa de la infancia: el duelo como arqueología dom",
+  "familia": "Iowan Old Style",
+  "px": 16,
+  "peso": "400",
+  "interlinea": "25.6px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "SUSCRIBIRME",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 117
+ },
+ "texto": {
+  "ancho": 344,
+  "razon": 0.88,
+  "elementos": 73,
+  "porTipo": {
+   "mono": 59,
+   "display": 7,
+   "lectura": 7
+  },
+  "mayusculas": 23,
+  "bajo12": 22
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 55,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 51,
+  "bajo24": 39,
+  "bajo44": 44
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/textos/",
+ "estado": 200,
+ "desborde320": false
+}

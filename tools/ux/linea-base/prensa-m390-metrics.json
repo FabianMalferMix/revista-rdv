@@ -1,0 +1,83 @@
+{
+ "titulo": "Prensa — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1212,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "PRENSA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "Entrevista al colectivo tras su plaquette",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "35.2px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h3": null,
+ "parrafo": null,
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "SUSCRIBIRME",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 117
+ },
+ "texto": {
+  "ancho": 344,
+  "razon": 0.88,
+  "elementos": 44,
+  "porTipo": {
+   "mono": 38,
+   "display": 3,
+   "lectura": 3
+  },
+  "mayusculas": 13,
+  "bajo12": 12
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 33,
+  "bajo24": 27,
+  "bajo44": 32
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/prensa/",
+ "estado": 200,
+ "desborde320": false
+}
