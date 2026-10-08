@@ -124,6 +124,13 @@ def _ajustar(texto, fuente, ancho_max, draw):
 def _escribir(img, xy, texto, tamano, color, ancho_max=None, interlinea=1.08, peso=500):
     draw = ImageDraw.Draw(img)
     fuente = _fuente(tamano, peso)
+    if ancho_max:
+        # Una palabra más larga que la caja no se puede partir: se reduce el cuerpo
+        # hasta que quepa («Correspondencias» se salía de su cubierta).
+        palabra = max(texto.split(), key=len, default="")
+        while tamano > 18 and draw.textlength(palabra, font=fuente) > ancho_max:
+            tamano = int(tamano * 0.92)
+            fuente = _fuente(tamano, peso)
     lineas = _ajustar(texto, fuente, ancho_max, draw) if ancho_max else [texto]
     x, y = xy
     for linea in lineas:
