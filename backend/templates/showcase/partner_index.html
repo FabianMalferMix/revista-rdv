@@ -17,7 +17,7 @@
         </div>
       </li>
     {% empty %}
-      <li class="empty">Aún no hay aliados registrados.</li>
+      <li class="empty">Aún no hay aliados registrados. El <a href="{% url 'showcase:dossier' %}">dossier</a> reúne la trayectoria y el contacto del colectivo.</li>
     {% endfor %}
   </ul>
 {% endblock %}

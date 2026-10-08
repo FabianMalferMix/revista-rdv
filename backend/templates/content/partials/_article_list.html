@@ -6,18 +6,4 @@
   {% endfor %}
 </ul>
 
-{% if articles.has_other_pages %}
-  <nav class="pagination" aria-label="Paginación">
-    {% if articles.has_previous %}
-      <a href="?page={{ articles.previous_page_number }}">← Anteriores</a>
-    {% else %}
-      <span class="disabled">← Anteriores</span>
-    {% endif %}
-    <span class="page-of">Página {{ articles.number }} de {{ articles.paginator.num_pages }}</span>
-    {% if articles.has_next %}
-      <a href="?page={{ articles.next_page_number }}">Siguientes →</a>
-    {% else %}
-      <span class="disabled">Siguientes →</span>
-    {% endif %}
-  </nav>
-{% endif %}
+{% include "content/partials/_pagination.html" with pagina=articles unidad="textos" %}

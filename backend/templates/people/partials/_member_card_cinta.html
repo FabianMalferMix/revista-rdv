@@ -1,4 +1,4 @@
-{% load images %}
+{% load images personas %}
 {% comment %}
    Tarjeta para la cinta: SIN enlace propio. Un objetivo que se mueve no se
    puede pulsar (es un fallo clásico de usabilidad), así que la sección entera
@@ -8,7 +8,7 @@
   {% if m.photo %}
     {% responsive_img m.photo css_class="avatar" sizes="200px" %}
   {% else %}
-    <span class="avatar avatar-fallback" aria-hidden="true">{{ m.display_name|slice:":1" }}</span>
+    <span class="avatar avatar-fallback" aria-hidden="true">{{ m.display_name|iniciales }}</span>
   {% endif %}
   <span class="member-name">{{ m.display_name }}</span>
   {% if m.role %}<span class="member-role">{{ m.role }}</span>{% endif %}

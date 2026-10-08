@@ -6,18 +6,4 @@
   {% endfor %}
 </ul>
 
-{% if poems.has_other_pages %}
-  <nav class="pagination" aria-label="Paginación">
-    {% if poems.has_previous %}
-      <a href="?page={{ poems.previous_page_number }}">← Anteriores</a>
-    {% else %}
-      <span class="disabled">← Anteriores</span>
-    {% endif %}
-    <span class="page-of">Página {{ poems.number }} de {{ poems.paginator.num_pages }}</span>
-    {% if poems.has_next %}
-      <a href="?page={{ poems.next_page_number }}">Siguientes →</a>
-    {% else %}
-      <span class="disabled">Siguientes →</span>
-    {% endif %}
-  </nav>
-{% endif %}
+{% include "content/partials/_pagination.html" with pagina=poems unidad="poemas" %}

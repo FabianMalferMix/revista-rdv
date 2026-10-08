@@ -108,3 +108,42 @@ def test_submit_rate_limited_rehydrates_form(client):
     assert "demasiadas propuestas" in content
     assert "Mi Título Único" in content  # el título vuelve rellenado
     assert "Un cuerpo memorable y distinto." in content  # y el cuerpo
+
+
+# ── Accesibilidad del formulario (backlog UX, ticket 1.11) ──────────────────
+
+
+def test_el_formulario_dice_que_dato_es_cada_campo(client):
+    """`autocomplete` deja que el navegador rellene nombre y correo (WCAG 1.3.5)."""
+    from bs4 import BeautifulSoup
+    from django.urls import reverse
+
+    soup = BeautifulSoup(client.get(reverse("submissions:submit")).content, "html.parser")
+    assert soup.find("input", {"name": "author_name"})["autocomplete"] == "name"
+    assert soup.find("input", {"name": "author_email"})["autocomplete"] == "email"
+    assert "Campo obligatorio" in soup.select_one(".form-leyenda").get_text()
+
+
+def test_cada_campo_invalido_apunta_a_un_error_que_existe(client):
+    """Django marca el campo con aria-describedby="<id>_error"; ese id debe existir.
+
+    Los errores se pintaban en <p> sueltos, así que la referencia apuntaba a nada: un
+    lector de pantalla anunciaba «inválido» sin decir por qué.
+    """
+    from bs4 import BeautifulSoup
+    from django.urls import reverse
+
+    datos = {"author_name": "", "author_email": "no-es-un-correo", "type": "reseña", "title": ""}
+    soup = BeautifulSoup(client.post(reverse("submissions:submit"), datos).content, "html.parser")
+
+    invalidos = soup.select('[aria-invalid="true"]')
+    assert len(invalidos) >= 3, "se esperaban al menos nombre, correo y título como inválidos"
+    for campo in invalidos:
+        referencias = campo.get("aria-describedby", "").split()
+        assert referencias, f"{campo.get('name')} es inválido y no dice por qué"
+        for ref in referencias:
+            destino = soup.find(id=ref)
+            assert destino is not None, (
+                f"aria-describedby de {campo.get('name')} apunta a «{ref}», que no existe"
+            )
+            assert destino.get_text(strip=True), f"«{ref}» existe pero está vacío"
