@@ -67,6 +67,16 @@ terminar** (se muestra una sola vez; apúntala).
 Como crea cuentas de staff, el comando **se niega a correr con `DEBUG=0`** salvo que se
 le pase `--force` de forma explícita: nunca debe ejecutarse contra producción.
 
+Material visual genérico (marcadores con proporciones reales, dibujados con Pillow) para
+diseñar antes de que llegue el material del colectivo:
+
+```bash
+docker compose exec web python manage.py seed_material_generico
+```
+
+Idempotente y seguro: nunca reemplaza una imagen cuyo crédito no sea de marcador. Qué pedir y
+cómo reemplazar cada pieza: [docs/contenido-visual.md](docs/contenido-visual.md).
+
 Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale el grupo
 `editor` o `autor` desde el admin.
 
