@@ -51,7 +51,7 @@
 <body>
   <a class="skip" href="#main">Saltar al contenido</a>
   <header class="masthead">
-    <div class="wrap top">
+    <div class="wrap-wide top">
       <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
       {% comment %}
          Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
@@ -75,7 +75,7 @@
        Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
        En móvil colapsa en un disclosure nativo «Menú»; en escritorio va en línea.
     {% endcomment %}
-    <details class="nav-disclosure wrap">
+    <details class="nav-disclosure wrap-wide">
       <summary>Menú</summary>
       <nav class="nav" aria-label="Principal">
         <a href="{% url 'people:member_index' %}">Integrantes</a>
@@ -87,19 +87,25 @@
   </header>
 
   {% if messages %}
-    <div class="wrap">
+    <div class="wrap-wide">
       {% for message in messages %}
         <p class="flash flash-{{ message.tags }}">{{ message }}</p>
       {% endfor %}
     </div>
   {% endif %}
 
-  <main class="wrap" id="main">
+  {% comment %}
+     El lienzo tiene tres carriles: lectura (el ancho de siempre), ancho y a sangre.
+     Cada hijo directo de <main> cae en el de lectura salvo que la página pida otra
+     cosa con el bloque `lienzo` (los índices y la portada piden «lienzo--ancho»).
+     Ver «Lienzo» en site.css.
+  {% endcomment %}
+  <main id="main" class="lienzo {% block lienzo %}{% endblock %}">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="site-foot">
-    <div class="wrap">
+    <div class="wrap-wide">
       <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">

@@ -2,6 +2,8 @@
 
 {% block title %}Colecciones — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Colecciones" cuenta=collections|length singular="colección" plural="colecciones" dek="Antologías y series que reúnen textos y poemas del colectivo." %}
   <ul class="collection-list">

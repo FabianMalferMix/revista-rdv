@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   <section class="hero">
     {% comment %}
@@ -38,6 +40,7 @@
 
   {% if featured %}
     <section class="home-block band featured">
+      <div class="band-in">
       {% if featured.kind == "recording" %}
         <span class="kicker">Registro destacado</span>
         <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
@@ -63,6 +66,7 @@
           · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>
         </p>
       {% endif %}
+      </div>
     </section>
   {% endif %}
 
@@ -80,7 +84,7 @@
 
   {% if members %}
     <section class="home-block band">
-      <h2 class="subhead">Integrantes</h2>
+      <div class="band-in"><h2 class="subhead">Integrantes</h2></div>
       {% comment %}
          La cinta solo se monta por encima de UMBRAL_CINTA integrantes. Por debajo
          la rejilla los enseña a todos de golpe y una cinta enseñaría MENOS: haría
@@ -112,12 +116,14 @@
           <p class="cinta-pie"><a href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
         </div>
       {% else %}
-        <ul class="member-grid">
-          {% for m in members %}
-            {% include "people/partials/_member_card.html" %}
-          {% endfor %}
-        </ul>
-        <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+        <div class="band-in">
+          <ul class="member-grid">
+            {% for m in members %}
+              {% include "people/partials/_member_card.html" %}
+            {% endfor %}
+          </ul>
+          <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
+        </div>
       {% endif %}
     </section>
   {% endif %}
@@ -132,13 +138,15 @@
 
   {% if publications %}
     <section class="home-block band">
-      <h2 class="subhead">Publicaciones</h2>
-      <ul class="pub-grid">
-        {% for pub in publications %}
-          {% include "showcase/partials/_publication_card.html" %}
-        {% endfor %}
-      </ul>
-      <p><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+      <div class="band-in">
+        <h2 class="subhead">Publicaciones</h2>
+        <ul class="pub-grid">
+          {% for pub in publications %}
+            {% include "showcase/partials/_publication_card.html" %}
+          {% endfor %}
+        </ul>
+        <p><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+      </div>
     </section>
   {% endif %}
 

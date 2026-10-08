@@ -400,6 +400,24 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Tests:** `tests/test_ui_ux.py` (si afirma `.wrap` en `<main>`, pasa a afirmar `id="main"` y la
   rejilla); `test_nav_css.py` sigue; `test_css_sistema.py`: existe `grid-template-columns:[full-start]`
   y no existe `100vw`.
+- **Estado:** hecho (paso 9 del plan). Lo construido difiere de lo escrito arriba en cinco puntos:
+  1. Los carriles van en px, no en rem (`--measure:780px`, `--wide:1320px`, 1440 px desde 1600 de
+     ancho). La medida de lectura ya está en `ch` (ticket 1.3), así que no hace falta que el carril
+     escale con el texto. El carril de lectura mide 780, lo que medía el contenido de la caja de 820.
+  2. El lienzo es una clase (`.lienzo`) y no una regla sobre `main`: `500.html` no extiende la base y
+     conserva su `<main class="wrap">`.
+  3. Cada página elige su carril con el bloque `lienzo` de `base.html`. La portada, los once índices,
+     la búsqueda y los listados por sección, etiqueta y colección piden `lienzo--ancho`. Artículo,
+     poema, fichas, dossier y formulario se quedan en el de lectura.
+  4. Las bandas no usan `subgrid`: su contenido va en un `<div class="band-in">` que vuelve al
+     carril ancho. Es más compatible y mantiene el flujo normal dentro de la banda.
+  5. En el carril ancho, cuatro cosas se habrían estirado y llevan su propio tope: el reproductor
+     del destacado, las citas, los resultados de búsqueda y el aviso de próxima actividad.
+  De paso: los registros pasan a rejilla (a todo el ancho cada placa llenaba la pantalla), las
+  cubiertas a 220 px o más, y se corrige un salto de 14 px por vuelta en la cinta animada: a la
+  pista le faltaba medio hueco para medir exactamente dos vueltas.
+  Verificado en navegador a 320, 390, 768, 1024, 1200, 1440 y 1920: marca, cabecera de índice, lista
+  y pie comparten el borde izquierdo; el artículo queda centrado en 780 px; sin scroll horizontal.
 
 #### 2.2 Índices como filas tipográficas y rejillas en el carril ancho
 - **Hallazgos:** ESP-4, ESP-5, IMG-6, CON-5, IMG-9 (parte), COM-7 (filas de poemas y textos).

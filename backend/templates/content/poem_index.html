@@ -3,6 +3,8 @@
 {% block title %}Poemas — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Poemas de los integrantes del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Poemas" cuenta=poems.paginator.count singular="poema" plural="poemas" dek="Poemas de quienes integran el colectivo." %}
   {% include "content/partials/_poem_list.html" %}

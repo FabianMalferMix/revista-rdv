@@ -3,6 +3,8 @@
 {% block title %}Registros — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Registros en audio y video de lecturas y recitales del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Registros" cuenta=recordings.paginator.count singular="registro" plural="registros" dek="Lecturas y recitales en audio y video." %}
   <p class="meta">También como <a href="{% url 'recordings_feed' %}">podcast (RSS)</a></p>
