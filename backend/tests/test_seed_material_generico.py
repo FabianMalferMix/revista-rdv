@@ -71,15 +71,29 @@ def test_asigna_marcadores_sin_pisar_material_real_y_es_idempotente(
     fernanda = Contributor.members().first()
     fernanda.photo = real
     fernanda.save(update_fields=["photo"])
+    libro = Publication.objects.first()
+    libro.cover = real
+    libro.save(update_fields=["cover"])
 
     call_command("seed_material_generico", "--force", "--fotos-por-evento", "1", verbosity=0)
 
     fernanda.refresh_from_db()
     assert fernanda.photo_id == real.pk, "pisó material real"
+    assert not MediaAsset.objects.filter(
+        alt_text=f"Retrato provisional de {fernanda.display_name}"
+    ).exists(), "creó un marcador que no iba a asignar"
+    libro.refresh_from_db()
+    assert libro.cover_id == real.pk, "pisó una cubierta real"
+    assert not MediaAsset.objects.filter(alt_text=f"Cubierta provisional · {libro.title}").exists()
     assert not Contributor.members().filter(photo=None).exists()
     assert not Event.objects.filter(poster=None).exists()
     assert all(e.photos.count() >= 1 for e in Event.objects.all())
-    assert all("provisional" in p.cover.credit.lower() for p in Publication.objects.all())
+    # El cupo se completa, no se excede: un evento que ya trae fotos (aquí, las tres de la
+    # siembra frente a un cupo de una) no recibe marcadores mezclados con ellas.
+    con_fotos = [e for e in Event.objects.all() if e.photos.exclude(asset__credit=cmd.CREDITO)]
+    assert con_fotos, "la siembra ya no trae un evento con fotos: revisar esta prueba"
+    assert all(not e.photos.filter(asset__credit=cmd.CREDITO).exists() for e in con_fotos)
+    assert all(p.cover_id for p in Publication.objects.all())
     assert not Recording.objects.filter(poster=None).exists()
     assert not Partner.objects.filter(logo=None).exists()
     perfil = SiteProfile.load()

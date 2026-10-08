@@ -95,28 +95,24 @@ Formato de cada ticket: objetivo · hallazgos · archivos · pasos · aceptació
 
 #### 0.1 Herramienta de capturas y métricas dentro del repo
 - **Objetivo:** que cada ticket pueda medir lo que promete, con el mismo instrumento de la auditoría.
-- **Archivos:** nuevo `tools/ux/capture.js`, `tools/ux/metrics.py`, `tools/ux/package.json`,
-  `tools/ux/README.md`; `.gitignore` (+`/tools/ux/node_modules/`, `/tools/ux/out/`); `.dockerignore` (+`tools`).
-- **Pasos:** (1) Copia `capture.js` desde
-  `~/.claude/projects/-home-fabian-User-repos-Rese-as/auditoria-ux-ui-material/pw/capture.js`
-  (Playwright-core + Chrome del sistema en `/usr/bin/google-chrome`; uso:
-  `node tools/ux/capture.js <outDir> <nombre> <url> local`). (2) Amplía su función `METRICS` para que
-  cada entrada de `media` incluya `naturalWidth`/`naturalHeight` (proporción intrínseca) y para contar
-  elementos por familia tipográfica y en mayúsculas (`textTransform`). (3) Escribe `metrics.py`
-  (sin dependencias fuera de la biblioteca estándar) con dos modos: `tabla <dir>` (una fila por
-  `*-metrics.json`: página, viewport, ratio texto/viewport, h1 px, familia del h1, cuerpo px, medios
-  en el primer viewport, % de elementos mono, imágenes cuya proporción renderizada difiera > 2 % de
-  la intrínseca) y `comparar <dirAntes> <dirDespues>` (misma tabla con deltas). (4) README con los
-  tres comandos y la lista de páginas de `local_pages.txt` del material.
-- **Aceptación:** `npm --prefix tools/ux install` deja `playwright-core` instalado; el comando de
-  captura produce `*-d1440-view.png`, `*-m390-view.png` y `*-metrics.json`; `python3 tools/ux/metrics.py tabla <dir>` imprime la tabla.
-- **Tests:** ninguno nuevo; `tests/test_vendored_assets.py` y `test_security_csp.py` deben seguir
-  en verde (no hay `.svg` ni documentos navegables en `static/`).
+- **Estado:** hecho. `tools/ux/` contiene `capture.js` (Playwright-core + Chrome del sistema; un solo
+  navegador para todas las páginas de `pages.txt`, en 1440, 390 y, en las marcadas, 1920),
+  `metrics.py` (`tabla <dir>` y `comparar <antes> <despues>`, solo biblioteca estándar), `smoke.py`
+  (recorre los enlaces internos y falla si alguno responde 400 o más) y su `README.md`.
+- **Uso en cada ticket:**
+  `node tools/ux/capture.js tools/ux/out/<rama> --only <páginas>` y luego
+  `python3 tools/ux/metrics.py comparar tools/ux/out/baseline tools/ux/out/<rama>`.
+- **Qué mide:** razón texto/viewport (con recorte por `overflow`), tamaño y familia de h1, h2, h3 y
+  párrafo, caracteres por línea del cuerpo de artículo, imágenes en el primer viewport, imágenes cuya
+  caja no respeta la proporción pedida (`desv`), porcentaje de elementos en monoespaciada, elementos
+  en mayúsculas y bajo 12 px, objetivos pulsables bajo 24 y 44 px, scroll horizontal (también a 320 px)
+  y alto de página.
 
 #### 0.2 Línea base
 - **Objetivo:** capturar el estado actual antes de tocar nada para comparar al final (ticket 6.2).
 - **Pasos:** con el sitio en `http://localhost:8000`, capturar las 21 páginas de la auditoría en
   `tools/ux/out/baseline/` y guardar la tabla en `tools/ux/out/baseline/tabla.txt`.
+- **Estado:** hecho el 2026-10-08, con el material genérico ya cargado. La carpeta no se versiona.
 - **Aceptación:** la tabla reproduce las cifras de la auditoría: ratio 0,54 a 1440 en índices,
   h1 de índices a 12 px y cubiertas deformadas (180 px de ancho por la altura del atributo HTML:
   780 con las cubiertas de la siembra, 1400 con las del material genérico).

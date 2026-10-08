@@ -1,0 +1,13 @@
+{
+  "name": "resenas-ux",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Capturas y métricas de la interfaz. Herramienta de desarrollo: no forma parte del despliegue.",
+  "license": "MIT",
+  "scripts": {
+    "capturar": "node capture.js"
+  },
+  "dependencies": {
+    "playwright-core": "1.64.0"
+  }
+}

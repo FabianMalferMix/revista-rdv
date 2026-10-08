@@ -1,0 +1,22 @@
+# nombre  ruta  [ancho]   («ancho» = se captura también a 1920×1080)
+home            /                                              ancho
+integrantes     /integrantes/                                  ancho
+integrante      /integrante/fernanda-soto/
+registros       /registros/
+registro        /registro/recital-nuevas-voces/
+publicaciones   /publicaciones/                                ancho
+publicacion     /publicacion/cuadernos-del-ruido/
+poemas          /poemas/                                       ancho
+poema           /poema/umbral/                                 ancho
+textos          /textos/                                       ancho
+articulo        /articulo/resena-la-casa-vacia/                ancho
+dossier         /dossier/
+agenda          /agenda/
+evento          /evento/recital-nuevas-voces-lanzamiento/
+trayectoria     /trayectoria/
+galeria         /galeria/
+buscar          /buscar/?q=casa
+enviar          /enviar/
+prensa          /prensa/
+aliados         /aliados/
+colecciones     /colecciones/

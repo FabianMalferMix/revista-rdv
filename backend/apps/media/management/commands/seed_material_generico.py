@@ -342,20 +342,26 @@ class Command(BaseCommand):
 
         # Integrantes: retrato 4:5.
         for m in Contributor.members():
-            asset = self._asset(
+            self._colocar(
+                m,
+                "photo",
                 f"Retrato provisional de {m.display_name}",
                 f"retrato-{m.slug}",
                 partial(_retrato, m.display_name, m.slug),
             )
-            self._asignar(m, "photo", asset)
 
-        # Eventos: afiche 3:4 y fotos de lectura 3:2.
+        # Eventos: afiche 3:4 y fotos de lectura 3:2, hasta completar el cupo. Un evento
+        # que ya trae sus fotos no recibe marcadores mezclados con ellas.
         for e in Event.objects.all():
-            afiche = self._asset(
-                f"Afiche provisional · {e.title}", f"afiche-{e.slug}", partial(_afiche, e, e.slug)
+            self._colocar(
+                e,
+                "poster",
+                f"Afiche provisional · {e.title}",
+                f"afiche-{e.slug}",
+                partial(_afiche, e, e.slug),
             )
-            self._asignar(e, "poster", afiche)
-            for n in range(1, fotos_por_evento + 1):
+            reales = e.photos.exclude(asset__credit=CREDITO).count()
+            for n in range(1, max(0, fotos_por_evento - reales) + 1):
                 foto = self._asset(
                     f"Foto provisional {n} · {e.title}",
                     f"foto-{e.slug}-{n}",
@@ -364,78 +370,88 @@ class Command(BaseCommand):
                 EventPhoto.objects.get_or_create(
                     event=e,
                     asset=foto,
-                    defaults={"caption": PIES_DE_FOTO[(n - 1) % len(PIES_DE_FOTO)], "position": n},
+                    defaults={
+                        "caption": PIES_DE_FOTO[(n - 1) % len(PIES_DE_FOTO)],
+                        "position": 100 + n,
+                    },
                 )
 
         # Publicaciones propias: cubierta 5:7.
         for p in Publication.objects.all():
             pie = " · ".join(x for x in (p.get_kind_display(), str(p.year or "")) if x)
-            asset = self._asset(
+            self._colocar(
+                p,
+                "cover",
                 f"Cubierta provisional · {p.title}",
                 f"cubierta-{p.slug}",
                 partial(_cubierta, p.title, "Repitentes del Verso", pie, p.slug),
             )
-            self._asignar(p, "cover", asset)
 
         # Registros: carátula 16:9.
         for r in Recording.objects.all():
-            asset = self._asset(
+            self._colocar(
+                r,
+                "poster",
                 f"Carátula provisional · {r.title}",
                 f"caratula-{r.slug}",
                 partial(_caratula_registro, r, r.slug),
             )
-            self._asignar(r, "poster", asset)
 
         # Aliados y medios: logo.
         for a in Partner.objects.all():
-            asset = self._asset(
+            self._colocar(
+                a,
+                "logo",
                 f"Logo provisional · {a.name}",
                 f"logo-aliado-{a.pk}",
                 partial(_logo, a.name, f"aliado:{a.pk}"),
             )
-            self._asignar(a, "logo", asset)
         for pm in PressMention.objects.all():
-            asset = self._asset(
+            self._colocar(
+                pm,
+                "logo",
                 f"Logo provisional · {pm.outlet}",
                 f"logo-medio-{pm.pk}",
                 partial(_logo, pm.outlet, f"medio:{pm.pk}"),
             )
-            self._asignar(pm, "logo", asset)
 
         # Textos y obras reseñadas.
         for art in Article.objects.all():
-            asset = self._asset(
+            self._colocar(
+                art,
+                "cover_image",
                 f"Imagen provisional · {art.title}",
                 f"texto-{art.slug}",
                 partial(_imagen_texto, art.title, art.get_type_display(), art.slug),
             )
-            self._asignar(art, "cover_image", asset)
         for w in Work.objects.all():
             autores = ", ".join(str(a) for a in w.authors.all()) or "Autoría por confirmar"
             pie = " · ".join(x for x in (w.get_kind_display(), str(w.publication_year or "")) if x)
-            asset = self._asset(
+            self._colocar(
+                w,
+                "cover_image",
                 f"Cubierta provisional · {w.title}",
                 f"obra-{w.slug}",
                 partial(_cubierta, w.title, autores, pie, f"obra:{w.slug}", fondo=BLANCO),
             )
-            self._asignar(w, "cover_image", asset)
 
         # Perfil del sitio: foto de grupo (og_image) y manifiesto si aún es el de la siembra.
         perfil = SiteProfile.load()
         nombres = [m.display_name for m in Contributor.members()]
-        grupo = self._asset(
+        self._colocar(
+            perfil,
+            "og_image",
             "Foto de grupo provisional · Repitentes del Verso",
             "foto-grupo",
             partial(_foto_grupo, nombres),
         )
-        self._asignar(perfil, "og_image", grupo)
         if len(perfil.manifesto.split()) < 40:
             perfil.manifesto = MANIFIESTO_GENERICO
             perfil.save(update_fields=["manifesto"])
             self.stdout.write("manifiesto: texto genérico aplicado (provisional)")
 
         self.stdout.write(
-            self.style.SUCCESS(f"material genérico listo: {self.creados} imágenes nuevas")
+            self.style.SUCCESS(f"material genérico listo: {self.creados} imágenes dibujadas")
         )
 
     # ── helpers ──
@@ -464,12 +480,14 @@ class Command(BaseCommand):
         self.creados += 1
         return asset
 
-    def _asignar(self, obj, campo, asset):
-        """Asigna solo si el campo está vacío o contiene otro marcador. Material real: intacto."""
+    def _colocar(self, obj, campo, alt_text, nombre, generar):
+        """Dibuja y asigna el marcador SOLO si el campo está vacío o ya contiene otro
+        marcador. Si hay material real, no se toca y ni siquiera se crea el recurso:
+        un marcador sin usar sería ruido en la biblioteca de medios."""
         actual = getattr(obj, campo)
-        if actual is not None and actual.pk == asset.pk:
-            return
         if actual is not None and not any(m in (actual.credit or "").lower() for m in MARCADORES):
             return
-        setattr(obj, campo, asset)
-        obj.save(update_fields=[campo])
+        asset = self._asset(alt_text, nombre, generar)
+        if actual is None or actual.pk != asset.pk:
+            setattr(obj, campo, asset)
+            obj.save(update_fields=[campo])
