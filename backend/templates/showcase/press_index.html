@@ -7,13 +7,16 @@
 
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Prensa" cuenta=mentions|length singular="mención" plural="menciones" dek="Entrevistas, reseñas y menciones del colectivo en medios." %}
-  <ul class="press-list">
+  <ul class="filas">
     {% for m in mentions %}
-      <li class="press-item">
-        <span class="kicker">{{ m.get_kind_display }} · {{ m.outlet }}{% if m.published_on %} · {{ m.published_on|date:"M Y" }}{% endif %}</span>
-        <h2>{% if m.url %}<a href="{{ m.url }}" rel="noopener" target="_blank">{{ m.title }} ↗</a>{% else %}{{ m.title }}{% endif %}</h2>
-        {% if m.quote %}<blockquote class="press-quote">«{{ m.quote }}»</blockquote>{% endif %}
-        {% if m.author %}<span class="muted">Por {{ m.author }}</span>{% endif %}
+      <li class="fila">
+        {% if m.published_on %}<time class="meta fila-fecha" datetime="{{ m.published_on|date:'Y-m-d' }}">{{ m.published_on|date:"M Y" }}</time>{% endif %}
+        <div class="fila-cuerpo">
+          <span class="kicker">{{ m.get_kind_display }} · {{ m.outlet }}</span>
+          <h2 class="fila-titulo">{% if m.url %}<a href="{{ m.url }}" rel="noopener" target="_blank">{{ m.title }} ↗</a>{% else %}{{ m.title }}{% endif %}</h2>
+          {% if m.quote %}<blockquote class="press-quote">«{{ m.quote }}»</blockquote>{% endif %}
+        </div>
+        {% if m.author %}<p class="meta fila-pie">Por {{ m.author }}</p>{% endif %}
       </li>
     {% empty %}
       <li class="empty">Aún no hay menciones registradas.</li>

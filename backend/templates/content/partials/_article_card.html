@@ -1,10 +1,18 @@
-<li class="article-card">
-  <span class="kicker">
-    {% if a.section and a.seccion_aporta %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
-  </span>
-  <h3><a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a></h3>
-  {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
-  <span class="meta">
-    {% for c in a.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if a.authors.all %} · {% endif %}{{ a.reading_time }} min · {{ a.published_at|date:"j M Y" }}
-  </span>
+{% comment %}
+   Fila tipográfica: fecha · cejilla, título y bajada · autoría. Toda la fila es el
+   enlace del título (su ::after la cubre); la sección y las firmas quedan por encima y
+   siguen siendo enlaces propios. Ver «Filas» en site.css.
+{% endcomment %}
+<li class="article-card fila">
+  {% if a.published_at %}<time class="meta fila-fecha" datetime="{{ a.published_at|date:'Y-m-d' }}">{{ a.published_at|date:"j M Y" }}</time>{% endif %}
+  <div class="fila-cuerpo">
+    <span class="kicker">
+      {% if a.section and a.seccion_aporta %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
+    </span>
+    <h3 class="fila-titulo"><a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a></h3>
+    {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
+  </div>
+  <p class="meta fila-pie">
+    {% for c in a.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if a.authors.all %} · {% endif %}{{ a.reading_time }} min
+  </p>
 </li>

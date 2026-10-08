@@ -438,6 +438,49 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   con 2 registros cabe en una pantalla; cubiertas ≥ 240 px; `metrics.py` ratio ≥ 0,85 en los cuatro índices.
 - **Tests:** `tests/test_ui_ux.py::test_article_card_title_is_h3` sigue; `tests/test_recordings.py`:
   el índice no emite `player-consent` (sí el detalle); `tests/test_embed_consent.py` sigue.
+- **Estado:** hecho (paso 10 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **La fila se dispone según su contenedor**, no según la ventana (`container:filas / inline-size`
+     en la lista, clase `.filas`). La misma parcial vive en el carril ancho, en el de lectura (ficha
+     de integrante) y en un teléfono: con menos de 700 px de lista el título va arriba y los datos
+     debajo; con 700 o más, tres columnas `6.5rem / 1fr / fit-content(17rem)`.
+  2. **En Poemas el primer verso tiene su propia columna** en el carril ancho (lista de 1000 px o
+     más). Bajo el título, la fila medía 82 px y cabían siete; en columna mide 58 y caben diez. Es el
+     «índice de primeros versos» de una antología. Sale de `poem.body` con el filtro `primer_verso`
+     (`apps/content/templatetags/versos.py`, que ya trae `primeros_versos` para el ticket 4.3). En un
+     listado donde todo son poemas la cejilla «Poema» no se repite (`sin_cejilla`); en una colección sí.
+  3. **Tokens nuevos:** `--paper-2:#eef4fb` (la hoja de la fila señalada) y `--line` (filete
+     decorativo: tinta al 22 % con `color-mix()`, y `#adbac8` para quien no lo conoce). Da 1,58:1
+     donde `--border` daba 1,17:1. La hoja sobresale 16 px del texto y la pinta `::before`; una fila
+     sin enlace (un hito) no reacciona, gracias a `:has(.fila-titulo a)`.
+  4. **Trayectoria:** cada año es un bloque a dos columnas desde 1040 px, con el número en Syne a la
+     izquierda (pegajoso) y sus filas a la derecha. La primera columna de la fila dice cuándo, o qué
+     es si no tiene día («Hito», «Publicación»); el tipo y la ciudad van a la derecha, en caja baja.
+     Las cejillas magenta salen de esta página: había una por fila.
+  5. **Registros:** `auto-fit` en vez de `auto-fill` (con dos registros, dos tarjetas de 646 px y no
+     dos de 421 con un hueco) y tope de 720 px por tarjeta. La marca de reproducción es un bloque
+     blanco cuadrado en la esquina, dibujado con CSS: no es un botón y no es un círculo (el ticket
+     3.6 pide que no quede `border-radius:50%`). `test_recording_index_lists_published_only` afirmaba
+     `player-frame` en el índice: ahora hay una prueba que afirma lo contrario.
+  6. **Publicaciones:** `minmax(240px,1fr)` y, con `:has()`, cuatro columnas si hay cuatro títulos
+     o menos y tres en el índice si hay tres o menos (cubiertas de 421 px). Sin `:has()` queda la
+     rejilla general. La sombra pasa a magenta al señalar la cubierta.
+  7. **Galería:** cada álbum es una hoja de contactos de hasta tres fotos (`.hoja`, `2fr 1fr`, la
+     proporción 9:4 la fija la hoja), dos álbumes por fila. Solo la primera foto lleva texto
+     alternativo. El crédito y el contador siguen en 3.5 y 5.3.
+  8. **`responsive_img` gana `decorativa=True`** para emitir `alt=""`. Pasar `alt=""` no sirve: cae
+     al texto del recurso, y de eso dependen las fotos de evento cuyo pie está en blanco. El ticket
+     3.4 está corregido en consecuencia.
+  9. **Integrantes** no cambia en este paso: la rejilla de 220 px llegó con el 2.1 y los retratos
+     4:5 son del 3.6.
+  Medido a 1440 con `tools/ux`: el texto ocupa el 92 % del ancho en Poemas, Textos, Trayectoria y
+  Prensa (era el 75 %) y el 86 % en Agenda. En Galería, Publicaciones y Registros la métrica de
+  texto no sube porque lo que ocupa el carril son imágenes: cubiertas de 242 a 421 px, miniaturas de
+  registro de 646 px, hojas de 646 px. Con doce poemas, `/poemas/` enseña diez filas en 900 px de
+  alto si los títulos caben en una línea (paso de 57,9 px desde y=300); con un título a dos líneas,
+  nueve enteras y la décima asomando. `/registros/` con dos registros termina en y=812. Sin scroll
+  horizontal a 320, 390, 768, 1024, 1440 y 1920.
+  Queda a la vista y es de otro paso: en la portada, tres cubiertas en una rejilla de cuatro (4.3);
+  en la ficha de integrante, su propio nombre repetido en cada fila (2.4).
 
 #### 2.3 Serif autoalojada, escala tipográfica con tokens y mono reducida (D3, D4)
 - **Hallazgos:** TIP-2, TIP-3, TIP-5, TIP-6, TIP-7 (medida), D3, D4.
@@ -535,7 +578,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Hallazgos:** IMG-2, COL-3, COM-4, POR-7, CON-5.
 - **Archivos:** `templates/media/partials/_player.html`; `site.css` 241-262; `static/js/embeds.js`
   (solo leerlo: al pulsar vacía el contenedor, así que el póster desaparece solo).
-- **Pasos:** dentro de `.player-consent`, `{% if r.poster %}{% responsive_img r.poster css_class="player-poster riso-duo--azul" sizes="(max-width:800px) 100vw, 880px" lazy=False alt="" %}{% endif %}`
+- **Pasos:** dentro de `.player-consent`, `{% if r.poster %}{% responsive_img r.poster css_class="player-poster riso-duo--azul" sizes="(max-width:800px) 100vw, 880px" lazy=False decorativa=True %}{% endif %}`
   en posición absoluta cubriendo la placa; si no hay póster, carátula tipográfica: título en Syne
   `clamp(24px,3vw,44px)` en papel sobre azul + meta «Video · Recital · 2026» en `.rotulo`; botón
   `.embed-play` circular de 64 px blanco con «▶», en panel sólido abajo-izquierda junto al aviso de

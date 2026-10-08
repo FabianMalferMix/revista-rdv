@@ -1,8 +1,18 @@
-<li class="article-card poem-card">
-  <span class="kicker">Poema</span>
-  <h3><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h3>
-  {% if p.epigraph %}<p class="dek poem-epigraph">{{ p.epigraph }}</p>{% endif %}
-  <span class="meta">
-    {% for c in p.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.authors.all %} · {% endif %}{{ p.published_at|date:"j M Y" }}{% if p.published_recording %} · ♫ con registro{% endif %}
-  </span>
+{% load versos %}
+{% comment %}
+   Fila de poema. Bajo el título va su primer verso, como en el «índice de primeros
+   versos» de una antología: es lo que permite reconocer un poema sin abrirlo. Sale del
+   cuerpo que la consulta ya trae, no cuesta ninguna consulta más.
+   `sin_cejilla`: en un listado donde todo son poemas, «Poema» en cada fila no dice nada.
+{% endcomment %}
+<li class="article-card fila fila--poema">
+  {% if p.published_at %}<time class="meta fila-fecha" datetime="{{ p.published_at|date:'Y-m-d' }}">{{ p.published_at|date:"j M Y" }}</time>{% endif %}
+  <div class="fila-cuerpo">
+    {% if not sin_cejilla %}<span class="kicker">Poema</span>{% endif %}
+    <h3 class="fila-titulo"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h3>
+    {% with verso=p.body|primer_verso %}{% if verso %}<p class="fila-verso">{{ verso|truncatechars:90 }}</p>{% endif %}{% endwith %}
+  </div>
+  <p class="meta fila-pie">
+    {% for c in p.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if p.authors.all %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
+  </p>
 </li>

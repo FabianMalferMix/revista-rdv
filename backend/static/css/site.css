@@ -49,6 +49,15 @@
      borde de un campo de formulario— necesita 3:1 (WCAG 1.4.11): --edge da 3,35:1
      sobre el papel y 4,18:1 sobre el blanco del campo. */
   --edge:#5e7ea7;
+  /* Una hoja más clara que el papel (1,13:1): el fondo de la fila que se está
+     señalando. Marca un estado; no es una superficie para texto largo. */
+  --paper-2:#eef4fb;
+  /* Filete decorativo: SEPARA, no delimita (para eso está --edge). Es tinta al 22 %, y
+     por eso se adapta a lo que tenga debajo: papel, banda blanca o amarillo. Este valor
+     es el que resulta sobre el papel, para los navegadores que no conocen color-mix();
+     los demás reciben el de más abajo. Sustituye a --border (1,17:1) allí donde la línea
+     tiene que verse: da 1,58:1. */
+  --line:#adbac8;
 
   /* LIENZO. El sitio tenía un solo contenedor de 820 px para todo: cabecera, pie,
      rejillas, índices y lectura. El texto ocupaba el 54 % de una pantalla de 1440 y el
@@ -74,6 +83,9 @@
   /* Espacio: una escala, para que el aire entre secciones sea una decisión y no la
      suma de los márgenes que casualmente se tocan. */
   --s1:8px; --s2:16px; --s3:24px; --s4:40px; --s5:64px; --s6:96px; --s7:144px;
+}
+@supports (color:color-mix(in srgb, #000 50%, transparent)){
+  :root{--line:color-mix(in srgb, var(--ink) 22%, transparent)}
 }
 /* En monitores muy grandes el carril ancho crece; el de lectura, no. */
 @media (min-width:1600px){
@@ -170,9 +182,9 @@ a, button, summary, input, textarea, select, .btn, .tag{
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
 .brand, .hero-tagline,
 .index-head h1, .article h1, .poem h1, .dossier-head h1,
-.article-card h3, .featured h2, .next-event h2,
-.recording-card h2, .collection-list h2, .press-item h2, .event-card h2,
-.member-name, .pub-title, .album-title{
+.article-card h3, .fila-titulo, .featured h2, .next-event h2,
+.recording-card h2, .collection-list h2, .event-card h2,
+.member-name, .pub-title, .album-title, .year-mark, .rec-caratula{
   font-family:var(--display); letter-spacing:-.01em;
 }
 
@@ -283,22 +295,73 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* Datos: autoría, fecha, lugar, rol. En caja baja, que se lee de corrido. */
 .meta, .muted, .member-role{font-family:var(--mono); font-size:13px; color:var(--muted)}
 
-/* Listado de artículos */
-.article-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:28px}
-.article-card{border-bottom:1px solid var(--border); padding-bottom:24px}
+/* Filas. Los índices de textos, poemas, trayectoria y prensa son listas de filas
+   tipográficas: un dato a la izquierda (cuándo), el título en el centro y otro dato a
+   la derecha (quién, dónde). Eran tarjetas apiladas con todo pegado a la izquierda: en
+   el carril ancho dejaban dos tercios de la pantalla vacíos y cabían dos por pantalla.
+   · La lista es un CONTENEDOR: la fila se dispone según el ancho que tiene, no según
+     el de la ventana. La misma parcial vive en el carril ancho (1320 px), en el de
+     lectura (780) y en un teléfono.
+   · Toda la fila es el enlace de su título: el ::after del enlace la cubre. Los enlaces
+     secundarios —sección, firmas— quedan por encima y siguen siendo propios. Antes solo
+     era pulsable el texto del título.
+   · El estado se marca con una hoja más clara bajo la fila, que sobresale 16 px del
+     texto para que no quede pegado a su borde. La pinta ::before, detrás del contenido;
+     `isolation` hace que ese «detrás» sea detrás del texto y no detrás de la página.
+     Una fila sin enlace (un hito) no reacciona: no hay adónde ir. */
+.filas{list-style:none; padding:0; margin:0; container:filas / inline-size}
+.fila{position:relative; isolation:isolate; display:grid;
+  grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"cuerpo cuerpo" "pie fecha";
+  gap:8px 16px; align-items:baseline; padding-block:16px; border-top:1px solid var(--line)}
+.fila:last-child{border-bottom:1px solid var(--line)}
+.fila::before{content:""; position:absolute; z-index:-1; inset:0 calc(-1 * var(--s2));
+  background-color:transparent; transition:background-color var(--dur-base) var(--ease)}
+.fila:has(.fila-titulo a):hover::before, .fila:focus-within::before{background-color:var(--paper-2)}
+.fila-cuerpo{grid-area:cuerpo; min-width:0}
+.fila-fecha{grid-area:fecha; white-space:nowrap}
+.fila-pie{grid-area:pie; margin:0}
+/* El título lleva `.article-card h3` en la regla de la familia tipográfica porque es la
+   etiqueta que emiten las dos parciales de tarjeta; el tamaño es de la fila. */
+.fila-titulo{margin:0; font-size:22px; font-weight:700; line-height:1.15; overflow-wrap:break-word}
+.fila-titulo a{text-decoration:none; color:var(--ink)}
+.fila-titulo a::after{content:""; position:absolute; inset:0 calc(-1 * var(--s2))}
+.fila .kicker{display:block; margin:0 0 4px}
+.fila .dek{margin:6px 0 0}
+/* Los enlaces secundarios van por encima de la capa del título, con una zona de pulsado
+   de 25 px de alto en vez de los 13 de su letra (WCAG 2.5.8 pide 24). */
+.fila .kicker a, .fila-pie a{position:relative; z-index:1; padding-block:6px}
+/* Primer verso del poema: lo que permite reconocerlo sin abrirlo. */
+.fila-verso{margin:4px 0 0; font-style:italic; font-size:17px; line-height:1.4; color:var(--muted)}
+.fila-marca{white-space:nowrap}
+.filas + .pagination{border-top:0; padding-top:0}
+/* Cuando la lista sigue a la cabecera del índice, el filete de la cabecera ES el de la
+   primera fila: dos líneas a 32 px una de otra se leían como un error. */
+.index-head + .filas > .fila:first-child{border-top:0}
+.index-head:has(+ .filas){margin-bottom:0; border-bottom-color:var(--line)}
+@container filas (min-width:700px){
+  .fila{grid-template-columns:6.5rem minmax(0,1fr) fit-content(17rem);
+    grid-template-areas:"fecha cuerpo pie"; column-gap:24px; padding-block:14px}
+  .fila-titulo{font-size:26px}
+  .fila-pie{text-align:right}
+}
+/* En el carril ancho el primer verso deja de ir bajo el título y toma su propia
+   columna: la fila vuelve a medir una línea y caben diez poemas por pantalla. La última
+   columna es de ancho fijo para que los versos de todas las filas arranquen en la misma
+   vertical. */
+@container filas (min-width:1000px){
+  .fila--poema{grid-template-columns:6.5rem minmax(0,1fr) 15rem}
+  .fila--poema .fila-cuerpo{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,5fr);
+    column-gap:24px; align-items:baseline}
+  .fila--poema .kicker{grid-column:1 / -1}
+  .fila--poema .fila-verso{margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+}
 .kicker a{color:var(--accent); text-decoration:none}
 .kicker a:hover{text-decoration:underline}
-/* h3: es la etiqueta que emiten las dos parciales. Con `h2` estas tres reglas
-   no se aplicaban a nada y el título caía al estilo global de enlace —magenta
-   y subrayado— y al cuerpo por defecto del navegador para un h3, 18,7px, que
-   apenas supera los 16px del resumen. A 26px la proporción es 1,63. */
-.article-card h3{margin:8px 0 6px; font-size:26px; line-height:1.15}
-.article-card h3 a{text-decoration:none; color:var(--ink)}
 /* Títulos que son enlaces. En reposo no se subrayan: ya se leen como título. Al pasar
    el puntero, el mismo subrayado magenta que el resto de los enlaces. Diez reglas
    :hover hacían lo mismo —pasar a magenta— cada una por su cuenta. */
-.article-card h3 a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
-.next-event h2 a:hover, .recording-card h2 a:hover, .press-item h2 a:hover, .featured h2 a:hover,
+.fila-titulo a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
+.next-event h2 a:hover, .recording-card h2 a:hover, .featured h2 a:hover,
 .member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title{
   text-decoration:underline; text-decoration-color:var(--accent);
   text-decoration-thickness:2px; text-underline-offset:4px}
@@ -362,8 +425,11 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .btn--primary, .form button{background:var(--ink); color:var(--paper)}
 .btn--primary:hover, .form button:hover{
   background:var(--accent); border-color:var(--accent); color:#fff}
-.event-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:26px}
-.event-card{display:flex; gap:18px; border-bottom:1px solid var(--border); padding-bottom:22px}
+/* Dos columnas en el carril ancho. `auto-fit`: con una sola fecha anunciada la tarjeta
+   ocupa la fila en vez de dejar media pantalla vacía a su derecha. */
+.event-list{list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%, 440px),1fr)); gap:var(--s3) 28px}
+.event-card{display:flex; gap:18px; border-bottom:1px solid var(--line); padding-bottom:var(--s3)}
 .event-date{min-width:64px; text-align:center; border:1px solid var(--border); border-radius:4px;
   padding:8px 6px; height:fit-content; background:var(--surface)}
 .event-day{display:block; font-size:26px; font-weight:700; line-height:1.1}
@@ -382,19 +448,38 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .home-block.next-event{padding:16px 22px; max-width:var(--measure); margin-block:var(--s4)}
 .next-event h2{margin:6px 0 4px; font-size:22px}
 .next-event h2 a{text-decoration:none; color:var(--ink)}
-.timeline-year{margin:26px 0}
-.year-mark{font-family:var(--mono); font-size:15px; letter-spacing:.1em; color:var(--ink);
-  border-bottom:1px solid var(--border); padding-bottom:6px}
-.timeline-items{list-style:none; padding:0; margin:12px 0 0; display:flex; flex-direction:column; gap:14px}
-.timeline-items a{font-size:17px}
-.timeline-items .milestone{padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:4px}
+/* Trayectoria: cada año es un bloque, con su número a la izquierda y sus filas al lado.
+   El año iba en monoespaciada de 15 px sobre una lista de enlaces sueltos. */
+.timeline-year{margin:var(--s4) 0 0}
+.year-mark{margin:0 0 var(--s2); font-size:clamp(28px,3.4vw,44px); font-weight:700; line-height:1;
+  letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+/* Desde 1040 px: por debajo, la columna de filas mediría menos de 700 y cada fila se
+   apilaría como en un teléfono teniendo sitio de sobra; ahí el año va encima. */
+@media (min-width:1040px){
+  .timeline-year{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,3fr);
+    column-gap:var(--s3); align-items:start; margin-top:var(--s5)}
+  /* El número acompaña mientras se recorren sus filas. */
+  .year-mark{position:sticky; top:var(--s3); margin:0; padding-top:4px}
+}
 .photo-grid, .album-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px}
-.album-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:32px 24px}
-.photo-grid img, .album-grid img{width:100%; height:auto; aspect-ratio:8/5; object-fit:cover;
+/* Galería: dos álbumes por fila en el carril ancho. `auto-fit` reparte el ancho entre
+   los que haya; el tope evita que un álbum solo se estire de lado a lado. */
+.album-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%, 440px),1fr)); gap:var(--s4) 28px}
+.album-card{max-width:880px}
+.photo-grid img{width:100%; height:auto; aspect-ratio:8/5; object-fit:cover;
   border:1px solid var(--border); border-radius:4px}
 .album-card a{display:flex; flex-direction:column; gap:6px; text-decoration:none; color:var(--ink)}
-.album-title{font-weight:700; font-size:17px; line-height:1.25}
+.album-title{font-weight:700; font-size:22px; line-height:1.2}
+/* Hoja de contactos: hasta tres fotos del álbum, la primera a doble tamaño (2fr / 1fr).
+   La proporción la fija la hoja y no cada foto: con 9:4 las dos pequeñas salen a 3:2 y
+   la grande también. Con una o dos fotos, las que hay se reparten la hoja entera. */
+.hoja{display:grid; grid-template-columns:2fr 1fr; grid-template-rows:repeat(2,minmax(0,1fr));
+  gap:6px; aspect-ratio:9/4; margin-bottom:6px}
+.hoja img{width:100%; height:100%; min-height:0; object-fit:cover}
+.hoja img:first-child{grid-row:span 2}
+.hoja img:nth-child(2):last-child{grid-row:span 2}
+.hoja img:only-child{grid-column:1 / -1}
 .photo-grid a{display:block; cursor:zoom-in}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
@@ -432,37 +517,79 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .embed-note{margin:0; color:#fff; max-width:46ch}
 audio, video{width:100%; margin:6px 0}
 video{border:1px solid var(--border); border-radius:4px; background:#000}
-/* En el carril ancho los registros van en rejilla: en una sola columna cada placa
-   ocupaba la pantalla entera. */
+/* Índice de registros: una rejilla de miniaturas 16:9 con título. El índice enseña y la
+   ficha reproduce: aquí no hay reproductores, así que la página no carga nada de un
+   tercero ni mide una pantalla por registro. `auto-fit` reparte el ancho entre los que
+   haya; el tope evita que un registro solo se estire de lado a lado.
+   Toda la tarjeta es el enlace de su título; el evento sigue siendo un enlace propio. */
 .recording-list{list-style:none; padding:0; margin:18px 0 0;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%, 380px),1fr)); gap:40px 28px}
-.recording-card h2{margin:10px 0 4px; font-size:22px}
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%, 380px),1fr)); gap:var(--s4) 28px}
+.recording-card{position:relative; max-width:720px}
+.recording-card h2{margin:14px 0 4px; font-size:22px}
 .recording-card h2 a{text-decoration:none; color:var(--ink)}
+.recording-card h2 a::after{content:""; position:absolute; inset:0}
+.recording-card .meta{margin:0}
+.recording-card .meta a{position:relative; z-index:1; padding-block:6px}
+.rec-miniatura{position:relative; aspect-ratio:16/9; overflow:hidden; background:var(--caratula)}
+.rec-miniatura img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+/* Sin cartel, la placa lleva el título: nunca un rectángulo azul vacío. */
+.rec-caratula{position:absolute; inset:0; padding:var(--s3) var(--s3) 72px;
+  font-weight:700; font-size:clamp(20px,2.4vw,30px); line-height:1.1; color:#fff}
+/* La marca de reproducción es un dibujo, no un botón: aquí no se reproduce nada, se va
+   a la ficha. Un bloque blanco en la esquina con su triángulo, que pasa a magenta al
+   señalar la tarjeta. */
+.rec-miniatura::before{content:""; position:absolute; z-index:1; left:0; bottom:0; width:52px; height:52px;
+  background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
+.rec-miniatura::after{content:""; position:absolute; z-index:1; left:20px; bottom:17px; width:14px; height:18px;
+  background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
+  transition:background-color var(--dur-base) var(--ease)}
+.recording-card:hover .rec-miniatura::before,
+.recording-card:focus-within .rec-miniatura::before{background-color:var(--accent)}
+.recording-card:hover .rec-miniatura::after,
+.recording-card:focus-within .rec-miniatura::after{background-color:#fff}
 
 /* Catálogo, prensa y aliados */
 .pub-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:20px}
-/* Con sitio, la cubierta se enseña como un objeto: unos 240 px. En pantalla estrecha
+/* Con sitio, la cubierta se enseña como un objeto: 240 px o más. En pantalla estrecha
    siguen cabiendo dos por fila. */
 @media (min-width:720px){
-  .pub-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:36px 28px}
+  .pub-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:var(--s4) 28px}
 }
+/* Un catálogo corto no se arrincona a la izquierda: con cuatro títulos o menos, cuatro
+   columnas; en el índice, con tres o menos, tres. Donde :has() no existe queda la
+   rejilla de arriba, que es correcta. */
+@media (min-width:900px){
+  .pub-grid:not(:has(> :nth-child(5))){grid-template-columns:repeat(4,minmax(0,1fr))}
+  .lienzo > .pub-grid:not(:has(> :nth-child(4))){grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* `min-width:0` y el corte de palabra: en un teléfono caben dos cubiertas de 165 px, y un
+   título de una sola palabra larga («Correspondencias») ensanchaba su columna hasta
+   salirse del carril. */
+.pub-card{min-width:0}
 .pub-card a{display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink)}
+/* La cubierta como objeto: sin esquinas redondeadas y con una sombra plana, la de un
+   libro apoyado sobre el papel. Al señalarla, la sombra pasa a magenta. */
 .pub-card img, .pub-cover-fallback{width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
-  border:1px solid var(--border); border-radius:3px; background:var(--surface)}
+  border:1px solid var(--line); background:var(--surface); margin-bottom:var(--s2);
+  box-shadow:8px 8px 0 var(--line); transition:box-shadow var(--dur-base) var(--ease)}
+.pub-card a:hover img, .pub-card a:hover .pub-cover-fallback,
+.pub-card a:focus-visible img, .pub-card a:focus-visible .pub-cover-fallback{box-shadow:8px 8px 0 var(--accent)}
 /* Publicación sin cubierta: una sobrecubierta tipográfica con su título. Antes era una
    caja blanca con la palabra «LIBRO», que no decía de qué libro. */
 .pub-cover-fallback{display:flex; align-items:flex-start; padding:16px 14px; background:var(--paper);
-  border-top:6px solid var(--accent); font-family:var(--display); font-weight:700; font-size:17px;
-  line-height:1.15; color:var(--ink); overflow-wrap:anywhere}
-.pub-title{font-weight:700; line-height:1.25}
+  border-top:6px solid var(--accent); font-family:var(--display); font-weight:700;
+  font-size:clamp(17px,1.9vw,28px); line-height:1.15; color:var(--ink); overflow-wrap:anywhere}
+.pub-title{font-weight:700; font-size:17px; line-height:1.2; overflow-wrap:anywhere}
+@media (min-width:720px){
+  .pub-title{font-size:20px}
+}
 .pub-cover{max-width:240px; border:1px solid var(--border); border-radius:3px; margin:8px 0 16px}
 .buy-links{display:flex; flex-wrap:wrap; gap:10px}
-.press-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:30px}
-.press-item h2{margin:6px 0; font-size:22px}
-.press-item h2 a{text-decoration:none; color:var(--ink)}
 .press-quote{margin:10px 0; padding-left:18px; border-left:3px solid var(--ink);
   font-style:italic; font-size:18px; max-width:var(--medida)}
+/* Dentro de una fila la cita no necesita su filete: ya la separan las líneas de la fila. */
+.fila .press-quote{margin:8px 0 0; padding-left:0; border-left:0}
 .partner-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:22px}
 .partner-item{display:flex; gap:14px; align-items:flex-start}
 .partner-logo{width:64px; height:64px; object-fit:contain; border:1px solid var(--border);

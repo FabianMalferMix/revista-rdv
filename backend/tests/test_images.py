@@ -54,6 +54,26 @@ def test_responsive_img_tag_renders_all_attrs():
     assert 'class="cover"' in html and 'alt="alt X"' in html
 
 
+def test_responsive_img_decorativa_emite_alt_vacio():
+    """Una imagen que acompaña a un texto que ya la nombra se declara decorativa."""
+    a = _asset("d.jpg", (300, 200), alt="alt del recurso")
+    html = Template("{% load images %}{% responsive_img a decorativa=True %}").render(
+        Context({"a": a})
+    )
+    assert 'alt=""' in html and "alt del recurso" not in html
+
+
+def test_responsive_img_con_alt_vacio_cae_al_del_recurso():
+    """Las fotos de un evento pasan su pie como `alt`; si el pie está en blanco debe
+    quedar el texto alternativo del recurso, no una imagen muda. Por eso lo decorativo
+    se pide con su propio argumento y no con `alt=""`."""
+    a = _asset("e.jpg", (300, 200), alt="alt del recurso")
+    html = Template("{% load images %}{% responsive_img a alt=pie %}").render(
+        Context({"a": a, "pie": ""})
+    )
+    assert 'alt="alt del recurso"' in html
+
+
 def test_responsive_img_hero_is_not_lazy():
     a = _asset()
     html = Template("{% load images %}{% responsive_img a lazy=False %}").render(Context({"a": a}))

@@ -258,7 +258,9 @@ def _caratula_registro(registro, semilla):
     )
     _escribir(img, (100, 120), f"REGISTRO · {_may(registro.get_kind_display())}", 40, PAPEL)
     _escribir(img, (100, 220), registro.title, 96, PAPEL, ancho_max=1100, interlinea=1.0, peso=700)
-    _etiqueta(img, "carátula provisional · reemplazar", color=PAPEL)
+    # A 300 px del borde: la esquina inferior izquierda es de la marca de reproducción que
+    # el índice de registros dibuja sobre la miniatura.
+    _etiqueta(img, "carátula provisional · reemplazar", color=PAPEL, posicion=(300, 1005))
     return img, "JPEG"
 
 

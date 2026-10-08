@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}Registros — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Registros en audio y video de lecturas y recitales del colectivo.{% endblock %}
@@ -8,16 +9,27 @@
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Registros" cuenta=recordings.paginator.count singular="registro" plural="registros" dek="Lecturas y recitales en audio y video." %}
   <p class="meta">También como <a href="{% url 'recordings_feed' %}">podcast (RSS)</a></p>
+  {% comment %}
+     El índice enseña y la ficha reproduce. Aquí cada registro es una miniatura con su
+     título: el reproductor (y con él la conexión con YouTube o Vimeo) vive solo en la
+     ficha. Antes la página era una pila de reproductores, uno por pantalla.
+     Toda la tarjeta es el enlace del título; el evento sigue siendo un enlace propio.
+  {% endcomment %}
   <ul class="recording-list">
     {% for r in recordings %}
       <li class="recording-card">
-        {% include "media/partials/_player.html" %}
+        <div class="rec-miniatura">
+          {% if r.poster %}
+            {% responsive_img r.poster sizes="(max-width: 720px) 92vw, (max-width: 1400px) 46vw, 660px" %}
+          {% else %}
+            {# Sin cartel, la placa lleva el título: nunca un rectángulo azul vacío. #}
+            <span class="rec-caratula" aria-hidden="true">{{ r.title }}</span>
+          {% endif %}
+        </div>
         <h2><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>
-        <span class="meta">
-          {{ r.get_kind_display }}
-          {% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}
-          {% if r.event %} · <a href="{{ r.event.get_absolute_url }}">{{ r.event.title }}</a>{% endif %}
-        </span>
+        <p class="meta">
+          {{ r.get_kind_display }}{% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}{% if r.event %} · <a href="{{ r.event.get_absolute_url }}">{{ r.event.title }}</a>{% endif %}
+        </p>
       </li>
     {% empty %}
       <li class="empty">Aún no hay registros publicados.</li>
