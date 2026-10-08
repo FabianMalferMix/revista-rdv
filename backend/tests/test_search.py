@@ -1,5 +1,7 @@
 """Vista de búsqueda FTS en vivo (htmx): artículos y poemas — Lotes F2-6 / F3-1."""
 
+import re
+
 import pytest
 from django.urls import reverse
 
@@ -110,3 +112,34 @@ def test_search_with_htmx_returns_fragment_only(client, make_article):
     assert "Reseña fragmento" in html
     assert "<h1>Búsqueda</h1>" not in html  # sin cabecera de página
     assert "</html>" not in html  # sin layout
+
+
+# ── Panel en vivo y página de búsqueda (backlog UX, ticket 1.5) ─────────────
+
+
+def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client, make_article):
+    """El panel flotante es efímero; el enlace lleva a una página con URL estable.
+
+    Va FUERA de la lista: otra prueba cuenta los <li> de `.search-list` para acotar el
+    número de resultados, y un enlace dentro lo falsearía.
+    """
+    _publish(make_article(slug="fts-salida", title="Reseña con salida"))
+    url = reverse("content:search")
+    html = client.get(url, {"q": "salida"}, headers={"HX-Request": "true"}).content.decode()
+    assert 'class="search-all"' in html
+    assert f'href="{url}?q=salida"' in html
+    lista = html[html.index('<ul class="search-list">') : html.index("</ul>")]
+    assert "search-all" not in lista
+
+
+def test_la_pagina_de_busqueda_no_repite_el_enlace_a_si_misma(client, make_article):
+    _publish(make_article(slug="fts-misma", title="Reseña en página"))
+    html = client.get(reverse("content:search"), {"q": "página"}).content.decode()
+    assert "search-all" not in html
+
+
+def test_la_pagina_de_busqueda_tiene_un_solo_campo(client):
+    """Tenía dos a la vista: el de la cabecera con su panel y el de la página."""
+    html = client.get(reverse("content:search")).content.decode()
+    assert len(re.findall(r'<input[^>]*name="q"', html)) == 1
+    assert 'id="search-results"' not in html

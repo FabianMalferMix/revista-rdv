@@ -33,6 +33,14 @@
   }
   </script>
 
+  {% comment %}
+     Syne se pide ya, sin esperar a que el navegador lea la hoja de estilos y descubra
+     que la necesita: es la fuente del nombre del sitio y de todos los títulos. La URL
+     debe ser EXACTAMENTE la que resuelve el url() del CSS (sin parámetro de versión), o
+     el archivo se descargaría dos veces. `crossorigin` es obligatorio en una precarga
+     de fuente aunque sea del mismo origen.
+  {% endcomment %}
+  <link rel="preload" href="{% static 'fonts/syne.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/site.css' %}{{ version_estaticos }}">
   {# htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. #}
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
@@ -49,10 +57,11 @@
          Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
          el input hace la búsqueda en vivo en el overlay.
       {% endcomment %}
+      {% block buscador %}
       <form class="search" role="search" action="{% url 'content:search' %}">
-        <input type="search" name="q" placeholder="Buscar textos…"
+        <input type="search" name="q" placeholder="Buscar textos…" minlength="2"
                hx-get="{% url 'content:search' %}"
-               hx-trigger="keyup changed delay:300ms, search"
+               hx-trigger="input changed delay:300ms, search"
                hx-target="#search-results"
                hx-indicator="#search-ind"
                autocomplete="off" aria-label="Buscar">
@@ -60,6 +69,7 @@
         {# Resultados como overlay anclado al buscador (no empujan el layout). #}
         <div id="search-results" role="region" aria-live="polite" aria-label="Resultados de búsqueda"></div>
       </form>
+      {% endblock %}
     </div>
     {% comment %}
        Navegación curada para la audiencia (pares y gestores): lo editorial fino va al pie.
