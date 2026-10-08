@@ -9,12 +9,26 @@
      «impreso» — el azul nunca fue el problema, lo era su palidez.
      El magenta #B8086B es el del cartel oscurecido hasta superar el mínimo de 4,5:1
      sobre el papel: da 5,12:1. El magenta literal (#E40C9C) se queda en 3,48:1, que
-     solo alcanza para texto grande. El amarillo del cartel (#FCE43C) NO entra aquí:
-     da 1,29:1 sobre blanco y es un color de fondo, nunca de texto.
+     solo alcanza para texto grande.
      Los ratios de esta paleta los recalcula test_contraste_de_la_paleta desde estos
-     mismos valores; si cambias un color y baja de AA, esa prueba falla. */
+     mismos valores; si cambias un color y baja de AA, esa prueba falla.
+
+     REPARTO. El magenta era «el color de los enlaces»: 27 reglas lo usaban como color
+     de texto, y en la primera pantalla de la portada había nueve piezas magenta. Un
+     color que está en todas partes no señala nada. Ahora:
+       · --ink     el texto, los enlaces (con el subrayado en magenta) y los botones.
+       · --accent  la marca, las cejillas (.kicker) y los ESTADOS: al pasar el
+                   puntero, el foco, lo activo. Nada más lleva texto magenta.
+       · --muted   los datos y los rótulos. */
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
+  /* El amarillo del cartel. Estaba fuera de la paleta porque como TEXTO no sirve
+     (1,03:1 sobre el papel). Pero el contraste se mide por pares: como FONDO, con
+     tinta encima, da 13,81:1, y con magenta 4,96:1. Entra solo como superficie. */
+  --riso-amarillo:#fce43c;
+  /* El magenta sobre una banda de tinta da 2,78:1: ahí el acento es este rosa
+     (7,31:1). Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
+  --accent-on-ink:#f77cc3;
   /* Carátula del reproductor: el azul del cartel (tono 210°, saturación 73%,
      igual que --paper) hundido a luminosidad 45%. A la luminosidad original
      del cartel, 61%, el blanco encima solo daba 2,90:1; aquí da 4,84:1. */
@@ -91,7 +105,7 @@ body{margin:0; background:var(--paper); color:var(--ink);
 h1, h2, h3{line-height:1.1; text-wrap:balance}
 p{text-wrap:pretty}
 .wrap{max-width:820px; margin:0 auto; padding:0 20px}
-a{color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
+a{color:var(--ink); text-decoration-color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
 a:hover{text-decoration-thickness:2px}
 
 /* Movimiento: lo justo para que un cambio de estado se note. Solo color, fondo y
@@ -143,8 +157,8 @@ a, button, summary, input, textarea, select, .btn, .tag{
 .nav-disclosure summary:hover{color:var(--accent)}
 .nav{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 0; padding:0 0 14px}
 .nav a{font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.06em;
-  text-transform:uppercase; text-decoration:none; color:var(--accent)}
-.nav a:hover{color:var(--ink)}
+  text-transform:uppercase; text-decoration:none; color:var(--ink)}
+.nav a:hover{color:var(--accent)}
 /* Separador de cartel entre enlaces. El `/ ""` del `content` marca el punto como
    DECORATIVO para los lectores de pantalla: sin eso, se anuncia «punto medio» entre cada
    enlace. Los navegadores que no soportan esa sintaxis lo ignoran y solo lo dibujan. */
@@ -234,7 +248,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    apenas supera los 16px del resumen. A 26px la proporción es 1,63. */
 .article-card h3{margin:8px 0 6px; font-size:26px; line-height:1.15}
 .article-card h3 a{text-decoration:none; color:var(--ink)}
-.article-card h3 a:hover{color:var(--accent)}
+/* Títulos que son enlaces. En reposo no se subrayan: ya se leen como título. Al pasar
+   el puntero, el mismo subrayado magenta que el resto de los enlaces. Diez reglas
+   :hover hacían lo mismo —pasar a magenta— cada una por su cuenta. */
+.article-card h3 a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
+.next-event h2 a:hover, .recording-card h2 a:hover, .press-item h2 a:hover, .featured h2 a:hover,
+.member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title{
+  text-decoration:underline; text-decoration-color:var(--accent);
+  text-decoration-thickness:2px; text-underline-offset:4px}
 .dek{color:var(--muted); margin:6px 0; max-width:var(--medida)}
 .meta a{color:var(--muted)}
 .meta a:hover{color:var(--accent)}
@@ -243,16 +264,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* Listas de obras y colecciones */
 .work-list, .collection-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px}
 .work-list li{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
-.work-list a{text-decoration:none; font-size:17px}
+.work-list a{font-size:17px}
 .collection-list h2{margin:0 0 4px; font-size:22px}
 .collection-list h2 a{text-decoration:none; color:var(--ink)}
-.collection-list h2 a:hover{color:var(--accent)}
 
 /* Integrantes */
 .member-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:22px}
 .member-card a{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ink)}
-.member-card a:hover .member-name{color:var(--accent)}
 .member-name{font-size:19px; font-weight:700; line-height:1.2}
 .member-bio{color:var(--muted); font-size:14px; margin:4px 0 0}
 .avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
@@ -260,8 +279,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   font-family:var(--mono); font-size:26px; color:var(--muted)}
 .avatar-lg{width:104px; height:104px; font-size:38px; margin-bottom:6px}
 .member-head .avatar{display:flex}
-.members-strip{margin-top:44px}
-.poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--accent);
+.poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:19px; color:var(--ink)}
 .poetics p{margin:0}
 .member-about{max-width:var(--medida)}
@@ -274,11 +292,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .poem-epigraph{font-style:italic}
 .poem-audio{margin:28px 0; padding-top:8px; border-top:1px solid var(--border)}
 .poem-audio audio{width:100%}
-.featured-poem{margin:30px 0 6px; padding:22px 24px; background:var(--surface);
-  border:1px solid var(--border); border-radius:4px}
-.featured-poem h2{margin:8px 0 4px; font-size:24px}
-.featured-poem h2 a{text-decoration:none; color:var(--ink)}
-.featured-poem h2 a:hover{color:var(--accent)}
 .poem-excerpt{font-size:17px; margin:14px 0}
 
 /* Agenda, trayectoria y galería */
@@ -307,7 +320,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .event-month{display:block}
 .event-card h2{margin:6px 0 4px; font-size:22px}
 .event-card h2 a{text-decoration:none; color:var(--ink)}
-.event-card h2 a:hover{color:var(--accent)}
 .event-card .btn{margin-top:8px}
 /* Un afiche es vertical: a todo el ancho de la columna ocupaba más de una pantalla
    y empujaba la descripción y la galería fuera de la vista. */
@@ -315,16 +327,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .stats-strip{list-style:none; padding:14px 0; margin:0 0 8px; display:flex; flex-wrap:wrap; gap:8px 28px;
   font-family:var(--mono); font-size:13px; color:var(--muted); border-bottom:1px solid var(--border)}
 .stats-strip strong{font-size:20px; color:var(--ink); font-family:var(--serif); margin-right:4px}
-.home-stats{margin-top:18px}
-.next-event{margin:0; padding:16px 22px; border-left:3px solid var(--accent); background:var(--surface); border-radius:0 4px 4px 0}
+.next-event{margin:0; padding:16px 22px; border-left:3px solid var(--ink); background:var(--surface); border-radius:0 4px 4px 0}
 .next-event h2{margin:6px 0 4px; font-size:22px}
 .next-event h2 a{text-decoration:none; color:var(--ink)}
-.next-event h2 a:hover{color:var(--accent)}
 .timeline-year{margin:26px 0}
-.year-mark{font-family:var(--mono); font-size:15px; letter-spacing:.1em; color:var(--accent);
+.year-mark{font-family:var(--mono); font-size:15px; letter-spacing:.1em; color:var(--ink);
   border-bottom:1px solid var(--border); padding-bottom:6px}
 .timeline-items{list-style:none; padding:0; margin:12px 0 0; display:flex; flex-direction:column; gap:14px}
-.timeline-items a{text-decoration:none; font-size:17px}
+.timeline-items a{font-size:17px}
 .timeline-items .milestone{padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:4px}
 .photo-grid, .album-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px}
@@ -332,7 +342,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   border:1px solid var(--border); border-radius:4px}
 .album-card a{display:flex; flex-direction:column; gap:6px; text-decoration:none; color:var(--ink)}
 .album-title{font-weight:700; font-size:17px; line-height:1.25}
-.album-card a:hover .album-title{color:var(--accent)}
 .photo-grid a{display:block; cursor:zoom-in}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
@@ -373,11 +382,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .recording-list{list-style:none; padding:0; margin:18px 0 0; display:flex; flex-direction:column; gap:34px}
 .recording-card h2{margin:10px 0 4px; font-size:22px}
 .recording-card h2 a{text-decoration:none; color:var(--ink)}
-.recording-card h2 a:hover{color:var(--accent)}
-.featured-recording{margin:30px 0 6px}
-.featured-recording h2{margin:8px 0 10px; font-size:24px}
-.featured-recording h2 a{text-decoration:none; color:var(--ink)}
-.featured-recording h2 a:hover{color:var(--accent)}
 
 /* Catálogo, prensa y aliados */
 .pub-grid{list-style:none; padding:0; margin:0;
@@ -387,22 +391,17 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   border:1px solid var(--border); border-radius:3px; background:var(--surface)}
 .pub-cover-fallback{display:flex; align-items:center; justify-content:center}
 .pub-title{font-weight:700; line-height:1.25}
-.pub-card a:hover .pub-title{color:var(--accent)}
 .pub-cover{max-width:240px; border:1px solid var(--border); border-radius:3px; margin:8px 0 16px}
 .buy-links{display:flex; flex-wrap:wrap; gap:10px}
 .press-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:30px}
 .press-item h2{margin:6px 0; font-size:22px}
 .press-item h2 a{text-decoration:none; color:var(--ink)}
-.press-item h2 a:hover{color:var(--accent)}
-.press-quote{margin:10px 0; padding-left:18px; border-left:3px solid var(--accent);
+.press-quote{margin:10px 0; padding-left:18px; border-left:3px solid var(--ink);
   font-style:italic; font-size:18px}
-.home-quote cite{display:block; margin-top:6px; font-style:normal;
-  font-family:var(--mono); font-size:12px; color:var(--muted)}
 .partner-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:22px}
 .partner-item{display:flex; gap:14px; align-items:flex-start}
 .partner-logo{width:64px; height:64px; object-fit:contain; border:1px solid var(--border);
   border-radius:4px; background:#fff}
-.partners-strip .meta{font-size:13px}
 
 /* Hero de portada (CTA hacia gestores).
    El lema es el TITULAR de la portada, no una línea de apoyo: de ahí el salto
@@ -433,7 +432,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Destacado único, con más peso visual que las franjas secundarias. */
 .featured h2{margin:8px 0 14px; font-size:clamp(24px,3.4vw,32px); line-height:1.15}
 .featured h2 a{text-decoration:none; color:var(--ink)}
-.featured h2 a:hover{color:var(--accent)}
 .featured .poem-excerpt{font-size:18px}
 /* Ficha del registro destacado: los datos que el modelo ya tenía. */
 .rec-ficha{margin:0 0 10px}
@@ -469,7 +467,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .foot-group a:hover{color:var(--accent); text-decoration:underline; text-underline-offset:3px}
 .foot-legal{margin:8px 0 0; font-family:var(--mono); font-size:12px; color:var(--muted)}
 .foot-legal a{color:var(--muted)}
-.flash{padding:10px 16px; border:1px solid var(--border); border-left:3px solid var(--accent);
+.flash{padding:10px 16px; border:1px solid var(--border); border-left:3px solid var(--ink);
   border-radius:3px; background:var(--surface); margin:14px 0 0}
 .flash-error{border-left-color:#b3392f}
 
@@ -511,9 +509,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pagination{display:flex; align-items:center; justify-content:space-between; gap:12px;
   margin-top:36px; padding-top:20px; border-top:1px solid var(--border);
   font-family:var(--mono); font-size:12px; letter-spacing:.04em}
-.pagination a{text-decoration:none; color:var(--accent)}
+.pagination a{text-decoration:none}
 .pagination a:hover{text-decoration:underline}
-.pagination .disabled{color:var(--border)}
+.pagination .disabled{color:var(--muted)}
 .pagination .page-of{color:var(--muted)}
 
 /* Formularios */
@@ -540,8 +538,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .error-page h1{font-family:var(--display); font-size:32px; line-height:1.15; margin:8px 0 16px}
 .error-page p{color:var(--muted); line-height:1.6}
 .error-links{list-style:none; padding:0; margin:24px 0 0; display:flex; flex-wrap:wrap; gap:8px 20px}
-.error-links a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent}
-.error-links a:hover{border-bottom-color:var(--accent)}
 
 /* ──────────────────────────────────────────────────────────────────────────
    Cinta de integrantes. Se monta solo por encima de UMBRAL_CINTA (views.py).
