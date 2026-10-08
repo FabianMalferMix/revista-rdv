@@ -112,6 +112,21 @@ docker compose run --rm --entrypoint ruff web check .
 docker compose run --rm --entrypoint ruff web format .
 ```
 
+## Interfaz: capturas y métricas
+
+`tools/ux/` mide lo que se ve: cuánto del ancho usa el texto, tamaños reales, imágenes
+deformadas, objetivos pulsables y scroll horizontal, en 1440, 390 y 1920 px. Es el instrumento
+de la auditoría UX/UI ([docs/auditoria-ux-ui.md](docs/auditoria-ux-ui.md)) y de su backlog.
+
+```bash
+npm --prefix tools/ux install                 # una vez; usa el Chrome del sistema
+node tools/ux/capture.js tools/ux/out/prueba  # capturas + métricas de las páginas de pages.txt
+python3 tools/ux/metrics.py tabla tools/ux/out/prueba
+python3 tools/ux/smoke.py                     # todos los enlaces internos responden
+```
+
+Detalle en [tools/ux/README.md](tools/ux/README.md). No forma parte del despliegue.
+
 ## Producción
 
 **Caddy** (proxy con TLS automático) → gunicorn → PostgreSQL/Redis, con Celery. Estáticos por

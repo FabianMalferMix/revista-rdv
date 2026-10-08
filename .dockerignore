@@ -10,3 +10,4 @@ backend/mediafiles
 backend/media
 backend/private_media
 *.md
+tools

@@ -34,3 +34,7 @@ db.sqlite3
 htmlcov/
 coverage.xml
 .claude/settings.local.json
+
+# Herramienta de capturas y métricas de la interfaz (tools/ux)
+/tools/ux/node_modules/
+/tools/ux/out/
