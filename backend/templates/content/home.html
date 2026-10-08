@@ -18,9 +18,9 @@
          se abre la página del dossier. Antes decía «Descargar» en los dos casos.
       {% endcomment %}
       {% if site_profile.dossier_pdf %}
-        <a class="btn btn-primary" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
+        <a class="btn btn--primary" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
       {% else %}
-        <a class="btn btn-primary" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
+        <a class="btn btn--primary" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
       {% endif %}
       {% if site_profile.booking_email %}
         <a class="btn" href="mailto:{{ site_profile.booking_email }}">Contacto de gestión</a>

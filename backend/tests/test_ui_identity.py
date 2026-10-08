@@ -44,6 +44,25 @@ def test_css_declares_self_hosted_display_font():
     assert "font-display:swap" in css
 
 
+def test_la_fuente_de_titulares_se_precarga(client):
+    """Syne se pide sin esperar a que el navegador lea el CSS y descubra que la necesita.
+
+    La URL de la precarga debe ser la MISMA que resuelve el url() de la hoja (sin
+    parámetro de versión); si difieren, el archivo se descarga dos veces. `crossorigin`
+    es obligatorio en una precarga de fuente, aunque sea del mismo origen: sin él el
+    navegador la descarta y vuelve a pedirla.
+    """
+    html = client.get(reverse("content:home")).content.decode()
+    precargas = re.findall(r'<link rel="preload"[^>]*>', html)
+    assert len(precargas) == 1, f"se esperaba una precarga, hay {len(precargas)}"
+    etiqueta = precargas[0]
+    assert re.search(r'href="[^"?]*fonts/syne[^"?]*\.woff2"', etiqueta), (
+        "la precarga no es la de Syne"
+    )
+    assert 'as="font"' in etiqueta and 'type="font/woff2"' in etiqueta
+    assert "crossorigin" in etiqueta
+
+
 def test_no_hay_fuentes_huerfanas():
     """Toda fuente empaquetada debe estar referenciada por el CSS.
 

@@ -255,12 +255,11 @@ def search(request):
         results = sorted(items, key=lambda r: r["rank"], reverse=True)[:SEARCH_RESULTS]
     # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
     # recibe la página completa con layout, para que la búsqueda degrade con gracia.
-    template = (
-        "content/partials/_search_results.html"
-        if request.headers.get("HX-Request")
-        else "content/search.html"
+    panel = bool(request.headers.get("HX-Request"))
+    template = "content/partials/_search_results.html" if panel else "content/search.html"
+    return render(
+        request, template, {"results": results, "q": q, "limited": limited, "panel": panel}
     )
-    return render(request, template, {"results": results, "q": q, "limited": limited})
 
 
 def healthz(request):

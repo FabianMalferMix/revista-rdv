@@ -232,6 +232,9 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   el overlay no es visible; `/buscar/?q=casa` muestra cabecera de índice y resultados.
 - **Tests:** `tests/test_ui_ux.py::test_search_results_is_live_overlay` sigue; añadir comprobación de
   la fila «Ver todos» en `tests/test_search.py`.
+- **Estado:** hecho (paso 6 del plan). En móvil el campo ocupa la línea entera y el panel lo mismo que
+  el campo, sin unidades `vw`. El enlace del panel dice «Abrir estos resultados en una página» y va
+  fuera de la lista: «ver todos» prometía más de los diez que la página también muestra.
 
 #### 1.6 Tokens de motion, radio y filete; hover por color; foco sobre la placa (D14)
 - **Hallazgos:** COM-2 (parte), COM-4 (foco), COM-6, COL-11.
@@ -245,6 +248,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** `grep -c "opacity:.9\|opacity:.88\|opacity:.92" site.css` = 0; una sola regla
   `transition` global más la de la cinta; foco visible ≥ 3:1 sobre la placa.
 - **Tests:** `test_css_sistema.py`: tokens presentes, sin hover por opacidad.
+- **Estado:** hecho (paso 6 del plan). `--line` no se añadió: ningún componente lo usa todavía.
 
 #### 1.7 Componentes `.rotulo` y `.btn` unificados (D3 parcial, D14)
 - **Hallazgos:** TIP-10, COM-2, COM-9 (botón del formulario).
@@ -262,6 +266,9 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   `metrics.py` muestra ≤ 20 elementos en mayúsculas en la portada (≤ 15 tras 2.3, cuando la nav sale de la mono).
 - **Tests:** `tests/test_ui_identity.py::test_titulo_de_tarjeta_usa_la_tipografia_de_titular` sigue;
   `test_css_sistema.py`: existe `.rotulo`, no quedan `text-transform:uppercase` fuera de `.rotulo` y `.nav-disclosure summary`.
+- **Estado:** hecho (paso 6 del plan). El botón primario ya va en tinta (lo pedía 1.9) para no dejar el
+  componente a medias. Quedan dos mayúsculas fuera de la receta, con fecha: `.nav a` (2.3) y
+  `.form label` (1.11); la prueba las lista y falla si aparece una tercera.
 
 #### 1.8 Preload de Syne, fallback métrico y peso 800
 - **Hallazgos:** TIP-8, COM-10.
@@ -275,6 +282,10 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   mismo que con Syne ± 2 %; sin salto visible al cargar.
 - **Tests:** `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` sigue;
   añadir: `base.html` contiene el preload de la fuente que el CSS declara.
+- **Estado:** hecho (paso 6 del plan), salvo el peso 800, que NO se aplica. Medido: el 800 de Syne es un
+  corte extendido, un 44 % más ancho que el 700; el nombre del sitio pasaría de 292 a 420 px y no cabría
+  en un móvil. Se decide en 4.2, con el titular nuevo a la vista. La reserva son tres caras de Arial
+  escaladas al 102, 103 y 114,1 %; con el archivo bloqueado, marca, titular y títulos varían menos de un 2 %.
 
 #### 1.9 Reasignación del magenta y matriz de pares de contraste (D5 parcial)
 - **Hallazgos:** COL-1, COL-10, COL-6 (pares), COM-8 (paginación inactiva).
