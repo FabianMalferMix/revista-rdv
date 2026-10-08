@@ -10,6 +10,9 @@
         </li>
       {% endfor %}
     </ul>
+    {% if panel %}
+      <p class="search-all"><a href="{% url 'content:search' %}?q={{ q|urlencode }}">Abrir estos resultados en una página →</a></p>
+    {% endif %}
   {% else %}
     <p class="empty">Sin resultados para “{{ q }}”.</p>
   {% endif %}
