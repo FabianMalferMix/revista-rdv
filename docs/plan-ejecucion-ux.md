@@ -33,7 +33,7 @@
   sitio: proporción real de imágenes, medida de lectura, interlíneas, mínimos de 12 px.
 - [x] **4. PR `ux-1b-indices-y-lenguaje`.** Tickets 1.2 y 1.12: cabecera de índice en los
   once índices, cejillas sin repetir, títulos de pestaña.
-- [ ] **5. PR `ux-1c-cinta`.** Ticket 1.4: pausa real, icono de pausa discreto sin JS, fila en táctil (D1, D12).
+- [x] **5. PR `ux-1c-cinta`.** Ticket 1.4: pausa real, icono de pausa discreto sin JS, fila en táctil (D1, D12).
 - [ ] **6. PR `ux-1d-componentes`.** Tickets 1.5, 1.6, 1.7 y 1.8: buscador en el viewport,
   tokens de motion, `.rotulo` y `.btn`, preload de Syne.
 - [ ] **7. PR `ux-1e-color`.** Ticket 1.9: reasignación del magenta y matriz de pares.

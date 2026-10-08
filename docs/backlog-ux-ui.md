@@ -213,6 +213,12 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   enlace), la copia lleva `aria-hidden`, y nueva prueba de que el CSS contiene el selector de pausa
   sobre `.cinta-caja` y el selector de hermanos del control; `test_la_cinta_se_detiene_con_prefers_reduced_motion`
   pasa a comprobar la media query de `hover`.
+- **Estado:** hecho (paso 5 del plan). Una diferencia con lo escrito arriba: la cinta NO se pausa por
+  `:focus-within`. Al pulsar el icono para reanudar, el foco se queda en la casilla y la cinta seguía
+  parada aunque el icono dijera lo contrario. Quedan dos formas de detenerla: posar el puntero y el
+  icono. Verificado en navegador: pausa al posar el puntero, pausa persistente con el icono (ratón y
+  teclado), reanudación, clic en la caja hacia `/integrantes/`, y en táctil y con menos movimiento
+  una fila sin animación que se desplaza con el dedo o la rueda.
 
 #### 1.5 Buscador: overlay dentro del viewport y cierre al perder el foco
 - **Hallazgos:** NAV-3, COM-5 (la colapsación en `<details>` va en 4.1).
