@@ -3,6 +3,8 @@
 {% block title %}Trayectoria — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Recorrido del colectivo: recitales, festivales e hitos.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Trayectoria" cuenta=stats.events singular="actividad realizada" plural="actividades realizadas" dek="Recorrido del colectivo: recitales, festivales e hitos." %}
 

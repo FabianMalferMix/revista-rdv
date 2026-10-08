@@ -9,6 +9,8 @@
 {% endcomment %}
 {% block buscador %}{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Búsqueda" dek="Textos y poemas del colectivo." %}
   <form class="search-page" role="search" action="{% url 'content:search' %}" method="get">

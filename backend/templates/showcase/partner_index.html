@@ -4,6 +4,8 @@
 {% block title %}Aliados — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Fondos, instituciones y espacios que apoyan al colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Aliados y financiamiento" cuenta=partners|length singular="aliado" plural="aliados" dek="Fondos, instituciones y espacios que apoyan al colectivo." %}
   <ul class="partner-list">

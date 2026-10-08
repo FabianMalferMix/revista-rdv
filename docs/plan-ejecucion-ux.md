@@ -42,7 +42,7 @@
 - ◆ **Punto de control A.** Portada, un índice, la cinta y el formulario. Hecho el 2026-10-08:
   aprobado el reparto del magenta, las frases de los índices y el texto de la agenda vacía;
   fuera el icono de pausa; a partir del paso 9, detenerse tras cada paso para que lo vea.
-- [ ] **9. PR `ux-2-1-reticula`.** Ticket 2.1: tres carriles, `main` sin `.wrap`, raíz fluida (D7).
+- [x] **9. PR `ux-2-1-reticula`.** Ticket 2.1: tres carriles, `main` sin `.wrap`, raíz fluida (D7).
 - [ ] **10. PR `ux-2-2-indices-y-rejillas`.** Ticket 2.2: filas tipográficas y rejillas anchas.
 - [ ] **11. PR `ux-2-3-tipografia`.** Ticket 2.3: Source Serif 4 autoalojada, tokens, mono
   reducida (D3, D4). Requiere descargar la fuente y subconjuntarla con fonttools en local.

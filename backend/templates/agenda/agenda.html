@@ -3,6 +3,8 @@
 {% block title %}Agenda — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Próximos recitales, lanzamientos y talleres del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Agenda" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
   {% if events %}

@@ -3,6 +3,8 @@
 {% block title %}Publicaciones — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Catálogo de libros, plaquettes y fanzines del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Publicaciones" cuenta=publications|length singular="publicación" plural="publicaciones" dek="Libros, plaquettes y fanzines del colectivo." %}
   <ul class="pub-grid">

@@ -12,7 +12,9 @@ pytestmark = pytest.mark.django_db
 def test_skip_link_and_main_landmark(client):
     content = client.get(reverse("content:home")).content
     assert b'class="skip" href="#main"' in content
-    assert b'<main class="wrap" id="main">' in content
+    # El destino del enlace de salto: un <main> con ese id. (Antes se afirmaba además la
+    # clase `wrap`; <main> dejó de ser la caja de 820 px al pasar a ser el lienzo.)
+    assert b'<main id="main" class="lienzo' in content
 
 
 def test_search_results_is_live_overlay(client):

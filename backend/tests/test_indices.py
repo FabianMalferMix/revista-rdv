@@ -127,3 +127,43 @@ def test_el_titulo_de_un_articulo_termina_en_el_nombre_del_sitio(client, make_ar
     _pub(make_article, slug="t1", title="Un texto")
     html = client.get(reverse("content:article_detail", args=["t1"])).content.decode()
     assert "<title>Un texto — Repitentes del Verso</title>" in html
+
+
+# ── Qué páginas usan el carril ancho (backlog UX, ticket 2.1) ──────────────
+
+LISTADOS_ANCHOS = INDICES + ["content:home", "content:search"]
+
+
+@pytest.mark.parametrize("nombre", LISTADOS_ANCHOS)
+def test_la_portada_y_los_indices_usan_el_carril_ancho(client, nombre):
+    html = client.get(reverse(nombre)).content.decode()
+    assert re.search(r'<main id="main" class="lienzo lienzo--ancho">', html), (
+        f"{nombre} sigue en el carril de lectura"
+    )
+
+
+def test_las_paginas_de_lectura_se_quedan_en_su_carril(client, make_article, make_poem):
+    """Un artículo o un poema no se ensanchan: se leen en una columna."""
+    _pub(make_article, slug="lectura", title="Para leer")
+    make_poem(slug="verso", status=EditorialStatus.PUBLISHED, published_at=timezone.now())
+    for url in (
+        reverse("content:article_detail", args=["lectura"]),
+        reverse("content:poem_detail", args=["verso"]),
+        reverse("submissions:submit"),
+        reverse("showcase:dossier"),
+    ):
+        html = client.get(url).content.decode()
+        clase = re.search(r'<main id="main" class="([^"]*)">', html).group(1).split()
+        assert clase == ["lienzo"], f"{url}: <main> lleva {clase}"
+
+
+def test_el_contenido_de_las_bandas_de_la_portada_vuelve_al_carril_ancho(client, make_article):
+    """Una banda va de borde a borde; lo que lleva dentro, no."""
+    from tests.factories import make_publication
+
+    make_publication(slug="en-banda", title="Libro en banda", featured=True)
+    html = client.get(reverse("content:home")).content.decode()
+    bandas = re.findall(r'<section class="home-block band[^"]*">(.*?)</section>', html, re.S)
+    assert bandas, "la portada ya no tiene bandas"
+    for banda in bandas:
+        assert 'class="band-in"' in banda, "una banda perdió su contenedor interior"

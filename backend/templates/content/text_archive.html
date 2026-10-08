@@ -3,6 +3,8 @@
 {% block title %}Textos — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Reseñas, ensayos y entrevistas del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Textos" cuenta=articles.paginator.count singular="texto" plural="textos" dek="Reseñas, ensayos y entrevistas del colectivo." %}
   {% include "content/partials/_article_list.html" %}

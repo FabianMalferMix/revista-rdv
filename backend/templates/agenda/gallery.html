@@ -4,6 +4,8 @@
 {% block title %}Galería — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Fotos de los recitales y actividades del colectivo.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Galería" cuenta=events|length singular="álbum" plural="álbumes" dek="Fotos de los recitales y actividades del colectivo." %}
   <ul class="album-grid">

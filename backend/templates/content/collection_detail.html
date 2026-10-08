@@ -3,6 +3,8 @@
 {% block title %}{{ collection.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ collection.description|default:collection.title }}{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   <header class="index-head">
     <span class="kicker">Colección</span>

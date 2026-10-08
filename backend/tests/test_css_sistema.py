@@ -26,9 +26,11 @@ def _reglas():
 
 
 def _regla(selector):
+    """La PRIMERA regla con ese selector: la de pantalla. Las que la sobrescriben dentro
+    de un @media (impresión, pantalla estrecha) vienen después en la hoja."""
     encontradas = [cuerpo for sel, cuerpo in _reglas() if re.sub(r"\s+", "", sel) == selector]
     assert encontradas, f"no existe la regla «{selector}» en site.css"
-    return encontradas[-1]
+    return encontradas[0]
 
 
 # ── Imágenes ──────────────────────────────────────────────────────────────
@@ -194,3 +196,60 @@ def test_syne_tiene_reserva_metrica_y_no_cae_a_la_serif():
     assert len(reservas) >= 2, "la reserva necesita al menos una cara normal y una negrita"
     for cara in reservas:
         assert "size-adjust:" in cara and "local(" in cara
+
+
+# ── Lienzo: los tres carriles ─────────────────────────────────────────────
+
+
+def test_el_lienzo_declara_sus_tres_carriles():
+    """El sitio tenía un solo contenedor de 820 px para todo, y el texto ocupaba el 54 %
+    de una pantalla de 1440. Los carriles son líneas con nombre de una rejilla."""
+    carriles = re.search(r"--carriles:([^;]+);", _css())
+    assert carriles, "falta la plantilla de columnas del lienzo"
+    for linea in (
+        "full-start",
+        "wide-start",
+        "content-start",
+        "content-end",
+        "wide-end",
+        "full-end",
+    ):
+        assert f"[{linea}]" in carriles.group(1), f"falta la línea «{linea}»"
+    assert "grid-template-columns:var(--carriles)" in _regla(".lienzo")
+    assert "grid-column:content" in _regla(".lienzo>*"), (
+        "por defecto se cae en el carril de lectura"
+    )
+    assert "grid-column:wide" in _regla(".lienzo--ancho>*")
+    assert "grid-column:full" in _regla(".lienzo>.sangre,.lienzo>.band")
+
+
+def test_la_columna_de_lectura_no_se_ensancha():
+    """Lo que crece es el lienzo, no la línea: lo legible son 45–75 letras, en cualquier
+    monitor. El carril de lectura mide lo que medía el contenido de la caja de 820 px."""
+    css = _css()
+    assert re.search(r"--measure:\s*780px", css)
+    ancho = re.search(r"--wide:\s*(\d+)px", css)
+    assert ancho and 1200 <= int(ancho.group(1)) <= 1440
+    assert "max-width:820px" in _regla(".wrap"), "la caja de siempre conserva su valor"
+
+
+def test_ningun_ancho_usa_unidades_de_viewport():
+    """100vw incluye la barra de desplazamiento: en un navegador de escritorio produce
+    scroll horizontal. Los márgenes del lienzo salen de pistas 1fr."""
+    assert "100vw" not in _css()
+
+
+def test_las_bandas_no_pintan_su_fondo_con_una_sombra():
+    """La banda vivía dentro de la caja estrecha y sacaba su fondo hacia fuera con una
+    sombra de 100vmax recortada con clip-path. Ahora ocupa el carril a sangre."""
+    banda = _regla(".band")
+    assert "box-shadow" not in banda and "clip-path" not in banda
+    assert "100vmax" not in _css()
+
+
+def test_el_carril_ancho_de_cabecera_y_pie_coincide_con_el_del_lienzo():
+    """Cabecera y pie viven fuera de <main>: su carril debe medir lo mismo y empezar en la
+    misma vertical, o el nombre del sitio no quedaría alineado con el contenido."""
+    regla = _regla(".wrap-wide")
+    assert "max-width:calc(var(--wide)+2*var(--gutter))" in regla
+    assert "padding-inline:var(--gutter)" in regla

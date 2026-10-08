@@ -3,6 +3,8 @@
 {% block title %}Integrantes — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Integrantes del colectivo: poetas, trayectorias y obra.{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Integrantes" cuenta=members|length singular="integrante" plural="integrantes" dek="Quiénes integran el colectivo: poetas, trayectorias y obra." %}
   <ul class="member-grid">
