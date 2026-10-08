@@ -4,6 +4,6 @@
 {% block description %}Poemas de los integrantes del colectivo.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Poemas</h1>
+  {% include "content/partials/_index_head.html" with titulo="Poemas" cuenta=poems.paginator.count singular="poema" plural="poemas" dek="Poemas de quienes integran el colectivo." %}
   {% include "content/partials/_poem_list.html" %}
 {% endblock %}

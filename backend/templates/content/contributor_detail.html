@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ contributor.display_name }} — Reseñas{% endblock %}
+{% block title %}{{ contributor.display_name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ contributor.bio|default:contributor.display_name }}{% endblock %}
 
 {% block content %}

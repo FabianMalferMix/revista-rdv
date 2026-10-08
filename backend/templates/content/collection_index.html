@@ -3,7 +3,7 @@
 {% block title %}Colecciones — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Colecciones</h1>
+  {% include "content/partials/_index_head.html" with titulo="Colecciones" cuenta=collections|length singular="colección" plural="colecciones" dek="Antologías y series que reúnen textos y poemas del colectivo." %}
   <ul class="collection-list">
     {% for c in collections %}
       <li>

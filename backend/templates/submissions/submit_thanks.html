@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Propuesta enviada — Reseñas{% endblock %}
+{% block title %}Propuesta enviada — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 
 {% block content %}
   <header class="index-head">

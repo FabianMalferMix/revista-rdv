@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ section.name }} — Reseñas{% endblock %}
+{% block title %}{{ section.name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ section.description|default:section.name }}{% endblock %}
 
 {% block content %}

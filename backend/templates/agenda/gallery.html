@@ -5,7 +5,7 @@
 {% block description %}Fotos de los recitales y actividades del colectivo.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Galería</h1>
+  {% include "content/partials/_index_head.html" with titulo="Galería" cuenta=events|length singular="álbum" plural="álbumes" dek="Fotos de los recitales y actividades del colectivo." %}
   <ul class="album-grid">
     {% for e in events %}
       {# photos.all usa la caché del prefetch (photos__asset); .first/.count la saltarían. #}

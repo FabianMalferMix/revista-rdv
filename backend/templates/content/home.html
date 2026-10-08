@@ -10,10 +10,18 @@
     {% if site_profile.tagline %}<p class="hero-tagline">{{ site_profile.tagline }}</p>{% endif %}
     {% if site_profile.manifesto %}
       <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
-        <a href="{% url 'showcase:dossier' %}">Conócenos →</a></p>
+        <a href="{% url 'people:member_index' %}">Conócenos →</a></p>
     {% endif %}
     <p class="hero-ctas">
-      <a class="btn btn-primary" href="{% if site_profile.dossier_pdf %}{{ site_profile.dossier_pdf.url }}{% else %}{% url 'showcase:dossier' %}{% endif %}">Descargar dossier</a>
+      {% comment %}
+         El rótulo dice lo que pasa al pulsar: con PDF se descarga un archivo; sin PDF
+         se abre la página del dossier. Antes decía «Descargar» en los dos casos.
+      {% endcomment %}
+      {% if site_profile.dossier_pdf %}
+        <a class="btn btn-primary" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
+      {% else %}
+        <a class="btn btn-primary" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
+      {% endif %}
       {% if site_profile.booking_email %}
         <a class="btn" href="mailto:{{ site_profile.booking_email }}">Contacto de gestión</a>
       {% endif %}

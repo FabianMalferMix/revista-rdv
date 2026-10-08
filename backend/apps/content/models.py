@@ -1,4 +1,5 @@
 import re
+import unicodedata
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -148,6 +149,25 @@ class Article(EditorialItem):
 
     def get_absolute_url(self):
         return reverse("content:article_detail", args=[self.slug])
+
+    @property
+    def seccion_aporta(self):
+        """¿Dice la sección algo que el tipo no diga ya?
+
+        La cejilla de cada tarjeta mostraba «Reseñas · Reseña», «Ensayos · Ensayo»: la
+        misma palabra dos veces. La sección solo se nombra junto al tipo cuando añade
+        información («Crónica · Entrevista»). Se comparan sin tildes ni mayúsculas, y
+        basta que una empiece por la otra para cubrir el plural.
+        """
+        if not self.section_id:
+            return False
+
+        def base(texto):
+            sin_tildes = unicodedata.normalize("NFD", texto)
+            return "".join(c for c in sin_tildes if not unicodedata.combining(c)).lower().strip()
+
+        seccion, tipo = base(self.section.name), base(self.get_type_display())
+        return not (seccion.startswith(tipo) or tipo.startswith(seccion))
 
     def _calc_reading_time(self):
         text = re.sub(r"<[^>]+>", " ", self.body or "")

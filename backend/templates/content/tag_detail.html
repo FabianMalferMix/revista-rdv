@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ tag.name }} — Reseñas{% endblock %}
+{% block title %}{{ tag.name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 
 {% block content %}
   <header class="index-head">

@@ -5,7 +5,7 @@
 {% block description %}Fondos, instituciones y espacios que apoyan al colectivo.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Aliados y financiamiento</h1>
+  {% include "content/partials/_index_head.html" with titulo="Aliados y financiamiento" cuenta=partners|length singular="aliado" plural="aliados" dek="Fondos, instituciones y espacios que apoyan al colectivo." %}
   <ul class="partner-list">
     {% for p in partners %}
       <li class="partner-item">

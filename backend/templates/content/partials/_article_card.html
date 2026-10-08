@@ -1,6 +1,6 @@
 <li class="article-card">
   <span class="kicker">
-    {% if a.section %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.section.name }}</a> · {% endif %}{{ a.get_type_display }}
+    {% if a.section and a.seccion_aporta %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{% url 'content:section_detail' a.section.slug %}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
   </span>
   <h3><a href="{% url 'content:article_detail' a.slug %}">{{ a.title }}</a></h3>
   {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}

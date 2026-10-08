@@ -165,6 +165,9 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   cada índice muestra cejilla, h1 y dek.
 - **Tests:** ampliar `tests/test_views.py` (o nuevo `test_indices.py`): cada índice responde 200 y
   su `<h1>` no lleva `page-title`; `grep -c "page-title" templates static` = 0.
+- **Estado:** hecho (paso 4 del plan). El parcial recibe `cuenta`, `singular` y `plural` en vez de una
+  cejilla ya armada, para concordar en número («1 texto», «2 textos») y omitirse con cero. El tamaño
+  del h1 (`clamp(34px,4.6vw,56px)`) se aplica también a las fichas, que comparten `.index-head`.
 
 #### 1.3 Medida de lectura, interlíneas y mínimos tipográficos
 - **Hallazgos:** TIP-4, TIP-9, TIP-11, CON-3 (paso 1), CON-7 (parte: nueve reglas a 11 px).
@@ -322,8 +325,12 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   dossier» si no hay PDF; «Descargar dossier (PDF)» si lo hay).
 - **Aceptación:** ninguna cejilla repite palabra («RESEÑAS · RESEÑA» desaparece); `<title>` de
   todas las rutas públicas termina en el nombre del sitio.
-- **Tests:** nueva prueba que recorra las 40 rutas públicas de la guía y afirme el sufijo del título;
-  `tests/test_rotulos_espanol.py` sigue.
+- **Tests:** `tests/test_indices.py`: ninguna plantilla cierra su `<title>` con el nombre fijo, y la
+  cejilla de la tarjeta según sección y tipo. `tests/test_dossier.py`: el rótulo del botón por estado.
+- **Estado:** hecho (paso 4 del plan). En vez de `Article.kicker()` hay una propiedad
+  `Article.seccion_aporta`: la plantilla necesita el enlace a la sección, no una cadena. Cuando la
+  sección repite al tipo, el tipo enlaza a la sección. La cejilla de `/enviar/` («Colaboraciones») se
+  conserva: lo que se unificó es el rótulo del enlace del pie con el h1 de la página.
 
 #### 1.13 Estados vacíos y fallbacks tipográficos
 - **Hallazgos:** CON-9, IMG-10, ESP-12 (parte).
