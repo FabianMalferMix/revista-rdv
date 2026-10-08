@@ -303,6 +303,12 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** `grep -c "color:var(--accent)" site.css` ≤ 6; todos los pares en verde; el
   comentario de `:root` documenta el reparto.
 - **Tests:** `test_contraste_paleta.py` ampliado como se indica.
+- **Estado:** hecho (paso 7 del plan). El criterio «≤ 6 usos de `color:var(--accent)`» era irreal: los
+  estados (`:hover`, foco, marcado) también lo usan y son legítimos. La regla que se prueba es otra y
+  más útil: el magenta solo es color de texto EN REPOSO en la cejilla y en el asterisco de campo
+  obligatorio. Los «pares prohibidos» se prueban de dos formas: una tabla con su número, y una
+  comprobación de toda regla que declare texto y fondo a la vez. Diez reglas `:hover` de títulos pasan
+  a una sola (subrayado magenta). Se retiran doce reglas de seis clases que ninguna plantilla emite.
 
 #### 1.10 Paginación con contador, números y objetivos de 44 px
 - **Hallazgos:** CON-10, COM-8.
