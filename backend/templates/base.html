@@ -133,7 +133,7 @@
             <li><a href="{% url 'showcase:dossier' %}">Dossier</a></li>
             <li><a href="{% url 'showcase:press_index' %}">Prensa</a></li>
             <li><a href="{% url 'showcase:partner_index' %}">Aliados</a></li>
-            <li><a href="{% url 'submissions:submit' %}">Convocatorias</a></li>
+            <li><a href="{% url 'submissions:submit' %}">Enviar una propuesta</a></li>
             {% if site_profile.booking_email %}
               <li><a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a></li>
             {% elif site_profile.general_email %}

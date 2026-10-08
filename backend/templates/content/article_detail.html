@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ article.seo_title|default:article.title }} — Reseñas{% endblock %}
+{% block title %}{{ article.seo_title|default:article.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ article.seo_description|default:article.subtitle|default:article.title }}{% endblock %}
 
 {% block opengraph %}
@@ -33,7 +33,7 @@
 {% block content %}
   <article class="article">
     <span class="kicker">
-      {% if article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {% endif %}{{ article.get_type_display }}
+      {% if article.section and article.seccion_aporta %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
     </span>
     <h1>{{ article.title }}</h1>
     {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}

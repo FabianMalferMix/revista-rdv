@@ -59,10 +59,22 @@ def test_dossier_excludes_unpublished_publication(client, profile):
 
 
 def test_home_cta_links_to_dossier_page_without_pdf(client, profile):
+    """Sin PDF el botón abre la página del dossier, y lo dice: «Ver», no «Descargar»."""
     resp = client.get(reverse("content:home"))
-    assert b"Descargar dossier" in resp.content
+    assert b"Ver el dossier" in resp.content
+    assert b"Descargar dossier" not in resp.content, "promete una descarga que no ocurre"
     assert reverse("showcase:dossier").encode() in resp.content
     assert b"Contacto de gesti\xc3\xb3n" in resp.content
+
+
+def test_home_cta_descarga_el_pdf_cuando_existe(client, profile):
+    """Con PDF maquetado el botón sí descarga, y enlaza al archivo."""
+    profile.dossier_pdf.name = "dossier/kit-de-prensa.pdf"
+    profile.save()
+    html = client.get(reverse("content:home")).content.decode()
+    assert "Descargar dossier (PDF)" in html
+    assert "kit-de-prensa.pdf" in html
+    assert "Ver el dossier" not in html
 
 
 def test_home_cta_prefers_uploaded_pdf(client, profile):

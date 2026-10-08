@@ -4,7 +4,7 @@
 {% block description %}Recorrido del colectivo: recitales, festivales e hitos.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Trayectoria</h1>
+  {% include "content/partials/_index_head.html" with titulo="Trayectoria" cuenta=stats.events singular="actividad realizada" plural="actividades realizadas" dek="Recorrido del colectivo: recitales, festivales e hitos." %}
 
   <ul class="stats-strip">
     {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}

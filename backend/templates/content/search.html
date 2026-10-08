@@ -4,7 +4,7 @@
 {% block description %}Buscar textos y poemas del colectivo.{% endblock %}
 
 {% block content %}
-  <h1>Búsqueda</h1>
+  {% include "content/partials/_index_head.html" with titulo="Búsqueda" %}
   <form class="search-page" role="search" action="{% url 'content:search' %}" method="get">
     <label for="q-page" class="sr-only">Buscar textos y poemas</label>
     <input id="q-page" type="search" name="q" value="{{ q }}" placeholder="Buscar textos…" autocomplete="off">

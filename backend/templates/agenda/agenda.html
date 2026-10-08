@@ -4,7 +4,7 @@
 {% block description %}Próximos recitales, lanzamientos y talleres del colectivo.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Agenda</h1>
+  {% include "content/partials/_index_head.html" with titulo="Agenda" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
   <ul class="event-list">
     {% for e in events %}
       {% include "agenda/partials/_event_card.html" %}

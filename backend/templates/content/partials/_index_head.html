@@ -1,0 +1,19 @@
+{% comment %}
+   Cabecera de índice. Los once índices abrían con su nombre a 12 px en gris —el texto
+   más pequeño de la página— y nada más: quien llegaba no sabía qué había ni cuánto.
+
+   Parámetros:
+     titulo                      el nombre de la página (obligatorio)
+     cuenta, singular, plural    dato vivo de la cejilla («12 poemas»); se omite si es 0
+     cejilla                     texto fijo, solo o tras la cuenta
+     dek                         una frase que dice qué hay aquí
+{% endcomment %}
+<header class="index-head">
+  {% if cuenta %}
+    <p class="kicker">{{ cuenta }} {% if cuenta == 1 %}{{ singular }}{% else %}{{ plural }}{% endif %}{% if cejilla %} · {{ cejilla }}{% endif %}</p>
+  {% elif cejilla %}
+    <p class="kicker">{{ cejilla }}</p>
+  {% endif %}
+  <h1>{{ titulo }}</h1>
+  {% if dek %}<p class="dek">{{ dek }}</p>{% endif %}
+</header>

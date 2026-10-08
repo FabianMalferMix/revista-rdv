@@ -4,6 +4,6 @@
 {% block description %}Reseñas, ensayos y entrevistas del colectivo.{% endblock %}
 
 {% block content %}
-  <h1 class="page-title">Textos</h1>
+  {% include "content/partials/_index_head.html" with titulo="Textos" cuenta=articles.paginator.count singular="texto" plural="textos" dek="Reseñas, ensayos y entrevistas del colectivo." %}
   {% include "content/partials/_article_list.html" %}
 {% endblock %}
