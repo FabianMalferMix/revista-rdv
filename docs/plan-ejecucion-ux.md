@@ -29,7 +29,7 @@
   contenido-visual, el comando con sus pruebas y el README. Sin cambios de interfaz.
 - [x] **2. PR `ux-0-herramienta-y-linea-base`.** Tickets 0.1 y 0.2: `tools/ux` y la línea
   base en `tools/ux/out/baseline/` (no versionada: se regenera con `capture.js`).
-- [ ] **3. PR `ux-1a-imagenes-y-lectura`.** Tickets 1.1 y 1.3. El arreglo más visible del
+- [x] **3. PR `ux-1a-imagenes-y-lectura`.** Tickets 1.1 y 1.3. El arreglo más visible del
   sitio: proporción real de imágenes, medida de lectura, interlíneas, mínimos de 12 px.
 - [ ] **4. PR `ux-1b-indices-y-lenguaje`.** Tickets 1.2 y 1.12: cabecera de índice en los
   once índices, cejillas sin repetir, títulos de pestaña.

@@ -145,6 +145,9 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   de 1006 px a ≈ 480 px.
 - **Tests:** nuevo `tests/test_css_imagenes.py` al estilo de `test_nav_css.py`: la hoja contiene la
   regla global y ninguna regla con `aspect-ratio` carece de `height:auto`.
+- **Estado:** hecho (paso 3 del plan). Sin `display:block` global: cambiaba las imágenes en línea del
+  cuerpo de los textos sin necesidad. El afiche del evento queda topado en 420 px, porque a todo el
+  ancho de la columna medía más de una pantalla. Las pruebas viven en `tests/test_css_sistema.py`.
 
 #### 1.2 Cabecera de índice en los once índices
 - **Hallazgos:** TIP-1, CON-2, COM-3, ESP-11.
@@ -174,7 +177,12 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** primera línea del cuerpo de `/articulo/<slug>/` entre 60 y 75 caracteres a 1440
   (medir con el `textExtent` y la fuente actual); `grep -c "font-size:11px" site.css` = 0; títulos
   de dos líneas con interlínea ≤ 1.1.
-- **Tests:** `test_css_imagenes.py` crece a `test_css_sistema.py`: sin `11px`, con `66ch`.
+- **Tests:** `tests/test_css_sistema.py`: ningún texto bajo 12 px, títulos con interlínea propia, medida
+  en `ch` y sin guionado en poemas.
+- **Estado:** hecho (paso 3 del plan). La medida quedó en el token `--medida:58ch`, no en 66ch:
+  medido en la página, 66ch daban 82 letras por línea con la serif de reserva (Liberation Serif) y
+  58ch dan 74; con una serif de ancho normal serán unas 65. La bajada a 20 px se acotó al artículo
+  (`.article .dek`) para no agrandar las de las tarjetas.
 
 #### 1.4 Pausa real de la cinta, control sin JS y fila en táctil (D1, D12)
 - **Hallazgos:** COM-1, CON-6 (parte), POR-11 (parte).

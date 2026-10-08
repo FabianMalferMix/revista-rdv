@@ -22,6 +22,11 @@
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --display:"Syne",var(--serif);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  /* Medida de lectura: el largo de línea, en anchos del «0» de la fuente en uso.
+     Medido en la página: 58ch dan unas 74 letras por línea en una serif estrecha
+     (Times, Liberation Serif) y unas 65 en una de ancho normal. El rango legible es
+     45–75 (Bringhurst), con 66 como ideal. */
+  --medida:58ch;
 }
 
 /* Display auto-hospedada (Syne variable, eje wght 400-800, OFL) para marca y
@@ -38,8 +43,21 @@
 }
 
 *{box-sizing:border-box}
+/* Las imágenes llevan width y height en el HTML: reservan su hueco y evitan que la
+   página salte al cargar. Pero esos atributos son solo una PISTA de proporción. Sin
+   `height:auto` el alto del atributo se aplica literal y gana a `aspect-ratio`: una
+   cubierta de 1000×1400 se dibujaba a 180×1400, y una foto apaisada de la galería
+   como una tira vertical. Con el alto en auto manda la proporción —la que fije el
+   CSS o, si no fija ninguna, la del archivo—. Las reglas que dan alto explícito
+   (.avatar, .partner-logo) no cambian: su selector de clase pesa más que este. */
+img, video{max-width:100%; height:auto}
 body{margin:0; background:var(--paper); color:var(--ink);
   font-family:var(--serif); line-height:1.6; -webkit-font-smoothing:antialiased}
+/* La interlínea de 1.6 es de lectura. Un título que la hereda queda con las líneas
+   sueltas, como dos frases distintas: nueve la heredaban (el del dossier, a 44px,
+   medía 70px de línea). Las reglas que fijan la suya la conservan. */
+h1, h2, h3{line-height:1.1; text-wrap:balance}
+p{text-wrap:pretty}
 .wrap{max-width:820px; margin:0 auto; padding:0 20px}
 a{color:var(--accent); text-underline-offset:3px}
 
@@ -56,7 +74,7 @@ a{color:var(--accent); text-underline-offset:3px}
 /* Masthead */
 .masthead{border-bottom:1px solid var(--border); padding:18px 0 0; margin-bottom:8px}
 .masthead .top{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
-.brand{font-weight:700; font-size:24px; text-decoration:none; letter-spacing:-.01em;
+.brand{font-weight:700; font-size:24px; line-height:1.2; text-decoration:none; letter-spacing:-.01em;
   /* Sello: el nombre vive dentro de un bloque de color, como un timbre impreso. Blanco
      sobre el magenta da 6,39:1, por encima del mínimo incluso para texto normal.
      (Decía 5,12:1, que es el contraste del enlace magenta SOBRE el papel: el número
@@ -124,12 +142,12 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .page-title{font-size:12px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin:26px 0 20px}
 .index-head{padding:26px 0 8px; border-bottom:1px solid var(--border); margin-bottom:24px}
 .index-head h1{font-size:clamp(28px,5vw,42px); line-height:1.1; margin:8px 0; text-wrap:balance}
-.subhead{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:34px 0 14px}
+.subhead{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:34px 0 14px}
 
 /* Listado de artículos */
 .article-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:28px}
 .article-card{border-bottom:1px solid var(--border); padding-bottom:24px}
-.kicker{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--accent)}
+.kicker{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--accent)}
 .kicker a{color:var(--accent); text-decoration:none}
 .kicker a:hover{text-decoration:underline}
 /* h3: es la etiqueta que emiten las dos parciales. Con `h2` estas tres reglas
@@ -139,7 +157,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .article-card h3{margin:8px 0 6px; font-size:26px; line-height:1.15}
 .article-card h3 a{text-decoration:none; color:var(--ink)}
 .article-card h3 a:hover{color:var(--accent)}
-.dek{color:var(--muted); margin:6px 0}
+.dek{color:var(--muted); margin:6px 0; max-width:var(--medida)}
 .meta{font-family:var(--mono); font-size:12px; color:var(--muted)}
 .meta a{color:var(--muted)}
 .meta a:hover{color:var(--accent)}
@@ -160,7 +178,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .member-card a{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ink)}
 .member-card a:hover .member-name{color:var(--accent)}
 .member-name{font-size:19px; font-weight:700; line-height:1.2}
-.member-role{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent)}
+.member-role{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent)}
 .member-bio{color:var(--muted); font-size:14px; margin:4px 0 0}
 .avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
 .avatar-fallback{display:flex; align-items:center; justify-content:center;
@@ -171,6 +189,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--accent);
   font-style:italic; font-size:19px; color:var(--ink)}
 .poetics p{margin:0}
+.member-about{max-width:var(--medida)}
 .member-about p{margin:10px 0}
 
 /* Poemas: tipografía fiel (pre-wrap preserva versos, sangrías y espacios) */
@@ -197,12 +216,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .event-date{min-width:64px; text-align:center; border:1px solid var(--border); border-radius:4px;
   padding:8px 6px; height:fit-content; background:var(--surface)}
 .event-day{display:block; font-size:26px; font-weight:700; line-height:1.1}
-.event-month{display:block; font-family:var(--mono); font-size:11px; text-transform:uppercase; color:var(--muted)}
+.event-month{display:block; font-family:var(--mono); font-size:12px; text-transform:uppercase; color:var(--muted)}
 .event-card h2{margin:6px 0 4px; font-size:22px}
 .event-card h2 a{text-decoration:none; color:var(--ink)}
 .event-card h2 a:hover{color:var(--accent)}
 .event-card .btn{margin-top:8px}
-.event-poster{max-width:100%; border:1px solid var(--border); border-radius:4px; margin:6px 0 14px}
+/* Un afiche es vertical: a todo el ancho de la columna ocupaba más de una pantalla
+   y empujaba la descripción y la galería fuera de la vista. */
+.event-poster{max-width:min(100%, 420px); border:1px solid var(--border); border-radius:4px; margin:6px 0 14px}
 .stats-strip{list-style:none; padding:14px 0; margin:0 0 8px; display:flex; flex-wrap:wrap; gap:8px 28px;
   font-family:var(--mono); font-size:13px; color:var(--muted); border-bottom:1px solid var(--border)}
 .stats-strip strong{font-size:20px; color:var(--ink); font-family:var(--serif); margin-right:4px}
@@ -219,7 +240,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .timeline-items .milestone{padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:4px}
 .photo-grid, .album-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px}
-.photo-grid img, .album-grid img{width:100%; aspect-ratio:8/5; object-fit:cover;
+.photo-grid img, .album-grid img{width:100%; height:auto; aspect-ratio:8/5; object-fit:cover;
   border:1px solid var(--border); border-radius:4px}
 .album-card a{display:flex; flex-direction:column; gap:6px; text-decoration:none; color:var(--ink)}
 .album-title{font-weight:700; font-size:17px; line-height:1.25}
@@ -273,7 +294,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pub-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:20px}
 .pub-card a{display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink)}
-.pub-card img, .pub-cover-fallback{width:100%; aspect-ratio:5/7; object-fit:cover;
+.pub-card img, .pub-cover-fallback{width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
   border:1px solid var(--border); border-radius:3px; background:var(--surface)}
 .pub-cover-fallback{display:flex; align-items:center; justify-content:center;
   font-family:var(--mono); font-size:12px; text-transform:uppercase; color:var(--muted)}
@@ -331,7 +352,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Ficha del registro destacado: los datos que el modelo ya tenía. */
 .rec-ficha{margin:0 0 10px}
 .rec-ficha a{text-decoration:none; border-bottom:1px solid var(--border)}
-.rec-sumario{margin:0 0 16px; font-size:17px; color:var(--ink)}
+.rec-sumario{margin:0 0 16px; font-size:17px; color:var(--ink); max-width:var(--medida)}
 
 /* Dossier / kit de prensa (pantalla + impresión) */
 .dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}
@@ -340,6 +361,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .dossier-head{padding:26px 0 10px; border-bottom:2px solid var(--ink)}
 .dossier-head h1{font-size:clamp(30px,5vw,44px); margin:0 0 6px}
 .dossier-section{margin:26px 0}
+.dossier-section > p{max-width:var(--medida)}
 .dossier-members{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px}
 .dossier-members .dek{margin:2px 0 0}
 .dossier-list-plain{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px}
@@ -351,18 +373,18 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .newsletter input[type=email]{font-family:var(--serif); font-size:14px; padding:7px 12px;
   border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--ink); min-width:200px}
 .newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
-.news-consent{flex-basis:100%; font-family:var(--mono); font-size:11px; color:var(--muted)}
+.news-consent{flex-basis:100%; font-family:var(--mono); font-size:12px; color:var(--muted)}
 /* Mapa del sitio en columnas. `auto-fit` + `minmax` reparte los cuatro grupos sin
    consultas de medios: cuando no caben a 150px, bajan solos a dos columnas y luego a
    una. El pie es el sitio donde más barato sale dejar que el navegador decida. */
 .foot-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
   gap:20px 24px; margin:0}
-.foot-group h2{font-family:var(--mono); font-size:11px; text-transform:uppercase;
+.foot-group h2{font-family:var(--mono); font-size:12px; text-transform:uppercase;
   letter-spacing:.1em; color:var(--muted); margin:0 0 8px; font-weight:600}
 .foot-group ul{list-style:none; margin:0; padding:0; display:grid; gap:5px}
 .foot-group a{font-size:14px; color:var(--ink); text-decoration:none}
 .foot-group a:hover{color:var(--accent); text-decoration:underline; text-underline-offset:3px}
-.foot-legal{margin:8px 0 0; font-family:var(--mono); font-size:11px; color:var(--muted)}
+.foot-legal{margin:8px 0 0; font-family:var(--mono); font-size:12px; color:var(--muted)}
 .foot-legal a{color:var(--muted)}
 .flash{padding:10px 16px; border:1px solid var(--border); border-left:3px solid var(--accent);
   border-radius:3px; background:var(--surface); margin:14px 0 0}
@@ -382,15 +404,26 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:clamp(30px,5vw,46px); line-height:1.08; margin:10px 0; text-wrap:balance}
-.article .body{margin-top:28px; font-size:18px}
+/* Medida de lectura. A 18px en los 780 de la columna el cuerpo corría a 102 caracteres
+   por línea; lo legible está entre 45 y 75 (Bringhurst), y pasado ese largo el ojo
+   pierde el arranque de la línea siguiente. La medida va en `ch` para que siga a la
+   tipografía: si cambia la fuente o el cuerpo, la línea conserva su largo en letras. */
+.article .dek{font-size:20px; line-height:1.4}
+.article .body{margin-top:28px; font-size:19px; line-height:1.55; max-width:var(--medida)}
 .article .body p{margin:0 0 1.2em}
 .reviewed{background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:14px 18px; margin:22px 0}
 .reviewed h2{font-size:12px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
 .reviewed ul{margin:0; padding-left:18px}
 .tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:32px; border-top:1px solid var(--border); padding-top:20px}
-.tag{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+.tag{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.08em;
   text-decoration:none; color:var(--muted); border:1px solid var(--border); border-radius:2px; padding:3px 9px}
 .tag:hover{color:var(--accent); border-color:var(--accent)}
+
+/* En pantallas estrechas la línea ronda las 45 letras y el margen derecho queda
+   dentado; partir palabras lo empareja. Nunca en un poema: ahí el corte es del autor. */
+@media (max-width:600px){
+  .article .body, .dek{hyphens:auto}
+}
 
 /* Paginación */
 .pagination{display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -485,7 +518,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* El enlace extendido. La capa cubre el componente entero; la etiqueta de
    pausa se eleva por encima para seguir siendo pulsable. */
 .cinta-pie{margin:10px 0 0; text-align:right}
-.cinta-pie a{font-family:var(--mono); font-size:11px; text-transform:uppercase;
+.cinta-pie a{font-family:var(--mono); font-size:12px; text-transform:uppercase;
   letter-spacing:.1em; color:var(--muted); text-decoration:none}
 .cinta-pie a::after{content:""; position:absolute; inset:0; border-radius:5px}
 .cinta-pie a span{display:inline-block; transition:transform .18s ease}
