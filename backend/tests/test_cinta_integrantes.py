@@ -148,38 +148,24 @@ def test_la_pausa_cuelga_de_la_caja_no_de_la_pista():
     assert pausa, "ya no hay ninguna regla que pause la cinta"
     selectores = pausa.group(1)
     assert ".cinta-caja:hover .cinta-pista" in selectores
-    assert ".cinta-toggle:checked ~ .cinta .cinta-pista" in selectores, (
-        "el icono de pausa dejó de pausar"
+    assert ".cinta-caja:focus-within .cinta-pista" in selectores, (
+        "sin pausa por foco, quien navega con teclado no tiene cómo detenerla"
     )
     assert ".cinta:hover" not in siempre + animada, "volvió el selector que nunca se cumple"
-    assert ":focus-within .cinta-pista" not in siempre + animada, (
-        "pausar por foco deja la cinta parada tras pulsar el icono para reanudar: "
-        "el foco se queda en la casilla"
-    )
 
 
-def test_el_control_de_pausa_es_una_casilla_con_nombre_y_un_icono_sin_texto(client):
-    """Vuelve el control, pero no el rótulo.
+def test_la_cinta_no_lleva_control_de_pausa(client):
+    """Decisión del usuario, tomada dos veces: primero retiró el rótulo de texto que
+    pausaba la cinta y después el icono que lo sustituyó (2026-10-08).
 
-    Se había retirado porque era una etiqueta de texto en una línea propia encima de
-    la cinta. Ahora es una casilla real (enfocable, con nombre accesible) cuya parte
-    visible es un icono en la fila del pie.
+    Esta prueba no defiende un requisito técnico: fija la decisión para que un control
+    no reaparezca sin que nadie lo pida. Lo que protege a quien lo necesita está en las
+    pruebas de arriba: en táctil y con «menos movimiento» la cinta no se mueve, y con
+    puntero se detiene al señalarla o al llevar el foco dentro.
     """
     _integrantes(UMBRAL_CINTA)
     caja = re.search(r'<div class="cinta-caja">(.*?)</section>', _portada(client), re.S).group(1)
-
-    casilla = re.search(r'<input[^>]*id="cinta-pausa"[^>]*>', caja)
-    assert casilla, "falta la casilla de pausa"
-    assert 'type="checkbox"' in casilla.group(0)
-    assert re.search(r'aria-label="[^"]{10,}"', casilla.group(0)), "la casilla no tiene nombre"
-    # Un selector de hermanos (~) solo mira hacia adelante: la casilla va antes de la pista.
-    assert caja.index('id="cinta-pausa"') < caja.index('class="cinta"')
-
-    etiqueta = re.search(r'<label for="cinta-pausa"[^>]*>(.*?)</label>', caja, re.S)
-    assert etiqueta, "la casilla no tiene parte visible"
-    assert not re.sub(r"<[^>]+>", "", etiqueta.group(1)).strip(), (
-        "el control volvió a ser un rótulo de texto"
-    )
+    assert "<input" not in caja and "<label" not in caja and "<button" not in caja
 
 
 def test_la_cinta_no_crece_sin_limite(client):

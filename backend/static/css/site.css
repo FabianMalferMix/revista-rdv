@@ -580,9 +580,14 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    se cumplía jamás. Ahora la pausa cuelga de .cinta-caja, que sí contiene al
    enlace extendido.
 
-   El control de pausa vuelve como ICONO en la fila del pie. Se había retirado
-   porque era un rótulo de texto en una línea propia encima de la cinta, y eso
-   molestaba; el commit que lo quitó (dc2ffb3) dejó escrita esta salida.
+   SIN control de pausa, por decisión del usuario (dos veces: retiró el rótulo
+   de texto en dc2ffb3 y el icono que lo sustituyó el 2026-10-08). Lo que queda:
+     · En táctil y con «menos movimiento» no hay nada que pausar: no se mueve.
+     · Con puntero se detiene mientras se la señala (:hover) o mientras el foco
+       está dentro (:focus-within), que es lo que alcanza quien navega con teclado.
+   No hay pausa PERSISTENTE: al apartar el puntero o el foco, sigue. WCAG 2.2.2
+   pide «un mecanismo para pausar, detener u ocultar»; este lo es mientras se usa,
+   y es discutible que baste. Si alguna vez se quiere zanjar, la vía es un control.
    ────────────────────────────────────────────────────────────────────────── */
 .cinta-caja{position:relative; margin:18px 0 0; padding:14px 16px 10px;
   border:1px solid transparent; border-radius:5px;
@@ -604,11 +609,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    líneas iguala la retícula sin recortar ningún nombre. */
 .cinta-card .member-name{min-height:2.4em; line-height:1.2}
 .cinta-card .avatar{width:108px; height:108px}
-
-/* La casilla es real y enfocable; lo que se ve es su <label>, el icono del pie. */
-.cinta-toggle{position:absolute; width:1px; height:1px; margin:-1px; padding:0;
-  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
-.cinta-pausa{display:none}
 
 .cinta-pie{display:flex; align-items:center; justify-content:flex-end; gap:12px; margin:10px 0 0}
 .cinta-pie a{text-decoration:none}
@@ -643,31 +643,13 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .cinta-card{flex:0 0 230px; width:230px; min-width:0; max-width:none}
   .cinta-card[aria-hidden="true"]{display:flex}
 
-  /* Dos formas de detenerla: posar el puntero (mientras esté encima) o el icono
-     (hasta que se vuelva a pulsar). No se pausa por :focus-within: al pulsar el
-     icono para REANUDAR, el foco se queda en la casilla, y la cinta seguiría
-     parada aunque el icono dijera lo contrario. */
+  /* Se detiene mientras se la señala o mientras el foco está dentro. */
   .cinta-caja:hover .cinta-pista,
-  .cinta-toggle:checked ~ .cinta .cinta-pista{animation-play-state:paused}
+  .cinta-caja:focus-within .cinta-pista{animation-play-state:paused}
 
   /* El enlace extendido: una capa que hace pulsable el componente entero. Solo
      aquí: en modo fila taparía la pista y el dedo no podría desplazarla. */
-  .cinta-pie{justify-content:space-between}
   .cinta-pie a::after{content:""; position:absolute; inset:0; border-radius:5px}
   .cinta-caja:hover .cinta-pie a{color:var(--accent)}
   .cinta-caja:hover .cinta-pie a span{transform:translateX(4px)}
-
-  /* El icono de pausa: dos barras que pasan a triángulo cuando está en pausa.
-     32 px de dibujo y 44 de zona pulsable, por encima del enlace extendido. */
-  .cinta-pausa{display:block; position:relative; z-index:1; width:32px; height:32px;
-    color:var(--muted); cursor:pointer; border-radius:50%}
-  .cinta-pausa:hover{color:var(--accent)}
-  .cinta-pausa::after{content:""; position:absolute; inset:-6px}
-  .cinta-pausa::before{content:""; position:absolute; left:11px; top:10px; width:4px; height:12px;
-    border-left:3px solid currentColor; border-right:3px solid currentColor}
-  .cinta-toggle:checked ~ .cinta-pie .cinta-pausa{color:var(--accent)}
-  .cinta-toggle:checked ~ .cinta-pie .cinta-pausa::before{left:12px; top:9px; width:0; height:0;
-    border-style:solid; border-width:7px 0 7px 11px;
-    border-color:transparent transparent transparent currentColor}
-  .cinta-toggle:focus-visible ~ .cinta-pie .cinta-pausa{outline:2px solid var(--accent); outline-offset:2px}
 }

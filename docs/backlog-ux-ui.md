@@ -70,7 +70,7 @@ No vuelvas a preguntar por estas; están resueltas con criterio profesional y aq
 
 | # | Tema | Resolución | Criterio |
 |---|---|---|---|
-| D1 | Cinta sin botón de pausa frente a WCAG 2.2.2 | Se corrige la pausa por hover y foco (hoy no funciona), la animación corre **solo** en dispositivos con puntero (`hover:hover`) y sin `prefers-reduced-motion`, en táctil la cinta es una fila con `scroll-snap`, y vuelve un control **discreto**: un icono de pausa sin JS (casilla + selector de hermanos) en la fila de «Conoce al colectivo». No un rótulo de texto en línea propia, que fue lo que molestó cuando se retiró. | 2.2.2 es nivel A, el mínimo. El commit que retiró el control (`dc2ffb3`) dejó escrita esta vía: «un control discreto, un icono en la esquina». sinedogma, que gusta, lo hace. |
+| D1 | Cinta sin botón de pausa frente a WCAG 2.2.2 | Se corrige la pausa por hover y foco (no funcionaba), la animación corre **solo** en dispositivos con puntero (`hover:hover`) y sin `prefers-reduced-motion`, y en táctil la cinta es una fila con `scroll-snap`. **Sin control de pausa**: se propuso un icono discreto y el dueño del sitio lo descartó al verlo (2026-10-08), como antes había descartado el rótulo de texto (`dc2ffb3`). | Decisión del dueño. Lo que protege: en táctil y con «menos movimiento» no se mueve; con puntero se detiene al señalarla o al llevar el foco dentro. No hay pausa persistente, así que el cumplimiento de 2.2.2 (nivel A) es discutible. No volver a proponer el control salvo que él lo pida. |
 | D2 | Buscador siempre visible | Se colapsa en un `<details>` con lupa dentro de la cabecera de una fila; la búsqueda en vivo con htmx sigue dentro del panel; `/buscar/` pasa a usar el sistema; la cobertura se amplía a integrantes, registros, publicaciones y eventos. | Sitio pequeño; el espacio de cabecera va al CTA de gestores; WCAG 2.4.5 no exige campo abierto. |
 | D3 | La mono en nav, botones, pie y cifras | La mono queda en dos papeles: cejilla (12 px, mayúsculas, `+.1em`) y meta (13 px, caja baja). Nav en Syne 500 a 15 px, botones a 14 px en caja de frase, pie en serif 15 px, cifras en Syne. Se mantiene la pila mono de sistema; no se autoaloja otra. | La voz dominante debe ser la de lectura; las siete referencias racionan la familia «de sabor». |
 | D4 | Serif de lectura autoalojada | Sí: **Source Serif 4** (OFL) variable, romana + cursiva, subconjunto latino, con fallback métrico; presupuesto de fuentes ≤ 200 KB sumando Syne. | Misma voz en Linux, macOS, Windows y Android; OFL permite empaquetar; `font-src 'self'` lo admite. |
@@ -213,12 +213,11 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   enlace), la copia lleva `aria-hidden`, y nueva prueba de que el CSS contiene el selector de pausa
   sobre `.cinta-caja` y el selector de hermanos del control; `test_la_cinta_se_detiene_con_prefers_reduced_motion`
   pasa a comprobar la media query de `hover`.
-- **Estado:** hecho (paso 5 del plan). Una diferencia con lo escrito arriba: la cinta NO se pausa por
-  `:focus-within`. Al pulsar el icono para reanudar, el foco se queda en la casilla y la cinta seguía
-  parada aunque el icono dijera lo contrario. Quedan dos formas de detenerla: posar el puntero y el
-  icono. Verificado en navegador: pausa al posar el puntero, pausa persistente con el icono (ratón y
-  teclado), reanudación, clic en la caja hacia `/integrantes/`, y en táctil y con menos movimiento
-  una fila sin animación que se desplaza con el dedo o la rueda.
+- **Estado:** hecho en dos tiempos. El paso 5 del plan corrigió la pausa, dejó la cinta quieta en táctil y
+  añadió un icono de pausa. El dueño del sitio retiró el icono al verlo (2026-10-08): lo descrito arriba
+  en el punto (4) ya no existe. Sin casilla que retenga el foco, la pausa por `:focus-within` volvió:
+  es lo que alcanza quien navega con teclado. Verificado en navegador: en marcha con el puntero fuera,
+  en pausa con el puntero encima y con el foco en «Conoce al colectivo», y ningún control en la caja.
 
 #### 1.5 Buscador: overlay dentro del viewport y cierre al perder el foco
 - **Hallazgos:** NAV-3, COM-5 (la colapsación en `<details>` va en 4.1).
