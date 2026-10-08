@@ -1,0 +1,83 @@
+{
+ "titulo": "Buscar: casa — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1057,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Búsqueda",
+  "familia": "Iowan Old Style",
+  "px": 32,
+  "peso": "700",
+  "interlinea": "51.2px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "Resultados para «casa»",
+  "familia": "Iowan Old Style",
+  "px": 16,
+  "peso": "400",
+  "interlinea": "25.6px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "Buscar",
+  "familia": "Arial",
+  "px": 13.3333,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": false,
+  "ancho": 57
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 45,
+  "porTipo": {
+   "mono": 37,
+   "display": 1,
+   "lectura": 7
+  },
+  "mayusculas": 13,
+  "bajo12": 13
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 38,
+  "bajo24": 29,
+  "bajo44": 35
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/buscar/?q=casa",
+ "estado": 200,
+ "desborde320": false
+}

@@ -33,7 +33,8 @@ python3 tools/ux/smoke.py
 ```
 
 Cada página deja `<nombre>-<viewport>-view.png` (primer viewport), `-full.png` (página
-entera) y `-metrics.json`. `tools/ux/out/` no se versiona.
+entera) y `-metrics.json`. `tools/ux/out/` no se versiona. Lo que hay que conservar entre máquinas
+está en `linea-base/` (ver más abajo).
 
 ## Qué mide
 
@@ -49,3 +50,35 @@ entera) y `-metrics.json`. `tools/ux/out/` no se versiona.
 | `desb` | scroll horizontal (en móvil se prueba además a 320 px) | WCAG 1.4.10 |
 
 Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`).
+
+## Lo demás que hay en esta carpeta
+
+Ayudantes del plan de ejecución (`docs/plan-ejecucion-ux.md`). Nacieron como guiones sueltos
+durante los primeros pasos; están aquí para que el plan se pueda seguir desde cualquier máquina.
+
+| Archivo | Para qué | Uso |
+|---|---|---|
+| `preparar-entorno.sh` | Reconstruye el entorno de diseño en una máquina nueva: demostración, identidad real, 12 integrantes y material genérico. Idempotente. | `bash tools/ux/preparar-entorno.sh` |
+| `ver.js` | Capturas sueltas a cualquier ancho y de cualquier ruta, con aviso de scroll horizontal. | `node tools/ux/ver.js tools/ux/out/prueba 768 900 poemas=/poemas/` |
+| `hoja.js` | Hoja de contactos: varias capturas en una sola imagen. | `node tools/ux/hoja.js tools/ux/out/prueba tools/ux/out/prueba/hoja.png -d1440-full.png 620 3 home poemas` |
+| `mutar.sh` | Comprueba que una prueba nueva **falla** cuando se rompe lo que vigila. | `bash tools/ux/mutar.sh static/css/site.css '<actual>' '<roto>' 'tests/…::test_…'` |
+| `fusionar.sh` | Fusiona el PR de un paso solo si su CI está verde, con el asunto del proyecto. | `bash tools/ux/fusionar.sh 105 <rama> "<efecto visible>"` |
+
+Cada uno explica sus argumentos en su cabecera. `ver.js` y `hoja.js` usan el mismo Chrome que
+`capture.js` (variable `CHROME`) y la misma base (`UX_BASE`).
+
+## Línea base versionada
+
+`linea-base/` guarda las métricas del sitio **antes** del backlog (49 archivos, capturados el
+2026-10-08 sobre `main` en `e6873fe`) y ocho capturas del primer viewport: portada, índice de
+poemas, un poema y una ficha de integrante, a 1440 y a 390. `out/` no se versiona y esas
+capturas no se pueden regenerar: el código que las produjo ya cambió.
+
+```bash
+python3 tools/ux/metrics.py tabla tools/ux/linea-base
+python3 tools/ux/metrics.py comparar tools/ux/linea-base tools/ux/out/<rama>
+```
+
+El ticket 6.2 del backlog (métricas finales) compara contra esta carpeta. Al comparar, ten en
+cuenta que la base de datos de entonces no tenía fechas de agenda por venir: en un entorno recién
+sembrado la portada y `/agenda/` miden distinto por los datos, no por el diseño.

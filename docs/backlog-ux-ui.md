@@ -59,6 +59,14 @@ copia oculta en táctil), `tests/test_ui_identity.py` (cifras acotadas a la port
 guía de pruebas manuales actualizada si cambió algo que describe; los criterios de aceptación del
 ticket medidos con la herramienta, no estimados.
 
+**Cómo leer un ticket que aún no se ha hecho.** Los números de línea de `site.css` y de las
+plantillas son los del día de la auditoría: la hoja ha crecido desde entonces, así que busca por
+selector, no por línea. Los tickets cerrados llevan una nota **Estado** con lo que de verdad se
+construyó; los que quedan pueden llevar una **Nota de entrada** con lo que cambió por debajo desde
+que se escribieron. Si la nota contradice los pasos, manda la nota. El humo de rutas se hace con
+`python3 tools/ux/smoke.py`, no con `curl` a mano. El estado del plan, el método paso a paso y cómo
+preparar un entorno nuevo están en `docs/plan-ejecucion-ux.md`.
+
 **Orden:** épicas 0 → 6 en secuencia. Dentro de una épica, los tickets marcados `[paralelo]` pueden ir
 en ramas simultáneas; los demás, en el orden listado (todos tocan `site.css` y se pisan).
 
@@ -508,13 +516,31 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Tests:** `tests/test_ui_identity.py::test_no_hay_fuentes_huerfanas` y
   `test_font_file_is_bundled` actualizados a los tres archivos; `tests/test_vendored_assets.py`
   (licencias) con la entrada nueva; `test_css_sistema.py`: existe `--t2` y `"Source Serif 4"`.
+- **Nota de entrada** (tras el paso 10):
+  1. Hace falta red para descargar la fuente y un entorno local con `fonttools` y `brotli`
+     (`python3 -m venv` fuera del repo; no van a `requirements`).
+  2. **El peso 800 de Syne es un corte extendido**, un 44 % más ancho que el 700. No se usa en
+     ningún sitio y no tiene reserva métrica. No lo introduzcas aquí: la decisión es del ticket 4.2.
+  3. `--medida:58ch` se calibró con una serif estrecha (74 letras por línea en Liberation Serif).
+     Con Source Serif 4 hay que volver a medir `cpl` en `/articulo/…` y ajustar el token para que
+     quede entre 60 y 70; la prueba admite de 45 a 66 `ch`.
+  4. `MAYUSCULAS_PENDIENTES = {".nav a"}` en `tests/test_css_sistema.py` es deuda con fecha de este
+     ticket: al pasar la navegación a Syne en caja de frase, el conjunto queda vacío.
+  5. Tamaños escritos a mano desde entonces, que entran en la escala: `.fila-titulo` (22 y 26 px),
+     `.fila-verso` (17), `.year-mark` (`clamp(28px,3.4vw,44px)`), `.pub-title` (17 y 20),
+     `.album-title` (22), `.rec-caratula` (`clamp(20px,2.4vw,30px)`).
+  6. La aceptación «sin `font-size` fuera de tokens» merece su prueba en `test_css_sistema.py`,
+     con la lista de excepciones escrita (rótulo y meta).
+  7. La regla que fija `font-family:var(--display)` por primera vez en la hoja debe seguir siendo
+     el grupo de títulos, con `.article-card h3` dentro: dos pruebas de `test_ui_identity.py` leen
+     esa regla.
 
 #### 2.4 Sala de lectura y fichas a dos columnas
 - **Hallazgos:** ESP-9, CON-3 (paso 2), TIP-7 (sangría), CON-4, IMG-7, NAV-9 (pie de entidad).
 - **Archivos:** `poem_detail.html`, `article_detail.html`, `people/member_detail.html`,
   `showcase/publication_detail.html`, `agenda/event_detail.html`, `media/recording_detail.html`;
-  nuevo `templates/content/partials/_pie_de_entidad.html`; nuevo filtro `versos` en
-  `apps/content/templatetags/`; `site.css`.
+  nuevo `templates/content/partials/_pie_de_entidad.html`; filtro `versos` en el módulo que ya
+  existe, `apps/content/templatetags/versos.py` (trae `primer_verso` y `primeros_versos`); `site.css`.
 - **Pasos:** `.lectura{display:grid; grid-template-columns:minmax(240px,1fr) minmax(0,66ch); column-gap:var(--s5)}`
   en `.ancho`, con columna-ancla `position:sticky; top:80px` (cejilla como miga «Poemas», h1,
   epígrafe, autora con avatar de 56 px, fecha, «Escuchar en el registro →» interno con `<audio>`
@@ -532,6 +558,15 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Tests:** `tests/test_poems.py`: el filtro `versos` escapa HTML (`<script>` no se renderiza) y
   conserva saltos; `tests/test_poem_recording_visibility.py` sigue; `test_article_detail_query_budget`
   (≤ 12) intacto con `select_related("cover_image")`.
+- **Nota de entrada** (tras el paso 10):
+  1. Donde los pasos dicen «en `.ancho`» léase: la página pide el carril ancho con
+     `{% block lienzo %}lienzo--ancho{% endblock %}` (ticket 2.1). Poema, artículo y fichas están
+     hoy en el carril de lectura; este ticket los pasa al ancho y les da su retícula de dos columnas.
+  2. En la ficha de integrante las filas de poemas y textos repiten el nombre de la persona en
+     cada una. Al rehacer la ficha, las parciales de fila pueden recibir un parámetro para omitir
+     la firma cuando coincide con la de la página (como `sin_cejilla` en `_poem_card.html`).
+  3. La lista de registros de la ficha (`.work-list`) sigue siendo una lista de enlaces: puede
+     pasar a `.filas` con la misma anatomía.
 
 ### Épica 3 — Color, imagen y dirección de arte (D5, D6, D10)
 
@@ -549,6 +584,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   no quedan cajas blancas con borde de 1 px sobre papel; la franja celeste vacía de ≈ 42 px antes
   del pie desaparece.
 - **Tests:** pares (paper/ink, accent-on-ink/ink) ya en `test_contraste_paleta.py` desde 1.9.
+- **Nota de entrada** (tras el paso 10): `--paper-2` y `--line` ya están en `:root` (ticket 2.2),
+  con sus pares de contraste. `.milestone` y `.featured-poem` ya no existen: los hitos son filas
+  de `/trayectoria/` y el CSS muerto ya se retiró. `--paper-2` es hoy el fondo de la fila
+  señalada; si pasa a ser además superficie de bandas, el estado de fila sobre esa banda necesita
+  otro tono o se vuelve invisible. `.index-head` comparte filete con la primera fila de la lista
+  que le sigue: la «firma por territorio» de 3 px tiene que convivir con eso.
 
 #### 3.2 Amarillo como superficie (D5)
 - **Hallazgos:** COL-6, POR-9 (parte).
@@ -587,6 +628,13 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Aceptación:** ninguna placa azul vacía en todo el sitio; texto sobre la placa ≥ 4,5:1; foco
   ≥ 3:1; al pulsar «Reproducir» el iframe reemplaza la placa (click-to-play intacto);
   `tests/test_embed_consent.py` en verde.
+- **Nota de entrada** (tras el paso 10): la «variante miniatura para índices» ya existe
+  (`.rec-miniatura` y `.rec-caratula` en `media/recording_index.html`, ticket 2.2); aquí se
+  unifica con la placa del reproductor, no se crea otra. La marca de reproducción del índice es un
+  bloque blanco **cuadrado** dibujado con CSS: el botón de la placa debe seguirla, porque el ticket
+  3.6 exige que no quede `border-radius:50%` en la hoja. Para un póster decorativo usa
+  `decorativa=True` en `responsive_img`; `alt=""` no emite un texto alternativo vacío. La portada
+  sigue usando `_player.html` para el destacado: lo que cambie aquí se ve también allí.
 
 #### 3.5 Las imágenes del modelo llegan a pantalla
 - **Hallazgos:** IMG-7, IMG-8, IMG-9, IMG-12.
@@ -603,6 +651,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   presupuestos de `test_performance.py` intactos (`content:home` ≤ 24).
 - **Tests:** `tests/test_seed_photos.py` y `tests/test_images.py` ampliados; nuevo test de que el
   crédito se muestra cuando existe.
+- **Nota de entrada** (tras el paso 10): la fila (`.fila`) reparte sus piezas con áreas con nombre
+  (`fecha`, `cuerpo`, `pie`) dentro de una *container query*: la miniatura de Textos es una cuarta
+  área, no un flotante. `/galeria/` ya enseña cada álbum como hoja de contactos (`.hoja`, tres
+  fotos); aquí faltan el crédito, el pie y el contador. No uses `seed_demo` sobre la base con la
+  identidad aplicada: el material de prueba lo pone `seed_material_generico`, que ya da afiches,
+  cubiertas, carátulas, logos e imágenes de texto a todo lo sembrado.
 
 #### 3.6 Retratos 4:5 y monograma
 - **Hallazgos:** IMG-4, COL-5.
@@ -614,6 +668,11 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   monograma de dos letras en Syne 700 a 56 px sobre `--paper-2`, 4:5, nunca círculo.
 - **Aceptación:** en `/integrantes/` el rostro ocupa ≥ 60 % de la tarjeta; sin `border-radius:50%`
   en el CSS; `tests/test_cinta_integrantes.py` sigue (la cinta no añade enlaces por tarjeta).
+- **Nota de entrada** (tras el paso 10): `tests/test_marcadores.py` fija el marcado del monograma
+  (`<span class="avatar avatar-fallback" aria-hidden="true">RC</span>`); si cambia la clase, se
+  actualiza en el mismo PR. El patrón de «toda la tarjeta es enlace» ya está escrito para las filas
+  y las tarjetas de registro: una capa `::after` del enlace del título y `z-index:1` en los
+  secundarios. Reutilízalo tal cual.
 
 #### 3.7 Glifo, favicon, theme-color y og_image
 - **Hallazgos:** COL-2.
@@ -760,8 +819,8 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 
 #### 5.3 Galería como hoja de contactos y aliados con logo `[paralelo]`
 - **Hallazgos:** IMG-9, IMG-12 (lo que no cubrió 3.5).
-- **Pasos:** `.album-grid` a `2fr 1fr` con filas 3:2, pie con crédito y contador; `.partner-list`
-  agrupada por `kind` con logos 160×80; fallback tipográfico cuando no hay logo.
+- **Pasos:** ~~`.album-grid` a `2fr 1fr` con filas 3:2~~ (hecho en 2.2: `.hoja`); pie con crédito y
+  contador; `.partner-list` agrupada por `kind` con logos 160×80; fallback tipográfico cuando no hay logo.
 - **Aceptación:** `/galeria/` y `/aliados/` con ratio ≥ 0,85 a 1440 y sin imágenes deformadas.
 
 #### 5.4 Búsqueda con cobertura completa (D2)
@@ -779,8 +838,8 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 
 #### 6.1 Pasada de accesibilidad completa
 - **Pasos:** recorrer con teclado las 40 rutas (skip link, orden de foco, foco visible, menú y
-  búsqueda en `<details>`, control de pausa, lightbox); comprobar con la herramienta
-  `animationPlayState` en la cinta con hover, foco y control; contraste de todos los pares en la
+  búsqueda en `<details>`, lightbox); comprobar con la herramienta `animationPlayState` en la cinta
+  con hover y con foco (no hay control de pausa: decisión D1, revisada por el dueño); contraste de todos los pares en la
   prueba; objetivos ≥ 44 px en nav, pie, paginación y botones; `aria-current`; títulos de pestaña;
   `prefers-reduced-motion` en todas las animaciones; `lang="es"` y guionado solo donde se indicó.
 - **Aceptación:** una tabla en el PR con cada criterio de §10 de la auditoría marcado; cero
@@ -797,7 +856,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 #### 6.3 Documentación y decisiones
 - **Pasos:** `docs/deferidos-y-decisiones.md` §1 con D1-D14 y su porqué (copiar de la sección 1 de
   este backlog, con fecha); `docs/guia-pruebas-manuales.md` actualizada (cabecera de una fila,
-  buscador en `<details>`, control de pausa, nav de cinco, índices con cabecera, portada nueva);
+  buscador en `<details>`, cinta sin control de pausa, nav de cinco, índices con cabecera, portada nueva);
   `README.md` con `tools/ux/`; `docs/plan-ui.md` con una nota al inicio: «superado por
   docs/auditoria-ux-ui.md y docs/backlog-ux-ui.md (2026-10-08)»; este backlog con cada ticket
   marcado como cerrado y el número de PR.

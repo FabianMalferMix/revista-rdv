@@ -1,0 +1,111 @@
+{
+ "titulo": "Galería — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 3871,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "GALERÍA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 780
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": null,
+ "nav": {
+  "texto": "INTEGRANTES",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "600",
+  "interlinea": "20.8px",
+  "mayus": true,
+  "ancho": 127
+ },
+ "boton": {
+  "texto": "SUSCRIBIRME",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 117
+ },
+ "texto": {
+  "ancho": 699,
+  "razon": 0.49,
+  "elementos": 44,
+  "porTipo": {
+   "mono": 38,
+   "display": 1,
+   "lectura": 5
+  },
+  "mayusculas": 10,
+  "bajo12": 10
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 4,
+  "enPrimerViewport": 3,
+  "desviadas": 4,
+  "muestra": [
+   {
+    "clase": "img",
+    "ancho": 249,
+    "alto": 1600,
+    "natural": "300x200",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 249,
+    "alto": 1600,
+    "natural": "300x200",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 249,
+    "alto": 750,
+    "natural": "300x187",
+    "ajuste": "cover",
+    "arriba": 185,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 249,
+    "alto": 1600,
+    "natural": "300x200",
+    "ajuste": "cover",
+    "arriba": 1854,
+    "desvio": true
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 36,
+  "bajo24": 27,
+  "bajo44": 31
+ },
+ "cabecera": {
+  "alto": 120,
+  "posicion": "static"
+ },
+ "ruta": "/galeria/",
+ "estado": 200
+}

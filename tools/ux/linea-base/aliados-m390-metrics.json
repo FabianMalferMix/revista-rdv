@@ -1,0 +1,103 @@
+{
+ "titulo": "Aliados — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1033,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "ALIADOS Y FINANCIAMIENTO",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": null,
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "ui-monospace",
+  "px": 14,
+  "peso": "400",
+  "interlinea": "22.4px",
+  "mayus": false,
+  "ancho": 93
+ },
+ "boton": {
+  "texto": "SUSCRIBIRME",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "normal",
+  "mayus": true,
+  "ancho": 117
+ },
+ "texto": {
+  "ancho": 321,
+  "razon": 0.82,
+  "elementos": 43,
+  "porTipo": {
+   "mono": 38,
+   "display": 1,
+   "lectura": 4
+  },
+  "mayusculas": 14,
+  "bajo12": 13
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "partner-logo",
+    "ancho": 64,
+    "alto": 64,
+    "natural": "180x90",
+    "ajuste": "contain",
+    "arriba": 229,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 64,
+    "alto": 64,
+    "natural": "180x90",
+    "ajuste": "contain",
+    "arriba": 315,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 64,
+    "alto": 64,
+    "natural": "180x90",
+    "ajuste": "contain",
+    "arriba": 401,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 33,
+  "bajo24": 27,
+  "bajo44": 32
+ },
+ "cabecera": {
+  "alto": 164,
+  "posicion": "static"
+ },
+ "ruta": "/aliados/",
+ "estado": 200,
+ "desborde320": false
+}

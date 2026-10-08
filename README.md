@@ -127,6 +127,15 @@ python3 tools/ux/smoke.py                     # todos los enlaces internos respo
 
 Detalle en [tools/ux/README.md](tools/ux/README.md). No forma parte del despliegue.
 
+El rediseño que salió de esa auditoría se ejecuta por pasos. **En qué punto está, qué sigue y
+con qué criterios** está en [docs/plan-ejecucion-ux.md](docs/plan-ejecucion-ux.md). Para
+continuarlo en una máquina nueva, un solo guion reconstruye el entorno de diseño (demostración,
+identidad del colectivo, doce integrantes y material genérico):
+
+```bash
+bash tools/ux/preparar-entorno.sh
+```
+
 ## Producción
 
 **Caddy** (proxy con TLS automático) → gunicorn → PostgreSQL/Redis, con Celery. Estáticos por

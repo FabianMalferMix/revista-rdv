@@ -1,0 +1,334 @@
+{
+ "titulo": "Repitentes del Verso — Colectivo de poesía",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 4728,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": null,
+ "h2": {
+  "texto": "Recital «Nuevas voces» (registro)",
+  "familia": "Syne",
+  "px": 32,
+  "peso": "700",
+  "interlinea": "36.8px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "h3": {
+  "texto": "La casa vacía: el regreso como forma del duelo",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "parrafo": {
+  "texto": "Colectivo de poesía",
+  "familia": "Syne",
+  "px": 104,
+  "peso": "700",
+  "interlinea": "95.68px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "nav": {
+  "texto": "INTEGRANTES",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "600",
+  "interlinea": "20.8px",
+  "mayus": true,
+  "ancho": 127
+ },
+ "boton": {
+  "texto": "DESCARGAR DOSSIER",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "19.2px",
+  "mayus": true,
+  "ancho": 165
+ },
+ "texto": {
+  "ancho": 763,
+  "razon": 0.53,
+  "elementos": 104,
+  "porTipo": {
+   "mono": 75,
+   "display": 18,
+   "lectura": 11
+  },
+  "mayusculas": 30,
+  "bajo12": 29
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": 69
+ },
+ "imagenes": {
+  "total": 27,
+  "enPrimerViewport": 0,
+  "desviadas": 3,
+  "muestra": [
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "200x250",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "avatar",
+    "ancho": 108,
+    "alto": 108,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 1468,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 2821,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 2821,
+    "desvio": true
+   },
+   {
+    "clase": "img",
+    "ancho": 180,
+    "alto": 1400,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 2821,
+    "desvio": true
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 60,
+  "bajo24": 44,
+  "bajo44": 56
+ },
+ "cabecera": {
+  "alto": 120,
+  "posicion": "static"
+ },
+ "ruta": "/",
+ "estado": 200
+}
