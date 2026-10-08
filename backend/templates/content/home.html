@@ -88,13 +88,6 @@
       {% endcomment %}
       {% if cinta_integrantes %}
         <div class="cinta-caja">
-          {% comment %}
-             Control de pausa. Va ANTES de .cinta para que un selector de hermanos lo
-             alcance sin JavaScript ni :has(), y para que el teclado lo encuentre antes
-             que lo que se mueve. Es una casilla real —enfocable y con nombre— pero no
-             se ve: lo visible es el icono del pie, que es su <label>.
-          {% endcomment %}
-          <input type="checkbox" id="cinta-pausa" class="cinta-toggle" aria-label="Pausar el movimiento de la cinta de integrantes">
           <div class="cinta">
             {% comment %}
                cinta-n<N>: la duración se escala con el número de integrantes para que
@@ -113,14 +106,10 @@
           {% comment %}
              El enlace es REAL y tiene texto real; la capa de .cinta-pie a::after
              extiende su zona pulsable a todo el componente mientras la cinta se mueve
-             sola. Envolver todo en <a> habría metido la casilla de pausa dentro de un
-             enlace, que es marcado inválido, y habría dado al enlace un nombre
-             accesible compuesto por todos los nombres de la cinta.
+             sola. Envolver todo en <a> habría dado al enlace un nombre accesible
+             compuesto por todos los nombres de la cinta.
           {% endcomment %}
-          <p class="cinta-pie">
-            <label for="cinta-pausa" class="cinta-pausa" title="Pausar o reanudar el movimiento"></label>
-            <a href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a>
-          </p>
+          <p class="cinta-pie"><a href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
         </div>
       {% else %}
         <ul class="member-grid">

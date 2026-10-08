@@ -33,12 +33,15 @@
   sitio: proporción real de imágenes, medida de lectura, interlíneas, mínimos de 12 px.
 - [x] **4. PR `ux-1b-indices-y-lenguaje`.** Tickets 1.2 y 1.12: cabecera de índice en los
   once índices, cejillas sin repetir, títulos de pestaña.
-- [x] **5. PR `ux-1c-cinta`.** Ticket 1.4: pausa real, icono de pausa discreto sin JS, fila en táctil (D1, D12).
+- [x] **5. PR `ux-1c-cinta`.** Ticket 1.4: pausa real y fila en táctil (D1, D12). El icono de pausa
+  que traía se retiró después por decisión del dueño (PR `cinta-sin-icono`).
 - [x] **6. PR `ux-1d-componentes`.** Tickets 1.5, 1.6, 1.7 y 1.8: buscador en el viewport,
   tokens de motion, `.rotulo` y `.btn`, preload de Syne.
 - [x] **7. PR `ux-1e-color`.** Ticket 1.9: reasignación del magenta y matriz de pares.
 - [x] **8. PR `ux-1f-paginacion-formulario-vacios`.** Tickets 1.10, 1.11 y 1.13.
-- ◆ **Punto de control A.** Portada, un índice, la cinta y el formulario.
+- ◆ **Punto de control A.** Portada, un índice, la cinta y el formulario. Hecho el 2026-10-08:
+  aprobado el reparto del magenta, las frases de los índices y el texto de la agenda vacía;
+  fuera el icono de pausa; a partir del paso 9, detenerse tras cada paso para que lo vea.
 - [ ] **9. PR `ux-2-1-reticula`.** Ticket 2.1: tres carriles, `main` sin `.wrap`, raíz fluida (D7).
 - [ ] **10. PR `ux-2-2-indices-y-rejillas`.** Ticket 2.2: filas tipográficas y rejillas anchas.
 - [ ] **11. PR `ux-2-3-tipografia`.** Ticket 2.3: Source Serif 4 autoalojada, tokens, mono
