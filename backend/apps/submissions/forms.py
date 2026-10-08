@@ -99,6 +99,11 @@ class SubmissionForm(forms.ModelForm):
             "file": "PDF, DOC, DOCX, ODT, RTF o TXT. Máximo 10 MB.",
         }
         widgets = {
+            # `autocomplete` dice al navegador qué dato es cada campo, para que lo rellene
+            # con lo que la persona ya guardó (WCAG 1.3.5). Sin él, nombre y correo se
+            # escribían a mano cada vez.
+            "author_name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "author_email": forms.EmailInput(attrs={"autocomplete": "email"}),
             "body": forms.Textarea(attrs={"rows": 8}),
         }
 

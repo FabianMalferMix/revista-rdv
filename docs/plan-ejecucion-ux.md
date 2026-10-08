@@ -37,7 +37,7 @@
 - [x] **6. PR `ux-1d-componentes`.** Tickets 1.5, 1.6, 1.7 y 1.8: buscador en el viewport,
   tokens de motion, `.rotulo` y `.btn`, preload de Syne.
 - [x] **7. PR `ux-1e-color`.** Ticket 1.9: reasignación del magenta y matriz de pares.
-- [ ] **8. PR `ux-1f-paginacion-formulario-vacios`.** Tickets 1.10, 1.11 y 1.13.
+- [x] **8. PR `ux-1f-paginacion-formulario-vacios`.** Tickets 1.10, 1.11 y 1.13.
 - ◆ **Punto de control A.** Portada, un índice, la cinta y el formulario.
 - [ ] **9. PR `ux-2-1-reticula`.** Ticket 2.1: tres carriles, `main` sin `.wrap`, raíz fluida (D7).
 - [ ] **10. PR `ux-2-2-indices-y-rejillas`.** Ticket 2.2: filas tipográficas y rejillas anchas.

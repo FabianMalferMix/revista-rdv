@@ -125,8 +125,8 @@ a, button, summary, input, textarea, select, .btn, .tag{
 .brand, .hero-tagline,
 .index-head h1, .article h1, .poem h1, .dossier-head h1,
 .article-card h3, .featured h2, .next-event h2,
-.recording-card h2, .collection-list h2, .press-item h2,
-.member-name, .pub-title{
+.recording-card h2, .collection-list h2, .press-item h2, .event-card h2,
+.member-name, .pub-title, .album-title{
   font-family:var(--display); letter-spacing:-.01em;
 }
 
@@ -231,7 +231,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
    y para los datos; lo demás se lee en la serif o en la de titulares. */
 .rotulo, .kicker, .subhead, .foot-group h2, .reviewed h2, .event-month, .tag,
-.pub-cover-fallback, .cinta-pie a, .nav-disclosure summary{
+.cinta-pie a, .nav-disclosure summary{
   font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
 .rotulo--acento, .kicker{color:var(--accent)}
 /* Datos: autoría, fecha, lugar, rol. En caja baja, que se lee de corrido. */
@@ -260,6 +260,10 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .meta a{color:var(--muted)}
 .meta a:hover{color:var(--accent)}
 .empty{color:var(--muted); font-style:italic; padding:18px 0; list-style:none}
+/* Estado vacío que orienta: qué pasa, y qué se puede hacer desde aquí. */
+.vacio{max-width:var(--medida); margin:0 0 40px}
+.vacio-titulo{font-family:var(--display); font-weight:700; font-size:26px; line-height:1.15; margin:0 0 10px}
+.vacio-acciones{display:flex; flex-wrap:wrap; gap:10px; margin:20px 0 0}
 
 /* Listas de obras y colecciones */
 .work-list, .collection-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px}
@@ -276,8 +280,8 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .member-bio{color:var(--muted); font-size:14px; margin:4px 0 0}
 .avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
 .avatar-fallback{display:flex; align-items:center; justify-content:center;
-  font-family:var(--mono); font-size:26px; color:var(--muted)}
-.avatar-lg{width:104px; height:104px; font-size:38px; margin-bottom:6px}
+  font-family:var(--display); font-weight:700; font-size:24px; letter-spacing:-.02em; color:var(--ink)}
+.avatar-lg{width:104px; height:104px; font-size:34px; margin-bottom:6px}
 .member-head .avatar{display:flex}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:19px; color:var(--ink)}
@@ -389,7 +393,11 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pub-card a{display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink)}
 .pub-card img, .pub-cover-fallback{width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
   border:1px solid var(--border); border-radius:3px; background:var(--surface)}
-.pub-cover-fallback{display:flex; align-items:center; justify-content:center}
+/* Publicación sin cubierta: una sobrecubierta tipográfica con su título. Antes era una
+   caja blanca con la palabra «LIBRO», que no decía de qué libro. */
+.pub-cover-fallback{display:flex; align-items:flex-start; padding:16px 14px; background:var(--paper);
+  border-top:6px solid var(--accent); font-family:var(--display); font-weight:700; font-size:17px;
+  line-height:1.15; color:var(--ink); overflow-wrap:anywhere}
 .pub-title{font-weight:700; line-height:1.25}
 .pub-cover{max-width:240px; border:1px solid var(--border); border-radius:3px; margin:8px 0 16px}
 .buy-links{display:flex; flex-wrap:wrap; gap:10px}
@@ -505,26 +513,35 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .article .body, .dek{hyphens:auto}
 }
 
-/* Paginación */
-.pagination{display:flex; align-items:center; justify-content:space-between; gap:12px;
-  margin-top:36px; padding-top:20px; border-top:1px solid var(--border);
-  font-family:var(--mono); font-size:12px; letter-spacing:.04em}
-.pagination a{text-decoration:none}
-.pagination a:hover{text-decoration:underline}
-.pagination .disabled{color:var(--muted)}
-.pagination .page-of{color:var(--muted)}
+/* Paginación. Cuenta lo que hay («1–12 de 38 poemas»), deja saltar a una página
+   concreta y da a cada número una caja de 44 px: eran dos enlaces de 12 px. */
+.pagination{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:12px 20px; margin-top:36px; padding-top:20px; border-top:1px solid var(--border)}
+.pagination-count{margin:0}
+.pagination-pages{list-style:none; display:flex; flex-wrap:wrap; gap:4px; margin:0; padding:0}
+.pagination-pages a, .pagination-pages span{display:inline-flex; align-items:center; justify-content:center;
+  min-width:44px; min-height:44px; padding:0 12px; font-family:var(--mono); font-size:13px;
+  text-decoration:none; border:1px solid transparent; border-radius:var(--r-1)}
+.pagination-pages a:hover{background:var(--ink); color:var(--paper)}
+/* La página actual se marca con borde y peso, no solo con color. */
+.pagination-pages [aria-current]{border-color:var(--ink); font-weight:700}
+.pagination-pages [aria-disabled]{color:var(--muted)}
 
 /* Formularios */
 .form{display:flex; flex-direction:column; gap:18px; max-width:620px; margin-top:8px}
 .form .field{display:flex; flex-direction:column; gap:6px}
-.form label{font-family:var(--mono); font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted)}
+/* La etiqueta de un campo se lee, no se rotula: caja de frase, 14 px y en tinta.
+   Iba en mayúsculas grises de 12 px, lo más tenue del formulario. */
+.form label{font-family:var(--display); font-weight:600; font-size:14px; color:var(--ink)}
+.form-leyenda{margin:0; font-size:14px; color:var(--muted)}
 .form .req{color:var(--accent)}
 .form input, .form textarea, .form select{font-family:var(--serif); font-size:16px; padding:9px 12px;
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); width:100%}
 .form input:focus-visible, .form textarea:focus-visible, .form select:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
-.form textarea{resize:vertical; min-height:140px}
+.form textarea{resize:vertical; min-height:220px}
 .form small{color:var(--muted); font-size:13px}
 .form .error{color:#b0322b; font-size:14px; margin:2px 0 0}
+.form [aria-invalid="true"]{border-color:#b0322b; border-width:2px}
 .form button{align-self:flex-start}
 
 /* Footer */

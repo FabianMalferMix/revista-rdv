@@ -19,7 +19,7 @@
         </li>
       {% endwith %}
     {% empty %}
-      <li class="empty">Aún no hay álbumes publicados.</li>
+      <li class="empty">Aún no hay álbumes publicados. La <a href="{% url 'agenda:trayectoria' %}">trayectoria</a> reúne las actividades del colectivo.</li>
     {% endfor %}
   </ul>
 {% endblock %}

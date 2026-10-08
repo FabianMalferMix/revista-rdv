@@ -5,11 +5,34 @@
 
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Agenda" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
-  <ul class="event-list">
-    {% for e in events %}
-      {% include "agenda/partials/_event_card.html" %}
-    {% empty %}
-      <li class="empty">No hay actividades anunciadas por ahora. Revisa la <a href="{% url 'agenda:trayectoria' %}">trayectoria</a>.</li>
-    {% endfor %}
-  </ul>
+  {% if events %}
+    <ul class="event-list">
+      {% for e in events %}
+        {% include "agenda/partials/_event_card.html" %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    {% comment %}
+       Sin fechas anunciadas la página era una frase en 900 px de pantalla. Quien llega
+       aquí quiere saber si el colectivo está activo y cómo invitarlo: se le dice.
+    {% endcomment %}
+    {% firstof site_profile.booking_email site_profile.general_email as contacto %}
+    <div class="vacio">
+      <p class="vacio-titulo">Sin fechas anunciadas por ahora.</p>
+      <p>Las próximas lecturas se publican aquí. Para invitar al colectivo a un recital, una feria o un taller, escríbenos.</p>
+      <p class="vacio-acciones">
+        {% if contacto %}<a class="btn btn--primary" href="mailto:{{ contacto }}">Escríbenos</a>{% endif %}
+        <a class="btn" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
+      </p>
+    </div>
+    {% if recientes %}
+      <h2 class="subhead">Lo más reciente</h2>
+      <ul class="event-list">
+        {% for e in recientes %}
+          {% include "agenda/partials/_event_card.html" %}
+        {% endfor %}
+      </ul>
+      <p><a href="{% url 'agenda:trayectoria' %}">Ver toda la trayectoria →</a></p>
+    {% endif %}
+  {% endif %}
 {% endblock %}

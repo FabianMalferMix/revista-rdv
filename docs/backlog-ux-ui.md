@@ -321,6 +321,8 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   `aria-current`; cada objetivo mide ≥ 44 × 44.
 - **Tests:** `tests/test_home_ui.py::test_text_archive_paginates_full_list` sigue; añadir prueba del
   parcial (contador y `rel`).
+- **Estado:** hecho (paso 8 del plan). El rango con elipsis lo da una etiqueta de plantilla,
+  `rango_paginas`, porque una plantilla no puede pasar argumentos a `get_elided_page_range`.
 
 #### 1.11 Formulario de envío
 - **Hallazgos:** COM-9.
@@ -333,6 +335,9 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** HTML servido con `autocomplete` en nombre y correo; cada campo con ayuda o error
   lleva `aria-describedby` resuelto; `tests/test_ui_ux.py::test_submit_file_help_aria_reference_resolves` sigue.
 - **Tests:** ampliar `tests/test_submissions.py` con los atributos.
+- **Estado:** hecho (paso 8 del plan). El hallazgo era más grave de lo que decía la auditoría: Django
+  5.2 marca cada campo inválido con `aria-describedby="<id>_error"` y la plantilla pintaba los errores
+  sin ese id, así que TODA referencia apuntaba a nada. Ahora cada error vive en un contenedor con su id.
 
 #### 1.12 Lenguaje, cejillas y títulos de pestaña
 - **Hallazgos:** POR-12, NAV-10, NAV-12, POR-5 (etiquetas).
@@ -369,6 +374,8 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   botones; el fallback de cubierta no contiene el nombre del tipo.
 - **Tests:** `tests/test_agenda.py`: agenda vacía muestra pasados; presupuesto de consultas de
   `test_performance.py` intacto.
+- **Estado:** hecho (paso 8 del plan). El monograma conserva por ahora el círculo del avatar; la forma
+  4:5 llega con los retratos en 3.6. Una actividad ya realizada deja de ofrecer «Inscripción / entradas».
 
 ### Épica 2 — Retícula y tipografía (D3, D4, D7)
 

@@ -100,3 +100,43 @@ def test_stats_service_shape_and_counts():
     result = stats()
     assert set(result) == {"years", "events", "festivals", "publications"}
     assert result["events"] == 2
+
+
+# ── Agenda sin fechas (backlog UX, ticket 1.13) ─────────────────────────────
+
+
+def test_la_agenda_vacia_ensena_lo_ultimo_y_como_contactar(client):
+    """Sin fechas anunciadas la página era una frase. Ahora dice qué pasa, ofrece
+    contacto y enseña las últimas actividades: prueba de que el colectivo está activo."""
+    from apps.showcase.models import SiteProfile
+
+    perfil = SiteProfile.load()
+    perfil.general_email = "colectivo@example.com"
+    perfil.booking_email = ""
+    perfil.save()
+    for i in range(4):
+        make_event(
+            slug=f"hecho-{i}",
+            title=f"Lectura hecha {i}",
+            starts_at=timezone.now() - timedelta(days=10 + i),
+            registration_url="https://example.com/entradas",
+        )
+    html = client.get(reverse("agenda:agenda")).content.decode()
+
+    assert "Sin fechas anunciadas" in html
+    assert html.count('class="event-card"') == 3, "se enseñan las tres últimas, no todas"
+    assert "Lectura hecha 0" in html and "Lectura hecha 3" not in html
+    # Sin correo de gestión, el botón cae al correo general: el mismo criterio que el pie.
+    assert 'href="mailto:colectivo@example.com"' in html
+    assert reverse("showcase:dossier") in html
+    # Una actividad ya realizada no ofrece entradas.
+    assert "Inscripción / entradas" not in html
+
+
+def test_con_fechas_anunciadas_no_se_mezclan_las_pasadas(client):
+    make_event(slug="viene", title="Lectura que viene")
+    make_event(slug="fue", title="Lectura que fue", starts_at=timezone.now() - timedelta(days=5))
+    html = client.get(reverse("agenda:agenda")).content.decode()
+    assert "Lectura que viene" in html
+    assert "Lectura que fue" not in html
+    assert "Sin fechas anunciadas" not in html

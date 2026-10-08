@@ -22,14 +22,25 @@
       <div class="error">{{ form.non_field_errors }}</div>
     {% endif %}
 
+    <p class="form-leyenda"><span class="req" aria-hidden="true">*</span> Campo obligatorio</p>
+
     {% for field in form.visible_fields %}
       <div class="field">
         <label for="{{ field.id_for_label }}">
-          {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+          {{ field.label }}{% if field.field.required %} <span class="req" aria-hidden="true">*</span>{% endif %}
         </label>
         {{ field }}
         {% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
-        {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+        {% comment %}
+           Django marca el campo inválido con aria-describedby="<id>_error". Ese id tiene
+           que EXISTIR: los errores se pintaban en <p> sueltos y la referencia apuntaba a
+           nada, así que un lector de pantalla anunciaba «inválido» sin decir por qué.
+        {% endcomment %}
+        {% if field.errors %}
+          <div id="{{ field.auto_id }}_error">
+            {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
 

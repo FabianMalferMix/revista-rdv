@@ -7,7 +7,13 @@ from .services import stats
 
 
 def agenda(request):
-    return render(request, "agenda/agenda.html", {"events": Event.upcoming()})
+    # `recientes` solo se evalúa si la plantilla lo usa, es decir, si no hay nada anunciado:
+    # una agenda vacía enseña lo último que se hizo en vez de una página en blanco.
+    return render(
+        request,
+        "agenda/agenda.html",
+        {"events": Event.upcoming(), "recientes": Event.past()[:3]},
+    )
 
 
 def trayectoria(request):

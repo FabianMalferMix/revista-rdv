@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images %}
+{% load images personas %}
 
 {% block title %}{{ member.display_name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ member.short_bio|default:member.display_name }}{% endblock %}
@@ -9,7 +9,7 @@
     {% if member.photo %}
       {% responsive_img member.photo css_class="avatar avatar-lg" sizes="240px" lazy=False %}
     {% else %}
-      <span class="avatar avatar-lg avatar-fallback" aria-hidden="true">{{ member.display_name|slice:":1" }}</span>
+      <span class="avatar avatar-lg avatar-fallback" aria-hidden="true">{{ member.display_name|iniciales }}</span>
     {% endif %}
     <span class="kicker">Integrante{% if not member.active %} · histórico{% endif %}</span>
     <h1>{{ member.display_name }}</h1>

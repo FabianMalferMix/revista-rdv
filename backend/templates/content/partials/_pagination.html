@@ -1,0 +1,39 @@
+{% load paginacion %}
+{% comment %}
+   Paginación. Decía «Página 2 de 4» entre dos enlaces de 12 px: no se sabía cuántas
+   piezas había ni se podía saltar a una página concreta.
+   Parámetros: pagina (un Page de Django) y unidad («poemas», «textos», «registros»).
+{% endcomment %}
+{% if pagina.has_other_pages %}
+  <nav class="pagination" aria-label="Paginación">
+    <p class="pagination-count meta">{{ pagina.start_index }}–{{ pagina.end_index }} de {{ pagina.paginator.count }}{% if unidad %} {{ unidad }}{% endif %}</p>
+    <ul class="pagination-pages">
+      <li>
+        {% if pagina.has_previous %}
+          <a href="?page={{ pagina.previous_page_number }}" rel="prev">← Anteriores</a>
+        {% else %}
+          <span aria-disabled="true">← Anteriores</span>
+        {% endif %}
+      </li>
+      {% rango_paginas pagina as numeros %}
+      {% for n in numeros %}
+        <li>
+          {% if n == pagina.paginator.ELLIPSIS %}
+            <span aria-hidden="true">…</span>
+          {% elif n == pagina.number %}
+            <a href="?page={{ n }}" aria-current="page" aria-label="Página {{ n }}, la actual">{{ n }}</a>
+          {% else %}
+            <a href="?page={{ n }}" aria-label="Página {{ n }}">{{ n }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+      <li>
+        {% if pagina.has_next %}
+          <a href="?page={{ pagina.next_page_number }}" rel="next">Siguientes →</a>
+        {% else %}
+          <span aria-disabled="true">Siguientes →</span>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+{% endif %}

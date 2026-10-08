@@ -129,9 +129,9 @@ def test_todo_boton_comparte_una_receta():
     assert not sueltos, f"botones con tipografía propia: {sueltos}"
 
 
-# Reglas que pintan texto en mayúsculas. La receta es una; las otras dos son deuda con
-# fecha: la navegación sale de aquí en el ticket 2.3 y la etiqueta de formulario en el 1.11.
-MAYUSCULAS_PENDIENTES = {".nav a", ".form label"}
+# Reglas que pintan texto en mayúsculas. La receta es una; la otra es deuda con fecha: la
+# navegación sale de aquí en el ticket 2.3.
+MAYUSCULAS_PENDIENTES = {".nav a"}
 
 
 def test_las_mayusculas_son_una_sola_receta():

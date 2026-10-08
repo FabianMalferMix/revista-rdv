@@ -22,11 +22,5 @@
     {% endfor %}
   </ul>
 
-  {% if recordings.has_other_pages %}
-    <nav class="pagination" aria-label="Paginación">
-      {% if recordings.has_previous %}<a href="?page={{ recordings.previous_page_number }}">← Anteriores</a>{% else %}<span class="disabled">← Anteriores</span>{% endif %}
-      <span class="page-of">Página {{ recordings.number }} de {{ recordings.paginator.num_pages }}</span>
-      {% if recordings.has_next %}<a href="?page={{ recordings.next_page_number }}">Siguientes →</a>{% else %}<span class="disabled">Siguientes →</span>{% endif %}
-    </nav>
-  {% endif %}
+  {% include "content/partials/_pagination.html" with pagina=recordings unidad="registros" %}
 {% endblock %}
