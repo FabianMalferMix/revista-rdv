@@ -42,7 +42,7 @@ def _paleta():
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
     raiz = re.search(r":root\{(.*?)\n\}", css, re.S)
     assert raiz, "no se encontró el bloque :root"
-    colores = dict(re.findall(r"--([a-z-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;", raiz.group(1)))
+    colores = dict(re.findall(r"--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;", raiz.group(1)))
     for nombre in ("paper", "surface", "ink", "muted", "accent", "caratula", "caratula-rotulo"):
         assert nombre in colores, f"la paleta ya no declara --{nombre}"
     return colores
@@ -85,6 +85,11 @@ PARES = [
     # El borde de un campo no es texto, pero lo delimita: WCAG 1.4.11 pide 3:1.
     ("borde de un campo sobre el papel", "edge", "paper", AA_GRANDE),
     ("borde de un campo sobre el blanco del campo", "edge", "surface", AA_GRANDE),
+    # La hoja clara es el fondo de una fila señalada: todo lo que la fila lleva escrito
+    # —título, datos y cejilla— tiene que seguir leyéndose encima.
+    ("título sobre la fila señalada", "ink", "paper-2", AA_NORMAL),
+    ("datos sobre la fila señalada", "muted", "paper-2", AA_NORMAL),
+    ("cejilla sobre la fila señalada", "accent", "paper-2", AA_NORMAL),
 ]
 
 # Pares que NO se pueden usar como texto sobre fondo. No es una lista de deseos: cada uno
@@ -129,7 +134,7 @@ def _reglas():
 def _color(valor, colores):
     """Resuelve `var(--x)` o un hexadecimal; None si es otra cosa (rgba, transparent…)."""
     valor = valor.strip()
-    variable = re.fullmatch(r"var\(--([a-z-]+)\)", valor)
+    variable = re.fullmatch(r"var\(--([a-z0-9-]+)\)", valor)
     if variable:
         return colores.get(variable.group(1))
     return valor if re.fullmatch(r"#[0-9a-fA-F]{3,6}", valor) else None
@@ -187,15 +192,24 @@ def test_los_enlaces_se_reconocen_sin_depender_del_color():
     Al pasar los enlaces de magenta a tinta, dos listas que quitaban el subrayado
     (`.work-list a`, `.timeline-items a`) habrían quedado como texto corriente.
     WCAG 1.4.1: el color no puede ser el único medio de señalar algo.
+
+    La trayectoria ya no es una lista de enlaces en línea sino de filas (ticket 2.2): su
+    enlace es el TÍTULO de la fila, en la tipografía y el cuerpo de un título, que es lo
+    que lo distingue del texto. Solo esas reglas de título pueden quitar el subrayado.
     """
     # La primera regla `a` es la de pantalla; la de impresión, más abajo, la sobrescribe.
     enlace = next(cuerpo for selector, cuerpo in _reglas() if selector == "a")
     reglas = dict(_reglas())
     assert "color:var(--ink)" in enlace and "text-decoration-color:var(--accent)" in enlace
-    for selector in (".work-list a", ".timeline-items a"):
-        assert "text-decoration:none" not in reglas.get(selector, ""), (
-            f"«{selector}» quedó sin subrayado y en tinta: no se distingue del texto"
-        )
+    assert "text-decoration:none" not in reglas.get(".work-list a", ""), (
+        "«.work-list a» quedó sin subrayado y en tinta: no se distingue del texto"
+    )
+    assert ".timeline-items a" not in reglas, "la trayectoria volvió a ser una lista de enlaces"
+    # Un enlace sin subrayar solo vale si es un título: su selector debe estar en la regla
+    # que da la tipografía de titular.
+    titulares = next(sel for sel, cuerpo in _reglas() if "font-family:var(--display)" in cuerpo)
+    assert ".fila-titulo" in titulares
+    assert "text-decoration:none" in reglas[".fila-titulo a"]
 
 
 def test_contraste_del_sello_de_la_cabecera():

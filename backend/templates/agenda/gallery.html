@@ -14,7 +14,16 @@
       {% with photos=e.photos.all %}
         <li class="album-card">
           <a href="{{ e.get_absolute_url }}">
-            {% if photos.0 %}{% responsive_img photos.0.asset sizes="(max-width: 600px) 45vw, 300px" %}{% endif %}
+            {% comment %}
+               Hoja de contactos: hasta tres fotos del álbum, la primera a doble tamaño.
+               Una sola miniatura no decía si detrás había una foto o treinta. El recorte
+               de la lista sale de la caché del prefetch: no añade consultas. Solo la
+               primera lleva texto alternativo; las otras dos acompañan, y el enlace ya
+               se llama como el álbum.
+            {% endcomment %}
+            <span class="hoja">
+              {% for ph in photos|slice:":3" %}{% if forloop.first %}{% responsive_img ph.asset sizes="(max-width: 720px) 62vw, (max-width: 1400px) 31vw, 440px" %}{% else %}{% responsive_img ph.asset sizes="(max-width: 720px) 31vw, (max-width: 1400px) 16vw, 220px" decorativa=True %}{% endif %}{% endfor %}
+            </span>
             <span class="album-title">{{ e.title }}</span>
             <span class="muted">{{ e.starts_at|date:"M Y" }} · {{ photos|length }} foto{{ photos|length|pluralize }}</span>
           </a>

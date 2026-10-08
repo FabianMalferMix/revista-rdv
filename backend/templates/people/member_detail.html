@@ -43,9 +43,9 @@
   {% if poems %}
     <section>
       <h2 class="subhead">Poemas</h2>
-      <ul class="article-list">
+      <ul class="filas">
         {% for p in poems %}
-          {% include "content/partials/_poem_card.html" %}
+          {% include "content/partials/_poem_card.html" with sin_cejilla=True %}
         {% endfor %}
       </ul>
     </section>

@@ -1,6 +1,6 @@
-<ul class="article-list">
+<ul class="filas">
   {% for p in poems %}
-    {% include "content/partials/_poem_card.html" %}
+    {% include "content/partials/_poem_card.html" with sin_cejilla=True %}
   {% empty %}
     <li class="empty">Aún no hay poemas publicados.</li>
   {% endfor %}

@@ -11,7 +11,7 @@
     <h1>{{ collection.title }}</h1>
     {% if collection.intro %}<p class="dek">{{ collection.intro }}</p>{% endif %}
   </header>
-  <ul class="article-list">
+  <ul class="filas">
     {% for item in items %}
       {% if item.kind == "poem" %}
         {% include "content/partials/_poem_card.html" with p=item.object %}

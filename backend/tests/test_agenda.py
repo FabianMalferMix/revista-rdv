@@ -140,3 +140,72 @@ def test_con_fechas_anunciadas_no_se_mezclan_las_pasadas(client):
     assert "Lectura que viene" in html
     assert "Lectura que fue" not in html
     assert "Sin fechas anunciadas" not in html
+
+
+# ── Galería como hoja de contactos (backlog UX, ticket 2.2) ─────────────────
+
+
+def _hojas(client):
+    from bs4 import BeautifulSoup
+
+    sopa = BeautifulSoup(client.get(reverse("agenda:gallery")).content, "html.parser")
+    return {
+        tarjeta.select_one(".album-title").get_text(): tarjeta
+        for tarjeta in sopa.select("li.album-card")
+    }
+
+
+def test_cada_album_ensena_hasta_tres_fotos(client):
+    """Una sola miniatura no decía si detrás había una foto o treinta."""
+    grande = make_event(slug="grande", title="Álbum Grande")
+    for i in range(5):
+        make_photo(grande, position=i)
+    chico = make_event(slug="chico", title="Álbum Chico")
+    make_photo(chico)
+
+    hojas = _hojas(client)
+    fotos = hojas["Álbum Grande"].select(".hoja img")
+    assert len(fotos) == 3, "la hoja enseña tres fotos, no las cinco"
+    # Las tres primeras según su posición en el álbum.
+    assert [f["src"].rsplit("/", 1)[-1] for f in fotos] == [
+        f"foto-grande-{i}.jpg" for i in range(3)
+    ]
+    assert "5 fotos" in hojas["Álbum Grande"].get_text()
+
+    assert len(hojas["Álbum Chico"].select(".hoja img")) == 1
+    assert "1 foto" in hojas["Álbum Chico"].get_text()
+    assert "1 fotos" not in hojas["Álbum Chico"].get_text()
+
+
+def test_en_la_hoja_solo_la_primera_foto_lleva_texto_alternativo(client):
+    """Las tres van dentro del enlace del álbum: con tres textos alternativos el enlace
+    se llamaría «foto, foto, foto, Recital…». La primera describe; las otras acompañan."""
+    evento = make_event(slug="alt", title="Álbum Alt")
+    for i in range(3):
+        make_photo(evento, position=i)
+    fotos = _hojas(client)["Álbum Alt"].select(".hoja img")
+    assert [f["alt"] for f in fotos] == ["foto-alt-0", "", ""]
+    assert len(_hojas(client)["Álbum Alt"].select("a")) == 1
+
+
+def test_la_hoja_de_contactos_no_anade_consultas_por_album(client):
+    """Las tres fotos salen de la caché del prefetch: enseñar más álbumes no puede costar
+    más consultas (una por álbum sería el N+1 de siempre)."""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    def consultas():
+        with CaptureQueriesContext(connection) as ctx:
+            assert client.get(reverse("agenda:gallery")).status_code == 200
+        return len(ctx)
+
+    uno = make_event(slug="g1", title="G1")
+    for i in range(4):
+        make_photo(uno, position=i)
+    consultas()  # la primera petición crea el perfil del sitio: no cuenta
+    con_uno = consultas()
+    for n in range(2, 6):
+        evento = make_event(slug=f"g{n}", title=f"G{n}")
+        for i in range(4):
+            make_photo(evento, position=i)
+    assert consultas() == con_uno, "la galería hace una consulta más por cada álbum"

@@ -46,7 +46,93 @@ def test_recording_index_lists_published_only(client):
     assert resp.status_code == 200
     assert b"Registro P\xc3\xbablico" in resp.content
     assert b"Registro Oculto" not in resp.content
-    assert b"player-frame" in resp.content  # embed de YouTube renderizado como iframe
+
+
+def test_el_indice_ensena_miniaturas_y_no_reproductores(client):
+    """El índice enseña y la ficha reproduce (backlog UX, ticket 2.2).
+
+    La página era una pila de reproductores, uno por pantalla: dos registros medían
+    1262 px. Ahora cada registro es una miniatura con su título que lleva a la ficha, y
+    en el índice no queda nada que conecte con YouTube o Vimeo, ni siquiera a la espera
+    de un clic. Antes esta prueba afirmaba lo contrario (`player-frame` en el índice).
+    """
+    from bs4 import BeautifulSoup
+
+    from apps.media.models import Recording
+
+    video = make_recording(slug="video", title="Registro En Video")
+    audio = make_recording(
+        slug="audio",
+        title="Registro En Audio",
+        kind=Recording.Kind.AUDIO,
+        embed_url="",
+        file=SimpleUploadedFile("lectura.mp3", b"ID3-fake-bytes"),
+    )
+    resp = client.get(reverse("media:recording_index"))
+    html = resp.content.decode()
+    for resto in ("player-frame", "player-consent", "embed-play", "data-embed-src", "<iframe"):
+        assert resto not in html, f"el índice todavía emite «{resto}»"
+    assert "<audio" not in html and "<video" not in html
+    assert "abc123xyz" not in html, "el identificador del video no debe viajar en el índice"
+
+    tarjetas = BeautifulSoup(html, "html.parser").select("li.recording-card")
+    assert len(tarjetas) == 2
+    assert all(t.select_one(".rec-miniatura") for t in tarjetas)
+    enlaces = {t.select_one("h2 a")["href"] for t in tarjetas}
+    assert enlaces == {video.get_absolute_url(), audio.get_absolute_url()}
+    # Un solo enlace por tarjeta hacia la ficha: la tarjeta entera lo extiende por CSS.
+    for tarjeta in tarjetas:
+        assert len(tarjeta.select("a")) == 1
+
+
+def test_la_miniatura_usa_el_cartel_y_sin_cartel_lleva_el_titulo(client):
+    """Una placa azul vacía no dice qué registro es (decisión D10: nunca vacía)."""
+    from io import BytesIO
+
+    from bs4 import BeautifulSoup
+    from django.core.files.base import ContentFile
+    from PIL import Image
+
+    from apps.media.models import MediaAsset
+
+    buffer = BytesIO()
+    Image.new("RGB", (64, 36), (10, 20, 30)).save(buffer, format="JPEG")
+    cartel = MediaAsset(alt_text="Cartel del recital")
+    cartel.file.save("cartel.jpg", ContentFile(buffer.getvalue()))
+    make_recording(slug="con-cartel", title="Con Cartel", poster=cartel, position=0)
+    make_recording(slug="sin-cartel", title="Sin Cartel", position=1)
+
+    sopa = BeautifulSoup(client.get(reverse("media:recording_index")).content, "html.parser")
+    con, sin = sopa.select("li.recording-card")
+    assert con.select_one(".rec-miniatura img")["alt"] == "Cartel del recital"
+    assert con.select_one(".rec-caratula") is None
+    placa = sin.select_one(".rec-miniatura .rec-caratula")
+    assert placa.get_text() == "Sin Cartel"
+    assert placa["aria-hidden"] == "true", "el título ya se lee en el encabezado de la tarjeta"
+    assert sin.select_one("img") is None
+
+
+def test_el_evento_sigue_siendo_un_enlace_propio_en_la_tarjeta(client):
+    from datetime import timedelta
+
+    from bs4 import BeautifulSoup
+
+    from apps.agenda.models import Event
+
+    evento = Event.objects.create(
+        slug="origen",
+        title="Recital Origen",
+        starts_at=timezone.now() - timedelta(days=1),
+        published=True,
+    )
+    registro = make_recording(slug="con-evento", title="Con Evento", event=evento)
+    tarjeta = BeautifulSoup(
+        client.get(reverse("media:recording_index")).content, "html.parser"
+    ).select_one("li.recording-card")
+    assert [a["href"] for a in tarjeta.select("a")] == [
+        registro.get_absolute_url(),
+        evento.get_absolute_url(),
+    ]
 
 
 def test_recording_detail_404_when_unpublished(client):
@@ -68,6 +154,7 @@ def test_recording_detail_renders_player_and_event(client):
     rec = make_recording(slug="con-evento", title="Con Evento", event=event)
     resp = client.get(reverse("media:recording_detail", args=[rec.slug]))
     assert b"player-frame" in resp.content
+    assert b"player-consent" in resp.content, "la ficha es donde se reproduce"
     assert b"Recital Origen" in resp.content
 
 

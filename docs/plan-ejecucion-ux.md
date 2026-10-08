@@ -43,7 +43,7 @@
   aprobado el reparto del magenta, las frases de los índices y el texto de la agenda vacía;
   fuera el icono de pausa; a partir del paso 9, detenerse tras cada paso para que lo vea.
 - [x] **9. PR `ux-2-1-reticula`.** Ticket 2.1: tres carriles, `main` sin `.wrap`, raíz fluida (D7).
-- [ ] **10. PR `ux-2-2-indices-y-rejillas`.** Ticket 2.2: filas tipográficas y rejillas anchas.
+- [x] **10. PR `ux-2-2-indices-y-rejillas`.** Ticket 2.2: filas tipográficas y rejillas anchas.
 - [ ] **11. PR `ux-2-3-tipografia`.** Ticket 2.3: Source Serif 4 autoalojada, tokens, mono
   reducida (D3, D4). Requiere descargar la fuente y subconjuntarla con fonttools en local.
 - [ ] **12. PR `ux-2-4-lectura-y-fichas`.** Ticket 2.4: sala de lectura, fichas a dos columnas.

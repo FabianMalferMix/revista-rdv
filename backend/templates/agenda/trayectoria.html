@@ -15,29 +15,41 @@
     {% if stats.festivals %}<li><strong>{{ stats.festivals }}</strong> festival{{ stats.festivals|pluralize:"es" }}/ferias</li>{% endif %}
   </ul>
 
+  {% comment %}
+     Cada año es un bloque: el número a la izquierda, sus filas a la derecha. La primera
+     columna de la fila dice cuándo (o qué es, si no tiene día); la última, de qué tipo
+     y dónde. Los hitos no enlazan a nada: su fila no reacciona al puntero.
+  {% endcomment %}
   {% for block in timeline %}
     <section class="timeline-year">
       <h2 class="year-mark">{{ block.year }}</h2>
-      <ul class="timeline-items">
+      <ul class="filas">
         {% for m in block.milestones %}
-          <li class="milestone">
-            <span class="kicker">Hito</span>
-            <strong>{{ m.title }}</strong>
-            {% if m.description %}<p class="dek">{{ m.description }}</p>{% endif %}
+          <li class="fila">
+            <span class="meta fila-fecha">Hito</span>
+            <div class="fila-cuerpo">
+              <h3 class="fila-titulo">{{ m.title }}</h3>
+              {% if m.description %}<p class="dek">{{ m.description }}</p>{% endif %}
+            </div>
           </li>
         {% endfor %}
         {% for pub in block.publications %}
-          <li>
-            <span class="kicker">Publicación · {{ pub.get_kind_display }}</span>
-            <a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a>
-            {% if pub.publisher %}<span class="muted">{{ pub.publisher.name }}</span>{% endif %}
+          <li class="fila">
+            <span class="meta fila-fecha">Publicación</span>
+            <div class="fila-cuerpo">
+              <h3 class="fila-titulo"><a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a></h3>
+            </div>
+            <p class="meta fila-pie">{{ pub.get_kind_display }}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
           </li>
         {% endfor %}
         {% for e in block.events %}
-          <li>
-            <span class="kicker">{{ e.get_type_display }}{% if e.is_external and e.host %} · {{ e.host }}{% endif %}</span>
-            <a href="{{ e.get_absolute_url }}">{{ e.title }}</a>
-            <span class="muted">{{ e.starts_at|date:"j M" }}{% if e.city %} · {{ e.city }}{% endif %}</span>
+          <li class="fila">
+            <time class="meta fila-fecha" datetime="{{ e.starts_at|date:'Y-m-d' }}">{{ e.starts_at|date:"j M" }}</time>
+            <div class="fila-cuerpo">
+              <h3 class="fila-titulo"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h3>
+              {% if e.is_external and e.host %}<p class="dek">{{ e.host }}</p>{% endif %}
+            </div>
+            <p class="meta fila-pie">{{ e.get_type_display }}{% if e.city %} · {{ e.city }}{% endif %}</p>
           </li>
         {% endfor %}
       </ul>

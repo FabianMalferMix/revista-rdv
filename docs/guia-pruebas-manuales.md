@@ -88,7 +88,8 @@ no una plantilla vacía.
       recientes, integrantes, publicaciones, prensa y aliados.
 - [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2` y `?page=999`
       (este último **no debe reventar**).
-- [x] **`/poemas/`** — Índice de poemas.
+- [x] **`/poemas/`** — Índice de poemas. Cada fila cita el **primer verso** del poema y se
+      pulsa entera; el nombre de quien firma es su propio enlace.
 
 ### 1.2 Fichas de contenido
 
@@ -119,11 +120,16 @@ no una plantilla vacía.
 ### 1.4 Agenda y registros
 
 - [x] **`/agenda/`** — Solo eventos **futuros**.
-- [x] **`/trayectoria/`** — Eventos **pasados** + hitos + publicaciones, con números.
-- [x] **`/galeria/`** — Fotos por evento. **Pulsa una foto**: se amplía sin JavaScript
-      (CSS `:target`). Pulsa fuera para cerrar.
-- [x] **`/evento/<slug>/`** — Ficha con fotos y registros del evento.
-- [x] **`/registros/`** y **`/registro/<slug>/`** — Ver §6.3 para el reproductor.
+- [x] **`/trayectoria/`** — Eventos **pasados** + hitos + publicaciones, con números. Cada
+      año es un bloque con sus filas; la fila de un evento o de una publicación se pulsa entera,
+      la de un **hito** no lleva a ninguna parte y no reacciona al puntero.
+- [x] **`/galeria/`** — Un álbum por evento, con hasta tres de sus fotos. Pulsa un álbum para
+      ir a la ficha del evento.
+- [x] **`/evento/<slug>/`** — Ficha con fotos y registros del evento. **Pulsa una foto**: se
+      amplía sin JavaScript (CSS `:target`). Pulsa fuera para cerrar.
+- [x] **`/registros/`** — Una miniatura por registro; **aquí no hay reproductores**. Toda la
+      tarjeta lleva a la ficha, salvo el nombre del evento, que es su propio enlace.
+- [x] **`/registro/<slug>/`** — Ver §6.3 para el reproductor.
 
 ### 1.5 Catálogo bibliográfico
 
