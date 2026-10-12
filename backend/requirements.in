@@ -2,7 +2,7 @@
 # requirements.txt, generado con:
 #   pip-compile --generate-hashes --strip-extras requirements.in
 # Regenerar tras editar este archivo (ver README/CONTRIBUTING).
-Django>=5.2,<5.3
+Django>=5.2.18,<5.3
 psycopg[binary]>=3.3.6,<4
 gunicorn>=26,<27
 celery>=5.3,<6
