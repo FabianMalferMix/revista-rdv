@@ -883,6 +883,41 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   galería) y una lista cerrada en la prueba (`CON_DUOTONO`) lo vigila. Si una imagen nueva
   entra en un listado (la miniatura de un texto, por ejemplo), decide si lleva duotono. Los
   afiches de terceros y los logos de aliados nunca lo llevan.
+- **Estado:** hecho (paso 16 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **Las imágenes de los listados van a una tinta, afiches incluidos**: la imagen de cada
+     texto y los afiches de la agenda, de «Próxima actividad» y de la trayectoria. El 3.3
+     dejaba fuera los afiches de terceros, pero en los listados pesa más el sistema de una
+     tinta que el dueño aprobó. Además, los afiches genéricos de desarrollo son bloques
+     amarillos con un círculo rojo, justo lo que rechazó en las cifras. En la ficha del
+     evento el afiche se ve tal cual, y también al señalar la tarjeta, la fila o la próxima
+     actividad. Se le enseñó la alternativa, los afiches tal cual, para que elija.
+  2. **La miniatura de la fila es 3:4**: 72 px como última columna cuando hay sitio, y 56 px
+     junto al título en una lista estrecha, con la fecha debajo. Es un área de la rejilla
+     (`mini`), con el modificador `.fila--con-miniatura`.
+  3. **El afiche de la tarjeta de agenda** va entre la fecha y la ficha: un cuarto de la
+     tarjeta, 128 px como mucho. La clase de la tarjeta no cambia, porque `test_agenda` la
+     cuenta literal: la rejilla usa `:has()`.
+  4. **El crédito es texto libre** (puede traer «Foto: …»), así que se muestra tal cual:
+     - bajo el álbum, una línea «Fotos: A · B» con los créditos distintos;
+     - en la vista ampliada, «3 / 12 · pie · crédito», a 13 px;
+     - el enlace de cada miniatura se anuncia «Ampliar foto 3 de 12».
+  5. **Los aliados van por tipo**, en el orden de los tipos y con el rótulo en plural
+     (`GRUPOS_DE_ALIADOS` en `showcase/views.py`). Los logos miden 160 × 80 y van
+     multiplicados con el papel, así que su fondo blanco desaparece; en gris hasta que se
+     señalan.
+  6. **La franja «Con el apoyo de» no se construye aquí:** la hace el 4.2, donde se usa.
+  7. **Las pruebas van en un archivo propio**, `tests/test_imagenes_del_modelo.py`, en lugar de
+     ampliar `test_seed_photos.py` y `test_images.py`.
+  8. `Event.upcoming()` y `Event.past()` traen el afiche en la misma consulta, y los textos su
+     imagen.
+  Medido:
+  - miniatura en las 6 filas de Textos;
+  - afiche en las tarjetas de la agenda, en la próxima actividad (con un evento temporal) y
+    en las filas de la trayectoria;
+  - crédito y contador en la vista ampliada;
+  - aliados en tres grupos;
+  - ninguna imagen añade consultas por fila (prueba con 2 y con 6 filas), y la portada sigue
+    en 17 consultas.
 
 #### 3.6 Retratos 4:5 y monograma
 - **Hallazgos:** IMG-4, COL-5.
@@ -1010,6 +1045,10 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   **Tras el paso 15:** el póster del registro destacado ya se ve, a una tinta, en la placa del
   destacado justo debajo del titular. Si el objeto del titular fuera ese mismo póster, se
   repetiría. Prefiere la última cubierta publicada o el afiche del próximo evento.
+  **Tras el paso 16:** la franja «Con el apoyo de» se construye aquí, donde se usa; el 3.5 la
+  dejó para este ticket. Reutiliza `.partner-logo`: 160 × 80, multiplicado con el papel y en
+  gris hasta que se señala. Los aliados ya se agrupan por tipo en
+  `showcase.views.GRUPOS_DE_ALIADOS`.
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
@@ -1044,6 +1083,8 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   reposo. La portada hace 17 consultas, no 16. Para medir: `node tools/ux/superficies.js 1440 900 home`.
   **Tras el paso 14**, la cinta ya es de retratos 4:5 a una tinta, con cinco visibles en el
   carril ancho.
+  **Tras el paso 16**, «Textos recientes» ya enseña la imagen de cada texto: la parcial de la
+  fila lleva la miniatura 3:4 a una tinta. «Próxima actividad» ya lleva su afiche.
 
 #### 4.4 Pie en tinta con identidad y mapa
 - **Hallazgos:** NAV-8, COL-8.

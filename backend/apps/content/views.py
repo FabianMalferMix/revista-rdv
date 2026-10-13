@@ -35,9 +35,10 @@ logger = logging.getLogger(__name__)
 
 
 def _published():
+    # cover_image: la fila de cada texto enseña su imagen en miniatura.
     return (
         Article.objects.filter(status=EditorialStatus.PUBLISHED)
-        .select_related("section")
+        .select_related("section", "cover_image")
         .prefetch_related("authors")
     )
 

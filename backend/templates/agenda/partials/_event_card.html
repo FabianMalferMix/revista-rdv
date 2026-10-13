@@ -1,8 +1,15 @@
+{% load images %}
+{% comment %}
+   El afiche va entre la fecha y la ficha, a una tinta como las imágenes de todos los
+   listados; al señalar la tarjeta, y en la ficha del evento, se ve tal cual. Decorativo:
+   el título del evento ya lo nombra.
+{% endcomment %}
 <li class="event-card">
   <div class="event-date">
     <span class="event-day">{{ e.starts_at|date:"j" }}</span>
     <span class="event-month">{{ e.starts_at|date:"b Y" }}</span>
   </div>
+  {% if e.poster %}<span class="event-afiche riso-duo">{% responsive_img e.poster sizes="128px" decorativa=True %}</span>{% endif %}
   <div class="event-info">
     <span class="kicker">{{ e.get_type_display }}{% if e.is_external and e.host %} · {{ e.host }}{% endif %}</span>
     <h2><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>

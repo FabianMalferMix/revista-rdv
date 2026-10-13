@@ -59,15 +59,21 @@ class Event(models.Model):
 
     @classmethod
     def upcoming(cls):
-        """Eventos publicados futuros, del más próximo al más lejano (Agenda)."""
-        return cls.objects.filter(published=True, starts_at__gte=timezone.now()).order_by(
-            "starts_at"
+        """Eventos publicados futuros, del más próximo al más lejano (Agenda). Con su afiche
+        en la misma consulta: la agenda y la portada lo enseñan."""
+        return (
+            cls.objects.filter(published=True, starts_at__gte=timezone.now())
+            .select_related("poster")
+            .order_by("starts_at")
         )
 
     @classmethod
     def past(cls):
-        """Eventos publicados ya realizados, del más reciente al más antiguo (Trayectoria)."""
-        return cls.objects.filter(published=True, starts_at__lt=timezone.now())
+        """Eventos publicados ya realizados, del más reciente al más antiguo (Trayectoria).
+        Con su afiche en la misma consulta: la trayectoria lo enseña en cada fila."""
+        return cls.objects.filter(published=True, starts_at__lt=timezone.now()).select_related(
+            "poster"
+        )
 
 
 class EventPhoto(models.Model):

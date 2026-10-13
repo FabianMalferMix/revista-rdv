@@ -594,7 +594,6 @@ BLANCO_PERMITIDO = {
     ".form input, .form textarea, .form select",
     "#search-results:not(:empty)",
     ".pub-card img, .pub-cover-fallback",
-    ".partner-logo",
     ".embed-play",
     ".embed-play:hover::after",
     ".rec-miniatura::before",
@@ -785,43 +784,41 @@ def test_el_duotono_es_una_tinta_sobre_el_papel():
 
 def test_al_senalar_o_enfocar_se_ve_el_original():
     """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
-    teñido. Y la capa del papel se vuelve transparente."""
-
-    def regla_con(trozo):
-        return next(
-            (re.sub(r"\s+", "", sel), cuerpo)
-            for sel, cuerpo in _reglas()
-            if trozo in re.sub(r"\s+", "", sel)
-        )
-
-    # Se señala un enlace, la cinta, la tarjeta de un registro o la placa del reproductor.
+    teñido. Y la capa del papel se vuelve transparente. Una sola regla con `:is()` dice
+    dónde se señala: un enlace, la cinta, las tarjetas, la placa, una fila."""
     lugares = (
-        "a:hover",
-        "a:focus-visible",
-        ".cinta-caja:hover",
-        ".cinta-caja:focus-within",
-        ".recording-card:hover",
-        ".recording-card:focus-within",
-        ".player-consent:hover",
-        ".player-consent:focus-within",
+        "a",
+        ".cinta-caja",
+        ".recording-card",
+        ".event-card",
+        ".player-consent",
+        ".fila",
+        ".next-event",
     )
-    selector, original = regla_con("a:hover.riso-duoimg")
-    assert "filter:none" in original and "mix-blend-mode:normal" in original
-    assert all(f"{lugar}.riso-duoimg" in selector for lugar in lugares), selector
-    selector, papel = regla_con("a:hover.riso-duo::after")
-    assert "background-color:transparent" in papel
-    assert all(f"{lugar}.riso-duo::after" in selector for lugar in lugares), selector
+    reglas = {re.sub(r"\s+", "", sel): cuerpo for sel, cuerpo in _reglas()}
+    estado = ":is(:hover,:focus-within)"
+    for capa, declaracion in ((".riso-duoimg", "filter:none"), (".riso-duo::after", "transparent")):
+        selector = next(s for s in reglas if s.endswith(estado + capa))
+        assert all(lugar in selector.split(")")[0] for lugar in lugares), selector
+        assert declaracion in reglas[selector]
+    original = next(c for s, c in reglas.items() if s.endswith(estado + ".riso-duoimg"))
+    assert "mix-blend-mode:normal" in original
 
 
-# El duotono: tarjetas de integrante, cinta, hoja de contactos y el póster de los registros
-# (en el índice y en la placa del reproductor, D10). Las cubiertas, los afiches, los logos
-# y las fichas se ven tal cual.
+# El duotono va en las imágenes de los listados: tarjetas de integrante, cinta, hoja de
+# contactos, pósters de los registros (índice y placa, D10), imágenes de los textos y afiches
+# de la agenda, la trayectoria y la próxima actividad de la portada. Las cubiertas de las
+# publicaciones, los logos y las fichas se ven tal cual.
 CON_DUOTONO = {
     "_member_card.html",
     "_member_card_cinta.html",
     "gallery.html",
     "_player.html",
     "recording_index.html",
+    "_article_card.html",
+    "_event_card.html",
+    "trayectoria.html",
+    "home.html",
 }
 
 
@@ -859,3 +856,39 @@ def test_la_placa_no_tiene_marco_ni_esquinas():
     placa = _regla(".player-frame")
     assert "border-radius" not in placa and "border:" not in placa
     assert "container:placa/inline-size" in placa, "el título de la carátula crece con la placa"
+
+
+# ── Las imágenes del modelo en los listados (ticket 3.5) ──────────────────
+
+
+def test_la_miniatura_de_una_fila_es_un_area_de_su_rejilla():
+    """No un flotante: en una lista estrecha va junto al título, con la fecha debajo; con
+    sitio, es la última columna. Se alinea arriba, no por la línea base del texto."""
+    assert 'grid-template-areas:"cuerpomini""piefecha"' in _regla(".fila--con-miniatura")
+    ancha = _bloque("@container filas (min-width:700px)")
+    assert 'grid-template-areas:"fechacuerpopiemini"' in ancha
+    miniatura = _regla(".fila-miniatura")
+    assert "grid-area:mini" in miniatura and "align-self:start" in miniatura
+    assert "aspect-ratio:3/4" in _regla(".fila-miniaturaimg")
+
+
+def test_los_logos_se_imprimen_en_gris_y_toman_color_al_senalar():
+    """Multiplicados con el papel, el fondo blanco de un logo desaparece; en gris hasta que
+    se señalan, el mismo gesto que las fotos a una tinta."""
+    logo = _regla(".partner-logo")
+    for declaracion in (
+        "width:160px",
+        "height:80px",
+        "object-fit:contain",
+        "filter:grayscale(1)",
+        "mix-blend-mode:multiply",
+    ):
+        assert declaracion in logo, f"al logo le falta «{declaracion}»"
+    assert "filter:none" in _regla(
+        ".partner-item:hover.partner-logo,.partner-item:focus-within.partner-logo"
+    )
+
+
+def test_el_pie_de_la_vista_ampliada_se_lee():
+    """Contador, pie y crédito a 13 px: a 12 era la letra más pequeña del sitio."""
+    assert "font-size:var(--t-1)" in _regla(".lightboxfigcaption")

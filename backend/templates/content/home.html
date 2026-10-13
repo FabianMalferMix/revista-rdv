@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block lienzo %}lienzo--ancho{% endblock %}
 
@@ -87,13 +88,16 @@
 
   {% if next_event %}
     <section class="home-block next-event">
-      <span class="kicker">Próxima actividad</span>
-      <h2><a href="{{ next_event.get_absolute_url }}">{{ next_event.title }}</a></h2>
-      <p class="meta">
-        {{ next_event.starts_at|date:"l j M · H:i" }} hrs
-        {% if next_event.venue_name %} · {{ next_event.venue_name }}{% endif %}{% if next_event.city %} · {{ next_event.city }}{% endif %}
-        {% if next_event.registration_url %} · <a href="{{ next_event.registration_url }}" rel="noopener" target="_blank">Inscripción ↗</a>{% endif %}
-      </p>
+      {% if next_event.poster %}<span class="next-event-afiche riso-duo">{% responsive_img next_event.poster sizes="96px" decorativa=True %}</span>{% endif %}
+      <div class="next-event-texto">
+        <span class="kicker">Próxima actividad</span>
+        <h2><a href="{{ next_event.get_absolute_url }}">{{ next_event.title }}</a></h2>
+        <p class="meta">
+          {{ next_event.starts_at|date:"l j M · H:i" }} hrs
+          {% if next_event.venue_name %} · {{ next_event.venue_name }}{% endif %}{% if next_event.city %} · {{ next_event.city }}{% endif %}
+          {% if next_event.registration_url %} · <a href="{{ next_event.registration_url }}" rel="noopener" target="_blank">Inscripción ↗</a>{% endif %}
+        </p>
+      </div>
     </section>
   {% endif %}
 
