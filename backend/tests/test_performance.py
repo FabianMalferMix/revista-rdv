@@ -14,16 +14,18 @@ from tests.factories import make_event, make_publication, make_recording, publis
 
 pytestmark = pytest.mark.django_db
 
-# vista -> techo de consultas (medido hoy + holgura)
+# vista -> techo de consultas (medido hoy + holgura). «Medido» es la primera petición, la que
+# cuenta la prueba: hace tres consultas más que las siguientes. Medido tras el paso 18 del
+# backlog UX, que dejó las redes del colectivo en una consulta por página.
 BUDGETS = {
-    "content:home": 24,  # medido 17 (el sello de convocatoria pregunta si hay una abierta)
-    "content:text_archive": 10,  # 6
-    "content:poem_index": 10,  # 6
-    "people:member_index": 8,  # 4
-    "agenda:agenda": 8,  # 4
-    "showcase:publication_index": 10,  # 5
-    "media:recording_index": 10,  # 6
-    "showcase:dossier": 22,  # 16
+    "content:home": 24,  # medido 16 (el sello de convocatoria pregunta si hay una abierta)
+    "content:text_archive": 10,  # 8
+    "content:poem_index": 10,  # 8
+    "people:member_index": 8,  # 6
+    "agenda:agenda": 8,  # 6
+    "showcase:publication_index": 10,  # 7
+    "media:recording_index": 10,  # 8
+    "showcase:dossier": 22,  # 18
 }
 
 
@@ -46,10 +48,10 @@ def test_hot_view_stays_within_query_budget(view_name, _seed_volume, django_asse
 
 def test_article_detail_query_budget(make_article, django_assert_max_num_queries):
     art = publish(make_article(slug="perf-detalle", title="Detalle Perf"))
-    with django_assert_max_num_queries(12):  # medido 7
+    with django_assert_max_num_queries(12):  # medido 11
         assert Client().get(reverse("content:article_detail", args=[art.slug])).status_code == 200
 
 
 def test_search_query_budget(_seed_volume, django_assert_max_num_queries):
-    with django_assert_max_num_queries(10):  # medido 6
+    with django_assert_max_num_queries(10):  # medido 9
         assert Client().get(reverse("content:search") + "?q=Perf").status_code == 200

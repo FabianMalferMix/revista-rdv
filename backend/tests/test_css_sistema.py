@@ -491,7 +491,9 @@ def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
 # queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
 MONO_PERMITIDA = {
     ".rotulo,.kicker,.dossier-doc.subhead,.foot-grouph2,.reviewedh2,.event-month,.tag,"
-    ".cinta-piea,.nav-disclosuresummary,.member-role": "rótulo, también el cargo de cada integrante",
+    ".cinta-piea,.nav-disclosuresummary,.member-role,.foot-group-titulo": (
+        "rótulo, también el cargo de cada integrante y los grupos del menú del teléfono"
+    ),
     ".meta,.muted": "dato: firma, fecha, lugar",
     ".stats-strip": "etiquetas de las cifras",
     ".pagination-pagesa,.pagination-pagesspan": "números de página",
@@ -904,3 +906,68 @@ def test_el_sello_de_la_cabecera_sigue_siendo_magenta_con_su_monograma():
     assert "display:inline-flex" in sello, "el monograma y el nombre van en una fila"
     assert "fill:#fff" in _regla(".brand-mono-r")
     assert "fill:var(--celeste)" in _regla(".brand-mono-v")
+
+
+# ── Cabecera de una fila (ticket 4.1) ─────────────────────────────────────
+
+
+def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
+    """La cabecera se queda arriba al bajar. Su alto es un token: la ancla de la lectura,
+    el año de la trayectoria y el salto a un ancla lo usan para no quedar tapados."""
+    cabecera = _regla(".masthead")
+    assert "position:sticky" in cabecera and "top:0" in cabecera
+    assert "--alto-cabecera" in _tokens()
+    assert "scroll-padding-top:calc(var(--alto-cabecera)" in " ".join(_todas("html"))
+    # Todo lo fijo, también lo que se añada mañana: no solo los que hay hoy.
+    fijos = [(sel, cuerpo) for sel, cuerpo in _reglas() if "position:sticky" in cuerpo]
+    assert {sel for sel, _ in fijos} >= {".masthead", ".lectura-ancla", ".year-mark"}
+    for selector, cuerpo in fijos:
+        if selector != ".masthead":
+            assert "top:calc(var(--alto-cabecera)" in cuerpo, (
+                f"«{selector}» quedaría tapado por la cabecera fija"
+            )
+
+
+def test_el_subrayado_de_la_pagina_actual_no_alcanza_al_separador():
+    actual = _regla(".nava[aria-current],.subnava[aria-current]")
+    assert "text-decoration-thickness:2px" in actual
+    assert "display:inline-block" in _regla(".nava:not(:last-child)::after"), (
+        "sin inline-block, el punto separador hereda el subrayado de la página actual"
+    )
+
+
+def test_en_el_telefono_el_boton_del_dossier_se_guarda_en_el_menu():
+    """El botón le gana a la regla general de `.btn` solo con `.masthead` delante."""
+    movil = _bloque("@media (max-width:899px){\n  .brand{padding:3px")
+    assert ".masthead.masthead-cta{display:none}" in movil
+
+
+def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
+    """La fila entera (sello, cinco enlaces, lupa y «Dossier») pide unos 880 px de ventana:
+    con el corte en 720, a 768 y a 820 el botón quedaba fuera de la pantalla. Los dos cortes
+    se tocan, para que ningún ancho se quede con las dos cabeceras o sin ninguna. En el
+    teléfono los huecos son de 8 px: con los de 24, a 320 px «Menú» no cabía."""
+    css = _css()
+    telefono = re.search(r"@media \(max-width:(\d+)px\)\{\n  \.brand\{padding:3px", css)
+    escritorio = re.search(r"@media \(min-width:(\d+)px\)\{\n  :root\{--alto-cabecera:64px\}", css)
+    assert int(telefono[1]) + 1 == int(escritorio[1]), "un ancho con dos cabeceras, o sin ninguna"
+    assert int(escritorio[1]) >= 880, "la fila entera no cabe por debajo de unos 880 px"
+    assert ".masthead-fila{column-gap:8px}" in _bloque(telefono[0])
+
+
+def test_en_el_telefono_menu_va_en_tinta_como_la_lupa():
+    """La receta de los rótulos, más abajo en la hoja, lo dejaba en gris: con `.masthead`
+    delante gana la regla de la cabecera, y el magenta queda para el paso del ratón y para
+    cuando está abierto, como en la lupa."""
+    movil = _bloque("@media (max-width:899px){\n  .brand{padding:3px")
+    menu = re.search(r"\.masthead\.nav-disclosuresummary\{([^}]*)\}", movil)
+    assert menu and "color:var(--ink)" in menu[1], "«Menú» se queda en el gris de los rótulos"
+    assert ".masthead.nav-disclosure[open]summary" in movil
+
+
+def test_el_campo_del_buscador_ocupa_su_panel():
+    """El «…» de htmx, invisible mientras no se busca, le quitaba al campo 35 px: va en el
+    margen del panel. El panel acaba donde el botón «Dossier», no en el borde de la ventana."""
+    assert "flex:1" in _regla(".searchinput")
+    assert "position:absolute" in _regla(".busqueda.htmx-indicator")
+    assert "right:var(--gutter)" in _regla(".busqueda.search")

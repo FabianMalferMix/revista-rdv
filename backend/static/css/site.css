@@ -32,6 +32,9 @@
   /* El celeste de la V del monograma, dentro del sello magenta: un dibujo, no un texto,
      así que le basta 3:1 (da 3,40:1). Es el azul del cartel aclarado. */
   --celeste:#9cc3ea;
+  /* El alto de la cabecera fija: 56 px en el teléfono y 64 desde 720 px (ver «Masthead»).
+     Lo usan los elementos fijos de la página para quedar debajo de ella. */
+  --alto-cabecera:56px;
   /* Y el gris de los datos, que sobre la tinta se queda en 2,98:1: este, del mismo tono,
      da 7,80:1. Es el texto secundario del pie. */
   --muted-on-ink:#9fadbf;
@@ -271,13 +274,19 @@ a, button, summary, input, textarea, select, .btn, .tag{
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
-.member-name, .pub-title, .album-title, .year-mark, .rec-caratula-titulo, .subhead, .nav a{
+.member-name, .pub-title, .album-title, .year-mark, .rec-caratula-titulo, .subhead, .nav a, .subnav a{
   font-family:var(--display); letter-spacing:var(--tr-titulo);
 }
 
-/* Masthead */
-.masthead{border-bottom:1px solid var(--border); padding:18px 0 0}
-.masthead .top{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+/* Masthead: una fila, fija arriba al bajar (D2, D9). El sello, los cinco enlaces de la
+   barra, la lupa del buscador y el botón «Dossier». Medía 111 px en escritorio y 156 en
+   el teléfono, con el campo de búsqueda siempre abierto. Un salto a un ancla deja su
+   destino debajo de la cabecera, no tapado por ella. */
+html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
+.masthead{position:sticky; top:0; z-index:100; background:var(--paper); border-bottom:1px solid var(--line)}
+.masthead-fila{position:relative; display:flex; align-items:center; gap:8px 24px;
+  min-height:calc(var(--alto-cabecera) - 1px); padding-block:4px}
+.masthead-cta{flex:none}
 .brand{font-weight:700; font-size:var(--t3); line-height:1.2; text-decoration:none; letter-spacing:-.01em;
   /* Sello: el nombre vive dentro de un bloque de color, como un timbre impreso. Blanco
      sobre el magenta da 6,39:1, por encima del mínimo incluso para texto normal.
@@ -297,12 +306,35 @@ a, button, summary, input, textarea, select, .btn, .tag{
 /* En un teléfono de 320 px el nombre no cabe en una línea junto al monograma: parte en
    «Repitentes / del Verso», no en «Repitentes del / Verso». */
 .brand-nombre{text-wrap:balance}
+/* Por debajo de 1100 px el sello no cabe en una línea junto a la barra: el nombre se
+   reparte en dos, «Repitentes / del Verso». Lo eligió el dueño del sitio entre tres
+   maneras de que la fila cupiera a 951 px (las otras: los enlaces en una segunda fila, o
+   escondidos en «Menú»). Desde 1100 px, el sello vuelve a una línea. */
+@media (max-width:1099px){
+  .brand{padding:5px 12px}
+  .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
+}
+/* La lupa: abre el buscador en un panel bajo la cabecera, sin mover nada. */
+.busqueda{margin-left:auto}
+.busqueda summary{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;
+  list-style:none; cursor:pointer; color:var(--ink)}
+.busqueda summary::-webkit-details-marker{display:none}
+.busqueda summary:hover, .busqueda[open] summary{color:var(--accent)}
+.lupa{display:block; fill:none; stroke:currentColor; stroke-width:2.4}
+/* El panel acaba donde el botón «Dossier», no en el borde de la pantalla, y mide lo mismo
+   que la lista de resultados que se abre debajo. */
+.busqueda .search{position:absolute; right:var(--gutter); top:calc(100% + 1px); z-index:70;
+  width:min(440px, 100% - 2*var(--gutter)); padding:var(--s2); background:var(--paper);
+  border:1px solid var(--line); border-top:0}
 .search{display:flex; align-items:center; gap:8px; position:relative}
-.search input{font-family:var(--serif); font-size:var(--t1); padding:7px 12px;
-  border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); min-width:210px}
+.search input{flex:1; min-width:0; font-family:var(--serif); font-size:var(--t1); padding:7px 12px;
+  border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink)}
 .search input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .htmx-indicator{opacity:0; font-family:var(--mono); color:var(--muted); transition:opacity var(--dur-base) var(--ease)}
 .htmx-request .htmx-indicator{opacity:1}
+/* El «…» de mientras llega la respuesta, en el margen del panel: invisible, le quitaba al
+   campo 35 px y lo dejaba descentrado. */
+.busqueda .htmx-indicator{position:absolute; right:4px; top:50%; translate:0 -50%}
 
 /* Nav principal: disclosure <details> en móvil, en línea en escritorio.
    Sin JS: el <details> es nativo y degrada solo. */
@@ -312,17 +344,28 @@ a, button, summary, input, textarea, select, .btn, .tag{
 .nav-disclosure summary::after{content:"▾"; font-size:var(--t-2)}
 .nav-disclosure[open] summary::after{content:"▴"}
 .nav-disclosure summary:hover{color:var(--accent)}
-.nav{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 0; padding:0 0 14px}
+.nav{display:flex; flex-wrap:nowrap; align-items:baseline; gap:4px 0; padding:0}
 /* En la tipografía de titulares y en caja de frase: era la monoespaciada en mayúsculas
    de un panel de control. La familia la da la regla de titulares. */
-.nav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink)}
+.nav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); white-space:nowrap}
 .nav a:hover{color:var(--accent)}
+/* La página actual, o el territorio en el que se está: subrayado magenta de 2 px. */
+.nav a[aria-current], .subnav a[aria-current]{text-decoration:underline; text-decoration-color:var(--accent);
+  text-decoration-thickness:2px; text-underline-offset:6px}
 /* Separador de cartel entre enlaces. El `/ ""` del `content` marca el punto como
    DECORATIVO para los lectores de pantalla: sin eso, se anuncia «punto medio» entre cada
    enlace. Los navegadores que no soportan esa sintaxis lo ignoran y solo lo dibujan. */
-.nav a:not(:last-child)::after{content:"·" / ""; color:var(--muted); margin:0 12px;
+/* En bloque: si no, el subrayado de la página actual alcanza también al punto. */
+.nav a:not(:last-child)::after{content:"·" / ""; display:inline-block; color:var(--muted); margin:0 10px;
   font-weight:400}
-@media (min-width:720px){
+/* La fila entera (sello, cinco enlaces, lupa y «Dossier») pide 850 px más los márgenes:
+   cabe desde unos 880 px de ventana, y el corte va en 900 para no ir al límite. Por debajo,
+   una tableta en vertical (768, 820) lleva la cabecera del teléfono. */
+@media (min-width:900px){
+  :root{--alto-cabecera:64px}
+  .masthead-fila{padding-block:6px}
+  /* El mapa del sitio de «Menú» es del teléfono: en escritorio está en el pie. */
+  .menu-mapa{display:none}
   /* En escritorio se oculta el toggle y la nav se muestra siempre en línea.
      OJO: no basta con forzar `display` en el hijo. Desde Chrome 131 el contenido de un
      <details> cerrado vive en el pseudo-elemento ::details-content con
@@ -331,8 +374,32 @@ a, button, summary, input, textarea, select, .btn, .tag{
      Los navegadores que no lo soporten ignoran la regla y siguen con la de abajo. */
   .nav-disclosure summary{display:none}
   .nav-disclosure::details-content{content-visibility:visible; block-size:auto}
-  .nav-disclosure > .nav{display:flex !important; padding-top:14px}
+  .nav-disclosure > .nav{display:flex !important}
 }
+/* En el teléfono y la tableta en vertical: el sello, la lupa y «Menú», en una fila de
+   56 px. «Menú» despliega el mapa del sitio entero bajo la cabecera, con enlaces en bloque
+   de 44 px de alto; el dossier está en él, así que el botón se guarda. Huecos de 8 px: con
+   los de 24, a 320 px «Menú» quedaba fuera de la pantalla. */
+@media (max-width:899px){
+  .brand{padding:3px 10px; gap:8px}
+  .masthead-fila{column-gap:8px}
+  /* `.masthead` delante: la receta de `.btn`, más abajo en la hoja, le ganaría. */
+  .masthead .masthead-cta{display:none}
+  .nav-disclosure{order:3}
+  /* En tinta, como la lupa: la receta de los rótulos, más abajo, lo dejaba en gris. */
+  .masthead .nav-disclosure summary{min-height:44px; padding:0 4px; color:var(--ink)}
+  .masthead .nav-disclosure summary:hover, .masthead .nav-disclosure[open] summary{color:var(--accent)}
+  .nav-disclosure > .nav{display:none}
+  .menu-mapa{position:absolute; left:0; right:0; top:calc(100% + 1px); z-index:80;
+    max-height:calc(100dvh - var(--alto-cabecera)); overflow-y:auto;
+    padding:var(--s2) var(--gutter) var(--s3); background:var(--paper); border-bottom:1px solid var(--line)}
+  .menu-mapa .foot-group a{display:block; padding:12px 0; font-size:var(--t1); color:var(--ink); text-decoration:none}
+  /* El panel, de lado a lado bajo la cabecera, y el campo y sus resultados alineados con
+     el sello. */
+  .busqueda .search{left:0; right:0; width:auto; padding-inline:var(--gutter); border-inline:0}
+  .busqueda #search-results{left:var(--gutter); right:var(--gutter)}
+}
+.foot-group-titulo{margin:0 0 4px}
 
 /* Accesibilidad: salto al contenido y foco visible global. */
 .skip{position:absolute; left:8px; top:-48px; z-index:200; padding:8px 14px;
@@ -347,23 +414,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   outline-offset:2px; border-radius:2px}
 
 /* Buscador: resultados como overlay anclado al campo (no empujan el layout). */
-#search-results{position:absolute; top:calc(100% + 6px); right:0; z-index:60;
-  width:min(440px, 92vw); max-height:64vh; overflow-y:auto}
+#search-results{position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:60;
+  max-height:64vh; overflow-y:auto}
 #search-results:not(:empty){background:var(--surface); border:1px solid var(--border);
   border-radius:var(--r-1); padding:8px 16px; box-shadow:0 12px 34px rgba(0,0,0,.22)}
 /* El panel se cierra cuando se deja de usar: se quedaba abierto, tapando la navegación,
    hasta borrar el texto. `:not(:hover)` lo mantiene mientras se va a pulsar un
    resultado; sin eso Safari lo cierra al soltar el foco, antes de que llegue el clic. */
 .search:not(:focus-within):not(:hover) #search-results{display:none}
-/* En pantalla estrecha el buscador baja a su propia línea, pegado a la izquierda.
-   El panel seguía anclado a la derecha del campo, con su ancho de escritorio: empezaba
-   111 px fuera de la pantalla y los títulos salían cortados. Ahí el campo ocupa la
-   línea entera y el panel, lo mismo que el campo. */
-@media (max-width:719px){
-  .search{flex:1 1 100%}
-  .search input{flex:1; min-width:0}
-  #search-results{left:0; right:0; width:auto}
-}
 .search-all{margin:10px 0 2px; padding-top:10px; border-top:1px solid var(--border); font-size:var(--t0)}
 /* Página de búsqueda: el mismo campo y el mismo botón que el resto del sitio. */
 .search-page{display:flex; gap:10px; max-width:var(--medida); margin:0 0 24px}
@@ -381,6 +439,10 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .index-head .kicker{display:block; margin:0}
 .index-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0; text-wrap:balance}
 .index-head .dek{font-size:var(--t2); line-height:1.45; margin:14px 0 0}
+/* La sub-fila del colectivo (D9): en sus índices, el resto de su territorio. */
+.subnav{display:flex; flex-wrap:wrap; gap:0 20px; margin:var(--s2) 0 0}
+.subnav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); padding-block:10px}
+.subnav a:hover{color:var(--accent)}
 /* Firma por territorio: un filete de 3 px bajo el título dice en qué parte del sitio se
    está, con el mismo reparto que los grupos del pie. Magenta para la obra, el azul de la
    carátula para el colectivo y tinta para prensa y gestión. Va pegado al título y no al
@@ -401,7 +463,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
    y para los datos; lo demás se lee en la serif o en la de titulares. */
 .rotulo, .kicker, .dossier-doc .subhead, .foot-group h2, .reviewed h2, .event-month, .tag,
-.cinta-pie a, .nav-disclosure summary, .member-role{
+.cinta-pie a, .nav-disclosure summary, .member-role, .foot-group-titulo{
   font-family:var(--mono); font-size:var(--t-2); letter-spacing:var(--tr-rotulo); text-transform:uppercase;
   color:var(--muted)}
 .dossier-doc .subhead{margin:34px 0 14px}
@@ -631,7 +693,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   .timeline-year{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,3fr);
     column-gap:var(--s3); align-items:start; margin-top:var(--s5)}
   /* El número acompaña mientras se recorren sus filas. */
-  .year-mark{position:sticky; top:var(--s3); margin:0; padding-top:4px}
+  .year-mark{position:sticky; top:calc(var(--alto-cabecera) + var(--s3)); margin:0; padding-top:4px}
 }
 .photo-grid, .album-grid{list-style:none; padding:0; margin:0;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px}
@@ -1004,7 +1066,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
     align-items:start}
 }
 @media (min-width:840px) and (min-height:700px){
-  .lectura-ancla{position:sticky; top:var(--s3)}
+  .lectura-ancla{position:sticky; top:calc(var(--alto-cabecera) + var(--s3))}
 }
 
 /* ── Fichas: integrante, publicación, evento ──

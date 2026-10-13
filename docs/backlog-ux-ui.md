@@ -1037,6 +1037,48 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   de 40 px de alto (`.brand`, `.brand-mono`, `.brand-nombre`). La cabecera de una fila tiene que
   dejarle sitio. A 320 px el sello ya parte el nombre en dos líneas, así que la fila de 56 px en
   el teléfono necesita probarse con el sello a 320 y a 390.
+- **Estado:** hecho (paso 18 del plan). El dueño eligió entre tres maneras de que la fila cupiera
+  a 951 px, enseñadas sobre la cabecera real
+  (https://claude.ai/artifact/SPdVbArnaZeDSm32H6UVi7). Lo construido difiere de lo escrito arriba
+  en estos puntos:
+  1. **Por debajo de 1100 px el nombre del sello va en dos líneas**, «Repitentes / del Verso»
+     (`.brand-nombre{max-width:7.5em}`). Es la opción A del dueño. Las otras dos eran los enlaces
+     en una segunda fila (92 px) o escondidos en «Menú». Desde 1100 px el sello vuelve a una línea.
+  2. **La cabecera del teléfono llega hasta 899 px, no hasta 720.** La fila entera pide 850 px
+     más los márgenes y cabe desde unos 880. Con el corte en 720, a 768 y a 820 el botón
+     «Dossier» quedaba fuera de la pantalla. Por debajo de 900 van el sello, la lupa y «Menú», en
+     56 px y con huecos de 8 px; con los de 24, a 320 «Menú» no cabía.
+  3. **`nav_actual` sale del nombre de la vista, no del namespace.** «Colectivo» abarca tres
+     (`people`, `agenda` y parte de `showcase`), y `showcase` es también Publicaciones. El
+     procesador `apps/content/context_processors.py::nav` da `nav_principal` con
+     `aria-current="page"` en el índice y `"true"` en las páginas de su territorio (una ficha, un
+     evento). Las fichas de una obra reseñada, su editorial y su autor son de «Textos»; las
+     colecciones y los colaboradores no marcan ninguno, porque reúnen poemas y textos. En el
+     dossier, el que lleva `aria-current` es el botón.
+  4. **La sub-fila está en los seis índices del colectivo**, no solo en `/integrantes/`, y lleva
+     también «Integrantes». Marca el índice en el que se está.
+  5. **En «Menú» los rótulos de grupo son párrafos (`.foot-group-titulo`), no `h2`**: irían antes
+     del `h1` de la página. El pie conserva sus `h2`. El menú se llama «Menú del sitio», sus
+     enlaces miden 44 px de alto o más, y a 320 × 568 tiene su propio scroll. «Menú» va en tinta,
+     como la lupa: la receta de los rótulos lo dejaba en gris.
+  6. **La lupa es un `<details>` nativo.** `static/js/buscador.js` solo pone el foco en el campo
+     al abrirlo y cierra la lupa o el menú con Escape. El panel acaba donde el botón «Dossier» y
+     mide 440 px, lo mismo que la lista de resultados. En el teléfono va de lado a lado, con el
+     campo alineado con el sello. El «…» de htmx salió del flujo: invisible, le quitaba 35 px al
+     campo.
+  7. **El alto de la cabecera es un token**, `--alto-cabecera` (56 y 64 px). Lo usan
+     `scroll-padding-top`, la ancla de la sala de lectura y el año de la trayectoria, para que lo
+     fijo y el destino de un ancla queden debajo de la cabecera.
+  8. **Las redes del colectivo se consultan una vez por página** (`redes_del_colectivo`, una
+     lista perezosa en el procesador del perfil). Eran tres consultas: dos en los datos
+     estructurados y una en el pie. El menú habría sumado la cuarta. Los techos de
+     `tests/test_performance.py` no cambian; sus comentarios se volvieron a medir.
+  9. **El dossier tiene `id="contacto"`** en su bloque de contacto: el botón lleva ahí.
+  Pruebas: `tests/test_cabecera.py` (barra y `aria-current`, botón, lupa sin JavaScript, menú,
+  sub-fila), las de la cabecera en `tests/test_css_sistema.py` (fija y su token, subrayado sin el
+  punto, botón guardado en el teléfono, cortes que se tocan, «Menú» en tinta, campo a lo ancho
+  del panel), `tests/test_ia.py` (cinco enlaces) y `tests/test_nav_css.py` (el bloque de
+  escritorio pasa a 900 px). `test_nav_links_intact_in_disclosure` sigue sin cambios.
 
 #### 4.2 Hero con el nombre, objeto real, ficha, cifras y línea de respaldo (D8, D9)
 - **Hallazgos:** POR-1, POR-2, POR-5, POR-8, POR-9, ESP-3, IMG-3, NAV-2.
@@ -1083,6 +1125,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   dejó para este ticket. Reutiliza `.partner-logo`: 160 × 80, multiplicado con el papel y en
   gris hasta que se señala. Los aliados ya se agrupan por tipo en
   `showcase.views.GRUPOS_DE_ALIADOS`.
+  **Tras el paso 18:** la cabecera lleva un botón primario «Dossier» en todas las páginas desde
+  900 px. En la portada hay hoy dos botones primarios en la primera pantalla (951, 1440 y 1920),
+  los dos al dossier: el de la cabecera y «Ver el dossier» del titular. Para que quede uno, el
+  titular no repite el dossier como primario. Por ejemplo: «Escríbenos» de primario, o el
+  dossier como `.btn` normal si es el PDF. Decídelo y díselo al dueño. La portada hace 16
+  consultas en `tests/test_performance.py` (eran 17) y 20 en la base de desarrollo.
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
@@ -1150,6 +1198,14 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `test_el_pie_es_de_tinta`, `test_el_pie_usa_el_ancho_para_medir_menos_de_alto` y
   `test_el_pie_queda_abajo_en_una_pagina_corta`.
 
+  **Tras el paso 18:** `templates/partials/_mapa.html` ya existe, con los cuatro grupos del pie.
+  Lo usa también «Menú» en el teléfono, con `en_menu=True`: ahí los rótulos de grupo son
+  párrafos (`.foot-group-titulo`), no `h2`, y el menú se llama «Menú del sitio». Lo que cambie
+  en el mapa cambia también en el menú: míralo a 390 px con el menú abierto. En el menú los
+  enlaces son bloques de 44 px (`.menu-mapa .foot-group a`), y el paso de 28 px del pie no debe
+  alcanzarlos. Las redes llegan en `redes_del_colectivo`, que se consulta una vez por página:
+  úsala, y no `site_profile.social_links.all`.
+
 #### 4.5 Enlaces cruzados entre entidades
 - **Hallazgos:** NAV-9 (lo que no cubrió 2.4).
 - **Archivos:** `member_detail.html` (+ «Actividades» con `Event.participants` reverse),
@@ -1175,6 +1231,10 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `id="contacto"` en el bloque de contacto; `@media print` conserva las imágenes y las cifras.
 - **Aceptación:** años en orden descendente estricto; el PDF impreso desde el navegador muestra
   retratos y cubiertas; `/dossier/#contacto` desplaza al bloque; `tests/test_dossier.py` en verde.
+- **Nota de entrada** (tras el paso 18): el bloque de contacto ya tiene `id="contacto"`, y el
+  botón «Dossier» de la cabecera lleva a él desde todas las páginas. Si el dossier se reordena,
+  el `id` se queda en el bloque de contacto (`tests/test_cabecera.py` lo comprueba). Como la
+  cabecera es fija, el salto deja el bloque 16 px por debajo de ella (`scroll-padding-top`).
 
 #### 5.2 Agenda y evento con afiche `[paralelo]`
 - **Hallazgos:** IMG-8, CON-9 (resto), IMG-9 (parte).
@@ -1201,6 +1261,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Aceptación:** «Fernanda» devuelve a la integrante y «recital» al registro;
   `tests/test_search.py` y `tests/test_search_hardening.py` en verde; `test_search_query_budget` ≤ 10
   (si no cabe, consolidar en una consulta por tipo y anotar la medición).
+- **Nota de entrada** (tras el paso 18): el buscador de la cabecera vive en el panel de la lupa
+  (`details.busqueda`). El panel mide 440 px en escritorio y va de lado a lado por debajo de
+  900 px; la lista de resultados (`#search-results`) mide lo mismo que el panel y ya tiene
+  `max-height:64vh` con scroll propio. Con los resultados agrupados por tipo la lista crece:
+  compruébala a 390 y a 951. `test_search_query_budget` mide hoy 9 consultas de 10 (en frío,
+  como la cuenta la prueba): cuatro tipos más no caben sin consolidar.
 
 ### Épica 6 — Cierre: accesibilidad, métricas y documentación
 

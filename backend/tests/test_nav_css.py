@@ -24,7 +24,7 @@ CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "site.css"
 def _bloque_escritorio():
     """El contenido del @media de escritorio que gobierna la navegación."""
     texto = CSS.read_text(encoding="utf-8")
-    m = re.search(r"@media \(min-width:720px\)\{(.*?)\n\}", texto, re.S)
+    m = re.search(r"@media \(min-width:900px\)\{(.*?)\n\}", texto, re.S)
     assert m, "no se encontró el @media de escritorio en site.css"
     return m.group(1)
 
@@ -55,5 +55,5 @@ def test_se_conserva_el_display_para_navegadores_antiguos():
 def test_en_movil_el_desplegable_sigue_siendo_visible():
     """Fuera del @media, el summary debe verse: es el único acceso a la nav en móvil."""
     texto = CSS.read_text(encoding="utf-8")
-    fuera = texto.split("@media (min-width:720px)")[0]
+    fuera = texto.split("@media (min-width:900px)")[0]
     assert re.search(r"\.nav-disclosure summary\s*\{[^}]*display:\s*inline-flex", fuera)

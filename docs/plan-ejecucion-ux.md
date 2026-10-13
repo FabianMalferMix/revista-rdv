@@ -8,26 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el paso 17.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 18.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 17 de 25 pasos.** El último fusionado es el paso 17 (`ux-3e-marca`, PR #122). `main`
-está en verde, con 792 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 18 de 25 pasos.** El último fusionado es el paso 18 (`ux-4-1-cabecera`, PR #123). `main`
+está en verde, con 806 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el punto de control C y luego el paso 18, `ux-4-1-cabecera`** (sección 2). El 18
-**requiere que el colectivo esté avisado de D9**. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el paso 19, `ux-4-2-hero`** (sección 2), cuando el dueño haya visto el 18. Antes
+de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-3e-marca … (#122)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-4-1-cabecera … (#123)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 18
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 19
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -59,6 +59,7 @@ nuevo: mira su descripción y la sección 4.
 | 15 | `ux-3c-reproductor` | #120 | La placa del reproductor con su póster a una tinta o su carátula, y el mando en un panel sólido |
 | 16 | `ux-3d-imagenes-del-modelo` | #121 | Imágenes de textos y afiches en los listados, crédito y contador en el álbum, aliados por tipo |
 | 17 | `ux-3e-marca` | #122 | El sello con el monograma RV, el icono «RdV», `theme-color` y la tarjeta para compartir |
+| 18 | `ux-4-1-cabecera` | #123 | Cabecera de una fila y fija: cinco enlaces con la página actual marcada, lupa, «Dossier»; «Menú» con el mapa en el teléfono |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -92,6 +93,10 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Placas del reproductor vacías | 2 | 0 |
 | Imágenes del modelo en los listados | ninguna | las de los textos y los afiches (a una tinta), créditos en el álbum, logos de aliados |
 | Icono de la pestaña | ninguno (`/favicon.ico` daba 404) | «RdV» a 32 px, `.ico` y 180 px para el teléfono |
+| Alto de la cabecera en escritorio, y en un teléfono | 111 y 156 px | 64 y 56 px, fija al bajar |
+| `/textos/` y el dossier en la cabecera | no | sí: un enlace y un botón |
+| Páginas que marcan su sección en la cabecera | 0 | las de las cinco secciones y el dossier; no las que no son de ninguna (portada, búsqueda, colecciones, envío) |
+| Consultas por página para las redes del colectivo | 3 | 1 |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -100,8 +105,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
+| Dos botones oscuros al dossier en la primera pantalla de la portada: el de la cabecera y el del titular | paso 19 |
 | Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
 | Pie en tinta y compacto, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
 | Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
@@ -150,6 +155,15 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Revisión del paso 15 (2026-10-13):** visto bueno, sin ajustes.
 - **Revisión del paso 14 (2026-10-13):** aprobó todas las decisiones, también la tinta: «el azul
   del cartel fue la decisión correcta para ambos casos» (retratos y galería).
+- **Punto de control C (2026-10-13):** visto bueno a los pasos 13 a 17 («Doy el visto bueno»).
+- **D9 no necesitó aviso (2026-10-13):** no avisó al colectivo porque «todas las decisiones
+  fueron delegadas a mí». Las decisiones de diseño las toma él; no hace falta preguntar si el
+  colectivo está avisado.
+- **Cabecera (2026-10-13, paso 18):** a 951 px la fila entera no cabe con el nombre del sello en
+  una línea. Se le enseñaron tres maneras sobre la cabecera real
+  (https://claude.ai/artifact/SPdVbArnaZeDSm32H6UVi7) y eligió la A: por debajo de 1100 px el
+  nombre va en dos líneas, «Repitentes / del Verso». Descartó los enlaces en una segunda fila y
+  los enlaces escondidos en «Menú».
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -157,83 +171,89 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 17 está fusionado y aún no lo ha visto construido.** Qué mirar, a 951 px:
-   - la cabecera de cualquier página, con el sello y el monograma RV dentro;
-   - la pestaña del navegador, que lleva el icono «RdV»: si no lo enseña, que recargue la página
-     sin caché, con Ctrl+Mayús+R;
-   - la tarjeta para compartir, `tools/ux/out/tarjeta-para-compartir.png`: él decide si la
-     sube desde el panel (Perfil del sitio → imagen para compartir).
-   Después, **el punto de control C** (sección 3). Sus tres preguntas ya las respondió por el
-   camino: la tinta del duotono (el azul, aprobado en los pasos 14 y 16), el glifo (eligió el
-   monograma) y el sello (se queda). Falta su aprobación expresa del conjunto: registros,
-   galería, aliados y marca.
+1. **El paso 18 está fusionado y aún no lo ha visto construido.** Qué mirar, a 951 px:
+   - la cabecera de cualquier página: el sello con el nombre en dos líneas, «Poemas · Textos ·
+     Registros · Publicaciones · Colectivo», la lupa y el botón «Dossier», en una fila de 64 px
+     que se queda arriba al bajar;
+   - en `/poemas/`, «Poemas» subrayado en magenta; en un artículo, «Textos»;
+   - en `/agenda/`, «Colectivo» subrayado arriba y, bajo el título, la sub-fila «Integrantes ·
+     Trayectoria · Agenda · Galería · Prensa · Aliados» con «Agenda» subrayado;
+   - la lupa: abre el campo bajo la cabecera, y al escribir «casa» salen los resultados; Escape
+     lo cierra;
+   - el botón «Dossier», que lleva al bloque de contacto del dossier;
+   - en una ventana estrecha (menos de 900 px), «Menú», que despliega el mapa del sitio.
+   Se le avisa de que en la portada hay dos botones oscuros al dossier, el de la cabecera y «Ver
+   el dossier» del titular, hasta el paso 19.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
-3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
-   enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
+3. **La tarjeta para compartir** del paso 17 está en `tools/ux/out/tarjeta-para-compartir.png`:
+   él decide si la sube desde el panel (Perfil del sitio → imagen para compartir).
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: punto de control C y paso 18, `ux-4-1-cabecera`
+## 2. Qué sigue: el paso 19, `ux-4-2-hero`
 
-**Primero, el punto de control C.** Pide al dueño la aprobación expresa de los pasos 13 a 17:
-registros, galería, aliados y la marca de la cabecera. Sus preguntas ya tienen respuesta (ver
-sección 1). Sin esa aprobación no se abre el 18.
+Ticket 4.2 del backlog, decisiones D8 y D9. Es el paso grande. Lee el ticket con sus **notas de
+entrada**, tras los pasos 13, 15, 16 y 18: dicen qué ha cambiado desde que se escribió (el
+amarillo es un trazo, el póster del destacado ya se ve, la franja de aliados está por hacer y la
+cabecera ya tiene un botón primario).
 
-**El paso 18 requiere que el colectivo esté avisado de D9**: la barra pasa de cuatro enlaces a
-cinco, más «Dossier», y prensa y aliados vuelven a la portada como una línea. Pregúntale al
-dueño si ya lo avisó.
+**Qué se hace.** El titular de la portada pasa a dos columnas:
+- a la izquierda, una cejilla con los datos del colectivo, el nombre como `h1` visible (se
+  retira el `h1.sr-only`), el manifiesto y los botones;
+- a la derecha, un objeto real que elige la vista: la última cubierta, el afiche del próximo
+  evento o la imagen para compartir. Sin objeto, el titular ocupa todo el ancho;
+- las cifras con su trazo de marcador, cada una enlazada a su prueba;
+- debajo, la línea de respaldo: la última cita de prensa y «Con el apoyo de», con los aliados.
 
-Ticket 4.1 del backlog, decisiones D2 y D9. Lee el ticket con su **Nota de entrada**: la
-cabecera conserva el sello magenta con el monograma.
+En el teléfono el orden es titular, manifiesto, botones, objeto y cifras.
 
-**Qué se hace.** La cabecera pasa a una sola fila:
-- el sello;
-- cinco enlaces: Poemas, Textos, Registros, Publicaciones y Colectivo;
-- el buscador, plegado tras una lupa;
-- un botón «Dossier».
-
-En el teléfono, una fila de 56 px con «Menú», que despliega el mapa del pie. Cada página marca
-su enlace con `aria-current`.
-
-**Qué hace falta.** El aviso del colectivo sobre D9. Nada más fuera del repositorio.
+**Qué hace falta.** Nada de fuera del repositorio. El objeto sale de lo que ya hay en la base;
+el material real lo pondrá el dueño desde el panel.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Alto de la cabecera en escritorio | 111 px | 64 px o menos |
-| Alto de la cabecera en un teléfono | 156 px | 56 px o menos, con el menú cerrado |
-| `/textos/` y el dossier a un clic desde cualquier página | no: no están en la cabecera | sí |
-| Páginas que marcan su enlace con `aria-current` | 0 | todas las de la barra |
-| Sin JavaScript, la lupa abre el campo y el envío lleva a `/buscar/` | el campo siempre visible | sí |
+| Imágenes en la primera pantalla de la portada a 1440, 1920 y 390 | 1, 1 y 0: solo asoma la placa del destacado | 1 o más en los tres: la del titular |
+| Tamaño del `h1` de la portada a 1920 | no se ve: es `sr-only` | 112 px o más |
+| Botones primarios en la primera pantalla | 2 desde 900 px, los dos al dossier: el de la cabecera y «Ver el dossier» | 1 |
+| Consultas de la portada | 16 en `tests/test_performance.py`, 20 en la base de desarrollo | 24 o menos |
+| El correo del titular es el del pie | el titular solo lo enseña si hay `booking_email`, y en desarrollo no lo hay | el mismo, con `general_email` de reserva, como el pie |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 **Pruebas que cambian a propósito.**
-- `tests/test_ia.py`: `NAV_PRINCIPAL` pasa a cinco enlaces. Los que salen de la barra siguen
-  alcanzables; el dossier, por el botón.
-- `tests/test_nav_css.py`: las reglas de `::details-content` siguen, para el menú y para la
-  búsqueda.
-- `tests/test_ui_identity.py::test_nav_links_intact_in_disclosure`.
+- `tests/test_catalog.py::test_home_shows_catalog_but_not_press_or_partners` se invierte: la
+  portada muestra la cita y el aliado en la línea de respaldo. Renómbrala y cita D9.
+- `tests/test_home_ui.py::test_home_hero_has_manifesto_and_stats`: manifiesto, cifras y el
+  nombre como `h1`.
+- Siguen: `tests/test_ui_ux.py::test_home_has_an_h1` y la regla de `tests/test_ui_identity.py`
+  que limita la cifra grande a `.hero-stats` y `.dossier-doc`.
 
 **Cuidados.**
-- **El sello mide 40 px de alto** y a 320 px parte el nombre en dos líneas: la fila de 56 px
-  del teléfono tiene que probarse con él, a 320 y a 390.
-- **La cabecera fija (`sticky`) se comprueba bajando de verdad**, con un guion, no con
-  capturas de página entera. Tampoco puede taparle nada al ancla de la sala de lectura, que
-  también es fija.
-- **El buscador en vivo de htmx** sigue funcionando dentro del panel.
-- **A 951 px**, el ancho del dueño, la fila tiene que caber: sello, cinco enlaces, lupa y botón
-  en 875 px.
-- La cabecera es lo primero que se ve: si dudas entre dos disposiciones, enséñale alternativas
-  con `tools/ux/variantes.js` antes de construir.
+- **El titular es lo primero que se ve.** Antes de construir, enséñale al dueño dos o tres
+  disposiciones capturadas sobre la portada real a 951 px (`tools/ux/variantes.js`) y
+  recomienda una. Le molestan los bloques de color sólido y las cajas que parecen
+  «incrustadas»; le gustan los acentos integrados, el duotono azul y el sello girado.
+- **Un solo botón primario.** La cabecera ya lleva «Dossier» desde 900 px. El titular no repite
+  el dossier como primario: decide cuál va (por ejemplo, «Escríbenos») y díselo.
+- **El sello de convocatoria** flota hoy a la derecha del lema desde 720 px. Con el objeto en
+  la columna derecha necesita otro sitio, sin tapar la imagen ni el titular.
+- **El objeto no repite el póster del destacado**, que se ve justo debajo desde el paso 15.
+- **El amarillo es solo el trazo bajo las cifras**:
+  `test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto` falla si aparece en otro sitio.
+- **La cabecera es fija y mide 64 px** (56 en el teléfono): la primera pantalla visible es esa
+  altura más baja. Un `min-height` en `vh` tiene que contarla.
+- **El objeto es la imagen más grande de la primera pantalla**: sin `loading="lazy"`, con
+  `width` y `height`.
+- Si el paso se alarga, pártelo en dos: primero el titular sin objeto; luego el objeto, las
+  cifras y la línea de respaldo.
 
 **Qué enseñarle al dueño al terminar.**
-- La cabecera en cualquier página, a 951.
-- El menú en el teléfono.
-- El buscador al pulsar la lupa.
-- `/textos/` y el dossier, a un clic.
+- La portada a 951 px, con el titular y su objeto.
+- La portada en el teléfono.
+- La línea de respaldo, con la cita y los aliados.
 
 ## 3. Los pasos
 
@@ -284,11 +304,12 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   compartir. El dueño eligió conservar el sello, con el monograma dentro.
   Cierra cuando: `tests/test_security_csp.py` sigue en verde (ningún `.svg` en `static/`); la
   pestaña enseña el icono; el nombre de la cabecera ya no lleva fondo.
-- ◆ **Punto de control C.** Registros, galería, aliados y la marca en la cabecera.
+- ◆ **Punto de control C.** Hecho el 2026-10-13: aprobado (ver sección 1).
   Preguntar: si quiere el tratamiento a dos tintas y con cuál; si el glifo lo representa; si
   acepta el nombre sin sello magenta.
-- [ ] **18. `ux-4-1-cabecera`.** Ticket 4.1 (D2, D9): una fila, cinco enlaces, «Dossier»,
-  buscador plegado. Detalle en la sección 2. Cambia `tests/test_ia.py`. **Requiere que el colectivo esté avisado de D9.**
+- [x] **18. `ux-4-1-cabecera`.** Ticket 4.1 (D2, D9): una fila, cinco enlaces, «Dossier»,
+  buscador plegado. Cambia `tests/test_ia.py`. El dueño eligió el nombre del sello en dos
+  líneas por debajo de 1100 px; por debajo de 900, la cabecera del teléfono.
   Cierra cuando: la cabecera mide 64 px o menos en escritorio y 56 o menos en un teléfono;
   `/textos/` y el dossier quedan a un clic desde cualquier página; cada página marca su enlace con
   `aria-current`; sin JavaScript la lupa abre el campo y el envío lleva a `/buscar/`.
@@ -529,6 +550,13 @@ Ancla en un texto que no se repita y mira `git diff --stat` después de cada gui
   pisa algo. El solape de la columna ancla del paso 12 solo lo vio el dueño, desplazándose.
 - Datos de prueba temporales para medir un criterio (doce poemas, tres fechas de agenda) se crean
   con un prefijo reconocible y se borran en la misma orden. No se dejan en la base.
+- **Mide también los anchos intermedios.** La fila de la cabecera del paso 18 cabía a 390, 951
+  y 1440, pero a 768 y a 820 el botón «Dossier» se salía de la pantalla, y a 320 se salía
+  «Menú». `node tools/ux/ver.js <dir> 768 900 …` sale con 1 si una página desborda.
+- **El servidor de desarrollo se queda sin conexiones** si se le piden cientos de páginas
+  seguidas: `runserver` abre un hilo por petición y, con `CONN_MAX_AGE=60`, cada hilo deja su
+  conexión abierta. Postgres admite 100 y a partir de ahí responde 500 («too many clients
+  already»). Mide en tandas, con un minuto entre ellas.
 
 - **La prueba de contraste de la hoja solo ve las reglas que declaran a la vez `color` y
   `background`.** Un texto que hereda su color de una banda y está encima de otro fondo (el aviso
@@ -569,6 +597,14 @@ Ancla en un texto que no se repita y mira `git diff --stat` después de cada gui
   `.featured h2 a` iba detrás), y el componente con fondo propio va después de la banda.
 - **Añadir un atributo a una etiqueta rompe las pruebas que la buscan literal.** Pasó con
   `<header class="index-head">` al añadir `data-territorio`: búscala con `[^>]*`.
+- **Una receta que va después en la hoja le gana a un `@media` anterior** con la misma
+  especificidad. En el paso 18 la regla de `.btn` volvía a enseñar el botón «Dossier» en el
+  teléfono, y la de los rótulos dejaba «Menú» en gris. Se arregla con la clase del contenedor
+  delante: `.masthead .masthead-cta`.
+- **La cabecera es fija y su alto es un token**, `--alto-cabecera`: 56 px por debajo de 900 de
+  ventana y 64 desde ahí. Lo usan `scroll-padding-top`, la columna ancla y el año de la
+  trayectoria. Un elemento fijo nuevo usa `top:calc(var(--alto-cabecera) + …)`, y una prueba
+  lo vigila.
 - **Pocos elementos.** `auto-fit` con un tope por tarjeta, o columnas según la cantidad con
   `:has()`, para que tres cosas no se arrinconen a la izquierda de cinco columnas.
 - **Syne 800 es un corte extendido** y no se usa. **La cinta no lleva control de pausa.**
