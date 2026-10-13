@@ -94,9 +94,11 @@ no una plantilla vacía.
 ### 1.2 Fichas de contenido
 
 - [x] **`/articulo/<slug>/`** — Entra desde la portada. Debe mostrar cuerpo, autoría,
-      tiempo de lectura y datos estructurados JSON-LD.
-- [x] **`/poema/<slug>/`** — Ojo a la tipografía: los saltos y sangrías del poema se
-      respetan (`pre-wrap`).
+      tiempo de lectura y datos estructurados JSON-LD. Desde 840 px de ancho, título, firma,
+      fecha y obra reseñada van en una columna a la izquierda y el texto a la derecha.
+- [x] **`/poema/<slug>/`** — Ojo a la tipografía: cada verso conserva su sangría, y entre
+      estrofas queda una línea en blanco. Un verso que no cabe sigue en la línea de abajo
+      con sangría. Al final, salidas como «Todos los poemas» y «Poema siguiente».
 - [x] **`/seccion/<slug>/`** — p. ej. `/seccion/resenas/`.
 - [x] **`/etiqueta/<slug>/`**
 - [x] **`/colaborador/<slug>/`** — Perfil con su obra. **Ojo:** si esa persona es
@@ -320,8 +322,9 @@ from PIL import Image; print(dict(Image.open('/app/mediafiles/assets/AAAA/MM/tu-
 > **Comprueba también un poema que SÍ tenga registro publicado.** Sin ese control positivo
 > no se distingue «el filtro funciona» de «la página no muestra registros nunca». Y busca
 > el marcador correcto: un registro con archivo renderiza `<audio>`, pero uno con embed
-> sale como un simple **enlace** bajo el encabezado «Escuchar el poema». Buscando `<audio>`
-> las dos páginas parecen vacías y el filtro parece funcionar por la razón equivocada.
+> sale como un simple **enlace**, «Escuchar en el registro →», bajo el rótulo «Escuchar el
+> poema». Ese enlace lleva a la ficha del registro, no a YouTube. Buscando `<audio>` las
+> dos páginas parecen vacías y el filtro parece funcionar por la razón equivocada.
 
 ### 6.4 Comando de derivadas
 

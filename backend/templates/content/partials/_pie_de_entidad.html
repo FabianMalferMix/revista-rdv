@@ -1,0 +1,14 @@
+{% comment %}
+   Pie de entidad: adónde ir después de una ficha. Recibe `pie`, una lista de puertas
+   {rotulo, texto, url} que arma la vista (apps/content/pie.py). Cada celda se pulsa
+   entera: el ::after de su enlace la cubre.
+{% endcomment %}
+{% if pie %}
+  <nav class="pie-entidad" aria-label="Seguir leyendo">
+    <ul>
+      {% for p in pie %}
+        <li><span class="rotulo">{{ p.rotulo }}</span><a href="{{ p.url }}">{{ p.texto }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+{% endif %}

@@ -39,14 +39,18 @@ def test_la_ficha_no_expone_una_grabacion_no_publicada(client):
     resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
     assert resp.status_code == 200
     assert recording.embed_url.encode() not in resp.content
+    assert recording.get_absolute_url().encode() not in resp.content
     assert b"Escuchar el poema" not in resp.content
 
 
 def test_la_ficha_si_expone_una_grabacion_publicada(client):
+    """Publicada, la ficha lleva a la del registro. Al tercero no: desde el ticket 2.4 el
+    enlace es interno, y la ficha del registro pide permiso antes de conectar."""
     poem, recording = _poema_con_registro(publicado=True)
     resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
     assert resp.status_code == 200
-    assert recording.embed_url.encode() in resp.content
+    assert recording.get_absolute_url().encode() in resp.content
+    assert recording.embed_url.encode() not in resp.content
     assert b"Escuchar el poema" in resp.content
 
 
@@ -56,11 +60,11 @@ def test_despublicar_retira_la_grabacion_de_la_ficha():
 
     poem, recording = _poema_con_registro(publicado=True)
     url = reverse("content:poem_detail", args=[poem.slug])
-    assert recording.embed_url.encode() in Client().get(url).content
+    assert recording.get_absolute_url().encode() in Client().get(url).content
 
     recording.published = False
     recording.save(update_fields=["published"])
-    assert recording.embed_url.encode() not in Client().get(url).content
+    assert recording.get_absolute_url().encode() not in Client().get(url).content
 
 
 def test_la_tarjeta_del_listado_no_anuncia_registros_ineditos(client):

@@ -1,0 +1,15 @@
+{% load images personas %}
+{% comment %}
+   Quién firma, con su retrato pequeño. La imagen es decorativa: el nombre va al lado y es
+   el enlace. Sin retrato, el monograma de dos letras.
+{% endcomment %}
+{% if personas %}
+  <ul class="lectura-firmas">
+    {% for c in personas %}
+      <li>
+        {% if c.photo %}{% responsive_img c.photo css_class="firma-retrato" sizes="48px" decorativa=True %}{% else %}<span class="firma-retrato firma-monograma" aria-hidden="true">{{ c.display_name|iniciales }}</span>{% endif %}
+        <a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

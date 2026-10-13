@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}{{ article.seo_title|default:article.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ article.seo_description|default:article.subtitle|default:article.title }}{% endblock %}
@@ -30,41 +31,57 @@
   </script>
 {% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
-  <article class="article">
-    <span class="kicker">
-      {% if article.section and article.seccion_aporta %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
-    </span>
-    <h1>{{ article.title }}</h1>
-    {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
-    <p class="meta">
-      {% for c in article.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if article.authors.all %} · {% endif %}{{ article.reading_time }} min · {{ article.published_at|date:"j M Y" }}
-    </p>
+  <article class="article lectura">
+    <header class="lectura-ancla">
+      <span class="kicker">
+        {% if article.section and article.seccion_aporta %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
+      </span>
+      <h1>{{ article.title }}</h1>
+      {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
+      {% include "content/partials/_firmas_lectura.html" with personas=article.authors.all %}
+      <p class="meta">{{ article.reading_time }} min{% if article.published_at %} · <time datetime="{{ article.published_at|date:'Y-m-d' }}">{{ article.published_at|date:"j M Y" }}</time>{% endif %}</p>
 
-    {% with reviewed=article.reviewed_works.all %}
-      {% if reviewed %}
-        <aside class="reviewed">
-          <h2>Obra reseñada</h2>
-          <ul>
+      {% with reviewed=article.reviewed_works.all %}
+        {% if reviewed %}
+          <aside class="reviewed">
+            <h2>Obra reseñada</h2>
             {% for w in reviewed %}
-              <li>
-                <a href="{% url 'reviews:work_detail' w.slug %}">{{ w.title }}</a>{% if w.publisher %} — <a href="{% url 'reviews:publisher_detail' w.publisher.slug %}">{{ w.publisher.name }}</a>{% endif %}{% if w.publication_year %} ({{ w.publication_year }}){% endif %}
-              </li>
+              <div class="obra">
+                {% if w.cover_image %}{% responsive_img w.cover_image css_class="obra-cubierta" sizes="96px" decorativa=True %}{% endif %}
+                <p>
+                  <a href="{% url 'reviews:work_detail' w.slug %}">{{ w.title }}</a>
+                  {% if w.publisher or w.publication_year %}<span class="meta">{% if w.publisher %}<a href="{% url 'reviews:publisher_detail' w.publisher.slug %}">{{ w.publisher.name }}</a>{% endif %}{% if w.publisher and w.publication_year %} · {% endif %}{% if w.publication_year %}{{ w.publication_year }}{% endif %}</span>{% endif %}
+                </p>
+              </div>
             {% endfor %}
-          </ul>
-        </aside>
-      {% endif %}
-    {% endwith %}
+          </aside>
+        {% endif %}
+      {% endwith %}
 
-    {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
-    <div class="body">{{ article.body|safe }}</div>
+      {% with tags=article.tags.all %}
+        {% if tags %}
+          <p class="tags">
+            {% for t in tags %}<a class="tag" href="{% url 'content:tag_detail' t.slug %}">{{ t.name }}</a>{% endfor %}
+          </p>
+        {% endif %}
+      {% endwith %}
+    </header>
 
-    {% with tags=article.tags.all %}
-      {% if tags %}
-        <p class="tags">
-          {% for t in tags %}<a class="tag" href="{% url 'content:tag_detail' t.slug %}">{{ t.name }}</a>{% endfor %}
-        </p>
+    <div class="lectura-cuerpo">
+      {% if article.cover_image %}
+        <figure class="lectura-imagen">
+          {% responsive_img article.cover_image sizes="(max-width: 840px) 92vw, 760px" lazy=False %}
+          {% if article.cover_image.caption or article.cover_image.credit %}
+            <figcaption class="meta">{{ article.cover_image.caption }}{% if article.cover_image.caption and article.cover_image.credit %} · {% endif %}{{ article.cover_image.credit }}</figcaption>
+          {% endif %}
+        </figure>
       {% endif %}
-    {% endwith %}
+      {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
+      <div class="body">{{ article.body|safe }}</div>
+    </div>
+    {% include "content/partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

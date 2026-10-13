@@ -21,7 +21,7 @@
      y dónde. Los hitos no enlazan a nada: su fila no reacciona al puntero.
   {% endcomment %}
   {% for block in timeline %}
-    <section class="timeline-year">
+    <section class="timeline-year" id="anio-{{ block.year }}">
       <h2 class="year-mark">{{ block.year }}</h2>
       <ul class="filas">
         {% for m in block.milestones %}

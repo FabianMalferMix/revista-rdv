@@ -4,6 +4,7 @@ import unicodedata
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.db import DatabaseError
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -12,6 +13,7 @@ from django_ratelimit.decorators import ratelimit
 from apps.agenda.models import Event
 from apps.agenda.services import stats as trajectory_stats
 from apps.people.models import Contributor
+from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
 
 from .models import (
@@ -26,6 +28,7 @@ from .models import (
     Section,
     Tag,
 )
+from .pie import firmas, puerta, puertas_vecinas, vecinos
 
 logger = logging.getLogger(__name__)
 
@@ -98,9 +101,37 @@ def text_archive(request):
     )
 
 
+def _firmas_con_retrato():
+    """Las firmas con su retrato en la misma consulta: la sala de lectura lo enseña."""
+    return Prefetch("authors", queryset=Contributor.objects.select_related("photo"))
+
+
 def article_detail(request, slug):
-    article = get_object_or_404(_published(), slug=slug)
-    return render(request, "content/article_detail.html", {"article": article})
+    article = get_object_or_404(
+        Article.objects.filter(status=EditorialStatus.PUBLISHED)
+        .select_related("section", "cover_image")
+        .prefetch_related(
+            _firmas_con_retrato(),
+            Prefetch(
+                "reviewed_works", queryset=Work.objects.select_related("publisher", "cover_image")
+            ),
+            "tags",
+        ),
+        slug=slug,
+    )
+    pie = [puerta("Índice", "Todos los textos", reverse("content:text_archive"))]
+    if article.section:
+        pie.append(
+            puerta(
+                "Sección",
+                article.section.name,
+                reverse("content:section_detail", args=[article.section.slug]),
+            )
+        )
+    pie += firmas(article.authors.all())
+    anterior, siguiente = vecinos(Article.objects.filter(status=EditorialStatus.PUBLISHED), article)
+    pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
+    return render(request, "content/article_detail.html", {"article": article, "pie": pie})
 
 
 def section_detail(request, slug):
@@ -148,8 +179,21 @@ def poem_index(request):
 
 
 def poem_detail(request, slug):
-    poem = get_object_or_404(_published_poems().select_related("recording"), slug=slug)
-    return render(request, "content/poem_detail.html", {"poem": poem})
+    poem = get_object_or_404(
+        Poem.objects.filter(status=EditorialStatus.PUBLISHED)
+        .select_related("recording")
+        .prefetch_related(_firmas_con_retrato()),
+        slug=slug,
+    )
+    anterior, siguiente = vecinos(Poem.objects.filter(status=EditorialStatus.PUBLISHED), poem)
+    colecciones = Collection.objects.filter(poems=poem, status=PublishStatus.PUBLISHED).order_by(
+        "title"
+    )
+    pie = [puerta("Índice", "Todos los poemas", reverse("content:poem_index"))]
+    pie += firmas(poem.authors.all())
+    pie += [puerta("En la colección", c.title, c.get_absolute_url()) for c in colecciones]
+    pie += puertas_vecinas(anterior, siguiente, "Poema", lambda p: p.title)
+    return render(request, "content/poem_detail.html", {"poem": poem, "pie": pie})
 
 
 def collection_detail(request, slug):

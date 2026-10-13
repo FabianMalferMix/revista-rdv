@@ -92,8 +92,13 @@ def test_poem_detail_renders_prewrap_body(client, make_poem):
     resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
     assert resp.status_code == 200
     assert b'<div class="poem-body">' in resp.content
-    # El cuerpo va escapado pero íntegro: saltos y sangrías intactos.
-    assert "Verso uno\n    verso con sangría\n\nVerso final".encode() in resp.content
+    # El cuerpo va escapado pero íntegro: cada verso con su sangría y las estrofas
+    # separadas donde el autor dejó la línea en blanco (filtro `versos`, ticket 2.4).
+    assert (
+        '<p class="estrofa"><span class="verso">Verso uno</span>'
+        '<span class="verso">    verso con sangría</span></p>'
+        '<p class="estrofa"><span class="verso">Verso final</span></p>'
+    ).encode() in resp.content
     assert b"a quien lee" in resp.content
 
 

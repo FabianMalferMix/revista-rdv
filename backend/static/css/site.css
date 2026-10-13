@@ -251,7 +251,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 /* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
 .brand, .hero-tagline,
-.index-head h1, .article h1, .poem h1, .dossier-head h1,
+.index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
 .member-name, .pub-title, .album-title, .year-mark, .rec-caratula, .subhead, .nav a{
@@ -438,7 +438,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* Títulos que son enlaces. En reposo no se subrayan: ya se leen como título. Al pasar
    el puntero, el mismo subrayado magenta que el resto de los enlaces. Diez reglas
    :hover hacían lo mismo —pasar a magenta— cada una por su cuenta. */
-.fila-titulo a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
+.fila-titulo a:hover, .pie-entidad a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
 .next-event h2 a:hover, .recording-card h2 a:hover, .featured h2 a:hover,
 .member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title{
   text-decoration:underline; text-decoration-color:var(--accent);
@@ -468,8 +468,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
 .avatar-fallback{display:flex; align-items:center; justify-content:center;
   font-family:var(--display); font-weight:700; font-size:var(--t4); letter-spacing:-.02em; color:var(--ink)}
-.avatar-lg{width:104px; height:104px; font-size:var(--t5); margin-bottom:6px}
-.member-head .avatar{display:flex}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); color:var(--ink); max-width:var(--medida)}
 .poetics p{margin:0}
@@ -478,11 +476,15 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 
 /* Poemas: tipografía fiel (pre-wrap preserva versos, sangrías y espacios) */
 .poem h1{font-size:var(--t6); line-height:1.15; margin:10px 0 6px; text-wrap:balance}
-.poem-body{white-space:pre-wrap; font-size:var(--t2); line-height:var(--lh-verso); margin:30px 0;
-  overflow-x:auto}
+/* El poema llega marcado verso a verso (filtro `versos`): cada verso es un bloque con
+   sangría francesa —si no cabe, la continuación entra 1,5 em y se lee como continuación,
+   no como un verso nuevo— y conserva sus espacios iniciales. Entre estrofas, una línea en
+   blanco: el salto que el autor dejó, ni más ni menos. */
+.poem-body{font-size:var(--t2); line-height:var(--lh-verso); margin:0; overflow-x:auto}
+.estrofa{margin:0}
+.estrofa + .estrofa{margin-top:calc(var(--lh-verso) * 1em)}
+.verso{display:block; white-space:pre-wrap; padding-left:1.5em; text-indent:-1.5em}
 .poem-epigraph{font-style:italic}
-.poem-audio{margin:28px 0; padding-top:8px; border-top:1px solid var(--border)}
-.poem-audio audio{width:100%}
 .poem-excerpt{font-size:var(--t1); margin:14px 0}
 
 /* Agenda, trayectoria y galería */
@@ -517,7 +519,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .event-card .btn{margin-top:8px}
 /* Un afiche es vertical: a todo el ancho de la columna ocupaba más de una pantalla
    y empujaba la descripción y la galería fuera de la vista. */
-.event-poster{max-width:min(100%, 420px); border:1px solid var(--border); border-radius:4px; margin:6px 0 14px}
 .stats-strip{list-style:none; padding:14px 0; margin:0 0 8px; display:flex; flex-wrap:wrap; gap:8px 28px;
   font-family:var(--mono); font-size:var(--t-1); color:var(--muted); border-bottom:1px solid var(--border)}
 /* Las cifras van en la tipografía de titulares, con dígitos de ancho fijo: se comparan
@@ -667,7 +668,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .pub-title{font-size:var(--t2)}
   .pub-cover-fallback{font-size:var(--t3)}
 }
-.pub-cover{max-width:240px; border:1px solid var(--border); border-radius:3px; margin:8px 0 16px}
 .buy-links{display:flex; flex-wrap:wrap; gap:10px}
 .press-quote{margin:10px 0; padding-left:18px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); max-width:var(--medida)}
@@ -764,9 +764,84 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .press-quote{border-left-color:#000}
 }
 
+/* ── Sala de lectura: poema y artículo ──
+   Una columna ancla con lo que identifica la pieza —cejilla, título, firma, fecha, el
+   registro, la obra reseñada— y, a su lado, el texto. Antes todo iba apilado en la columna
+   de 780 px, con el título, la firma y la fecha empujando el texto hacia abajo.
+   El reparto es 4:7 y el texto sigue limitado por --medida: lo que se ensancha es la
+   página, no la línea. Desde 840 px de ventana: por debajo no caben las dos columnas y la
+   ancla va encima. La ancla acompaña al bajar solo si la pantalla tiene alto para ella. */
+/* El mismo aire sobre el título que en la cabecera de un índice. */
+.lectura, .ficha{padding-top:var(--s4)}
+.lectura{display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--s4)}
+.lectura-ancla > :first-child{margin-top:0}
+.lectura-ancla .dek{margin:12px 0 0}
+.lectura-ancla .meta{margin:8px 0 0}
+.lectura-firmas{list-style:none; margin:var(--s3) 0 0; padding:0; display:flex; flex-direction:column; gap:var(--s1)}
+.lectura-firmas li{display:flex; align-items:center; gap:12px}
+.lectura-firmas a{font-weight:600; font-size:var(--t0); text-decoration:none; color:var(--ink)}
+.lectura-firmas a:hover{text-decoration:underline}
+/* Retrato pequeño de quien firma: 4:5, como los retratos del colectivo; nunca un círculo. */
+.firma-retrato{flex:none; width:40px; height:50px; object-fit:cover; background:var(--paper-2)}
+.firma-monograma{display:inline-flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:700; font-size:var(--t-1); color:var(--ink)}
+.lectura-registro{margin:var(--s3) 0 0; padding-top:var(--s2); border-top:1px solid var(--line)}
+.lectura-registro h2{margin:0 0 8px}
+.lectura-registro audio{margin:0 0 8px}
+.lectura-registro p{margin:0}
+.lectura-cuerpo{min-width:0}
+.lectura-cuerpo > .body:first-child{margin-top:0}
+.lectura-imagen{margin:0 0 var(--s4)}
+.lectura-imagen img{display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover}
+.lectura-imagen figcaption{margin-top:8px}
+@media (min-width:840px){
+  .lectura{grid-template-columns:minmax(220px,4fr) minmax(0,7fr); column-gap:clamp(32px,5vw,96px);
+    align-items:start}
+  .lectura > .pie-entidad{grid-column:1 / -1}
+}
+@media (min-width:840px) and (min-height:700px){
+  .lectura-ancla{position:sticky; top:var(--s3)}
+}
+
+/* ── Fichas: integrante, publicación, evento ──
+   La imagen a la izquierda —retrato 4:5, cubierta 5:7, afiche— y quién o qué es, a su
+   lado. Era una imagen suelta encima de una cabecera de índice. */
+.ficha-cabecera{display:grid; gap:var(--s3); align-items:start; margin:0 0 var(--s5)}
+.ficha-medio{max-width:260px}
+@media (min-width:720px){
+  .ficha-cabecera{grid-template-columns:minmax(200px,320px) minmax(0,1fr); column-gap:clamp(24px,5vw,80px)}
+  .ficha-cabecera--sin-medio{grid-template-columns:minmax(0,1fr)}
+  .ficha-medio{max-width:none}
+}
+.ficha-texto > :first-child{margin-top:0}
+.ficha-texto h1{font-size:var(--t6); line-height:var(--lh-titulo); margin:10px 0 0}
+.ficha-texto .meta{margin:12px 0 0}
+.ficha-texto .dek{margin:14px 0 0}
+.ficha-texto .btn{margin-top:var(--s2)}
+.ficha-rotulo{margin:var(--s4) 0 8px}
+.ficha .poetics{margin:var(--s4) 0 0}
+.ficha-retrato{display:block; width:100%; height:auto; aspect-ratio:4/5; object-fit:cover}
+/* Sin retrato: el monograma en la misma caja 4:5, sobre la hoja clara. */
+.ficha-monograma{display:flex; align-items:center; justify-content:center; background:var(--paper-2);
+  font-family:var(--display); font-weight:700; font-size:var(--t6); letter-spacing:-.02em; color:var(--ink)}
+.ficha-cubierta{display:block; width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
+  border:1px solid var(--line); box-shadow:8px 8px 0 var(--line)}
+.ficha-afiche{display:block; width:100%; height:auto; border:1px solid var(--line)}
+
+/* ── Pie de entidad: adónde ir después de una ficha ──
+   Cada celda se pulsa entera; las celdas se reparten el ancho y caen a una por fila en
+   un teléfono. */
+.pie-entidad{margin-top:var(--s6); border-top:2px solid var(--ink)}
+.pie-entidad ul{list-style:none; margin:0; padding:0; display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%, 220px),1fr))}
+.pie-entidad li{position:relative; padding:var(--s3) var(--s3) var(--s3) 0; border-bottom:1px solid var(--line)}
+.pie-entidad .rotulo{display:block; margin:0 0 6px}
+.pie-entidad a{font-weight:700; font-size:var(--t3); line-height:1.15; text-decoration:none; color:var(--ink)}
+.pie-entidad a::after{content:""; position:absolute; inset:0}
+
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
-.article h1{font-size:var(--t6); line-height:1.08; margin:10px 0; text-wrap:balance}
+.article h1{font-size:var(--t5); line-height:var(--lh-titulo); margin:10px 0; text-wrap:balance}
 /* Medida de lectura. A 18px en los 780 de la columna el cuerpo corría a 102 caracteres
    por línea; lo legible está entre 45 y 75 (Bringhurst), y pasado ese largo el ojo
    pierde el arranque de la línea siguiente. La medida va en `ch` para que siga a la
@@ -776,7 +851,12 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .article .body p{margin:0 0 1.2em}
 .reviewed{background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:14px 18px; margin:22px 0}
 .reviewed h2{margin:0 0 8px}
-.reviewed ul{margin:0; padding-left:18px}
+/* La obra reseñada como ficha: su cubierta, pequeña, al lado del título. */
+.obra{display:flex; gap:12px; align-items:flex-start}
+.obra + .obra{margin-top:12px}
+.obra p{margin:0}
+.obra .meta{display:block; margin-top:4px}
+.obra-cubierta{flex:none; width:64px; height:auto; border:1px solid var(--line); box-shadow:4px 4px 0 var(--line)}
 .tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:32px; border-top:1px solid var(--border); padding-top:20px}
 .tag{text-decoration:none; border:1px solid var(--border); border-radius:var(--r-1); padding:8px 12px}
 .tag:hover{color:var(--accent); border-color:var(--accent)}
