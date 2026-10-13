@@ -318,6 +318,9 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
    docker compose run --rm --entrypoint ruff web check .
    docker compose run --rm --entrypoint ruff web format .
    docker compose run --rm --entrypoint pytest web -q -p no:cacheprovider
+   # El SAST del CI, igual que allí (bloquea severidad media o más):
+   docker run --rm -v "$PWD/backend:/src:ro" -w /src python:3.12-slim sh -c \
+     'pip install -q "bandit==1.9.4" && bandit -r apps config -ll'
    ```
 
 7. **Medir entero.**
@@ -481,6 +484,9 @@ clase en `backend/tests/`.
   `:has()`, para que tres cosas no se arrinconen a la izquierda de cinco columnas.
 - **Syne 800 es un corte extendido** y no se usa. **La cinta no lleva control de pausa.**
 - `responsive_img` emite un texto alternativo vacío con `decorativa=True`, no con `alt=""`.
+- **HTML armado en Python:** con `format_html` o `format_html_join`, nunca `mark_safe`. El SAST
+  del CI (bandit) bloquea `mark_safe`, y con razón: es por donde se cuela un XSS. Le pasó al
+  filtro `versos` en el paso 12.
 - **Tamaños de letra:** solo pasos de la escala (`--t-2` a `--t7`); una prueba lo vigila. La
   monoespaciada, solo en las reglas que lista `MONO_PERMITIDA` en `tests/test_css_sistema.py`.
 - **Fuentes de terceros:** mira si la licencia reserva un nombre. Source Serif 4 reserva
