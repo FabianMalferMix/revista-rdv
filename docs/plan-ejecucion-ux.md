@@ -8,23 +8,24 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, al cerrar el paso 12.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el punto de control B.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
 **Hechos 12 de 25 pasos.** El último fusionado es el paso 12 (`ux-2-4-lectura-y-fichas`,
-PR #115). `main` está en verde, con 735 pruebas. No hay ninguna rama de paso abierta.
+PR #115), con una corrección tras el punto de control B (PR #NUMERO_SOLAPE). `main` está en
+verde, con 737 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el punto de control B y, tras él, el paso 13, `ux-3a-superficies-y-amarillo`**
-(sección 2). Antes de seguir, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 13, `ux-3a-superficies-y-amarillo`** (sección 2). Antes de empezarlo, lee
+«Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-2-4-lectura-y-fichas … (#115)»
+git log --oneline --merges -3                    # debe aparecer «Merge sala-ancla-sin-solape … (#NUMERO_SOLAPE)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
 grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 13
@@ -52,6 +53,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `plan-retomable` | #106 | Este plan, autocontenido; `tools/ux/preparar-entorno.sh` y ayudantes |
 | 11 | `ux-2-3-tipografia` | #114 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
 | 12 | `ux-2-4-lectura-y-fichas` | #115 | Sala de lectura, poema verso a verso, fichas a dos columnas, salidas al pie |
+| — | `sala-ancla-sin-solape` | #NUMERO_SOLAPE | La columna fija del artículo y del poema ya no se monta sobre las salidas |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -111,6 +113,9 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Revisión del paso 11 (2026-10-13):** pidió seguir con el paso 12 sin ajustes, así que las
   decisiones de ese paso quedan aceptadas: la familia «RdV Serif», la navegación en caja de
   frase, los títulos de sección grandes y la monoespaciada de la portada en el 39 %.
+- **Punto de control B (2026-10-13):** aprobó la serif nueva, el poema verso a verso y las
+  fichas a dos columnas. Señaló que en el artículo la columna de la izquierda se montaba sobre
+  las salidas del final al desplazarse; se corrigió en `sala-ancla-sin-solape`.
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -118,35 +123,18 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 12 está fusionado y aún no lo ha visto.** Es el último antes del **punto de
-   control B**: ahí no basta con que lo mire, hay que preguntarle por la dirección (sección 2).
-   Si pide un ajuste, va en una rama propia antes del paso 13.
-2. Decisiones del paso 12 que tomó quien lo ejecutó y conviene que confirme:
-   - todas las fichas terminan con «anterior» y «siguiente», además del índice y quien firma;
-   - la ficha del poema ya no enlaza a YouTube: lleva a la ficha del registro, que pide
-     permiso antes de conectar;
-   - en su ficha, cada integrante deja de ver su propio nombre en cada fila de su obra.
+1. **La corrección del solape está fusionada y aún no la ha visto.** Que vuelva a desplazarse
+   hasta el final de `/articulo/resena-la-casa-vacia/`, al 80 %, como cuando lo encontró. Si
+   confirma, se abre el paso 13.
+2. Decisiones del paso 12 sin respuesta expresa (dijo que las fichas se ven mejor, sin entrar en
+   el detalle): las salidas «anterior» y «siguiente» en todas las fichas, el enlace del poema a
+   la ficha del registro en lugar de YouTube y la firma propia omitida en su ficha.
 3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
    enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: punto de control B y paso 13, `ux-3a-superficies-y-amarillo`
-
-### Punto de control B
-
-Se le enseñan al dueño la lectura y las fichas, a su ancho de 951 px y al 80 %, donde el
-poema y el artículo ganan aire. Páginas: `/poema/umbral/`, `/articulo/resena-la-casa-vacia/`,
-`/integrantes/`, `/integrante/fernanda-soto/`, `/publicaciones/` y
-`/publicacion/cuadernos-del-ruido/`. Tres preguntas:
-
-1. ¿La serif nueva se siente del colectivo?
-2. ¿El poema respira: verso a verso, con su salto de estrofa, junto a su columna?
-3. ¿Las fichas a dos columnas se leen mejor que apiladas?
-
-Un «no» a cualquiera se resuelve antes del paso 13, en una rama propia.
-
-### Paso 13
+## 2. Qué sigue: paso 13, `ux-3a-superficies-y-amarillo`
 
 Tickets 3.1 y 3.2 del backlog, decisiones D5 y D6. Lee los dos, con la **Nota de entrada**
 del 3.1.
@@ -212,7 +200,7 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Cierra cuando: a 1920 el texto ocupa el 60 % o más en poema y artículo; el artículo queda entre
   60 y 75 letras por línea; cada ficha tiene cuatro enlaces internos o más; el poema conserva
   versos, sangrías y espacios (comparar el `innerText` del cuerpo antes y después).
-- ◆ **Punto de control B.** Poema, artículo, integrantes y publicaciones, a 1440 y a 1920.
+- ◆ **Punto de control B.** Hecho el 2026-10-13: aprobado (ver sección 1).
   Preguntar: si la serif nueva se siente del colectivo; si el poema respira; si las fichas a dos
   columnas se leen mejor que apiladas.
 - [ ] **13. `ux-3a-superficies-y-amarillo`.** Tickets 3.1 y 3.2 (D5, D6): cuatro superficies,
@@ -467,6 +455,9 @@ clase en `backend/tests/`.
   viejo. `mutar.sh` lo evita; si dudas, `docker compose restart web` antes de capturar.
 - Las capturas de página entera recorren la página para cargar las imágenes perezosas; una
   captura propia que no lo haga las enseña vacías.
+- **Una captura de página entera no enseña lo que pasa al desplazarse.** Un elemento
+  `position:sticky` se comprueba bajando de verdad, con un guion que mida en cada tramo si
+  pisa algo. El solape de la columna ancla del paso 12 solo lo vio el dueño, desplazándose.
 - Datos de prueba temporales para medir un criterio (doce poemas, tres fechas de agenda) se crean
   con un prefijo reconocible y se borran en la misma orden. No se dejan en la base.
 
@@ -477,6 +468,8 @@ clase en `backend/tests/`.
   `<div class="band-in">` que vuelve al carril ancho.
 - **Las filas.** `.filas` es un contenedor: la fila se dispone según el ancho de su lista, no el
   de la ventana. Sus piezas van en áreas con nombre (`fecha`, `cuerpo`, `pie`).
+- **Un elemento fijo (`sticky`) se mueve por todo su contenedor.** No lo pongas en la misma
+  rejilla que lo que viene después: la columna ancla vive en `.lectura-sala` y el pie, fuera.
 - **Toda la tarjeta es enlace** con una capa `::after` del enlace del título; los enlaces
   secundarios van por encima con `z-index:1`. Nunca se envuelve la tarjeta en un `<a>`.
 - **Estados por color**, nunca por opacidad ni por movimiento.

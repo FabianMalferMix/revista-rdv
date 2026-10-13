@@ -22,6 +22,12 @@
      no se mueve al bajar; a la derecha, el poema. En pantalla estrecha, una sobre la otra.
   {% endcomment %}
   <article class="lectura poem">
+    {% comment %}
+       La ancla se queda fija al bajar, y un elemento fijo solo puede moverse dentro de su
+       contenedor. Por eso la sala —ancla y texto— va en su propio bloque y el pie queda
+       fuera: dentro del mismo, la ancla bajaba hasta montarse sobre las salidas.
+    {% endcomment %}
+    <div class="lectura-sala">
     <header class="lectura-ancla">
       <p class="kicker"><a href="{% url 'content:poem_index' %}">Poemas</a></p>
       <h1>{{ poem.title }}</h1>
@@ -46,6 +52,7 @@
     <div class="lectura-cuerpo">
       {# Cada verso escapado y envuelto por el filtro: sangría francesa y salto de estrofa. #}
       <div class="poem-body">{{ poem.body|versos }}</div>
+    </div>
     </div>
     {% include "content/partials/_pie_de_entidad.html" %}
   </article>

@@ -521,9 +521,9 @@ def test_la_monoespaciada_queda_en_rotulos_y_datos():
 def test_la_sala_de_lectura_pone_la_ancla_al_lado_solo_si_cabe():
     """Ancla y texto lado a lado desde 840 px de ventana: por debajo no caben y la ancla
     va encima. El reparto es 4:7; la línea sigue limitada por --medida."""
-    assert "grid-template-columns:minmax(0,1fr)" in _regla(".lectura")
-    dos = _bloque("@media (min-width:840px){\n  .lectura")
-    assert ".lectura{grid-template-columns:minmax(220px,4fr)minmax(0,7fr)" in dos
+    assert "grid-template-columns:minmax(0,1fr)" in _regla(".lectura-sala")
+    dos = _bloque("@media (min-width:840px){\n  .lectura-sala")
+    assert ".lectura-sala{grid-template-columns:minmax(220px,4fr)minmax(0,7fr)" in dos
     fija = _bloque("@media (min-width:840px) and (min-height:700px)")
     assert ".lectura-ancla{position:sticky;" in fija, "la ancla solo acompaña si hay alto para ella"
     assert "position:sticky" not in _regla(".lectura-ancla>:first-child")
