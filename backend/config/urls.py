@@ -6,7 +6,7 @@ from django.urls import include, path
 
 from apps.content.feeds import LatestArticlesFeed
 from apps.content.sitemaps import SITEMAPS
-from apps.content.views import healthz, readyz, robots
+from apps.content.views import favicon, healthz, readyz, robots
 from apps.media.feeds import recordings_feed
 
 urlpatterns = [
@@ -20,6 +20,7 @@ urlpatterns = [
     # peticiones concurrentes desde que gunicorn usa hilos. Ver apps/media/feeds.py.
     path("feed/registros/", recordings_feed, name="recordings_feed"),
     path("robots.txt", robots, name="robots"),
+    path("favicon.ico", favicon, name="favicon"),
     path("", include("apps.people.urls")),
     path("", include("apps.media.urls")),
     path("", include("apps.agenda.urls")),

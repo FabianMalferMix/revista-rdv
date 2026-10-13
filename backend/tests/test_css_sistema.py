@@ -892,3 +892,15 @@ def test_los_logos_se_imprimen_en_gris_y_toman_color_al_senalar():
 def test_el_pie_de_la_vista_ampliada_se_lee():
     """Contador, pie y crédito a 13 px: a 12 era la letra más pequeña del sitio."""
     assert "font-size:var(--t-1)" in _regla(".lightboxfigcaption")
+
+
+# ── La marca (ticket 3.7, con lo que eligió el dueño) ─────────────────────
+
+
+def test_el_sello_de_la_cabecera_sigue_siendo_magenta_con_su_monograma():
+    """El dueño se quedó con el sello magenta y le añadió el monograma RV dentro."""
+    sello = _regla(".brand")
+    assert "background:var(--accent)" in sello and "color:#fff" in sello
+    assert "display:inline-flex" in sello, "el monograma y el nombre van en una fila"
+    assert "fill:#fff" in _regla(".brand-mono-r")
+    assert "fill:var(--celeste)" in _regla(".brand-mono-v")

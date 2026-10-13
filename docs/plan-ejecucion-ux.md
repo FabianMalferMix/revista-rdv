@@ -8,26 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el paso 16.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 17.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 16 de 25 pasos.** El último fusionado es el paso 16 (`ux-3d-imagenes-del-modelo`,
-PR #121). `main` está en verde, con 786 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 17 de 25 pasos.** El último fusionado es el paso 17 (`ux-3e-marca`, PR #122). `main`
+está en verde, con 792 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 17, `ux-3e-marca`** (sección 2), cuando el dueño haya visto el 16. Después del
-17 viene el **punto de control C**. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el punto de control C y luego el paso 18, `ux-4-1-cabecera`** (sección 2). El 18
+**requiere que el colectivo esté avisado de D9**. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-3d-imagenes-del-modelo … (#121)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-3e-marca … (#122)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 17
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 18
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -58,6 +58,7 @@ nuevo: mira su descripción y la sección 4.
 | 14 | `ux-3b-duotono-y-retratos` | #119 | Retratos 4:5 a todo el ancho de la tarjeta, duotono azul en listados y galería, monograma |
 | 15 | `ux-3c-reproductor` | #120 | La placa del reproductor con su póster a una tinta o su carátula, y el mando en un panel sólido |
 | 16 | `ux-3d-imagenes-del-modelo` | #121 | Imágenes de textos y afiches en los listados, crédito y contador en el álbum, aliados por tipo |
+| 17 | `ux-3e-marca` | #122 | El sello con el monograma RV, el icono «RdV», `theme-color` y la tarjeta para compartir |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -90,6 +91,7 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 76 % y 73 % (63 % de media a 390) |
 | Placas del reproductor vacías | 2 | 0 |
 | Imágenes del modelo en los listados | ninguna | las de los textos y los afiches (a una tinta), créditos en el álbum, logos de aliados |
+| Icono de la pestaña | ninguno (`/favicon.ico` daba 404) | «RdV» a 32 px, `.ico` y 180 px para el teléfono |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -98,7 +100,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Marca como sello magenta, sin icono de pestaña | paso 17 |
 | Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
 | Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
@@ -137,6 +138,15 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   el papel que asomaba bajo el pie en una página corta. Todo quedó en `cifras-destacado-y-pie`.
   Quiere **conservar la convocatoria de prueba** en la base de desarrollo.
 - **Ajustes del paso 13 (2026-10-13):** los vio y pidió seguir con el paso 14.
+- **Marca (2026-10-13, paso 17):** después de dos rondas de alternativas sobre la cabecera real
+  (https://claude.ai/artifact/Q9joypGzPw2ePFckQ7Dik7 y
+  https://claude.ai/artifact/W9pBicg8tAa2URusJpYw2q), eligió:
+  - **quedarse con el sello magenta**, con el monograma RV dentro (H1);
+  - **«RdV» en blanco sobre el magenta** como icono (I6 con RdV);
+  - **el sello a toda la tarjeta** para compartir (T2).
+  Descartó un glifo de dos formas y el nombre sin sello.
+- **Revisión del paso 16 (2026-10-13):** aprobó las decisiones, también los afiches de los
+  listados a una tinta: «deja el azul que aprobé previamente».
 - **Revisión del paso 15 (2026-10-13):** visto bueno, sin ajustes.
 - **Revisión del paso 14 (2026-10-13):** aprobó todas las decisiones, también la tinta: «el azul
   del cartel fue la decisión correcta para ambos casos» (retratos y galería).
@@ -147,17 +157,16 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 16 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
-   - `/textos/`: la imagen de cada texto en miniatura, a la derecha de su fila;
-   - `/agenda/` y `/trayectoria/`: los afiches, a una tinta; al señalar, el original;
-   - un álbum, por ejemplo `/evento/recital-nuevas-voces-lanzamiento/`: bajo las fotos la
-     línea «Fotos: …», y al ampliar una, «3 / 6 · pie · crédito»;
-   - `/aliados/`: por tipo, con los logos en gris que toman color al señalarlos.
-   «Próxima actividad» en la portada solo aparece con un evento futuro; en desarrollo no hay.
-   **Decisión que tomé por él: los afiches de los listados van a una tinta.** Se le enseñó la
-   alternativa, tal cual. Si la prefiere, basta con quitar `riso-duo` de tres plantillas
-   (`_event_card.html`, `trayectoria.html` y `home.html`) y sacarlas de `CON_DUOTONO`. Si lo
-   aprueba, se abre el paso 17.
+1. **El paso 17 está fusionado y aún no lo ha visto construido.** Qué mirar, a 951 px:
+   - la cabecera de cualquier página, con el sello y el monograma RV dentro;
+   - la pestaña del navegador, que lleva el icono «RdV»: si no lo enseña, que recargue la página
+     sin caché, con Ctrl+Mayús+R;
+   - la tarjeta para compartir, `tools/ux/out/tarjeta-para-compartir.png`: él decide si la
+     sube desde el panel (Perfil del sitio → imagen para compartir).
+   Después, **el punto de control C** (sección 3). Sus tres preguntas ya las respondió por el
+   camino: la tinta del duotono (el azul, aprobado en los pasos 14 y 16), el glifo (eligió el
+   monograma) y el sello (se queda). Falta su aprobación expresa del conjunto: registros,
+   galería, aliados y marca.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -166,60 +175,65 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 17, `ux-3e-marca`
+## 2. Qué sigue: punto de control C y paso 18, `ux-4-1-cabecera`
 
-Ticket 3.7 del backlog. Después de este paso viene el **punto de control C** (sección 3).
+**Primero, el punto de control C.** Pide al dueño la aprobación expresa de los pasos 13 a 17:
+registros, galería, aliados y la marca de la cabecera. Sus preguntas ya tienen respuesta (ver
+sección 1). Sin esa aprobación no se abre el 18.
 
-**Qué se hace.** La marca del colectivo pasa del bloque magenta a un glifo y un icono:
-- **Glifo:** dos formas simples superpuestas, en magenta y azul, multiplicadas y con 1 o 2 px de
-  desregistro. Es un `<svg>` **en línea** en la cabecera, de 28 a 32 px, junto al nombre en Syne
-  y sin fondo: el sello magenta desaparece.
-- **Iconos:** `tools/ux/make_icons.py` dibuja el mismo glifo en PNG y en ICO, a 32, 180 y 48 px.
-  Entran dos `<link rel="icon">` y `<meta name="theme-color" content="#d9e8f7">`.
-- **Tarjeta para compartir:** `make_icons.py --og` genera una tarjeta tipográfica de
-  1200 × 630, para que el dueño la suba como imagen para compartir desde el panel. El archivo
-  queda en `tools/ux/out/og-card.png`.
+**El paso 18 requiere que el colectivo esté avisado de D9**: la barra pasa de cuatro enlaces a
+cinco, más «Dossier», y prensa y aliados vuelven a la portada como una línea. Pregúntale al
+dueño si ya lo avisó.
 
-**Qué hace falta.** Nada fuera del repositorio. Subir la tarjeta para compartir es tarea del
-dueño, desde el panel.
+Ticket 4.1 del backlog, decisiones D2 y D9. Lee el ticket con su **Nota de entrada**: la
+cabecera conserva el sello magenta con el monograma.
+
+**Qué se hace.** La cabecera pasa a una sola fila:
+- el sello;
+- cinco enlaces: Poemas, Textos, Registros, Publicaciones y Colectivo;
+- el buscador, plegado tras una lupa;
+- un botón «Dossier».
+
+En el teléfono, una fila de 56 px con «Menú», que despliega el mapa del pie. Cada página marca
+su enlace con `aria-current`.
+
+**Qué hace falta.** El aviso del colectivo sobre D9. Nada más fuera del repositorio.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Icono de pestaña | no hay (`/favicon.ico` da 404) | 32 y 180 px, y un `.ico` |
-| `theme-color` | no hay | `#d9e8f7` |
-| Nombre en la cabecera | sobre el sello magenta | sin fondo, con el glifo |
-| Archivos `.svg` en `static/` | 0 | 0 (`tests/test_security_csp.py`) |
-| `<svg` en `base.html` | 0 | 1 o más |
+| Alto de la cabecera en escritorio | 111 px | 64 px o menos |
+| Alto de la cabecera en un teléfono | 156 px | 56 px o menos, con el menú cerrado |
+| `/textos/` y el dossier a un clic desde cualquier página | no: no están en la cabecera | sí |
+| Páginas que marcan su enlace con `aria-current` | 0 | todas las de la barra |
+| Sin JavaScript, la lupa abre el campo y el envío lleva a `/buscar/` | el campo siempre visible | sí |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 **Pruebas que cambian a propósito.**
-- `tests/test_contraste_paleta.py::test_contraste_del_sello_de_la_cabecera`: sin sello, pasa a
-  afirmar tinta sobre papel.
-- `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` tiene que seguir en
-  verde.
-- `tests/test_security_csp.py` sigue: ningún `.svg` en `static/`, y el SVG en línea no necesita
-  `style=` (atributos de presentación o clases).
+- `tests/test_ia.py`: `NAV_PRINCIPAL` pasa a cinco enlaces. Los que salen de la barra siguen
+  alcanzables; el dossier, por el botón.
+- `tests/test_nav_css.py`: las reglas de `::details-content` siguen, para el menú y para la
+  búsqueda.
+- `tests/test_ui_identity.py::test_nav_links_intact_in_disclosure`.
 
 **Cuidados.**
-- **La marca es lo más identitario del sitio y el dueño decide viendo.** Aprobó el sello
-  magenta girado de la convocatoria y rechazó al verlas dos decisiones que había delegado. Antes
-  de construir, prepárale **alternativas del glifo y del nombre** con `tools/ux/variantes.js`,
-  sobre la cabecera real a 951 px, y publícalas en una página para que elija. Una de ellas debe
-  ser el nombre sin glifo y otra el sello actual. El punto de control C le pregunta justo eso:
-  si el glifo lo representa y si acepta el nombre sin sello.
-- `test_todo_boton_comparte_una_receta`: `.btn--primary` deja de compartir receta con la marca.
-- El glifo es decorativo (`aria-hidden="true"`); el enlace de la marca sigue llamándose como el
-  colectivo.
-- Pillow ya está instalado en el contenedor `web`; corre `make_icons.py` allí o en un
-  contenedor desechable de `python:3.12-slim`.
+- **El sello mide 40 px de alto** y a 320 px parte el nombre en dos líneas: la fila de 56 px
+  del teléfono tiene que probarse con él, a 320 y a 390.
+- **La cabecera fija (`sticky`) se comprueba bajando de verdad**, con un guion, no con
+  capturas de página entera. Tampoco puede taparle nada al ancla de la sala de lectura, que
+  también es fija.
+- **El buscador en vivo de htmx** sigue funcionando dentro del panel.
+- **A 951 px**, el ancho del dueño, la fila tiene que caber: sello, cinco enlaces, lupa y botón
+  en 875 px.
+- La cabecera es lo primero que se ve: si dudas entre dos disposiciones, enséñale alternativas
+  con `tools/ux/variantes.js` antes de construir.
 
 **Qué enseñarle al dueño al terminar.**
-- La cabecera de cualquier página, con el glifo y el nombre.
-- La pestaña del navegador, con el icono.
-- La tarjeta para compartir, `tools/ux/out/og-card.png`: él decide si la sube.
-- Después, el punto de control C (sección 3).
+- La cabecera en cualquier página, a 951.
+- El menú en el teléfono.
+- El buscador al pulsar la lupa.
+- `/textos/` y el dossier, a un clic.
 
 ## 3. Los pasos
 
@@ -266,15 +280,15 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   llegan a pantalla.
   Cierra cuando: cada imagen aparece donde dice el ticket; el crédito se muestra si existe; los
   presupuestos de consultas de `tests/test_performance.py` no suben.
-- [ ] **17. `ux-3e-marca`.** Ticket 3.7: glifo, icono de pestaña, `theme-color`, tarjeta para
-  compartir. Detalle en la sección 2.
+- [x] **17. `ux-3e-marca`.** Ticket 3.7: glifo, icono de pestaña, `theme-color`, tarjeta para
+  compartir. El dueño eligió conservar el sello, con el monograma dentro.
   Cierra cuando: `tests/test_security_csp.py` sigue en verde (ningún `.svg` en `static/`); la
   pestaña enseña el icono; el nombre de la cabecera ya no lleva fondo.
 - ◆ **Punto de control C.** Registros, galería, aliados y la marca en la cabecera.
   Preguntar: si quiere el tratamiento a dos tintas y con cuál; si el glifo lo representa; si
   acepta el nombre sin sello magenta.
 - [ ] **18. `ux-4-1-cabecera`.** Ticket 4.1 (D2, D9): una fila, cinco enlaces, «Dossier»,
-  buscador plegado. Cambia `tests/test_ia.py`. **Requiere que el colectivo esté avisado de D9.**
+  buscador plegado. Detalle en la sección 2. Cambia `tests/test_ia.py`. **Requiere que el colectivo esté avisado de D9.**
   Cierra cuando: la cabecera mide 64 px o menos en escritorio y 56 o menos en un teléfono;
   `/textos/` y el dossier quedan a un clic desde cualquier página; cada página marca su enlace con
   `aria-current`; sin JavaScript la lupa abre el campo y el envío lleva a `/buscar/`.

@@ -7,6 +7,11 @@
   <title>{% block title %}{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}{% endblock %}">
   <link rel="canonical" href="{{ canonical_url }}">
+  {# Icono del colectivo: «RdV» en blanco sobre el magenta del sello (tools/ux/iconos.js). #}
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="48x48">
+  <link rel="icon" href="{% static 'img/icono-32.png' %}" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{% static 'img/icono-180.png' %}">
+  <meta name="theme-color" content="#d9e8f7">
   <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — textos" href="{% url 'feed' %}">
   <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — registros (podcast)" href="{% url 'recordings_feed' %}">
 
@@ -54,7 +59,16 @@
   <a class="skip" href="#main">Saltar al contenido</a>
   <header class="masthead">
     <div class="wrap-wide top">
-      <a class="brand" href="{% url 'content:home' %}">{{ site_profile.name|default:"Reseñas" }}</a>
+      {% comment %}
+         El sello del colectivo: el monograma RV (la R en blanco y la V en celeste, que se
+         pisan como dos tintas) y el nombre, dentro del bloque magenta. El monograma es un
+         dibujo: el enlace se llama como el colectivo.
+      {% endcomment %}
+      <a class="brand" href="{% url 'content:home' %}">
+        <svg class="brand-mono" viewBox="0 0 46 40" width="30" height="26" aria-hidden="true" focusable="false"><text class="brand-mono-r" x="0" y="32" font-size="38">R</text><text class="brand-mono-v" x="19" y="34" font-size="38">V</text></svg>
+        <span class="brand-sep" aria-hidden="true"></span>
+        <span class="brand-nombre">{{ site_profile.name|default:"Reseñas" }}</span>
+      </a>
       {% comment %}
          Sin JS, el submit navega a /buscar/ (página completa con layout); con htmx,
          el input hace la búsqueda en vivo en el overlay.

@@ -89,6 +89,8 @@ PARES = [
     ("acento sobre la tinta del pie", "accent-on-ink", "ink", AA_NORMAL),
     # Y el gris de los datos tampoco (2,98:1): el de la tinta es otro, del mismo tono.
     ("datos sobre la tinta del pie", "muted-on-ink", "ink", AA_NORMAL),
+    # La V del monograma, en celeste dentro del sello magenta: un dibujo, no un texto.
+    ("V celeste del monograma sobre el sello", "celeste", "accent", AA_GRANDE),
     # El borde de un campo no es texto, pero lo delimita: WCAG 1.4.11 pide 3:1.
     ("borde de un campo sobre el papel", "edge", "paper", AA_GRANDE),
     ("borde de un campo sobre el blanco del campo", "edge", "surface", AA_GRANDE),

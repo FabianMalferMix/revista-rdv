@@ -29,6 +29,9 @@
   /* El magenta sobre la tinta del pie da 2,78:1: ahí el acento es este rosa (7,31:1).
      Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
   --accent-on-ink:#f77cc3;
+  /* El celeste de la V del monograma, dentro del sello magenta: un dibujo, no un texto,
+     así que le basta 3:1 (da 3,40:1). Es el azul del cartel aclarado. */
+  --celeste:#9cc3ea;
   /* Y el gris de los datos, que sobre la tinta se queda en 2,98:1: este, del mismo tono,
      da 7,80:1. Es el texto secundario del pie. */
   --muted-on-ink:#9fadbf;
@@ -280,8 +283,20 @@ a, button, summary, input, textarea, select, .btn, .tag{
      sobre el magenta da 6,39:1, por encima del mínimo incluso para texto normal.
      (Decía 5,12:1, que es el contraste del enlace magenta SOBRE el papel: el número
      estaba bien calculado pero puesto en el par equivocado.) */
-  display:inline-block; background:var(--accent); color:#fff; padding:6px 14px 8px;
-  border-radius:2px}
+  display:inline-flex; align-items:center; gap:10px; background:var(--accent); color:#fff;
+  padding:6px 14px 8px; border-radius:2px}
+/* Dentro del sello, el monograma del colectivo: la R en blanco y la V en celeste, que se
+   pisan como dos tintas, y un filete antes del nombre. Es el dibujo de la tarjeta para
+   compartir; el icono de la pestaña lleva «RdV» sobre el mismo magenta. Hereda la Syne
+   del sello. */
+.brand-mono{display:block; flex:none; width:30px; height:26px; overflow:visible}
+.brand-mono-r{fill:#fff}
+.brand-mono-v{fill:var(--celeste)}
+.brand-sep{display:block; flex:none; width:1px; align-self:stretch; margin-block:2px;
+  background-color:rgba(255,255,255,.55)}
+/* En un teléfono de 320 px el nombre no cabe en una línea junto al monograma: parte en
+   «Repitentes / del Verso», no en «Repitentes del / Verso». */
+.brand-nombre{text-wrap:balance}
 .search{display:flex; align-items:center; gap:8px; position:relative}
 .search input{font-family:var(--serif); font-size:var(--t1); padding:7px 12px;
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); min-width:210px}

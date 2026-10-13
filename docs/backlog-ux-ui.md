@@ -977,6 +977,34 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   muestra el icono; `grep -c "<svg" templates/base.html` ≥ 1; el nombre en la cabecera no lleva fondo.
 - **Tests:** `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` sigue;
   `test_contraste_del_sello_de_la_cabecera` se adapta (ya no hay sello: afirmar tinta sobre papel).
+- **Estado:** hecho (paso 17 del plan), con lo que eligió el dueño del sitio tras dos rondas de
+  alternativas sobre la cabecera real. Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **El sello magenta se queda**: el ticket lo retiraba y el dueño eligió conservarlo. Lleva
+     dentro el monograma RV, con la R en blanco y la V en celeste (`--celeste:#9cc3ea`), más un
+     filete antes del nombre. El celeste da 3,40:1 sobre el magenta; le basta porque es un dibujo.
+     - Es un `<svg>` en línea con clases, sin `style=`, y `aria-hidden`: el enlace se llama como
+       el colectivo.
+     - A 320 px el nombre parte en dos líneas equilibradas, «Repitentes / del Verso».
+     - `test_contraste_del_sello_de_la_cabecera` no cambia.
+  2. **El icono es «RdV» en blanco sobre el magenta del sello**, no un glifo de dos formas.
+     - La Syne en negrita es ancha: las tres letras van comprimidas al ancho del cuadrado.
+     - A 16 px la «d» apenas se lee; a 32 px y en el teléfono, sí.
+     - La primera ronda (círculos, «//», monograma RV, solo el nombre, nombre apilado) está en
+       `tools/ux/out/marca/` y la segunda en `marca2/`, solo en la máquina donde se hicieron.
+  3. **Los iconos se dibujan con la Syne del sitio** (`tools/ux/iconos.js`): el SVG se pinta en
+     una página del sitio de desarrollo y se fotografía con Playwright. Pillow solo arma el
+     `.ico` (16, 32 y 48). Pillow no habría podido dibujarlos, porque no lee la Syne en WOFF2.
+  4. **El icono del teléfono es un cuadrado entero**, sin transparencia: el iPhone pone negro
+     donde la hay. El de la pestaña sí lleva las esquinas transparentes.
+  5. **`/favicon.ico` redirige al icono** con un 302: antes daba 404. Es temporal porque la URL
+     del estático lleva su huella, que cambia con el icono.
+  6. **La tarjeta para compartir** es el sello a toda la tarjeta, con el nombre en dos líneas, el
+     lema y el monograma. Está en `tools/ux/out/tarjeta-para-compartir.png` (1200 × 630) para
+     subirla desde el panel como imagen para compartir del perfil del sitio. No se subió: es
+     contenido del dueño.
+  Pruebas: `tests/test_marca.py` (monograma, iconos y sus tamaños, `theme-color` y
+  `/favicon.ico`), el par de contraste del celeste y la regla del sello. Sigue sin haber ningún
+  `.svg` en `static/`.
 
 ### Épica 4 — Cabecera, portada y navegación (D2, D8, D9)
 
@@ -1003,6 +1031,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   nueve que «salieron de la barra» siguen alcanzables (dossier ahora por el CTA); `test_nav_css.py`:
   reglas de `::details-content` conservadas para el menú móvil y la búsqueda; `test_ui_identity.py`:
   nav intacta dentro del `<details>` móvil; nuevo test de `aria-current`.
+
+- **Nota de entrada** (tras el paso 17): **el dueño se quedó con el sello magenta**, con el
+  monograma RV dentro. Donde este ticket dice «glifo + nombre (Syne 22)» va ese sello: un bloque
+  de 40 px de alto (`.brand`, `.brand-mono`, `.brand-nombre`). La cabecera de una fila tiene que
+  dejarle sitio. A 320 px el sello ya parte el nombre en dos líneas, así que la fila de 56 px en
+  el teléfono necesita probarse con el sello a 320 y a 390.
 
 #### 4.2 Hero con el nombre, objeto real, ficha, cifras y línea de respaldo (D8, D9)
 - **Hallazgos:** POR-1, POR-2, POR-5, POR-8, POR-9, ESP-3, IMG-3, NAV-2.
