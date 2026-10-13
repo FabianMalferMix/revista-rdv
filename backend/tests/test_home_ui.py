@@ -113,3 +113,24 @@ def test_sin_convocatoria_abierta_no_hay_sello(client):
     _convocatoria(timedelta(days=-40), timedelta(days=-5), slug="cerrada")
     _convocatoria(timedelta(days=5), timedelta(days=40), slug="futura")
     assert b"sello-convocatoria" not in client.get(reverse("content:home")).content
+
+
+def test_el_destacado_va_sobre_el_papel_con_la_ficha_antes_del_reproductor(client):
+    """El dueño del sitio descartó la banda de tinta del destacado. La ficha va antes que el
+    reproductor en el HTML: se lee el título antes que el botón de reproducir."""
+    profile = SiteProfile.load()
+    profile.featured_recording = Recording.objects.create(
+        slug="r-papel",
+        title="Registro en papel",
+        embed_url="https://youtu.be/xyz123ab",
+        published=True,
+    )
+    profile.save()
+    html = client.get(reverse("content:home")).content.decode()
+    destacado = re.search(r'<section class="home-block featured">(.*?)</section>', html, re.S)
+    assert destacado, "el destacado volvió a una banda"
+    bloque = destacado.group(1)
+    assert "band-in" not in bloque
+    ficha, placa = bloque.index('class="featured-ficha"'), bloque.index("player-frame")
+    enlace = bloque.index('class="meta featured-enlace"')
+    assert ficha < placa < enlace, "orden: ficha, reproductor y enlace al índice"

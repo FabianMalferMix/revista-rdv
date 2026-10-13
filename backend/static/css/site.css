@@ -26,11 +26,11 @@
      (1,03:1 sobre el papel). Pero el contraste se mide por pares: como FONDO, con
      tinta encima, da 13,81:1, y con magenta 4,96:1. Entra solo como superficie. */
   --riso-amarillo:#fce43c;
-  /* El magenta sobre una banda de tinta da 2,78:1: ahí el acento es este rosa
-     (7,31:1). Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
+  /* El magenta sobre la tinta del pie da 2,78:1: ahí el acento es este rosa (7,31:1).
+     Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
   --accent-on-ink:#f77cc3;
   /* Y el gris de los datos, que sobre la tinta se queda en 2,98:1: este, del mismo tono,
-     da 7,80:1. Es el texto secundario de las bandas de tinta y del pie. */
+     da 7,80:1. Es el texto secundario del pie. */
   --muted-on-ink:#9fadbf;
   /* Carátula del reproductor: el azul del cartel (tono 210°, saturación 73%,
      igual que --paper) hundido a luminosidad 45%. A la luminosidad original
@@ -220,7 +220,11 @@ html{font-size:clamp(100%, .875rem + .25vw, 118.75%)}
    dossier lo hizo al llegar la serif, un 11 % más ancha que Times). */
 body{margin:0; background:var(--paper); color:var(--ink);
   font-family:var(--serif); line-height:var(--lh-lectura); -webkit-font-smoothing:antialiased;
-  overflow-wrap:break-word}
+  overflow-wrap:break-word;
+  /* La página mide al menos el alto de la ventana y el lienzo crece: el pie queda siempre
+     abajo. En una página corta terminaba a media altura y dejaba una franja de papel
+     debajo, que con el pie en tinta se veía como un hueco. */
+  display:flex; flex-direction:column; min-height:100vh; min-height:100dvh}
 /* La interlínea del cuerpo es de lectura. Un título que la hereda queda con las líneas
    sueltas, como dos frases distintas: nueve la heredaban (el del dossier, a 44px,
    medía 70px de línea). Las reglas que fijan la suya la conservan. */
@@ -229,10 +233,13 @@ p{text-wrap:pretty}
 .wrap{max-width:820px; margin:0 auto; padding:0 20px}
 /* Carril ancho para lo que vive fuera de <main>: cabecera, avisos y pie. Su contenido
    mide lo mismo que el carril ancho del lienzo y empieza en la misma vertical. */
-.wrap-wide{max-width:calc(var(--wide) + 2*var(--gutter)); margin-inline:auto; padding-inline:var(--gutter)}
+.wrap-wide{width:100%; max-width:calc(var(--wide) + 2*var(--gutter)); margin-inline:auto; padding-inline:var(--gutter)}
 
 /* El lienzo. Cada hijo directo de <main> es una pieza que cae en un carril. */
-.lienzo{display:grid; grid-template-columns:var(--carriles); padding-bottom:var(--s6)}
+/* `flex` lo estira hasta el pie en una página corta; `align-content:start` impide que ese
+   alto sobrante separe sus filas. */
+.lienzo{display:grid; grid-template-columns:var(--carriles); padding-bottom:var(--s6);
+  flex:1 0 auto; align-content:start}
 .lienzo > *{grid-column:content; min-width:0}
 .lienzo--ancho > *{grid-column:wide}
 .lienzo > .sangre, .lienzo > .band{grid-column:full}
@@ -610,6 +617,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* El anillo de foco del sitio es magenta, que sobre el azul de la placa da 1,32:1: no
    se veía. En blanco da 4,84:1 (WCAG 1.4.11 pide 3:1 para el indicador de foco). */
 .player-consent :focus-visible{outline-color:#fff}
+/* La placa fija el blanco de sus datos: el gris de `.meta` no se lee sobre el azul. Sin
+   JavaScript enseña además un enlace al proveedor, que era gris sobre azul. */
+.player-consent .meta, .player-consent .meta a{color:#fff}
 /* El aviso es una frase: se lee en la serif, no en la letra de los datos. */
 .embed-note{margin:0; color:#fff; max-width:46ch; font-family:var(--serif); font-size:var(--t0); letter-spacing:0}
 audio, video{width:100%; margin:6px 0}
@@ -697,9 +707,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    de escala. El <h1> con el nombre sigue oculto (sr-only) porque el nombre ya
    vive en el sello de la cabecera; lo que crece aquí es el lema. */
 .hero{margin:22px 0 0; padding:26px 0 34px; border-bottom:2px solid var(--ink)}
-/* Si lo sigue una banda de tinta, la banda ya cierra el titular: el filete se fundía con
-   ella y dejaba un escalón de 2 px en el carril ancho. */
-.hero:has(+ .band--tinta){border-bottom:0}
 .hero-tagline{font-size:var(--t7); font-weight:700; line-height:var(--lh-titular);
   letter-spacing:-.035em; margin:0 0 24px; max-width:13ch; text-wrap:balance}
 .hero-manifesto{color:var(--ink); font-size:var(--t2); max-width:54ch; margin:0 0 16px}
@@ -721,20 +728,20 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .sello-convocatoria{float:right; margin:var(--s3) 0 var(--s3) var(--s3); padding:var(--s2) var(--s3)}
   .sello-convocatoria-fecha{font-size:var(--t3)}
 }
-/* Las cifras se leen como dato de revista: número grande, etiqueta debajo. Van sobre
-   el amarillo del cartel, que entra en el sitio solo como superficie y en un plano por
-   pantalla: este. Nada lleva texto amarillo (1,03:1 sobre el papel).
+/* Las cifras se leen como dato de revista: número grande, etiqueta debajo, bajo un
+   filete de tinta. El amarillo del cartel pasa por detrás de la mitad baja de cada
+   número, como un trazo de marcador sobre papel impreso. Fue un plano amarillo de lado a
+   lado del carril, y al dueño del sitio le pareció invasivo: un bloque sólido, cuadrado,
+   que se leía como una pieza incrustada. El trazo se queda en los números. Nada lleva
+   texto amarillo (1,03:1 sobre el papel).
    Acotado a .hero-stats A PROPÓSITO: .stats-strip se reutiliza tal cual en
    /dossier/ y /trayectoria/, donde un número a 42px no tiene sentido. */
-.hero-stats{margin:30px 0 0; padding:var(--s3); border-bottom:0;
-  background:var(--riso-amarillo); color:var(--ink); gap:14px 52px; align-items:end}
-/* Con sitio, las cifras se reparten el plano entero en vez de quedarse en su mitad
-   izquierda; el enlace a la trayectoria cierra la línea por la derecha. */
-@media (min-width:720px){
-  .hero-stats{padding:var(--s3) var(--s4); justify-content:space-between}
-}
-.hero-stats strong{display:block; font-family:var(--display); font-size:var(--t5);
-  line-height:.95; margin:0 0 2px}
+.hero-stats{margin:30px 0 0; padding:var(--s3) 0 0; border-top:2px solid var(--ink); border-bottom:0;
+  gap:var(--s3) var(--s6); align-items:end}
+.hero-stats strong{display:block; width:fit-content; font-family:var(--display); font-size:var(--t6);
+  line-height:1; margin:0 0 6px -.12em; padding:0 .12em;
+  background:linear-gradient(to top, transparent .06em, var(--riso-amarillo) .06em,
+    var(--riso-amarillo) .48em, transparent .48em)}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin
@@ -743,47 +750,42 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .home-block > .subhead:first-child, .band-in > .subhead:first-child{margin-top:0}
 /* La banda ocupa el carril a sangre del lienzo. Antes vivía dentro de la caja de 820 px
    y pintaba su fondo hacia fuera con una sombra de 100vmax recortada con clip-path.
-   Dos superficies: la hoja clara (la banda por defecto) y la tinta (`.band--tinta`). La
-   tinta pesa: como mucho dos por página, y una de ellas es el pie. Las bandas eran
-   blancas, el mismo blanco de los campos y las cubiertas: no se distinguía la página
-   de los objetos que lleva. */
+   Es la hoja clara. Las bandas eran blancas, el mismo blanco de los campos y las
+   cubiertas: no se distinguía la página de los objetos que lleva. Hubo también una
+   banda de tinta para el registro destacado; el dueño del sitio la descartó porque
+   rompía la portada, y la tinta quedó para el pie. */
 .band{background:var(--paper-2)}
-/* Dos bandas seguidas de la misma superficie son una sola: sin esto el aire entre ellas
-   se duplica. Si cambia la superficie, cada una conserva el suyo. */
-.band:not(.band--tinta) + .band:not(.band--tinta), .band--tinta + .band--tinta{padding-top:0}
+/* Dos bandas seguidas son una sola superficie: sin esto el aire entre ellas se duplica. */
+.band + .band{padding-top:0}
 /* Una fila señalada sobre la hoja clara pasa al papel: el mismo salto (1,13:1) que da la
    hoja clara sobre el papel, en sentido contrario. */
-.band:not(.band--tinta) .fila:has(.fila-titulo a):hover::before,
-.band:not(.band--tinta) .fila:focus-within::before{background-color:var(--paper)}
+.band .fila:has(.fila-titulo a):hover::before,
+.band .fila:focus-within::before{background-color:var(--paper)}
 
-/* Destacado único, con más peso visual que las franjas secundarias. */
+/* Destacado único, con más peso visual que las franjas secundarias. Va sobre el papel, a
+   continuación del titular y separado por su filete. Con un reproductor, desde 840 px va
+   a dos columnas: la placa a la izquierda y la ficha a la derecha, con el enlace al
+   índice debajo de la ficha. La placa azul es el único bloque de color, y la ficha va
+   primero en el HTML: se lee el título antes que el botón de reproducir. */
+.featured-ficha > .kicker{display:block}
 .featured h2{margin:8px 0 14px; font-size:var(--t5); line-height:1.15}
 .featured h2 a{text-decoration:none; color:var(--ink)}
-.featured .poem-excerpt{font-size:var(--t2)}
+.featured .poem-excerpt{font-size:var(--t2); max-width:var(--medida)}
 /* A todo el carril ancho la placa mediría 742 px de alto. */
 .featured .player-frame{max-width:var(--measure)}
+/* Va después del tope de la placa: a dos columnas la mide su columna. */
+@media (min-width:840px){
+  .featured:has(> .player-frame, > video){display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+    grid-template-rows:auto 1fr; grid-template-areas:"placa ficha" "placa enlace";
+    column-gap:clamp(24px, 4vw, 64px); align-items:start}
+  .featured > .player-frame, .featured > video{grid-area:placa; max-width:none; margin:0}
+  .featured-ficha{grid-area:ficha}
+  .featured-enlace{grid-area:enlace}
+}
 /* Ficha del registro destacado: los datos que el modelo ya tenía. */
 .rec-ficha{margin:0 0 10px}
 .rec-ficha a{text-decoration:none; border-bottom:1px solid var(--border)}
 .rec-sumario{margin:0 0 16px; font-size:var(--t1); color:var(--ink); max-width:var(--medida)}
-
-/* Banda de tinta: el texto en papel, los datos en su gris y el acento en el rosa del
-   cartel. El magenta y el gris del papel no se leen sobre la tinta (2,78:1 y 2,98:1).
-   Va después de las reglas del destacado, que fijan sus colores para el papel. */
-.band--tinta{background:var(--ink); color:var(--paper)}
-.band--tinta a, .band--tinta h2 a{color:var(--paper); text-decoration-color:var(--accent-on-ink)}
-.band--tinta .kicker{color:var(--accent-on-ink)}
-.band--tinta .meta, .band--tinta .meta a, .band--tinta .muted{color:var(--muted-on-ink)}
-.band--tinta .meta a:hover, .band--tinta h2 a:hover{color:var(--paper); text-decoration-color:var(--accent-on-ink)}
-.band--tinta .rec-ficha a{border-bottom-color:var(--accent-on-ink)}
-.band--tinta .rec-sumario{color:var(--paper)}
-/* El anillo de foco magenta no se ve sobre la tinta. */
-.band--tinta :focus-visible{outline-color:var(--paper)}
-/* La placa del reproductor tiene fondo propio, el azul, también dentro de la banda: su
-   texto va en blanco (4,84:1) y no en el gris de los datos, que sobre el azul no se lee.
-   Sin JavaScript la placa enseña además un enlace al proveedor, que es otro dato. Va
-   después de la banda de tinta porque empata con `.band--tinta .meta` y gana la última. */
-.player-consent .meta, .player-consent .meta a{color:#fff}
 
 /* Dossier / kit de prensa (pantalla + impresión) */
 .dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}
@@ -798,10 +800,11 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .dossier-contact > .subhead:first-child{margin-top:0}
 
 /* Pie: newsletter (lista de prensa) y enlaces secundarios */
-.newsletter{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:var(--s4)}
+.newsletter{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0}
 .newsletter label{font-size:var(--t0); color:var(--paper)}
 .newsletter input[type=email]{font-family:var(--serif); font-size:var(--t1); padding:0 12px; min-height:44px;
-  border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); min-width:200px}
+  border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); min-width:200px;
+  flex:1 1 200px}
 .newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
 .news-consent{flex-basis:100%; font-size:var(--t-1); color:var(--muted)}
 /* Mapa del sitio en columnas. `auto-fit` + `minmax` reparte los cuatro grupos sin
@@ -809,17 +812,39 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    una. El pie es el sitio donde más barato sale dejar que el navegador decida. */
 .foot-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
   gap:20px 24px; margin:0}
+/* El pie usa el ancho para medir menos de alto: medía 435 px a 951 de ancho. Desde
+   720 px, el formulario y los enlaces legales comparten la primera línea y los cuatro
+   grupos se reparten el carril a la medida de su contenido (el correo de gestión es el
+   enlace más largo y no cabe en una columna de un cuarto). Desde 1100 px, todo en una
+   fila: el formulario a la izquierda, con la línea legal debajo, y los grupos al lado. */
+.site-foot > .wrap-wide{display:grid; grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"news" "mapa" "legal"; gap:var(--s3); align-items:start}
+.newsletter{grid-area:news}
+.foot-groups{grid-area:mapa}
+.foot-legal{grid-area:legal}
+@media (min-width:720px){
+  .site-foot > .wrap-wide{grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"news legal" "mapa mapa"}
+  .newsletter input[type=email]{flex:0 1 220px}
+  .foot-groups{grid-template-columns:repeat(4, max-content); justify-content:space-between}
+  .foot-legal{padding-top:12px}
+}
+@media (min-width:1100px){
+  .site-foot > .wrap-wide{grid-template-columns:minmax(300px, 360px) minmax(0,1fr); column-gap:var(--s5);
+    grid-template-areas:"news mapa" "legal mapa"}
+  .newsletter input[type=email]{flex:1 1 180px}
+  .foot-legal{padding-top:0; align-self:end}
+}
 .foot-group h2{margin:0 0 8px; font-weight:600; color:var(--muted-on-ink)}
 .foot-group ul{list-style:none; margin:0; padding:0; display:grid; gap:5px}
 .foot-group a{font-size:var(--t0); text-decoration:none}
 .foot-group a:hover{text-decoration:underline; text-decoration-thickness:2px}
-.foot-legal{margin:var(--s4) 0 0; font-size:var(--t-1)}
+.foot-legal{margin:0; font-size:var(--t-1)}
 .flash{padding:10px 16px; border-left:3px solid var(--ink); background:var(--paper-2); margin:14px 0 0}
 .flash-error{border-left-color:#b3392f}
 
 @media print{
   .masthead, .site-foot, #search-results, .no-print{display:none !important}
-  body{background:#fff; color:#000; font-size:12pt}
+  body{display:block; min-height:0; background:#fff; color:#000; font-size:12pt}
   .wrap{max-width:none; padding:0}
   .lienzo{display:block; padding:0}
   a{color:#000; text-decoration:none}
@@ -966,10 +991,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 
 /* Footer */
 /* El pie se lee en la serif: era monoespaciada de 12 px de punta a punta.
-   Es la banda de tinta que cierra todas las páginas: los enlaces en papel con el
+   Es la única tinta del sitio, y cierra todas las páginas: los enlaces en papel con el
    subrayado en el rosa del cartel, el texto de apoyo en el gris de la tinta y el foco
    en papel. El campo del correo sigue blanco: es un campo. */
-.site-foot{padding:var(--s5) 0 var(--s4); background:var(--ink); color:var(--muted-on-ink);
+.site-foot{padding:var(--s4) 0 var(--s3); background:var(--ink); color:var(--muted-on-ink);
   font-size:var(--t0)}
 .site-foot a{color:var(--paper); text-decoration-color:var(--accent-on-ink)}
 .site-foot .news-consent{color:var(--muted-on-ink)}

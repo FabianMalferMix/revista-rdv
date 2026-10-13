@@ -619,35 +619,45 @@ def test_los_avisos_son_hoja_clara_sin_borde():
 def test_la_banda_es_la_hoja_clara_y_la_fila_senalada_sobre_ella_pasa_al_papel():
     assert "background:var(--paper-2)" in _regla(".band")
     # La hoja clara es también la fila señalada: sobre una banda, el estado sería invisible.
-    estado = _regla(
-        ".band:not(.band--tinta).fila:has(.fila-tituloa):hover::before,"
-        ".band:not(.band--tinta).fila:focus-within::before"
-    )
+    estado = _regla(".band.fila:has(.fila-tituloa):hover::before,.band.fila:focus-within::before")
     assert "background-color:var(--paper)" in estado
 
 
-def test_la_banda_de_tinta_cambia_todo_lo_que_lleva_escrito():
-    """Sobre la tinta no se leen ni el magenta (2,78:1) ni el gris de los datos (2,98:1)
-    ni, claro, la tinta de los enlaces: cada uno tiene su relevo."""
-    banda = _regla(".band--tinta")
-    assert "background:var(--ink)" in banda and "color:var(--paper)" in banda
-    relevos = {
-        ".band--tintaa,.band--tintah2a": "color:var(--paper)",
-        ".band--tinta.kicker": "color:var(--accent-on-ink)",
-        ".band--tinta.meta,.band--tinta.metaa,.band--tinta.muted": "color:var(--muted-on-ink)",
-        ".band--tinta.rec-sumario": "color:var(--paper)",
-        ".band--tinta:focus-visible": "outline-color:var(--paper)",
+# Lo único que puede pintar un fondo de tinta: los botones y sus estados, el filete de
+# 3 px que firma el territorio de prensa (una línea, no una superficie) y el pie.
+TINTA_PERMITIDA = {
+    ".btn:hover",
+    ".index-head[data-territorio] h1::after",
+    ".btn--primary, .form button",
+    ".pagination-pages a:hover",
+    ".sello-convocatoria:hover",
+    ".site-foot",
+}
+
+
+def test_la_tinta_como_superficie_es_solo_del_pie():
+    """El registro destacado fue una banda de tinta de borde a borde. El dueño del sitio la
+    descartó porque rompía la portada: la tinta como superficie queda para el pie."""
+    con_tinta = {
+        selector
+        for selector, cuerpo in _pantalla()
+        if re.search(r"background(-color)?:var\(--ink\)", cuerpo)
     }
-    for selector, declaracion in relevos.items():
-        assert declaracion in _regla(selector), f"«{selector}» no lleva «{declaracion}»"
-    # La placa del reproductor conserva su blanco dentro de la banda: va después.
-    reglas = [re.sub(r"\s+", "", sel) for sel, _ in _reglas()]
-    assert reglas.index(".player-consent.meta,.player-consent.metaa") > reglas.index(
-        ".band--tinta.meta,.band--tinta.metaa,.band--tinta.muted"
-    )
+    assert not con_tinta - TINTA_PERMITIDA, f"fondos de tinta: {con_tinta - TINTA_PERMITIDA}"
+    plantillas = Path(__file__).resolve().parent.parent / "templates"
+    con_banda = [
+        p.name for p in plantillas.rglob("*.html") if "band--tinta" in p.read_text("utf-8")
+    ]
+    assert not con_banda, f"plantillas con banda de tinta: {con_banda}"
 
 
-def test_el_pie_es_la_segunda_banda_de_tinta():
+def test_la_placa_del_reproductor_fija_el_blanco_de_sus_datos():
+    """El gris de `.meta` no se lee sobre el azul de la placa (2,12:1 con el de la tinta).
+    Sin JavaScript la placa enseña un enlace al proveedor, que también es un dato."""
+    assert "color:#fff" in _regla(".player-consent.meta,.player-consent.metaa")
+
+
+def test_el_pie_es_de_tinta():
     pie = _regla(".site-foot")
     assert "background:var(--ink)" in pie and "color:var(--muted-on-ink)" in pie
     assert "color:var(--paper)" in _regla(".site-foota")
@@ -658,18 +668,22 @@ def test_el_pie_es_la_segunda_banda_de_tinta():
     assert "border-top" not in pie
 
 
-def test_el_amarillo_es_un_solo_plano_y_nunca_texto():
-    """El amarillo del cartel da 1,03:1 sobre el papel: solo entra como fondo, y en un
-    plano: las cifras de la portada (D5)."""
+def test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto():
+    """El amarillo del cartel da 1,03:1 sobre el papel: solo entra como fondo. Fue un plano
+    de lado a lado del carril y el dueño del sitio lo encontró invasivo; ahora es un trazo
+    de marcador detrás de la mitad baja de cada cifra de la portada (D5)."""
     con_amarillo = [
-        (selector, cuerpo) for selector, cuerpo in _pantalla() if "riso-amarillo" in cuerpo
+        (selector, cuerpo)
+        for selector, cuerpo in _pantalla()
+        if "riso-amarillo" in cuerpo and selector != ":root"
     ]
-    con_amarillo = [(s, c) for s, c in con_amarillo if s != ":root"]
-    assert [s for s, _ in con_amarillo] == [".hero-stats"], (
-        f"el amarillo está en más de un plano: {[s for s, _ in con_amarillo]}"
+    assert [s for s, _ in con_amarillo] == [".hero-stats strong"], (
+        f"el amarillo está fuera de las cifras: {[s for s, _ in con_amarillo]}"
     )
-    cifras = con_amarillo[0][1]
-    assert "background:var(--riso-amarillo)" in cifras and "color:var(--ink)" in cifras
+    trazo = con_amarillo[0][1]
+    assert "background:linear-gradient(" in trazo and "width:fit-content" in trazo
+    assert "background" not in _regla(".hero-stats"), "las cifras volvieron a un plano"
+    assert not re.search(r"(?<![-\w])color:var\(--riso-amarillo\)", _css())
 
 
 def test_la_firma_de_territorio_es_un_filete_de_tres_pixeles():
@@ -688,3 +702,50 @@ def test_el_sello_de_convocatoria_esta_quieto():
     sello = _regla(".sello-convocatoria")
     assert "transform:rotate(-3deg)" in sello
     assert "animation" not in sello and "riso-amarillo" not in sello
+
+
+# ── Ajustes tras la revisión del paso 13 ──────────────────────────────────
+
+
+def _todas(selector):
+    """Todas las reglas con ese selector, también las de dentro de un @media, en orden."""
+    return [cuerpo for sel, cuerpo in _reglas() if re.sub(r"\s+", "", sel) == selector]
+
+
+def test_el_pie_queda_abajo_en_una_pagina_corta():
+    """En una página corta el pie terminaba a media altura y dejaba papel debajo: con el
+    pie en tinta, un hueco. La página mide al menos la ventana y el lienzo crece."""
+    cuerpo = _regla("body")
+    for declaracion in ("display:flex", "flex-direction:column", "min-height:100dvh"):
+        assert declaracion in cuerpo, f"a `body` le falta «{declaracion}»"
+    lienzo = _regla(".lienzo")
+    assert "flex:10auto" in lienzo, "el lienzo no crece hasta el pie"
+    assert "align-content:start" in lienzo, "el alto sobrante separaría las filas del lienzo"
+    assert "width:100%" in _regla(".wrap-wide"), (
+        "en una columna flexible, un hijo con margen automático se encoge a su contenido"
+    )
+
+
+def test_el_pie_usa_el_ancho_para_medir_menos_de_alto():
+    """Medía 435 px a 951 de ancho. Desde 720 px, formulario y línea legal comparten la
+    primera línea; desde 1100, todo va en una fila."""
+    rejillas = " ".join(_todas(".site-foot>.wrap-wide"))
+    assert 'grid-template-areas:"newslegal""mapamapa"' in rejillas
+    assert 'grid-template-areas:"newsmapa""legalmapa"' in rejillas
+    grupos = " ".join(_todas(".foot-groups"))
+    assert "grid-template-columns:repeat(4,max-content)" in grupos, (
+        "el correo de gestión no cabe en una columna de un cuarto"
+    )
+
+
+def test_el_destacado_va_a_dos_columnas_sobre_el_papel():
+    """Con reproductor, la placa a la izquierda y la ficha a la derecha. La regla va después
+    del tope de ancho de la placa, o el tope le gana."""
+    reglas = [re.sub(r"\s+", "", sel) for sel, _ in _reglas()]
+    dos_columnas = ".featured:has(>.player-frame,>video)"
+    cuerpo = _todas(dos_columnas)
+    assert cuerpo and 'grid-template-areas:"placaficha""placaenlace"' in cuerpo[0]
+    assert reglas.index(".featured>.player-frame,.featured>video") > reglas.index(
+        ".featured.player-frame"
+    )
+    assert "max-width:none" in _regla(".featured>.player-frame,.featured>video")

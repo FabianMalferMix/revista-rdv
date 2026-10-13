@@ -50,11 +50,13 @@
 
   {% if featured %}
     {% comment %}
-       Primera de las dos bandas de tinta que admite la página (D6); la otra es el pie.
+       Sobre el papel, a continuación del titular: el dueño del sitio descartó la banda de
+       tinta porque rompía la portada. Con reproductor va a dos columnas (ver site.css).
+       La ficha va primero: se lee el título antes que el botón de reproducir.
     {% endcomment %}
-    <section class="home-block band band--tinta featured">
-      <div class="band-in">
-      {% if featured.kind == "recording" %}
+    <section class="home-block featured">
+    {% if featured.kind == "recording" %}
+      <div class="featured-ficha">
         <span class="kicker">Registro destacado</span>
         <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
         {% comment %}
@@ -68,18 +70,18 @@
           {% with gente=featured.object.participants.all %}{% if gente %} · {% for c in gente %}{{ c.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}
         </p>
         {% if featured.object.description %}<p class="rec-sumario">{{ featured.object.description }}</p>{% endif %}
-        {% include "media/partials/_player.html" with r=featured.object %}
-        <p class="meta"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
-      {% else %}
-        <span class="kicker">Poema destacado</span>
-        <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
-        <div class="poem-body poem-excerpt">{{ featured.object.body|truncatechars:280 }}</div>
-        <p class="meta">
-          {% for c in featured.object.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-          · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>
-        </p>
-      {% endif %}
       </div>
+      {% include "media/partials/_player.html" with r=featured.object %}
+      <p class="meta featured-enlace"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
+    {% else %}
+      <span class="kicker">Poema destacado</span>
+      <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
+      <div class="poem-body poem-excerpt">{{ featured.object.body|truncatechars:280 }}</div>
+      <p class="meta">
+        {% for c in featured.object.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>
+      </p>
+    {% endif %}
     </section>
   {% endif %}
 
