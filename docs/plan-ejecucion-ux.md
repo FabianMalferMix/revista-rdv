@@ -8,23 +8,24 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el paso 13.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras los ajustes del paso 13.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
 **Hechos 13 de 25 pasos.** El último fusionado es el paso 13 (`ux-3a-superficies-y-amarillo`,
-PR #117). `main` está en verde, con 758 pruebas. No hay ninguna rama de paso abierta.
+PR #117), con sus ajustes tras la revisión del dueño (`cifras-destacado-y-pie`, PR #118).
+`main` está en verde, con 763 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 14, `ux-3b-duotono-y-retratos`** (sección 2), cuando el dueño haya visto el
-13. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 14, `ux-3b-duotono-y-retratos`** (sección 2), cuando el dueño haya visto los
+ajustes del 13. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-3a-superficies-y-amarillo … (#117)»
+git log --oneline --merges -3                    # debe aparecer «Merge cifras-destacado-y-pie … (#118)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
 grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 14
@@ -54,6 +55,7 @@ nuevo: mira su descripción y la sección 4.
 | 12 | `ux-2-4-lectura-y-fichas` | #115 | Sala de lectura, poema verso a verso, fichas a dos columnas, salidas al pie |
 | — | `sala-ancla-sin-solape` | #116 | La columna fija del artículo y del poema ya no se monta sobre las salidas |
 | 13 | `ux-3a-superficies-y-amarillo` | #117 | Hoja clara y tinta, pie en tinta, firma por territorio, cifras en amarillo, sello de convocatoria |
+| — | `cifras-destacado-y-pie` | #118 | Lo que eligió el dueño: cifras con trazo de marcador, destacado sobre el papel a dos columnas, pie compacto y siempre abajo |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -81,8 +83,8 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Ancho que ocupa el texto en un artículo a 1920 px | 38 % | 73 % |
 | Enlaces internos en la ficha de un poema | 1 | 5 |
 | Cajas blancas con borde sobre el papel (21 páginas) | 5 | 0 |
-| Bandas de tinta | 0 | 2 en la portada (destacado y pie), 1 en las demás (pie) |
-| Planos de amarillo por pantalla | 0 | 1, las cifras de la portada |
+| Superficies de tinta | 0 | 1 por página: el pie |
+| Alto del pie a 951 px, y desde 1100 | 435 tras el paso 13 | 320 y 236, siempre abajo |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -92,12 +94,12 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
 | Integrantes con avatar circular de 72 px | paso 14 |
-| Placa azul del reproductor sin imagen, a la izquierda de media pantalla vacía | pasos 15 y 20 |
+| Placa azul del reproductor sin imagen | paso 15 |
 | Marca como sello magenta, sin icono de pestaña | paso 17 |
 | Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
 | Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
-| Pie ya en tinta, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
+| Pie en tinta y compacto, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
 | Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
 
 ### Lo que ha decidido el dueño del sitio
@@ -123,6 +125,14 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   13»). Con eso quedan aceptadas también las decisiones del paso 12 que no había contestado: las
   salidas «anterior» y «siguiente» en todas las fichas, el poema que enlaza a la ficha de su
   registro y la firma propia omitida en la ficha de quien firma.
+- **Revisión del paso 13 (2026-10-13):** sí al sello magenta y al reparto de colores de la firma
+  por territorio. Descartó dos decisiones delegadas al verlas: el plano amarillo de las cifras
+  («invasivo», «demasiado cuadrado») y la banda de tinta del registro destacado («rompe la visual
+  de la portada»). Pidió alternativas, se le enseñaron capturadas sobre la página real
+  (`tools/ux/variantes.js`) y eligió el trazo de marcador para las cifras y el destacado sobre el
+  papel a dos columnas. Del pie dijo que pesaba por alto y propuso usar más ancho; también señaló
+  el papel que asomaba bajo el pie en una página corta. Todo quedó en `cifras-destacado-y-pie`.
+  Quiere **conservar la convocatoria de prueba** en la base de desarrollo.
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -130,24 +140,14 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 13 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
-   - la portada: la banda de tinta de «Registro destacado», las cifras sobre amarillo y el sello
-     magenta «Convocatoria abierta / hasta el 30 de noviembre» a la derecha del lema;
-   - `/agenda/`: la fecha de cada actividad, sin caja;
-   - `/dossier/`: el bloque «Contacto» al final;
-   - `/articulo/resena-la-casa-vacia/`: «Obra reseñada», en la columna izquierda;
-   - el pie de cualquier página, ahora en tinta;
-   - el filete de color bajo el título de cada índice: magenta en `/poemas/`, azul en
-     `/agenda/` y tinta en `/prensa/`.
-   **En la base de desarrollo hay una convocatoria de prueba abierta**
-   (`convocatoria-primavera-2026`, hasta el 30 de noviembre de 2026), para que vea el sello. Se
-   borra cuando lo haya visto:
+1. **Los ajustes del paso 13 están fusionados y aún no los ha visto.** Qué mirar, a 951 px:
+   - la portada: las cifras con el trazo amarillo y, debajo, «Registro destacado» sobre el papel,
+     con el reproductor a la izquierda y la ficha a la derecha;
+   - el pie de cualquier página, más bajo, y `/poemas/`, donde ahora llega al borde inferior.
+   Si los aprueba, se abre el paso 14.
+2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
+   abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
-2. Decisiones del paso 13 que tomé por él y conviene que confirme:
-   - el sello en magenta y no en amarillo, para no tener dos amarillos en la primera pantalla;
-   - las cifras repartidas a lo ancho del plano amarillo;
-   - la firma de color por territorio, con la búsqueda sin firma;
-   - el botón «Suscribirme» del pie con borde de papel, sin relleno.
 3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
    enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
@@ -180,7 +180,7 @@ tratamiento se aplica igual a las reales.
 | Cubiertas, afiches de terceros, logos y fichas con tratamiento | 0 | 0 |
 | Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 60 % o más |
 | Reglas con `border-radius:50%` en la hoja | 1 (`.avatar`) | 0 |
-| Textos bajo AA, cajas blancas, bandas de tinta (`tools/ux/superficies.js`) | 0, 0 y 2 como mucho | igual |
+| Textos bajo AA, cajas blancas, bandas de tinta (`tools/ux/superficies.js`) | 0, 0 y 1 (el pie) | igual |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 El área del retrato se mide en la página pintada: el área de la imagen (o del monograma) dividida
@@ -204,8 +204,8 @@ por el área de `.member-card`, en las doce tarjetas.
   sale teñido.
 - La cinta de integrantes anima con `transform`, lleva una máscara en los bordes y repite las
   tarjetas en una copia `aria-hidden`. El tratamiento no puede romper ninguna de las tres cosas.
-- **Una tinta por pantalla.** La primera pantalla de la portada ya tiene el amarillo de las
-  cifras y la tinta del destacado, con la placa azul del reproductor. Elige el magenta o el azul
+- **Una tinta por pantalla.** La primera pantalla de la portada ya tiene el trazo amarillo de
+  las cifras y la placa azul del reproductor, que va sobre el papel. Elige el magenta o el azul
   según lo que comparta pantalla, y mídelo con un guion que recorra la página a 951 y a 1440.
 - «Toda la tarjeta es enlace» ya está escrito en las filas y en las tarjetas de registro: una capa
   `::after` del enlace del título, y `z-index:1` en los enlaces secundarios.
@@ -392,6 +392,9 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
     verá en pantalla, qué cambió, qué quedó a medias a propósito y qué decisiones tomaste por él.
     Descríbele lo que verá **a 951 px**, su ancho: si algo solo aparece en pantallas más anchas,
     díselo y dale el zoom con que verlo.
+    Si rechaza algo visual, no lo rehagas a ciegas: prepárale alternativas sobre la página real
+    con `tools/ux/variantes.js`, a 951 px, y publícalas en una página con las capturas lado a
+    lado para que elija viéndolas. Así se eligieron las cifras y el destacado tras el paso 13.
 
 **Hecho quiere decir:** `ruff` y la suite en verde; CI verde en el PR y en `main`; todas las
 rutas con 200; sin scroll horizontal a 320, 390, 951, 1440 y 1920; enlace de salto, foco visible y
@@ -524,9 +527,13 @@ clase en `backend/tests/`.
   secundarios van por encima con `z-index:1`. Nunca se envuelve la tarjeta en un `<a>`.
 - **Estados por color**, nunca por opacidad ni por movimiento.
 - **Superficies.** El papel; la hoja clara (`--paper-2`), que es la de `.band` y la de los avisos;
-  la tinta (`.band--tinta` y el pie), dos por página como mucho; y el blanco, solo para campos y
-  objetos (lista cerrada en `BLANCO_PERMITIDO`). El amarillo es un plano, el de las cifras. Sobre
+  la tinta, solo en el pie (el dueño descartó la banda de tinta del destacado: lista cerrada en
+  `TINTA_PERMITIDA`); y el blanco, solo para campos y objetos (`BLANCO_PERMITIDO`). El amarillo
+  es un trazo de marcador detrás de las cifras de la portada, nunca un plano ni un texto. Sobre
   la tinta, el texto va en papel, los datos en `--muted-on-ink` y el acento en `--accent-on-ink`.
+- **El pie llega siempre abajo.** `body` es una columna flexible de al menos `100dvh` y el lienzo
+  crece (`flex:1 0 auto`) sin separar sus filas (`align-content:start`). Un hijo de `body` con
+  `margin-inline:auto` necesita `width:100%`, o en la columna flexible se encoge a su contenido.
 - **Una regla de banda alcanza a todo lo que lleva dentro**, también a un componente con fondo
   propio. Las reglas de la banda van después de las del componente al que corrigen (con la misma
   especificidad gana la última: el título del destacado desapareció, tinta sobre tinta, porque

@@ -705,6 +705,22 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   - No quedan cajas blancas con borde; antes había 5.
   - Ningún texto queda bajo AA en las 21 páginas.
   - No hay scroll horizontal a 320, 390, 768, 951, 1024, 1440 ni 1920 px.
+  **Revisión del dueño tras el paso 13** (rama `cifras-destacado-y-pie`). Aprobó el sello y la
+  firma por territorio, y corrigió tres cosas, eligiendo entre alternativas que se le enseñaron
+  capturadas sobre la página real (`tools/ux/variantes.js`):
+  - **La banda de tinta del destacado «rompe la visual de la portada».** El destacado va sobre
+    el papel, a continuación del titular y separado por su filete. Con reproductor va a dos
+    columnas desde 840 px: la placa a la izquierda y la ficha a la derecha, con el enlace al
+    índice debajo. Mide 402 px de alto a 951 px; antes medía 769. `.band--tinta` desaparece, y
+    la tinta como superficie queda solo en el pie (`TINTA_PERMITIDA` en la prueba).
+  - **El pie le pesaba por alto.** Ahora usa el ancho: desde 720 px el formulario y la línea
+    legal comparten la primera línea, y los grupos se reparten el carril a la medida de su
+    contenido. Desde 1100 px va todo en una fila. Mide 320 px a 951 (antes 435) y 236 desde
+    1100.
+  - **En una página corta, debajo del pie asomaba papel.** Con el pie en tinta se veía como un
+    hueco. Ahora `body` es una columna flexible de al menos `100dvh` y el lienzo crece hasta el
+    pie (`align-content:start` impide que ese alto separe sus filas). Medido en las 21 páginas a
+    390, 951, 1189 y 2392 px: ninguna deja papel bajo el pie.
 
 #### 3.2 Amarillo como superficie (D5)
 - **Hallazgos:** COL-6, POR-9 (parte).
@@ -729,6 +745,14 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
      `--riso-amarillo`.
   Medido con `tools/ux/superficies.js`: hay un plano amarillo por pantalla en todas las páginas,
   a 390, 768, 951, 1440 y 1920 px.
+  **Revisión del dueño tras el paso 13:** el plano amarillo le pareció invasivo, «demasiado
+  cuadrado», una pieza incrustada. Entre cuatro alternativas (marcador, misregistro, recortes y
+  sin amarillo) eligió el **marcador**: no hay plano, y el amarillo pasa por detrás de la mitad
+  baja de cada número, como un trazo sobre papel impreso (un `linear-gradient` en
+  `.hero-stats strong`). Vuelve el filete de tinta sobre las cifras. D5 sigue en pie en lo
+  esencial, el amarillo solo como fondo y nunca como texto, pero ya no es una superficie: es un
+  trazo. `test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto` falla si el amarillo
+  aparece fuera de las cifras.
 
 #### 3.3 Duotono risográfico y tratamiento de casa
 - **Hallazgos:** COL-7, IMG-5, COL-9 (parte).
@@ -765,13 +789,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   3.6 exige que no quede `border-radius:50%` en la hoja. Para un póster decorativo usa
   `decorativa=True` en `responsive_img`; `alt=""` no emite un texto alternativo vacío. La portada
   sigue usando `_player.html` para el destacado: lo que cambie aquí se ve también allí.
-  **Nota de entrada** (tras el paso 13): el destacado de la portada va en una banda de tinta, así
-  que la placa azul se apoya sobre la tinta. La banda cambia a su gris el texto de los datos
-  (`.band--tinta .meta`), y la placa lo devuelve a blanco con
-  `.player-consent .meta, .player-consent .meta a{color:#fff}`, una regla que va **después** del
-  bloque de la banda porque empata con ella en especificidad. Si la placa cambia de marcado, su
-  texto tiene que seguir en blanco dentro de la banda: `node tools/ux/superficies.js 951 900 home`
-  lo mide (columna `<AA`). El foco dentro de la banda es de papel, que sobre el azul da 3,88:1.
+  **Nota de entrada** (tras el paso 13 y su revisión): en la portada, la placa va sobre el papel,
+  a la izquierda de la ficha, en una rejilla de dos columnas desde 840 px (`.featured`, áreas
+  `placa`, `ficha` y `enlace`). La placa fija el blanco de sus datos con
+  `.player-consent .meta, .player-consent .meta a{color:#fff}`: el gris de `.meta` no se lee
+  sobre el azul. Si la placa cambia de marcado, su texto tiene que seguir en blanco:
+  `node tools/ux/superficies.js 951 900 home` lo mide (columna `<AA`).
 
 #### 3.5 Las imágenes del modelo llegan a pantalla
 - **Hallazgos:** IMG-7, IMG-8, IMG-9, IMG-12.
@@ -882,14 +905,15 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `test_home_shows_catalog_but_not_press_or_partners` **invertido**: la portada muestra la cita y el
   aliado en la línea de respaldo (renombrar la prueba y documentar D9); `test_ui_identity.py`: la
   cifra grande sigue acotada a `.hero-stats` y `.dossier-doc` (5.1); `test_home_has_an_h1` sigue.
-- **Nota de entrada** (tras el paso 13): las cifras ya van sobre el amarillo, en un plano que se
-  reparte el carril desde 720 px. Es el único amarillo del sitio, y
-  `test_el_amarillo_es_un_solo_plano_y_nunca_texto` falla si aparece otro. En el titular vive
-  además el sello de convocatoria (`.sello-convocatoria`): solo aparece con una `Call` abierta y,
-  desde 720 px, flota a la derecha del lema. Con el objeto real en la columna derecha, el sello
-  necesita otro sitio, por ejemplo sobre el objeto o junto a la cejilla: no debe tapar la imagen
-  ni el titular. El filete inferior del titular se omite cuando lo sigue una banda de tinta
-  (`.hero:has(+ .band--tinta)`). La portada hace hoy 17 consultas (la convocatoria es una).
+- **Nota de entrada** (tras el paso 13 y su revisión): «cifras sobre amarillo» ya no es un plano.
+  El dueño descartó el plano y eligió un trazo de marcador amarillo detrás de cada número, bajo
+  un filete de tinta (`.hero-stats strong`). Es el único amarillo del sitio, y
+  `test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto` falla si aparece otro. En el
+  titular vive además el sello de convocatoria (`.sello-convocatoria`), que el dueño aprobó: solo
+  aparece con una `Call` abierta y, desde 720 px, flota a la derecha del lema. Con el objeto real
+  en la columna derecha, el sello necesita otro sitio, por ejemplo sobre el objeto o junto a la
+  cejilla: no debe tapar la imagen ni el titular. La portada hace hoy 17 consultas (la
+  convocatoria es una).
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
@@ -913,14 +937,15 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Tests:** `test_home_members_appear_before_texts` sigue; `test_home_caps_articles_and_links_to_archive`
   adaptado a 3 textos; nuevo test de que la portada emite tres poemas y la fecha de actualización;
   `test_performance.py` intacto.
-- **Nota de entrada** (tras el paso 13): **el orden de arriba pone tres bandas de tinta**
-  (destacado, cierre y pie) y el 3.1 admite dos por página. Como el pie ya es de tinta, la
-  portada solo admite una banda de tinta más: el destacado **o** el cierre, no los dos. Hoy lo es
-  el destacado. `.band--papel2` no existe: la banda clara es `.band` a secas (hoja clara) y la
-  oscura, `.band--tinta`. Dos bandas seguidas de la misma superficie comparten el aire; de
-  superficie distinta, cada una conserva el suyo. Una fila señalada sobre una banda clara se pinta
-  en papel, porque la hoja clara ya es su fondo de reposo. La portada hace 17 consultas, no 16.
-  Para medir la alternancia y las bandas: `node tools/ux/superficies.js 1440 900 home`.
+- **Nota de entrada** (tras el paso 13 y su revisión): **el dueño descartó la tinta en el cuerpo
+  de la portada**: la banda de tinta del destacado «rompía la visual». El destacado ya está
+  construido como lo pide este ticket, pero sobre el papel: placa a la izquierda (7fr) y ficha a
+  la derecha (5fr), con el enlace al índice debajo de la ficha. Por eso **el cierre «Para
+  programadores y jurados» no puede ser de tinta**: propón la hoja clara, o enséñale
+  alternativas con `tools/ux/variantes.js` antes de decidir. `.band--tinta` y `.band--papel2`
+  no existen: la única banda es `.band`, en hoja clara, y dos seguidas comparten el aire. Una
+  fila señalada sobre una banda clara se pinta en papel, porque la hoja clara ya es su fondo de
+  reposo. La portada hace 17 consultas, no 16. Para medir: `node tools/ux/superficies.js 1440 900 home`.
 
 #### 4.4 Pie en tinta con identidad y mapa
 - **Hallazgos:** NAV-8, COL-8.
@@ -934,12 +959,23 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   primera frase; si no, se omite (depende de contenido).
 - **Aceptación:** objetivos del pie ≥ 28 px de paso vertical; contraste de todos los textos del
   pie ≥ 4,5:1; `tests/test_newsletter*.py` siguen (el formulario no cambia de campos ni de honeypot).
-- **Nota de entrada** (tras el paso 13): el pie ya es de tinta. Están hechos el fondo, el texto de
-  apoyo en `--muted-on-ink`, los enlaces en papel con el subrayado rosa (al pasar el puntero, el
-  subrayado engorda), el foco de papel y el botón «Suscribirme», que es `.btn` con borde de papel
-  (`.site-foot .btn`); `.btn--ghost` no existe. Queda lo que pide este ticket: el contenido, el
-  orden, la identidad, `_mapa.html` y el paso vertical de 28 px. Las pruebas que fijan el pie en
-  tinta están en `test_css_sistema.py` (`test_el_pie_es_la_segunda_banda_de_tinta`).
+- **Nota de entrada** (tras el paso 13 y su revisión): el pie ya es de tinta y compacto, a
+  petición del dueño, que lo encontraba pesado por alto. Están hechos:
+  - el fondo, el texto de apoyo en `--muted-on-ink`, los enlaces en papel con el subrayado rosa
+    (al pasar el puntero, el subrayado engorda) y el foco de papel;
+  - el botón «Suscribirme», que es `.btn` con borde de papel (`.site-foot .btn`); `.btn--ghost`
+    no existe;
+  - la rejilla de `.site-foot > .wrap-wide`, con áreas `news`, `mapa` y `legal`: formulario y
+    línea legal en la primera línea desde 720 px, todo en una fila desde 1100, y los grupos a la
+    medida de su contenido (`repeat(4, max-content)`), porque el correo de gestión no cabe en un
+    cuarto del carril;
+  - el pie siempre abajo, también en una página corta.
+
+  Queda lo que pide este ticket: el contenido, el orden, la identidad (que necesitará su propia
+  área en la rejilla), `_mapa.html` y el paso vertical de 28 px, sin volver a subir el alto: hoy
+  mide 320 px a 951 y 236 desde 1100. Las pruebas están en `test_css_sistema.py`:
+  `test_el_pie_es_de_tinta`, `test_el_pie_usa_el_ancho_para_medir_menos_de_alto` y
+  `test_el_pie_queda_abajo_en_una_pagina_corta`.
 
 #### 4.5 Enlaces cruzados entre entidades
 - **Hallazgos:** NAV-9 (lo que no cubrió 2.4).
