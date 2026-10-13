@@ -125,3 +125,69 @@ def test_la_ficha_sin_fecha_no_abre_con_un_separador_suelto(client):
         f"la línea de metadatos abre con un separador suelto: {texto!r}"
     )
     assert "Recital de prueba" in texto, "el evento dejó de mostrarse"
+
+
+# ── La placa nunca está vacía (ticket 3.4, D10) ───────────────────────────
+
+
+def _poster(texto="Cartel del recital"):
+    from io import BytesIO
+
+    from django.core.files.base import ContentFile
+    from PIL import Image
+
+    from apps.media.models import MediaAsset
+
+    buffer = BytesIO()
+    Image.new("RGB", (64, 36), (10, 20, 30)).save(buffer, format="JPEG")
+    cartel = MediaAsset(alt_text=texto)
+    cartel.file.save("cartel.jpg", ContentFile(buffer.getvalue()))
+    return cartel
+
+
+def test_con_poster_la_placa_lo_ensena_y_es_propio():
+    """El póster es una imagen del sitio, nunca la miniatura del proveedor: esa conectaría
+    con YouTube antes del clic. Es decorativo: el título ya está en la página."""
+    from bs4 import BeautifulSoup
+    from django.conf import settings
+
+    placa = BeautifulSoup(_render(_recording(poster=_poster())), "html.parser").select_one(
+        ".player-consent"
+    )
+    imagen = placa.select_one(".riso-duo img")
+    assert imagen is not None, "la placa con póster no lo enseña"
+    assert imagen["src"].startswith(settings.MEDIA_URL)
+    assert imagen["alt"] == ""
+    assert placa.select_one(".rec-caratula") is None
+    assert "ytimg" not in str(placa) and "youtube.com/vi" not in str(placa)
+
+
+def test_sin_poster_la_placa_lleva_su_caratula():
+    from bs4 import BeautifulSoup
+
+    from tests.factories import make_event
+
+    evento = make_event(title="Recital de la placa")
+    placa = BeautifulSoup(
+        _render(_recording(title="Lectura sin cartel", event=evento)), "html.parser"
+    ).select_one(".player-consent")
+    caratula = placa.select_one(".rec-caratula")
+    assert caratula is not None, "una placa azul vacía no dice qué registro es"
+    assert caratula.select_one(".rec-caratula-titulo").get_text() == "Lectura sin cartel"
+    # Sin fecha de grabación, el año sale de su evento.
+    from django.utils import timezone
+
+    anio = timezone.localtime(evento.starts_at).year
+    assert caratula.select_one(".rotulo").get_text() == f"Video · Recital · {anio}"
+    assert caratula["aria-hidden"] == "true", "el título ya se lee en la página"
+
+
+def test_el_boton_de_reproducir_se_llama_como_el_registro():
+    """El botón es un cuadrado con un triángulo: su nombre va en texto oculto."""
+    from bs4 import BeautifulSoup
+
+    boton = BeautifulSoup(_render(_recording(title="Recital")), "html.parser").select_one(
+        ".embed-play"
+    )
+    assert boton.get_text(strip=True) == "Reproducir «Recital»"
+    assert boton.select_one(".sr-only") is not None

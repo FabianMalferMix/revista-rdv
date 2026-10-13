@@ -268,7 +268,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
-.member-name, .pub-title, .album-title, .year-mark, .rec-caratula, .subhead, .nav a{
+.member-name, .pub-title, .album-title, .year-mark, .rec-caratula-titulo, .subhead, .nav a{
   font-family:var(--display); letter-spacing:var(--tr-titulo);
 }
 
@@ -524,9 +524,13 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   transition:background-color var(--dur-base) var(--ease)}
 .band .riso-duo::after{background-color:var(--paper-2)}
 a:hover .riso-duo img, a:focus-visible .riso-duo img,
-.cinta-caja:hover .riso-duo img, .cinta-caja:focus-within .riso-duo img{filter:none; mix-blend-mode:normal}
+.cinta-caja:hover .riso-duo img, .cinta-caja:focus-within .riso-duo img,
+.recording-card:hover .riso-duo img, .recording-card:focus-within .riso-duo img,
+.player-consent:hover .riso-duo img, .player-consent:focus-within .riso-duo img{filter:none; mix-blend-mode:normal}
 a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
-.cinta-caja:hover .riso-duo::after, .cinta-caja:focus-within .riso-duo::after{background-color:transparent}
+.cinta-caja:hover .riso-duo::after, .cinta-caja:focus-within .riso-duo::after,
+.recording-card:hover .riso-duo::after, .recording-card:focus-within .riso-duo::after,
+.player-consent:hover .riso-duo::after, .player-consent:focus-within .riso-duo::after{background-color:transparent}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); color:var(--ink); max-width:var(--medida)}
 .poetics p{margin:0}
@@ -636,30 +640,59 @@ a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
 .lightbox-back{position:absolute; inset:0}
 
 /* Registros (players y podcast) */
-.player-frame{position:relative; aspect-ratio:16/9; border:1px solid var(--border);
-  border-radius:4px; overflow:hidden; background:#000}
+/* Sin marco ni esquinas, como las demás imágenes (D14): es un objeto de la página. */
+.player-frame{position:relative; aspect-ratio:16/9; overflow:hidden; background:#000;
+  container:placa / inline-size}
 .player-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 /* Estado previo al consentimiento: el iframe aún no existe (click-to-play, S-19).
-   Mientras no existe, la placa NO es un vídeo: es una carátula. En negro se leía
-   como un hueco, y con razón —ningún registro tiene cartel todavía—, así que el
-   negro queda para el vídeo real y la carátula toma el azul del colectivo.
-   El botón va en blanco sólido: sobre un fondo de luminosidad media, un bloque
-   oscuro queda a 51 puntos de luminosidad y 41 de saturación de la placa y se
-   lee como un agujero perforado. El blanco no se lee como otro color sino como
-   ausencia de color, y por eso se apoya sin competir. */
-.player-consent{display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:8px; padding:16px; text-align:center;
-  background:var(--caratula); border-color:var(--caratula)}
-.embed-play{color:var(--caratula-rotulo); background:#fff; border-color:#fff; padding:0 26px}
-.embed-play:hover{background:var(--caratula-rotulo); color:#fff}
+   Mientras no existe, la placa NO es un vídeo: es una carátula, sobre el azul del
+   colectivo. Nunca vacía (D10): lleva el póster del registro, impreso a una tinta como
+   las fotos de los listados, o la carátula tipográfica con su título. Antes era un
+   rectángulo azul con un botón y una frase centrados. */
+.player-consent{background:var(--caratula)}
+.player-consent > .riso-duo{position:absolute; inset:0}
+.player-consent > .riso-duo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+/* El mando: un panel sólido abajo a la izquierda, con la misma marca que la miniatura
+   del índice. Sólido para que el aviso se lea sobre cualquier póster. */
+.player-mando{position:absolute; z-index:1; left:0; bottom:0; display:flex; align-items:stretch;
+  max-width:100%}
+/* El botón es la marca de reproducción: un cuadrado blanco de 64 px con su triángulo, que
+   pasa a magenta al señalarlo. Blanco porque sobre el azul el blanco no se lee como otro
+   color sino como ausencia de color, y se apoya sin competir. Cuadrado: la hoja no
+   admite círculos. Su nombre accesible va en texto oculto. */
+.embed-play{position:relative; flex:none; width:64px; min-height:64px; padding:0; border-radius:0;
+  color:var(--caratula-rotulo); background:#fff; border-color:#fff}
+.embed-play::after{content:""; position:absolute; left:26px; top:calc(50% - 10px); width:16px; height:20px;
+  background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
+  transition:background-color var(--dur-base) var(--ease)}
+.embed-play:hover{background:var(--accent); border-color:var(--accent)}
+.embed-play:hover::after{background-color:#fff}
 /* El anillo de foco del sitio es magenta, que sobre el azul de la placa da 1,32:1: no
-   se veía. En blanco da 4,84:1 (WCAG 1.4.11 pide 3:1 para el indicador de foco). */
+   se veía. En la placa el foco va en blanco (4,84:1 sobre el azul; WCAG 1.4.11 pide 3:1)
+   y, en el botón, por dentro y en azul oscuro: así se ve sobre cualquier póster. */
 .player-consent :focus-visible{outline-color:#fff}
+.player-consent .embed-play:focus-visible{outline:3px solid var(--caratula-rotulo); outline-offset:-9px}
 /* La placa fija el blanco de sus datos: el gris de `.meta` no se lee sobre el azul. Sin
-   JavaScript enseña además un enlace al proveedor, que era gris sobre azul. */
+   JavaScript el aviso enseña además un enlace al proveedor, que también es un dato. */
 .player-consent .meta, .player-consent .meta a{color:#fff}
 /* El aviso es una frase: se lee en la serif, no en la letra de los datos. */
-.embed-note{margin:0; color:#fff; max-width:46ch; font-family:var(--serif); font-size:var(--t0); letter-spacing:0}
+.embed-note{display:flex; flex-direction:column; justify-content:center; gap:2px; margin:0;
+  padding:var(--s1) var(--s2); max-width:44ch; background:var(--caratula); color:#fff;
+  font-family:var(--serif); font-size:var(--t-1); line-height:var(--lh-ui); letter-spacing:0}
+/* La carátula del registro en la placa: más grande que en la miniatura del índice. */
+.player-consent .rec-caratula{padding:var(--s3) var(--s3) calc(64px + var(--s3))}
+.player-consent .rec-caratula-titulo{font-size:var(--t5)}
+/* La placa de la ficha mide 780 px y la del destacado de la portada, 488: el título crece
+   con la placa, no con la ventana. */
+@container placa (min-width:600px){
+  .player-consent .rec-caratula-titulo{font-size:var(--t6)}
+}
+/* Un audio con póster: el póster a la izquierda del reproductor, a su proporción. Los
+   pósters de los registros son 16:9 y un recorte cuadrado les cortaba el título. */
+.player-audio{display:flex; align-items:center; gap:var(--s3); margin:6px 0}
+.player-audio > .riso-duo{flex:none; width:clamp(120px, 30%, 240px)}
+.player-audio-poster{display:block; width:100%; height:auto}
+.player-audio audio{flex:1; min-width:0; margin:0}
 audio, video{width:100%; margin:6px 0}
 video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Índice de registros: una rejilla de miniaturas 16:9 con título. El índice enseña y la
@@ -676,10 +709,14 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .recording-card .meta{margin:0}
 .recording-card .meta a{position:relative; z-index:1; padding-block:6px}
 .rec-miniatura{position:relative; aspect-ratio:16/9; overflow:hidden; background:var(--caratula)}
+.rec-miniatura > .riso-duo{position:absolute; inset:0}
 .rec-miniatura img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
-/* Sin cartel, la placa lleva el título: nunca un rectángulo azul vacío. */
-.rec-caratula{position:absolute; inset:0; padding:var(--s3) var(--s3) 72px;
-  font-weight:700; font-size:var(--t4); line-height:1.1; color:#fff}
+/* Sin cartel, la placa lleva qué es y su título: nunca un rectángulo azul vacío. La
+   comparten la miniatura y la placa del reproductor (media/partials/_caratula.html). */
+.rec-caratula{position:absolute; inset:0; display:flex; flex-direction:column; gap:var(--s1);
+  padding:var(--s3) var(--s3) 72px; color:#fff}
+.rec-caratula .rotulo{color:#fff}
+.rec-caratula-titulo{font-weight:700; font-size:var(--t4); line-height:1.1}
 /* La marca de reproducción es un dibujo, no un botón: aquí no se reproduce nada, se va
    a la ficha. Un bloque blanco en la esquina con su triángulo, que pasa a magenta al
    señalar la tarjeta. */

@@ -828,6 +828,34 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   (tinta sobre tinta): para el póster, prueba antes cómo se ve con `tools/ux/variantes.js`.
   Si el póster lleva duotono, añade `_player.html` a `CON_DUOTONO` en
   `tests/test_css_sistema.py`.
+- **Estado:** hecho (paso 15 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **El póster va a una tinta**, como pide D10. Cubre la placa entera, así que la tinta de
+     la placa no se pierde: la placa sigue siendo azul, pero con imagen. Al señalarla se ve
+     el original. Las miniaturas del índice llevan el mismo tratamiento, y `CON_DUOTONO`
+     suma `_player.html` y `recording_index.html`.
+  2. **El botón es la marca del índice**, un cuadrado blanco de 64 px con su triángulo: la
+     hoja no admite círculos. Al señalarlo pasa a magenta, y su nombre accesible
+     («Reproducir «título»») va en texto oculto. El foco va por dentro del botón, en azul
+     oscuro: por fuera habría caído sobre el póster, a 1,2:1.
+  3. **El aviso va en un panel sólido** del azul de la placa: blanco, en serif de 13 px, a
+     4,84:1 sobre cualquier póster. Sin JavaScript, el enlace al proveedor va dentro.
+  4. **La carátula es una sola**, compartida por la placa y la miniatura
+     (`media/partials/_caratula.html`):
+     - un rótulo «Video · Recital · 2026», con el tipo de registro, el tipo de evento y el
+       año de la grabación o, si no lo hay, el del evento;
+     - el título en Syne, que en la placa crece con ella y no con la ventana: una consulta
+       de contenedor `placa` lo lleva de `--t5` a `--t6` desde 600 px.
+  5. **El audio con póster lo enseña a su proporción**, 16:9, a la izquierda del reproductor,
+     y no en 1:1: los pósters de los registros son 16:9 y el recorte cuadrado les cortaba el
+     título.
+  6. **La placa pierde el marco de 1 px y las esquinas redondeadas** (D14).
+  Medido:
+  - ninguna placa vacía en las 21 páginas más un registro temporal sin póster: 6 placas, 4
+    con póster y 2 con carátula;
+  - ninguna conexión con YouTube antes de pulsar, ni en la portada ni en la ficha;
+  - al pulsar Intro, el iframe sustituye a la placa y recibe el foco;
+  - los textos sobre la placa dan 4,84:1 o más, y el anillo de foco da 12:1 sobre el botón
+    blanco.
 
 #### 3.5 Las imágenes del modelo llegan a pantalla
 - **Hallazgos:** IMG-7, IMG-8, IMG-9, IMG-12.
@@ -979,6 +1007,9 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   en la columna derecha, el sello necesita otro sitio, por ejemplo sobre el objeto o junto a la
   cejilla: no debe tapar la imagen ni el titular. La portada hace hoy 17 consultas (la
   convocatoria es una).
+  **Tras el paso 15:** el póster del registro destacado ya se ve, a una tinta, en la placa del
+  destacado justo debajo del titular. Si el objeto del titular fuera ese mismo póster, se
+  repetiría. Prefiere la última cubierta publicada o el afiche del próximo evento.
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.

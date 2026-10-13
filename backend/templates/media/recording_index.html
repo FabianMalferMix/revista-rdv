@@ -20,10 +20,10 @@
       <li class="recording-card">
         <div class="rec-miniatura">
           {% if r.poster %}
-            {% responsive_img r.poster sizes="(max-width: 720px) 92vw, (max-width: 1400px) 46vw, 660px" %}
+            <span class="riso-duo">{% responsive_img r.poster sizes="(max-width: 720px) 92vw, (max-width: 1400px) 46vw, 660px" %}</span>
           {% else %}
             {# Sin cartel, la placa lleva el título: nunca un rectángulo azul vacío. #}
-            <span class="rec-caratula" aria-hidden="true">{{ r.title }}</span>
+            {% include "media/partials/_caratula.html" %}
           {% endif %}
         </div>
         <h2><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>

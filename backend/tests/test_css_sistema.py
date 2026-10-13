@@ -596,6 +596,7 @@ BLANCO_PERMITIDO = {
     ".pub-card img, .pub-cover-fallback",
     ".partner-logo",
     ".embed-play",
+    ".embed-play:hover::after",
     ".rec-miniatura::before",
     ".recording-card:hover .rec-miniatura::after, .recording-card:focus-within .rec-miniatura::after",
 }
@@ -785,21 +786,43 @@ def test_el_duotono_es_una_tinta_sobre_el_papel():
 def test_al_senalar_o_enfocar_se_ve_el_original():
     """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
     teñido. Y la capa del papel se vuelve transparente."""
-    original = _regla(
-        "a:hover.riso-duoimg,a:focus-visible.riso-duoimg,"
-        ".cinta-caja:hover.riso-duoimg,.cinta-caja:focus-within.riso-duoimg"
+
+    def regla_con(trozo):
+        return next(
+            (re.sub(r"\s+", "", sel), cuerpo)
+            for sel, cuerpo in _reglas()
+            if trozo in re.sub(r"\s+", "", sel)
+        )
+
+    # Se señala un enlace, la cinta, la tarjeta de un registro o la placa del reproductor.
+    lugares = (
+        "a:hover",
+        "a:focus-visible",
+        ".cinta-caja:hover",
+        ".cinta-caja:focus-within",
+        ".recording-card:hover",
+        ".recording-card:focus-within",
+        ".player-consent:hover",
+        ".player-consent:focus-within",
     )
+    selector, original = regla_con("a:hover.riso-duoimg")
     assert "filter:none" in original and "mix-blend-mode:normal" in original
-    papel = _regla(
-        "a:hover.riso-duo::after,a:focus-visible.riso-duo::after,"
-        ".cinta-caja:hover.riso-duo::after,.cinta-caja:focus-within.riso-duo::after"
-    )
+    assert all(f"{lugar}.riso-duoimg" in selector for lugar in lugares), selector
+    selector, papel = regla_con("a:hover.riso-duo::after")
     assert "background-color:transparent" in papel
+    assert all(f"{lugar}.riso-duo::after" in selector for lugar in lugares), selector
 
 
-# El duotono, solo en los listados: tarjetas de integrante, cinta y hoja de contactos. Las
-# cubiertas, los afiches, los logos y las fichas se ven tal cual.
-CON_DUOTONO = {"_member_card.html", "_member_card_cinta.html", "gallery.html"}
+# El duotono: tarjetas de integrante, cinta, hoja de contactos y el póster de los registros
+# (en el índice y en la placa del reproductor, D10). Las cubiertas, los afiches, los logos
+# y las fichas se ven tal cual.
+CON_DUOTONO = {
+    "_member_card.html",
+    "_member_card_cinta.html",
+    "gallery.html",
+    "_player.html",
+    "recording_index.html",
+}
 
 
 def test_el_duotono_solo_va_en_los_listados():
@@ -813,3 +836,26 @@ def test_toda_la_tarjeta_de_integrante_es_el_enlace():
     assert "position:relative" in _regla(".member-card")
     capa = _regla(".member-card>a::after")
     assert 'content:""' in capa and "inset:0" in capa
+
+
+# ── Reproductor: póster o carátula (ticket 3.4, D10) ──────────────────────
+
+
+def test_el_mando_de_la_placa_es_un_panel_solido_con_la_marca_del_indice():
+    """El aviso tiene que leerse sobre cualquier póster: va en un panel del azul de la
+    placa. El botón es la marca de reproducción del índice, cuadrada (sin círculos)."""
+    assert "position:absolute" in _regla(".player-mando") and "bottom:0" in _regla(".player-mando")
+    aviso = _regla(".embed-note")
+    assert "background:var(--caratula)" in aviso and "color:#fff" in aviso
+    boton = _regla(".embed-play")
+    assert "width:64px" in boton and "border-radius:0" in boton
+    assert "clip-path:polygon(" in _regla(".embed-play::after"), "el botón perdió su triángulo"
+    # El foco va por dentro del botón blanco: fuera quedaría sobre el póster, a 1,2:1.
+    foco = _regla(".player-consent.embed-play:focus-visible")
+    assert "outline-offset:-" in foco and "var(--caratula-rotulo)" in foco
+
+
+def test_la_placa_no_tiene_marco_ni_esquinas():
+    placa = _regla(".player-frame")
+    assert "border-radius" not in placa and "border:" not in placa
+    assert "container:placa/inline-size" in placa, "el título de la carátula crece con la placa"

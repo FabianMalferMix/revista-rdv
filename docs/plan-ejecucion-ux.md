@@ -8,25 +8,25 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el paso 14.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 15.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 14 de 25 pasos.** El último fusionado es el paso 14 (`ux-3b-duotono-y-retratos`,
-PR #119). `main` está en verde, con 767 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 15 de 25 pasos.** El último fusionado es el paso 15 (`ux-3c-reproductor`, PR #120).
+`main` está en verde, con 773 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 15, `ux-3c-reproductor`** (sección 2), cuando el dueño haya visto el 14. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 16, `ux-3d-imagenes-del-modelo`** (sección 2), cuando el dueño haya visto el 15. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-3b-duotono-y-retratos … (#119)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-3c-reproductor … (#120)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 15
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 16
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -55,6 +55,7 @@ nuevo: mira su descripción y la sección 4.
 | 13 | `ux-3a-superficies-y-amarillo` | #117 | Hoja clara y tinta, pie en tinta, firma por territorio, cifras en amarillo, sello de convocatoria |
 | — | `cifras-destacado-y-pie` | #118 | Lo que eligió el dueño: cifras con trazo de marcador, destacado sobre el papel a dos columnas, pie compacto y siempre abajo |
 | 14 | `ux-3b-duotono-y-retratos` | #119 | Retratos 4:5 a todo el ancho de la tarjeta, duotono azul en listados y galería, monograma |
+| 15 | `ux-3c-reproductor` | #120 | La placa del reproductor con su póster a una tinta o su carátula, y el mando en un panel sólido |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -85,6 +86,7 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Superficies de tinta | 0 | 1 por página: el pie |
 | Alto del pie a 951 px, y desde 1100 | 435 tras el paso 13 | 320 y 236, siempre abajo |
 | Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 76 % y 73 % (63 % de media a 390) |
+| Placas del reproductor vacías | 2 | 0 |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -93,7 +95,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Placa azul del reproductor sin imagen | paso 15 |
 | Marca como sello magenta, sin icono de pestaña | paso 17 |
 | Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
@@ -133,6 +134,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   el papel que asomaba bajo el pie en una página corta. Todo quedó en `cifras-destacado-y-pie`.
   Quiere **conservar la convocatoria de prueba** en la base de desarrollo.
 - **Ajustes del paso 13 (2026-10-13):** los vio y pidió seguir con el paso 14.
+- **Revisión del paso 14 (2026-10-13):** aprobó todas las decisiones, también la tinta: «el azul
+  del cartel fue la decisión correcta para ambos casos» (retratos y galería).
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -140,16 +143,15 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 14 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
-   - `/integrantes/`: retratos 4:5 a una tinta, en azul; al señalar uno se ve el original;
-   - la portada: la cinta de Integrantes con los retratos grandes; al señalarla se detiene y
-     enseña los originales;
-   - `/galeria/`: las hojas de contactos en azul; al señalar un álbum, el original;
-   - una ficha de integrante, por ejemplo `/integrante/fernanda-soto/`, que va sin tratamiento.
-   La tinta del duotono la elegí yo, el azul del cartel. Se le enseñó un tablero con el azul
-   hondo, el magenta y sin tratamiento; si prefiere otra, es un cambio de una regla
-   (`.riso-duo`) y de la prueba de la tinta. En el punto de control C se le pregunta en todo
-   caso. Si lo aprueba, se abre el paso 15.
+1. **El paso 15 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
+   - la portada: en el destacado, el póster del registro a una tinta, con el botón cuadrado
+     blanco y el aviso abajo a la izquierda; al señalar la placa se ve el original;
+   - `/registro/recital-nuevas-voces/`: la misma placa, grande;
+   - `/registros/`: las miniaturas, también a una tinta;
+   - que pulse el botón: solo entonces se conecta con YouTube.
+   El caso sin póster (la carátula con «Video · Recital · 2026» y el título) no se ve en
+   desarrollo, porque los tres registros tienen póster. Si quiere verlo, se crea un registro
+   sin póster y se le enseña. Si lo aprueba, se abre el paso 16.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -158,60 +160,67 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 15, `ux-3c-reproductor`
+## 2. Qué sigue: paso 16, `ux-3d-imagenes-del-modelo`
 
-Ticket 3.4 del backlog, decisión D10. Lee el ticket con sus dos **Notas de entrada**.
+Ticket 3.5 del backlog. Lee el ticket con sus dos **Notas de entrada**.
 
-**Qué se hace.** La placa azul del reproductor deja de estar vacía:
-- **Con póster**, el póster cubre la placa.
-- **Sin póster**, la placa lleva una carátula tipográfica: el título en Syne, en papel sobre el
-  azul, y una línea de datos en rótulo («Video · Recital · 2026»).
-- **El botón «Reproducir»** pasa a un bloque blanco cuadrado de 64 px abajo a la izquierda, con
-  el aviso de privacidad al lado. Es la misma marca que la miniatura del índice de registros,
-  y cuadrado porque la hoja ya no admite círculos.
-- **Al pulsar**, el iframe sustituye a la placa, como hoy: `embeds.js` vacía el contenedor.
+**Qué se hace.** Las imágenes que el modelo ya guarda llegan a los listados:
+- la imagen de cada texto, como miniatura 3:4 a la derecha de su fila en Textos;
+- el afiche de cada evento, en las tarjetas de la agenda, en «Próxima actividad» de la portada
+  y como miniatura en la trayectoria;
+- en la galería y su vista ampliada, el crédito de cada foto con su pie, y un contador «3 / 12»;
+- los logos de los aliados a 160 × 80, en gris hasta que se señalan y agrupados por tipo, más
+  una franja «Con el apoyo de» que se pueda reutilizar (la usará el 4.2).
 
-**Qué hace falta.** Nada fuera del repositorio. Los dos registros de desarrollo tienen póster:
-la miniatura del índice lo enseña y la placa no. Para ver el caso sin póster hace falta un
-registro sin él. Créalo con el prefijo `zz-medicion-` y bórralo en la misma orden.
+**Qué hace falta.** Nada fuera del repositorio. En desarrollo ya hay material:
+- los 6 textos publicados tienen imagen;
+- los 4 eventos, afiche;
+- 72 recursos tienen crédito;
+- los 3 aliados, logo.
+
+No hay ningún evento futuro, así que «Próxima actividad» no aparece. Para verla, crea un
+evento `zz-medicion-` y bórralo en la misma orden. **No uses `seed_demo`**: la base tiene la
+identidad aplicada.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Placas azules vacías | 2: el destacado de la portada (488 × 275 a 951) y la ficha del registro (780 × 439) | 0 |
-| Texto sobre la placa | 4,84:1, el aviso en blanco | 4,5:1 o más, también sobre el póster |
-| Foco sobre la placa | blanco, 4,84:1 | 3:1 o más |
-| Al pulsar «Reproducir» | el iframe sustituye a la placa | igual, y no se conecta con nadie antes |
-| Textos bajo AA, cajas blancas, superficies de tinta (`superficies.js`) | 0, 0 y 1 (el pie) | igual |
-| Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
+| Miniatura en las filas de Textos (textos con imagen) | 0 de 6 | 6 de 6 |
+| Afiche en las tarjetas de la agenda y en «Próxima actividad» | en ninguna | en las de los eventos con afiche |
+| Miniatura del afiche en la trayectoria | 0 | en las filas con afiche |
+| Crédito en la galería y en la vista ampliada | no se muestra (el pie sí) | se muestra cuando existe, a 4,5:1 o más |
+| Contador en la vista ampliada | no hay | «3 / 12» |
+| Logos de aliados | 64 px con marco blanco, sin agrupar | 160 × 80 en gris, color al señalar, por tipo |
+| Consultas (`tests/test_performance.py`) | portada 17, con tope 24 | sin pasar de ningún tope |
+| `superficies.js` y scroll horizontal en siete anchos | en orden | igual |
 
 **Pruebas que cambian a propósito.**
-- `tests/test_embed_consent.py` tiene que seguir en verde: el iframe no existe hasta el clic. El
-  póster es una imagen propia (`MediaAsset`), nunca la miniatura de YouTube, que conectaría con
-  el tercero antes del clic.
-- En `tests/test_css_sistema.py`:
-  - `test_todo_boton_comparte_una_receta`: `.embed-play` sigue en la receta común del botón,
-    aunque cambie de forma.
-  - `test_el_foco_se_ve_sobre_la_placa_del_reproductor`: sigue en pie.
-  - `CON_DUOTONO`: si el póster lleva duotono, se añade `_player.html`.
+- Se amplían `tests/test_seed_photos.py` y `tests/test_images.py`.
+- Nueva: el crédito se muestra cuando existe.
+- `CON_DUOTONO` en `tests/test_css_sistema.py`: si la miniatura de un texto lleva duotono, se
+  añade su plantilla. Los afiches y los logos nunca lo llevan.
+- `BLANCO_PERMITIDO`: `.partner-logo` pinta blanco hoy. Si cambia, se actualiza.
 
 **Cuidados.**
-- **Duotono azul dentro de la placa azul: tinta sobre tinta.** Prueba antes con
-  `tools/ux/variantes.js` el póster tal cual, con duotono y con una capa que asegure el
-  contraste del aviso.
-- En la portada la placa va a dos columnas: mide 488 × 275 a 951. La carátula tipográfica tiene
-  que caber ahí, no solo en la ficha (780 × 439).
-- La miniatura del índice (`.rec-miniatura`, `.rec-caratula`) ya tiene carátula y marca de
-  reproducción. Unifica con ella; no inventes una segunda.
-- El dueño descartó los planos de color que se imponen. La placa azul sí la aceptó en el
-  destacado, pero no la agrandes ni le pongas marco.
+- **La miniatura de una fila es una cuarta área de su rejilla**, dentro de la consulta de
+  contenedor de `.filas`, no un flotante. La misma parcial vive en el carril ancho (875 px a
+  951), en el de lectura y en el teléfono.
+- **El dueño rechaza lo que se impone.** Un afiche de colores en cada tarjeta de la agenda
+  puede serlo: mantenlos pequeños (la tarjeta pide 64 px, o 128 en el carril ancho) y mira la
+  agenda a 951 antes de seguir. Si dudas, enséñale alternativas con `tools/ux/variantes.js`.
+- **Los logos en gris** con `filter:grayscale(1)` y el color al señalar: es el mismo gesto que
+  el duotono. Como allí, nada de bajar la opacidad.
+- **Las consultas:** `select_related` de `cover_image` y `poster` en las vistas, y el `figcaption`
+  sin consultas nuevas por foto.
 
 **Qué enseñarle al dueño al terminar.**
-- La portada, con el destacado y su póster o carátula.
-- `/registro/recital-nuevas-voces/`, con la placa grande.
-- `/registros/`, si cambió la miniatura.
-- Que pulse «Reproducir», para comprobar que solo entonces se conecta con YouTube.
+- `/textos/`, por las miniaturas.
+- `/agenda/` y la trayectoria, por los afiches.
+- La galería: abrir un álbum y ampliar una foto, por el crédito y el contador.
+- `/aliados/`.
+- «Próxima actividad» en la portada solo aparece con un evento futuro: díselo, o enséñaselo
+  con uno temporal.
 
 ## 3. Los pasos
 
@@ -250,13 +259,12 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Cierra cuando: una tinta por pantalla; al señalar una imagen se ve el original; las cubiertas no
   llevan tratamiento; en `/integrantes/` el rostro ocupa el 60 % o más de la tarjeta; no queda
   `border-radius:50%` en la hoja.
-- [ ] **15. `ux-3c-reproductor`.** Ticket 3.4 (D10): póster o carátula tipográfica en la placa.
-  Detalle en la sección 2.
+- [x] **15. `ux-3c-reproductor`.** Ticket 3.4 (D10): póster o carátula tipográfica en la placa.
   Cierra cuando: ninguna placa azul vacía en el sitio; el texto sobre la placa da 4,5:1 o más y
   el foco 3:1; al pulsar «Reproducir» el iframe sustituye a la placa;
   `tests/test_embed_consent.py` sigue en verde.
 - [ ] **16. `ux-3d-imagenes-del-modelo`.** Ticket 3.5: imagen de texto, afiche, crédito y logos
-  llegan a pantalla.
+  llegan a pantalla. Detalle en la sección 2.
   Cierra cuando: cada imagen aparece donde dice el ticket; el crédito se muestra si existe; los
   presupuestos de consultas de `tests/test_performance.py` no suben.
 - [ ] **17. `ux-3e-marca`.** Ticket 3.7: glifo, icono de pestaña, `theme-color`, tarjeta para
@@ -536,6 +544,9 @@ Ancla en un texto que no se repita y mira `git diff --stat` después de cada gui
   `::after`): la tinta de fondo, la foto en gris con `screen` y el papel en una capa
   `multiply`. Una sola tinta en todo el sitio, el azul del cartel. Solo en los listados
   (`CON_DUOTONO`), y al señalar o enfocar, el original.
+- **Un argumento de filtro que no se resuelve rompe la página entera.** Con `r.event` vacío,
+  `{{ r.recorded_on|default:r.event.starts_at }}` lanza un error en vez de quedar en blanco.
+  Usa `{% if %}…{% elif %}`. Pasó en los pasos 12 y 15.
 - **El pie llega siempre abajo.** `body` es una columna flexible de al menos `100dvh` y el lienzo
   crece (`flex:1 0 auto`) sin separar sus filas (`align-content:start`). Un hijo de `body` con
   `margin-inline:auto` necesita `width:100%`, o en la columna flexible se encoge a su contenido.
