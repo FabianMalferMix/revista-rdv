@@ -14,7 +14,7 @@
 ## 1. Dónde estamos
 
 **Hechos 11 de 25 pasos.** El último fusionado es el paso 11 (`ux-2-3-tipografia`,
-PR #NUMERO_PASO_11). `main` está en verde, con 703 pruebas. No hay ninguna rama de paso abierta.
+PR #114). `main` está en verde, con 703 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
 **Siguiente: paso 12, `ux-2-4-lectura-y-fichas`** (sección 2). Antes de empezarlo, lee «Lo que
@@ -24,7 +24,7 @@ Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-2-3-tipografia … (#NUMERO_PASO_11)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-2-3-tipografia … (#114)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
 grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 12
@@ -50,7 +50,7 @@ nuevo: mira su descripción y la sección 4.
 | 9 | `ux-2-1-reticula` | #104 | Tres carriles: lectura, ancho y sangre |
 | 10 | `ux-2-2-indices-y-rejillas` | #105 | Índices como filas, registros en miniaturas, cubiertas como objetos |
 | — | `plan-retomable` | #106 | Este plan, autocontenido; `tools/ux/preparar-entorno.sh` y ayudantes |
-| 11 | `ux-2-3-tipografia` | #NUMERO_PASO_11 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
+| 11 | `ux-2-3-tipografia` | #114 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
