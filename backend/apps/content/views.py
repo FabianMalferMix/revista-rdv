@@ -7,6 +7,7 @@ from django.db import DatabaseError
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse
 from django_ratelimit.decorators import ratelimit
 
@@ -357,6 +358,13 @@ def readyz(request):
         content_type="application/json",
         status=200 if ready else 503,
     )
+
+
+def favicon(request):
+    """Quien pide /favicon.ico (lectores de RSS, navegadores viejos, buscadores) recibe el
+    icono del colectivo. Temporal: el archivo estático lleva su huella en la URL, que
+    cambia con el icono, y una redirección permanente quedaría guardada para siempre."""
+    return redirect(static("img/favicon.ico"))
 
 
 def robots(request):
