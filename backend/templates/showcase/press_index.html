@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "content/partials/_index_head.html" with titulo="Prensa" cuenta=mentions|length singular="mención" plural="menciones" dek="Entrevistas, reseñas y menciones del colectivo en medios." %}
+  {% include "content/partials/_index_head.html" with titulo="Prensa" territorio="prensa" cuenta=mentions|length singular="mención" plural="menciones" dek="Entrevistas, reseñas y menciones del colectivo en medios." %}
   <ul class="filas">
     {% for m in mentions %}
       <li class="fila">

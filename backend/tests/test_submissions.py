@@ -147,3 +147,33 @@ def test_cada_campo_invalido_apunta_a_un_error_que_existe(client):
                 f"aria-describedby de {campo.get('name')} apunta a «{ref}», que no existe"
             )
             assert destino.get_text(strip=True), f"«{ref}» existe pero está vacío"
+
+
+def test_open_now_solo_devuelve_las_convocatorias_abiertas():
+    """El formulario de envío y el sello de la portada preguntan lo mismo."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.submissions.models import Call
+
+    ahora = timezone.now()
+    abierta = Call.objects.create(
+        slug="abierta",
+        title="Abierta",
+        opens_at=ahora - timedelta(days=1),
+        closes_at=ahora + timedelta(days=1),
+    )
+    Call.objects.create(
+        slug="cerrada",
+        title="Cerrada",
+        opens_at=ahora - timedelta(days=9),
+        closes_at=ahora - timedelta(days=1),
+    )
+    Call.objects.create(
+        slug="futura",
+        title="Futura",
+        opens_at=ahora + timedelta(days=1),
+        closes_at=ahora + timedelta(days=9),
+    )
+    assert list(Call.open_now()) == [abierta]

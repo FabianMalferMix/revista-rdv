@@ -40,7 +40,7 @@ def _pub(make_article, **kw):
 @pytest.mark.parametrize("nombre", INDICES)
 def test_cada_indice_abre_con_la_cabecera_comun(client, nombre):
     html = client.get(reverse(nombre)).content.decode()
-    cabecera = re.search(r'<header class="index-head">(.*?)</header>', html, re.S)
+    cabecera = re.search(r'<header class="index-head"[^>]*>(.*?)</header>', html, re.S)
     assert cabecera, f"{nombre} no usa la cabecera de índice"
     assert re.search(r"<h1>[^<]+</h1>", cabecera.group(1)), f"{nombre}: la cabecera no trae su h1"
     assert 'class="dek"' in cabecera.group(1), f"{nombre}: falta la frase que dice qué hay aquí"
@@ -67,8 +67,67 @@ def test_la_cejilla_cuenta_lo_que_hay_y_concuerda_en_numero(client, make_article
 
 def test_un_indice_vacio_no_anuncia_cero(client):
     html = client.get(reverse("content:poem_index")).content.decode()
-    cabecera = re.search(r'<header class="index-head">(.*?)</header>', html, re.S).group(1)
+    cabecera = re.search(r'<header class="index-head"[^>]*>(.*?)</header>', html, re.S).group(1)
     assert "kicker" not in cabecera, "«0 poemas» no informa de nada: la cejilla se omite"
+
+
+# ── Firma por territorio (backlog UX, ticket 3.1) ─────────────────────────
+
+# El rótulo de cada grupo del pie y la firma que llevan sus páginas.
+GRUPOS_DEL_PIE = {"El colectivo": "colectivo", "La obra": "obra", "Prensa y gestión": "prensa"}
+
+
+def _territorio(html):
+    cabecera = re.search(r'<header class="index-head"([^>]*)>', html)
+    if not cabecera:
+        return None
+    firma = re.search(r'data-territorio="([^"]*)"', cabecera.group(1))
+    return firma.group(1) if firma else ""
+
+
+@pytest.mark.parametrize("nombre", INDICES)
+def test_cada_indice_firma_su_territorio(client, nombre):
+    """Un filete de color bajo el título dice en qué parte del sitio se está."""
+    html = client.get(reverse(nombre)).content.decode()
+    assert _territorio(html) in GRUPOS_DEL_PIE.values(), f"{nombre} no firma su territorio"
+
+
+def test_la_firma_de_cada_pagina_es_la_del_grupo_del_pie_que_la_enlaza(client):
+    """El reparto no se escribe dos veces: el pie agrupa las páginas por territorio, y la
+    firma de cada página tiene que decir lo mismo que el rótulo de su grupo."""
+    html = client.get(reverse("content:home")).content.decode()
+    pie = html.split('<footer class="site-foot">')[1]
+    grupos = re.findall(r'<div class="foot-group">\s*<h2>([^<]+)</h2>(.*?)</div>', pie, re.S)
+    assert {rotulo for rotulo, _ in grupos} >= set(GRUPOS_DEL_PIE), "el pie cambió sus grupos"
+    comprobadas = 0
+    for rotulo, enlaces in grupos:
+        if rotulo not in GRUPOS_DEL_PIE:
+            continue
+        for ruta in re.findall(r'href="(/[^"]*)"', enlaces):
+            firma = _territorio(client.get(ruta).content.decode())
+            if firma is None:
+                continue  # el dossier tiene su propia cabecera
+            comprobadas += 1
+            assert firma == GRUPOS_DEL_PIE[rotulo], f"{ruta} está en «{rotulo}» y firma «{firma}»"
+    assert comprobadas >= 11, f"solo se comprobaron {comprobadas} páginas"
+
+
+def test_toda_cabecera_de_pagina_lleva_su_firma():
+    """Las fichas que abren con la cabecera de índice (sección, etiqueta, colección, obra
+    reseñada, registro, envío, boletín) también firman. La búsqueda no: no es un lugar
+    del sitio sino una herramienta."""
+    sin_firma = []
+    for plantilla in PLANTILLAS.rglob("*.html"):
+        texto = plantilla.read_text(encoding="utf-8")
+        for etiqueta in re.findall(r'<header class="index-head"[^>]*>', texto):
+            if "data-territorio" not in etiqueta:
+                sin_firma.append(plantilla.name)
+        for inclusion in re.findall(
+            r'\{% include "content/partials/_index_head.html"[^%]*%\}', texto
+        ):
+            if 'territorio="' not in inclusion and plantilla.name != "search.html":
+                sin_firma.append(plantilla.name)
+    assert not sin_firma, f"cabeceras sin firma de territorio: {sin_firma}"
 
 
 # ── Cejilla de las tarjetas ───────────────────────────────────────────────

@@ -1,5 +1,7 @@
 """Portada reordenada y archivo de textos (Lote UI-1)."""
 
+import re
+
 import pytest
 from django.urls import reverse
 from django.utils import timezone
@@ -76,3 +78,38 @@ def test_home_hero_has_manifesto_and_stats(client):
     assert b"hero-manifesto" in resp.content
     assert b"hero-stats" in resp.content
     assert b"Poes\xc3\xada en voz alta." in resp.content
+
+
+# ── Sello de convocatoria (backlog UX, ticket 3.2) ────────────────────────
+
+
+def _convocatoria(abre, cierra, slug="conv"):
+    from apps.submissions.models import Call
+
+    ahora = timezone.now()
+    return Call.objects.create(
+        slug=slug, title="Convocatoria", opens_at=ahora + abre, closes_at=ahora + cierra
+    )
+
+
+def test_la_portada_lleva_el_sello_mientras_hay_una_convocatoria_abierta(client):
+    from datetime import timedelta
+
+    from django.utils.dateformat import format as formato
+
+    abierta = _convocatoria(timedelta(days=-3), timedelta(days=12))
+    html = client.get(reverse("content:home")).content.decode()
+    sello = re.search(r'<a class="sello-convocatoria" href="([^"]+)">(.*?)</a>', html, re.S)
+    assert sello, "con una convocatoria abierta, la portada no lleva el sello"
+    assert sello.group(1) == reverse("submissions:submit")
+    texto = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", sello.group(2))).strip()
+    cierre = formato(timezone.localtime(abierta.closes_at), r"j \d\e F")
+    assert texto == f"Convocatoria abierta hasta el {cierre}"
+
+
+def test_sin_convocatoria_abierta_no_hay_sello(client):
+    from datetime import timedelta
+
+    _convocatoria(timedelta(days=-40), timedelta(days=-5), slug="cerrada")
+    _convocatoria(timedelta(days=5), timedelta(days=40), slug="futura")
+    assert b"sello-convocatoria" not in client.get(reverse("content:home")).content

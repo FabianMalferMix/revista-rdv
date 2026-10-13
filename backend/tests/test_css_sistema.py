@@ -556,3 +556,135 @@ def test_los_retratos_nuevos_no_son_circulos():
     for selector in (".firma-retrato", ".ficha-retrato", ".ficha-monograma"):
         assert "border-radius" not in _regla(selector), f"«{selector}» redondea el retrato"
     assert "aspect-ratio:4/5" in _regla(".ficha-retrato")
+
+
+# ── Superficies, tinta y amarillo (tickets 3.1 y 3.2) ─────────────────────
+
+
+def _pantalla():
+    """Las reglas de pantalla: sin la hoja de impresión, que pinta todo en blanco a propósito."""
+    css = _css()
+    inicio = css.index("@media print")
+    abre = css.index("{", inicio)
+    nivel, i = 1, abre + 1
+    while nivel:
+        nivel += {"{": 1, "}": -1}.get(css[i], 0)
+        i += 1
+    return [
+        (re.sub(r"\s+", " ", selector.strip()), re.sub(r"\s+", "", cuerpo))
+        for selector, cuerpo in re.findall(r"([^{}]+)\{([^{}]*)\}", css[:inicio] + css[i:])
+    ]
+
+
+# Lo único que puede ir en blanco: los campos de formulario, lo que flota sobre la página
+# y los objetos (retratos, cubiertas, logotipos), más el botón y la marca de reproducción
+# que se apoyan en la placa azul del reproductor.
+BLANCO_PERMITIDO = {
+    ".search input",
+    ".search-page input",
+    ".newsletter input[type=email]",
+    ".form input, .form textarea, .form select",
+    "#search-results:not(:empty)",
+    ".avatar",
+    ".pub-card img, .pub-cover-fallback",
+    ".partner-logo",
+    ".embed-play",
+    ".rec-miniatura::before",
+    ".recording-card:hover .rec-miniatura::after, .recording-card:focus-within .rec-miniatura::after",
+}
+
+
+def test_el_blanco_es_para_campos_y_objetos():
+    """Las bandas y cinco avisos eran cajas blancas: el mismo blanco que los campos y las
+    cubiertas, así que la página no se distinguía de las cosas que lleva encima (D6)."""
+    blancas = {
+        selector
+        for selector, cuerpo in _pantalla()
+        if re.search(r"background(-color)?:(var\(--surface\)|#fff\b|#ffffff\b|white\b)", cuerpo)
+    }
+    assert not blancas - BLANCO_PERMITIDO, f"superficies blancas: {blancas - BLANCO_PERMITIDO}"
+
+
+def test_los_avisos_son_hoja_clara_sin_borde():
+    """La fecha de la agenda, la próxima actividad, el contacto del dossier, la obra reseñada
+    y los mensajes eran cajas blancas con borde de 1 px. Pasan a la hoja clara; los que
+    llevan filete a la izquierda lo conservan, porque marca, no encierra."""
+    for selector in (".event-date", ".next-event", ".dossier-contact", ".reviewed", ".flash"):
+        cuerpo = _regla(selector)
+        assert "background:var(--paper-2)" in cuerpo, f"«{selector}» no está en la hoja clara"
+        assert not re.search(r"(?<![-\w])border:", cuerpo), f"«{selector}» sigue encerrado"
+        assert "border-radius" not in cuerpo, f"«{selector}» sigue siendo una caja redondeada"
+
+
+def test_la_banda_es_la_hoja_clara_y_la_fila_senalada_sobre_ella_pasa_al_papel():
+    assert "background:var(--paper-2)" in _regla(".band")
+    # La hoja clara es también la fila señalada: sobre una banda, el estado sería invisible.
+    estado = _regla(
+        ".band:not(.band--tinta).fila:has(.fila-tituloa):hover::before,"
+        ".band:not(.band--tinta).fila:focus-within::before"
+    )
+    assert "background-color:var(--paper)" in estado
+
+
+def test_la_banda_de_tinta_cambia_todo_lo_que_lleva_escrito():
+    """Sobre la tinta no se leen ni el magenta (2,78:1) ni el gris de los datos (2,98:1)
+    ni, claro, la tinta de los enlaces: cada uno tiene su relevo."""
+    banda = _regla(".band--tinta")
+    assert "background:var(--ink)" in banda and "color:var(--paper)" in banda
+    relevos = {
+        ".band--tintaa,.band--tintah2a": "color:var(--paper)",
+        ".band--tinta.kicker": "color:var(--accent-on-ink)",
+        ".band--tinta.meta,.band--tinta.metaa,.band--tinta.muted": "color:var(--muted-on-ink)",
+        ".band--tinta.rec-sumario": "color:var(--paper)",
+        ".band--tinta:focus-visible": "outline-color:var(--paper)",
+    }
+    for selector, declaracion in relevos.items():
+        assert declaracion in _regla(selector), f"«{selector}» no lleva «{declaracion}»"
+    # La placa del reproductor conserva su blanco dentro de la banda: va después.
+    reglas = [re.sub(r"\s+", "", sel) for sel, _ in _reglas()]
+    assert reglas.index(".player-consent.meta,.player-consent.metaa") > reglas.index(
+        ".band--tinta.meta,.band--tinta.metaa,.band--tinta.muted"
+    )
+
+
+def test_el_pie_es_la_segunda_banda_de_tinta():
+    pie = _regla(".site-foot")
+    assert "background:var(--ink)" in pie and "color:var(--muted-on-ink)" in pie
+    assert "color:var(--paper)" in _regla(".site-foota")
+    assert "outline-color:var(--paper)" in _regla(".site-foot:focus-visible")
+    boton = _regla(".site-foot.btn")
+    assert "border-color:var(--paper)" in boton and "color:var(--paper)" in boton
+    # Sin filete: la tinta ya separa el pie de la página.
+    assert "border-top" not in pie
+
+
+def test_el_amarillo_es_un_solo_plano_y_nunca_texto():
+    """El amarillo del cartel da 1,03:1 sobre el papel: solo entra como fondo, y en un
+    plano: las cifras de la portada (D5)."""
+    con_amarillo = [
+        (selector, cuerpo) for selector, cuerpo in _pantalla() if "riso-amarillo" in cuerpo
+    ]
+    con_amarillo = [(s, c) for s, c in con_amarillo if s != ":root"]
+    assert [s for s, _ in con_amarillo] == [".hero-stats"], (
+        f"el amarillo está en más de un plano: {[s for s, _ in con_amarillo]}"
+    )
+    cifras = con_amarillo[0][1]
+    assert "background:var(--riso-amarillo)" in cifras and "color:var(--ink)" in cifras
+
+
+def test_la_firma_de_territorio_es_un_filete_de_tres_pixeles():
+    firma = _regla(".index-head[data-territorio]h1::after")
+    assert "height:3px" in firma and "background-color:var(--ink)" in firma
+    assert "background-color:var(--accent)" in _regla(
+        '.index-head[data-territorio="obra"]h1::after'
+    )
+    assert "background-color:var(--caratula)" in _regla(
+        '.index-head[data-territorio="colectivo"]h1::after'
+    )
+
+
+def test_el_sello_de_convocatoria_esta_quieto():
+    """Un timbre girado, no un aviso que se mueve: nada que distraiga de leer."""
+    sello = _regla(".sello-convocatoria")
+    assert "transform:rotate(-3deg)" in sello
+    assert "animation" not in sello and "riso-amarillo" not in sello

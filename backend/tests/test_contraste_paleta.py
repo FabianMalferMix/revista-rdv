@@ -76,12 +76,19 @@ PARES = [
         "accent",
         AA_NORMAL,
     ),
-    ("enlace de salto: papel sobre el magenta", "paper", "accent", AA_NORMAL),
+    (
+        "papel sobre el magenta (enlace de salto, sello de convocatoria)",
+        "paper",
+        "accent",
+        AA_NORMAL,
+    ),
     # El amarillo del cartel entra como SUPERFICIE. Lo que se escribe encima sí debe leerse.
     ("tinta sobre el amarillo del cartel", "ink", "riso-amarillo", AA_NORMAL),
     ("magenta sobre el amarillo del cartel", "accent", "riso-amarillo", AA_NORMAL),
     # Sobre una banda de tinta el acento no puede ser el magenta (2,78:1): es este rosa.
     ("acento sobre una banda de tinta", "accent-on-ink", "ink", AA_NORMAL),
+    # Y el gris de los datos tampoco (2,98:1): el de la tinta es otro, del mismo tono.
+    ("datos sobre una banda de tinta y en el pie", "muted-on-ink", "ink", AA_NORMAL),
     # El borde de un campo no es texto, pero lo delimita: WCAG 1.4.11 pide 3:1.
     ("borde de un campo sobre el papel", "edge", "paper", AA_GRANDE),
     ("borde de un campo sobre el blanco del campo", "edge", "surface", AA_GRANDE),
@@ -101,6 +108,8 @@ PROHIBIDOS = [
     ("texto secundario sobre la carátula", "muted", "caratula"),
     ("amarillo del cartel como texto sobre el papel", "riso-amarillo", "paper"),
     ("acento de las bandas de tinta sobre el papel", "accent-on-ink", "paper"),
+    ("gris de los datos sobre una banda de tinta", "muted", "ink"),
+    ("gris de la tinta sobre el papel", "muted-on-ink", "paper"),
 ]
 
 

@@ -4,6 +4,16 @@
 
 {% block content %}
   <section class="hero">
+    {% if convocatoria %}
+      {% comment %}
+         Sello de convocatoria: un timbre impreso, girado y quieto, que solo aparece
+         mientras hay una convocatoria abierta. Lleva al formulario de envío.
+      {% endcomment %}
+      <a class="sello-convocatoria" href="{% url 'submissions:submit' %}">
+        <span class="rotulo">Convocatoria abierta</span>
+        <span class="sello-convocatoria-fecha">hasta el {{ convocatoria.closes_at|date:"j \d\e F" }}</span>
+      </a>
+    {% endif %}
     {% comment %}
        h1 de la portada (una por página): el nombre del colectivo. Oculto a la vista
        para conservar el hero poético; visible para SEO y lectores de pantalla.
@@ -39,7 +49,10 @@
   </section>
 
   {% if featured %}
-    <section class="home-block band featured">
+    {% comment %}
+       Primera de las dos bandas de tinta que admite la página (D6); la otra es el pie.
+    {% endcomment %}
+    <section class="home-block band band--tinta featured">
       <div class="band-in">
       {% if featured.kind == "recording" %}
         <span class="kicker">Registro destacado</span>

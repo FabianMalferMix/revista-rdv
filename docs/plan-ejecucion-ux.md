@@ -8,27 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el punto de control B.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 13.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 12 de 25 pasos.** El último fusionado es el paso 12 (`ux-2-4-lectura-y-fichas`,
-PR #115), con una corrección tras el punto de control B (PR #116). `main` está en
-verde, con 737 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 13 de 25 pasos.** El último fusionado es el paso 13 (`ux-3a-superficies-y-amarillo`,
+PR #117). `main` está en verde, con 758 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 13, `ux-3a-superficies-y-amarillo`** (sección 2). Antes de empezarlo, lee
-«Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 14, `ux-3b-duotono-y-retratos`** (sección 2), cuando el dueño haya visto el
+13. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge sala-ancla-sin-solape … (#116)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-3a-superficies-y-amarillo … (#117)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 13
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 14
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -54,6 +53,7 @@ nuevo: mira su descripción y la sección 4.
 | 11 | `ux-2-3-tipografia` | #114 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
 | 12 | `ux-2-4-lectura-y-fichas` | #115 | Sala de lectura, poema verso a verso, fichas a dos columnas, salidas al pie |
 | — | `sala-ancla-sin-solape` | #116 | La columna fija del artículo y del poema ya no se monta sobre las salidas |
+| 13 | `ux-3a-superficies-y-amarillo` | #117 | Hoja clara y tinta, pie en tinta, firma por territorio, cifras en amarillo, sello de convocatoria |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -63,7 +63,7 @@ ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se c
 Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 `tools/ux/linea-base/`.
 
-| Medida | Antes | Tras el paso 12 |
+| Medida | Antes | Tras el paso 13 |
 |---|---|---|
 | Ancho que ocupa el texto en la portada | 53 % | 97 % |
 | Lo mismo a 1920 px | 40 % | 100 % |
@@ -80,6 +80,10 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Tamaños de letra distintos en la hoja | 25 | 10, en una escala |
 | Ancho que ocupa el texto en un artículo a 1920 px | 38 % | 73 % |
 | Enlaces internos en la ficha de un poema | 1 | 5 |
+| Cajas blancas con borde sobre el papel (21 páginas) | 5 | 0 |
+| Bandas de tinta | 0 | 2 en la portada (destacado y pie), 1 en las demás (pie) |
+| Planos de amarillo por pantalla | 0 | 1, las cifras de la portada |
+| Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -87,14 +91,13 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Cajas blancas con borde: fecha de agenda, próxima actividad, contacto del dossier | paso 13 |
 | Integrantes con avatar circular de 72 px | paso 14 |
 | Placa azul del reproductor sin imagen, a la izquierda de media pantalla vacía | pasos 15 y 20 |
 | Marca como sello magenta, sin icono de pestaña | paso 17 |
 | Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
 | Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
-| Pie sobre papel, sin la identidad del colectivo | paso 21 |
+| Pie ya en tinta, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
 | Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
 
 ### Lo que ha decidido el dueño del sitio
@@ -116,6 +119,10 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Punto de control B (2026-10-13):** aprobó la serif nueva, el poema verso a verso y las
   fichas a dos columnas. Señaló que en el artículo la columna de la izquierda se montaba sobre
   las salidas del final al desplazarse; se corrigió en `sala-ancla-sin-solape`.
+- **Corrección del solape (2026-10-13):** la vio y dio paso al 13 («Se ve bien, pasa al paso
+  13»). Con eso quedan aceptadas también las decisiones del paso 12 que no había contestado: las
+  salidas «anterior» y «siguiente» en todas las fichas, el poema que enlaza a la ficha de su
+  registro y la firma propia omitida en la ficha de quien firma.
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -123,58 +130,93 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **La corrección del solape está fusionada y aún no la ha visto.** Que vuelva a desplazarse
-   hasta el final de `/articulo/resena-la-casa-vacia/`, al 80 %, como cuando lo encontró. Si
-   confirma, se abre el paso 13.
-2. Decisiones del paso 12 sin respuesta expresa (dijo que las fichas se ven mejor, sin entrar en
-   el detalle): las salidas «anterior» y «siguiente» en todas las fichas, el enlace del poema a
-   la ficha del registro en lugar de YouTube y la firma propia omitida en su ficha.
+1. **El paso 13 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
+   - la portada: la banda de tinta de «Registro destacado», las cifras sobre amarillo y el sello
+     magenta «Convocatoria abierta / hasta el 30 de noviembre» a la derecha del lema;
+   - `/agenda/`: la fecha de cada actividad, sin caja;
+   - `/dossier/`: el bloque «Contacto» al final;
+   - `/articulo/resena-la-casa-vacia/`: «Obra reseñada», en la columna izquierda;
+   - el pie de cualquier página, ahora en tinta;
+   - el filete de color bajo el título de cada índice: magenta en `/poemas/`, azul en
+     `/agenda/` y tinta en `/prensa/`.
+   **En la base de desarrollo hay una convocatoria de prueba abierta**
+   (`convocatoria-primavera-2026`, hasta el 30 de noviembre de 2026), para que vea el sello. Se
+   borra cuando lo haya visto:
+   `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
+2. Decisiones del paso 13 que tomé por él y conviene que confirme:
+   - el sello en magenta y no en amarillo, para no tener dos amarillos en la primera pantalla;
+   - las cifras repartidas a lo ancho del plano amarillo;
+   - la firma de color por territorio, con la búsqueda sin firma;
+   - el botón «Suscribirme» del pie con borde de papel, sin relleno.
 3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
    enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 13, `ux-3a-superficies-y-amarillo`
+## 2. Qué sigue: paso 14, `ux-3b-duotono-y-retratos`
 
-Tickets 3.1 y 3.2 del backlog, decisiones D5 y D6. Lee los dos, con la **Nota de entrada**
-del 3.1.
+Tickets 3.3 y 3.6 del backlog. Lee los dos, con la **Nota de entrada** del 3.6.
 
-**Qué se hace.** El sitio pasa de una superficie a cuatro: el papel, una hoja más clara
-(`--paper-2`), el blanco solo para campos y objetos, y bandas de tinta. Como mucho dos bandas
-de tinta por página: el destacado o el cierre de la portada, y el pie. Las cajas blancas con
-borde de 1 px pasan a la hoja clara sin borde. Cada territorio firma su título de índice con
-un filete de 3 px: magenta para la obra, azul para el colectivo, tinta para prensa y gestión.
-El amarillo del cartel entra como fondo, en un solo plano por pantalla: las cifras de la
-portada, y un aviso de convocatoria cuando haya una abierta.
+**Qué se hace.** Dos cambios en las imágenes:
+- **Fotos a dos tintas.** Las fotos de integrantes y de eventos en los listados y en la cinta
+  pasan a duotono risográfico: la foto en gris, multiplicada sobre magenta o sobre azul. Al
+  señalarla o enfocarla se ve el original.
+- **Retratos 4:5.** Los retratos dejan el círculo de 72 px y pasan a 4:5, a todo el ancho de la
+  tarjeta. Sin foto, llevan un monograma de dos letras en Syne sobre la hoja clara. Toda la
+  tarjeta es el enlace.
 
-**Qué hace falta.** Nada fuera del repositorio.
+No llevan tratamiento las cubiertas, los afiches de terceros, los logos de aliados ni las fichas
+(integrante, evento): ahí se ve la imagen original.
+
+**Qué hace falta.** Nada fuera del repositorio. Las fotos de desarrollo son genéricas y el
+tratamiento se aplica igual a las reales.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Bandas de tinta por página | 0 | 2 o menos |
-| Texto sobre tinta por debajo de 4,5:1 | no hay tinta | ninguno; los pares, en la prueba |
-| Cajas blancas con borde sobre el papel | 5: `.reviewed`, `.event-date`, `.next-event`, `.dossier-contact`, `.flash` | ninguna |
-| Planos de amarillo por pantalla | 0 | 1 como mucho |
+| Tintas de duotono en una misma pantalla | 0: no hay duotono | 1: magenta o azul, no las dos |
+| Imagen tratada al señalarla o enfocarla | (no hay ninguna) | se ve el original |
+| Cubiertas, afiches de terceros, logos y fichas con tratamiento | 0 | 0 |
+| Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 60 % o más |
+| Reglas con `border-radius:50%` en la hoja | 1 (`.avatar`) | 0 |
+| Textos bajo AA, cajas blancas, bandas de tinta (`tools/ux/superficies.js`) | 0, 0 y 2 como mucho | igual |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
-**Pruebas que cambian a propósito.** `tests/test_contraste_paleta.py` ya tiene los pares de
-tinta y amarillo desde el ticket 1.9; las reglas nuevas que fijen texto y fondo los tienen que
-cumplir solas (`test_toda_regla_que_fija_texto_y_fondo_cumple_aa`).
+El área del retrato se mide en la página pintada: el área de la imagen (o del monograma) dividida
+por el área de `.member-card`, en las doce tarjetas.
+
+**Pruebas que cambian a propósito.**
+- `tests/test_marcadores.py` fija el marcado del monograma:
+  `<span class="avatar avatar-fallback" aria-hidden="true">RC</span>`. Si cambia la clase, se
+  actualiza en el mismo PR.
+- `tests/test_cinta_integrantes.py` tiene que seguir en verde: la cinta no añade enlaces por
+  tarjeta.
+- En `tests/test_css_sistema.py`, la lista `BLANCO_PERMITIDO` incluye `.avatar`, que hoy pinta
+  blanco. Si el retrato deja de hacerlo, sale de la lista.
+- `tests/test_security_csp.py` sigue igual. El grano con `feTurbulence` solo entra si `img-src`
+  ya admite `data:`; si no, se omite. La CSP no se relaja.
 
 **Cuidados.**
-- `--paper-2` es hoy el fondo de la fila señalada. Si pasa a ser además el de una banda, el
-  estado de una fila sobre esa banda necesita otro tono o deja de verse.
-- La cabecera de un índice comparte filete con la primera fila de la lista; el filete de
-  territorio tiene que convivir con eso.
-- Los campos de formulario y las cubiertas siguen en blanco: son objetos, no cajas.
-- El pie en tinta lo pide el 3.1 y lo repite el 4.4: se hace aquí y el 4.4 se ocupa de su
-  contenido.
+- **El contenedor necesita `isolation:isolate`.** Sin él, `mix-blend-mode:multiply` mezcla la
+  foto con lo que haya detrás: la hoja clara de la banda de integrantes o la tinta del pie.
+- Al señalar se quitan a la vez `filter` y `mix-blend-mode`; si solo se quita uno, el original
+  sale teñido.
+- La cinta de integrantes anima con `transform`, lleva una máscara en los bordes y repite las
+  tarjetas en una copia `aria-hidden`. El tratamiento no puede romper ninguna de las tres cosas.
+- **Una tinta por pantalla.** La primera pantalla de la portada ya tiene el amarillo de las
+  cifras y la tinta del destacado, con la placa azul del reproductor. Elige el magenta o el azul
+  según lo que comparta pantalla, y mídelo con un guion que recorra la página a 951 y a 1440.
+- «Toda la tarjeta es enlace» ya está escrito en las filas y en las tarjetas de registro: una capa
+  `::after` del enlace del título, y `z-index:1` en los enlaces secundarios.
+- **A 951 px**, el ancho del dueño, la rejilla de integrantes tiene tres columnas de unos 276 px,
+  así que un retrato 4:5 mide unos 276 × 345.
 
-**Qué enseñarle al dueño al terminar.** La portada, por las bandas y el amarillo; la agenda,
-por la fecha sin caja; el dossier, por el bloque de contacto; el artículo, por la obra
-reseñada; y el pie de cualquier página.
+**Qué enseñarle al dueño al terminar.**
+- `/integrantes/`: retratos 4:5 a dos tintas; que señale uno para ver el original.
+- La cinta de la portada.
+- La agenda y la galería, si llevan fotos de evento.
+- Una ficha de integrante, que va sin tratamiento.
 
 ## 3. Los pasos
 
@@ -203,13 +245,13 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
 - ◆ **Punto de control B.** Hecho el 2026-10-13: aprobado (ver sección 1).
   Preguntar: si la serif nueva se siente del colectivo; si el poema respira; si las fichas a dos
   columnas se leen mejor que apiladas.
-- [ ] **13. `ux-3a-superficies-y-amarillo`.** Tickets 3.1 y 3.2 (D5, D6): cuatro superficies,
-  bandas de tinta, amarillo como fondo. Detalle en la sección 2.
+- [x] **13. `ux-3a-superficies-y-amarillo`.** Tickets 3.1 y 3.2 (D5, D6): cuatro superficies,
+  bandas de tinta, amarillo como fondo.
   Cierra cuando: dos bandas de tinta por página como mucho; ningún texto sobre tinta por debajo de
   4,5:1; no quedan cajas blancas con borde de 1 px sobre el papel; el amarillo aparece en un solo
   plano por pantalla.
 - [ ] **14. `ux-3b-duotono-y-retratos`.** Tickets 3.3 y 3.6: tratamiento a dos tintas, retratos
-  4:5 y monograma.
+  4:5 y monograma. Detalle en la sección 2.
   Cierra cuando: una tinta por pantalla; al señalar una imagen se ve el original; las cubiertas no
   llevan tratamiento; en `/integrantes/` el rostro ocupa el 60 % o más de la tarjeta; no queda
   `border-radius:50%` en la hoja.
@@ -288,6 +330,7 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
    node tools/ux/capture.js tools/ux/out/<rama> --only <páginas>
    node tools/ux/hoja.js tools/ux/out/<rama> tools/ux/out/<rama>/hoja.png -d1440-full.png 620 3 <páginas…>
    node tools/ux/ver.js tools/ux/out/<rama> 768 900 <nombre>=<ruta> …      # anchos intermedios
+   node tools/ux/superficies.js 951 900                  # bandas, amarillo, cajas y texto bajo AA
    ```
 
    Los estados (puntero encima, foco de teclado) también se miran: un guion corto de Playwright
@@ -317,6 +360,7 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
    node tools/ux/capture.js tools/ux/out/<rama>                                  # las 21 páginas
    python3 tools/ux/metrics.py comparar tools/ux/out/<paso-anterior> tools/ux/out/<rama>
    for a in 320 768 951 1024 1920; do node tools/ux/ver.js tools/ux/out/<rama> $a 900 <rutas…>; done
+   for a in 390 951 1440; do node tools/ux/superficies.js $a 900; done            # sale con 1 si algo falla
    python3 tools/ux/smoke.py                                                     # todas con 200
    ```
 
@@ -461,6 +505,12 @@ clase en `backend/tests/`.
 - Datos de prueba temporales para medir un criterio (doce poemas, tres fechas de agenda) se crean
   con un prefijo reconocible y se borran en la misma orden. No se dejan en la base.
 
+- **La prueba de contraste de la hoja solo ve las reglas que declaran a la vez `color` y
+  `background`.** Un texto que hereda su color de una banda y está encima de otro fondo (el aviso
+  de la placa azul dentro de la banda de tinta, en el paso 13) no lo ve nadie más que
+  `tools/ux/superficies.js`, que mide cada texto contra el fondo que tiene debajo en la página
+  pintada.
+
 **Sobre el diseño ya construido.**
 - **El lienzo.** `<main class="lienzo">` tiene tres carriles: lectura (780 px), ancho (1320 px,
   y 1440 desde 1600 de ventana) y sangre. Cada página elige con
@@ -473,6 +523,16 @@ clase en `backend/tests/`.
 - **Toda la tarjeta es enlace** con una capa `::after` del enlace del título; los enlaces
   secundarios van por encima con `z-index:1`. Nunca se envuelve la tarjeta en un `<a>`.
 - **Estados por color**, nunca por opacidad ni por movimiento.
+- **Superficies.** El papel; la hoja clara (`--paper-2`), que es la de `.band` y la de los avisos;
+  la tinta (`.band--tinta` y el pie), dos por página como mucho; y el blanco, solo para campos y
+  objetos (lista cerrada en `BLANCO_PERMITIDO`). El amarillo es un plano, el de las cifras. Sobre
+  la tinta, el texto va en papel, los datos en `--muted-on-ink` y el acento en `--accent-on-ink`.
+- **Una regla de banda alcanza a todo lo que lleva dentro**, también a un componente con fondo
+  propio. Las reglas de la banda van después de las del componente al que corrigen (con la misma
+  especificidad gana la última: el título del destacado desapareció, tinta sobre tinta, porque
+  `.featured h2 a` iba detrás), y el componente con fondo propio va después de la banda.
+- **Añadir un atributo a una etiqueta rompe las pruebas que la buscan literal.** Pasó con
+  `<header class="index-head">` al añadir `data-territorio`: búscala con `[^>]*`.
 - **Pocos elementos.** `auto-fit` con un tope por tarjeta, o columnas según la cantidad con
   `:has()`, para que tres cosas no se arrinconen a la izquierda de cinco columnas.
 - **Syne 800 es un corte extendido** y no se usa. **La cinta no lleva control de pausa.**
