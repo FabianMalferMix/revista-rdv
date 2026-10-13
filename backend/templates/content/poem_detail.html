@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load versos %}
 
 {% block title %}{{ poem.seo_title|default:poem.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ poem.seo_description|default:poem.epigraph|default:poem.title }}{% endblock %}
@@ -13,29 +14,39 @@
   <meta name="twitter:card" content="{% if poem.og_image or site_profile.og_image %}summary_large_image{% else %}summary{% endif %}">
 {% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
-  <article class="poem">
-    <span class="kicker">Poema</span>
-    <h1>{{ poem.title }}</h1>
-    {% if poem.epigraph %}<p class="dek poem-epigraph">{{ poem.epigraph }}</p>{% endif %}
-    <p class="meta">
-      {% for c in poem.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if poem.authors.all %} · {% endif %}{{ poem.published_at|date:"j M Y" }}
-    </p>
-
-    {# Texto plano autoescapado; pre-wrap preserva versos, sangrías y espacios. #}
-    <div class="poem-body">{{ poem.body }}</div>
-
-    {% with rec=poem.published_recording %}
-      {% if rec %}
-        <aside class="poem-audio">
-          <h2 class="subhead">Escuchar el poema</h2>
-          {% if rec.file %}
-            <audio controls preload="none" src="{{ rec.file.url }}"></audio>
-          {% elif rec.embed_url %}
-            <p><a href="{{ rec.embed_url }}" rel="noopener" target="_blank">{{ rec.title }} ↗</a></p>
-          {% endif %}
-        </aside>
-      {% endif %}
-    {% endwith %}
+  {% comment %}
+     Sala de lectura: a la izquierda, una columna ancla con lo que identifica al poema y
+     no se mueve al bajar; a la derecha, el poema. En pantalla estrecha, una sobre la otra.
+  {% endcomment %}
+  <article class="lectura poem">
+    <header class="lectura-ancla">
+      <p class="kicker"><a href="{% url 'content:poem_index' %}">Poemas</a></p>
+      <h1>{{ poem.title }}</h1>
+      {% if poem.epigraph %}<p class="dek poem-epigraph">{{ poem.epigraph }}</p>{% endif %}
+      {% include "content/partials/_firmas_lectura.html" with personas=poem.authors.all %}
+      {% if poem.published_at %}<p class="meta"><time datetime="{{ poem.published_at|date:'Y-m-d' }}">{{ poem.published_at|date:"j M Y" }}</time></p>{% endif %}
+      {% comment %}
+         El registro se escucha aquí si es un archivo propio; si es un video de YouTube o
+         Vimeo, se va a su ficha, que pide permiso antes de conectar con el tercero. Antes
+         el enlace llevaba directamente a YouTube.
+      {% endcomment %}
+      {% with rec=poem.published_recording %}
+        {% if rec %}
+          <div class="lectura-registro">
+            <h2 class="rotulo">Escuchar el poema</h2>
+            {% if rec.file %}<audio controls preload="none" src="{{ rec.file.url }}"></audio>{% endif %}
+            <p><a href="{{ rec.get_absolute_url }}">{% if rec.file %}Ver el registro{% else %}Escuchar en el registro{% endif %} →</a></p>
+          </div>
+        {% endif %}
+      {% endwith %}
+    </header>
+    <div class="lectura-cuerpo">
+      {# Cada verso escapado y envuelto por el filtro: sangría francesa y salto de estrofa. #}
+      <div class="poem-body">{{ poem.body|versos }}</div>
+    </div>
+    {% include "content/partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

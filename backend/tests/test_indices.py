@@ -143,18 +143,25 @@ def test_la_portada_y_los_indices_usan_el_carril_ancho(client, nombre):
 
 
 def test_las_paginas_de_lectura_se_quedan_en_su_carril(client, make_article, make_poem):
-    """Un artículo o un poema no se ensanchan: se leen en una columna."""
+    """El formulario y el dossier se leen en una columna.
+
+    Artículo y poema pasaron al carril ancho en el ticket 2.4, pero para montar su sala
+    de lectura: la columna ancla al lado del texto. El texto no se ensancha: sigue
+    limitado por la medida (ver `test_el_cuerpo_de_lectura_tiene_medida`)."""
     _pub(make_article, slug="lectura", title="Para leer")
     make_poem(slug="verso", status=EditorialStatus.PUBLISHED, published_at=timezone.now())
-    for url in (
-        reverse("content:article_detail", args=["lectura"]),
-        reverse("content:poem_detail", args=["verso"]),
-        reverse("submissions:submit"),
-        reverse("showcase:dossier"),
-    ):
+    for url in (reverse("submissions:submit"), reverse("showcase:dossier")):
         html = client.get(url).content.decode()
         clase = re.search(r'<main id="main" class="([^"]*)">', html).group(1).split()
         assert clase == ["lienzo"], f"{url}: <main> lleva {clase}"
+    for url in (
+        reverse("content:article_detail", args=["lectura"]),
+        reverse("content:poem_detail", args=["verso"]),
+    ):
+        html = client.get(url).content.decode()
+        clase = re.search(r'<main id="main" class="([^"]*)">', html).group(1).split()
+        assert clase == ["lienzo", "lienzo--ancho"], f"{url}: <main> lleva {clase}"
+        assert re.search(r'<article class="[^"]*\blectura\b', html), f"{url}: sin sala de lectura"
 
 
 def test_el_contenido_de_las_bandas_de_la_portada_vuelve_al_carril_ancho(client, make_article):

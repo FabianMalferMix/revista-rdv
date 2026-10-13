@@ -513,3 +513,46 @@ def test_la_monoespaciada_queda_en_rotulos_y_datos():
     titulares = next(sel for sel, cuerpo in _reglas() if "font-family:var(--display)" in cuerpo)
     assert ".nav a" in titulares
     assert "font-family" not in _regla(".site-foot"), "el pie hereda la serif del cuerpo"
+
+
+# ── Sala de lectura, fichas y pie (ticket 2.4) ────────────────────────────
+
+
+def test_la_sala_de_lectura_pone_la_ancla_al_lado_solo_si_cabe():
+    """Ancla y texto lado a lado desde 840 px de ventana: por debajo no caben y la ancla
+    va encima. El reparto es 4:7; la línea sigue limitada por --medida."""
+    assert "grid-template-columns:minmax(0,1fr)" in _regla(".lectura")
+    dos = _bloque("@media (min-width:840px){\n  .lectura")
+    assert ".lectura{grid-template-columns:minmax(220px,4fr)minmax(0,7fr)" in dos
+    fija = _bloque("@media (min-width:840px) and (min-height:700px)")
+    assert ".lectura-ancla{position:sticky;" in fija, "la ancla solo acompaña si hay alto para ella"
+    assert "position:sticky" not in _regla(".lectura-ancla>:first-child")
+
+
+def test_un_verso_largo_continua_con_sangria_francesa():
+    """Sin sangría francesa, la continuación de un verso que no cabe se lee como un verso
+    nuevo. El salto de estrofa mide una línea: el que dejó el autor."""
+    verso = _regla(".verso")
+    for declaracion in (
+        "display:block",
+        "white-space:pre-wrap",
+        "padding-left:1.5em",
+        "text-indent:-1.5em",
+    ):
+        assert declaracion in verso, f"al verso le falta «{declaracion}»"
+    assert "margin-top:calc(var(--lh-verso)*1em)" in _regla(".estrofa+.estrofa")
+
+
+def test_cada_salida_del_pie_se_pulsa_entera():
+    assert "position:relative" in _regla(".pie-entidadli")
+    assert 'content:""' in _regla(".pie-entidada::after") and "inset:0" in _regla(
+        ".pie-entidada::after"
+    )
+
+
+def test_los_retratos_nuevos_no_son_circulos():
+    """El retrato es 4:5, como el del colectivo; el círculo es el avatar de una app de
+    mensajería (decisión del ticket 3.6, que ya cumplen los retratos de las fichas)."""
+    for selector in (".firma-retrato", ".ficha-retrato", ".ficha-monograma"):
+        assert "border-radius" not in _regla(selector), f"«{selector}» redondea el retrato"
+    assert "aspect-ratio:4/5" in _regla(".ficha-retrato")

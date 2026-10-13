@@ -1,4 +1,5 @@
 from django import template
+from django.utils.html import format_html_join
 
 register = template.Library()
 
@@ -26,3 +27,41 @@ def primer_verso(cuerpo):
     """El primer verso, o cadena vacía si el poema no tiene ninguna línea con texto."""
     versos = primeros_versos(cuerpo, 1)
     return versos[0] if versos else ""
+
+
+@register.filter
+def versos(cuerpo):
+    """El poema marcado verso a verso, agrupado en estrofas.
+
+    Cada línea es un `<span class="verso">` y cada grupo de líneas separado por una línea
+    en blanco, un `<p class="estrofa">`. Con eso el CSS puede dar sangría francesa a un
+    verso largo que no cabe —la continuación se lee como continuación, no como un verso
+    nuevo— y un salto propio entre estrofas.
+
+    El texto lo escribe una persona: `format_html_join` escapa cada verso al envolverlo,
+    y nada se marca como seguro a mano (el SAST del CI bloquea `mark_safe`, con razón: es
+    donde se cuela un XSS). La sangría inicial de cada verso se conserva
+    tal cual (el CSS la respeta con `white-space:pre-wrap`); varias líneas en blanco
+    seguidas cuentan como un solo salto de estrofa.
+    """
+    estrofas, actual = [], []
+    for linea in (cuerpo or "").splitlines():
+        if linea.strip():
+            actual.append(linea.rstrip())
+        elif actual:
+            estrofas.append(actual)
+            actual = []
+    if actual:
+        estrofas.append(actual)
+    return format_html_join(
+        "",
+        '<p class="estrofa">{}</p>',
+        (
+            (
+                format_html_join(
+                    "", '<span class="verso">{}</span>', ((verso,) for verso in estrofa)
+                ),
+            )
+            for estrofa in estrofas
+        ),
+    )

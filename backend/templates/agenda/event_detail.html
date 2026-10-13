@@ -35,27 +35,31 @@
   </script>
 {% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
-  <article>
-    <header class="index-head">
-      <span class="kicker">{{ event.get_type_display }}{% if event.is_external and event.host %} · {{ event.host }}{% endif %}{% if event.is_past %} · realizado{% endif %}</span>
-      <h1>{{ event.title }}</h1>
-      <p class="meta">
-        {{ event.starts_at|date:"l j M Y · H:i" }} hrs
-        {% if event.venue_name %} · {{ event.venue_name }}{% endif %}
-        {% if event.address %} · {{ event.address }}{% endif %}
-        {% if event.city %} · {{ event.city }}{% endif %}
-      </p>
-      {% if event.registration_url and not event.is_past %}
-        <p><a class="btn" href="{{ event.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>
+  <article class="ficha">
+    <div class="ficha-cabecera{% if not event.poster %} ficha-cabecera--sin-medio{% endif %}">
+      {% if event.poster %}
+        <div class="ficha-medio">
+          {% responsive_img event.poster css_class="ficha-afiche" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
+        </div>
       {% endif %}
-    </header>
-
-    {% if event.poster %}
-      {% responsive_img event.poster css_class="event-poster" sizes="(max-width: 800px) 100vw, 760px" lazy=False %}
-    {% endif %}
-
-    {% if event.description %}<div class="member-about">{{ event.description|linebreaks }}</div>{% endif %}
+      <header class="ficha-texto">
+        <span class="kicker">{{ event.get_type_display }}{% if event.is_external and event.host %} · {{ event.host }}{% endif %}{% if event.is_past %} · realizado{% endif %}</span>
+        <h1>{{ event.title }}</h1>
+        <p class="meta">
+          {{ event.starts_at|date:"l j M Y · H:i" }} hrs
+          {% if event.venue_name %} · {{ event.venue_name }}{% endif %}
+          {% if event.address %} · {{ event.address }}{% endif %}
+          {% if event.city %} · {{ event.city }}{% endif %}
+        </p>
+        {% if event.registration_url and not event.is_past %}
+          <p><a class="btn" href="{{ event.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>
+        {% endif %}
+        {% if event.description %}<div class="member-about">{{ event.description|linebreaks }}</div>{% endif %}
+      </header>
+    </div>
 
     {% with people=event.participants.all %}
       {% if people %}
@@ -106,5 +110,6 @@
         </section>
       {% endif %}
     {% endwith %}
+    {% include "content/partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

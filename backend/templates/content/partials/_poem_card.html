@@ -1,4 +1,4 @@
-{% load versos %}
+{% load personas versos %}
 {% comment %}
    Fila de poema. Bajo el título va su primer verso, como en el «índice de primeros
    versos» de una antología: es lo que permite reconocer un poema sin abrirlo. Sale del
@@ -13,6 +13,6 @@
     {% with verso=p.body|primer_verso %}{% if verso %}<p class="fila-verso">{{ verso|truncatechars:90 }}</p>{% endif %}{% endwith %}
   </div>
   <p class="meta fila-pie">
-    {% for c in p.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if p.authors.all %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
+    {% firmas_sin p.authors.all sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if firmas %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
   </p>
 </li>

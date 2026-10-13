@@ -1,3 +1,4 @@
+{% load personas %}
 {% comment %}
    Fila tipográfica: fecha · cejilla, título y bajada · autoría. Toda la fila es el
    enlace del título (su ::after la cubre); la sección y las firmas quedan por encima y
@@ -13,6 +14,6 @@
     {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
   </div>
   <p class="meta fila-pie">
-    {% for c in a.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if a.authors.all %} · {% endif %}{{ a.reading_time }} min
+    {% firmas_sin a.authors.all sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if firmas %} · {% endif %}{{ a.reading_time }} min
   </p>
 </li>

@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 
+from apps.content.pie import puerta, puertas_vecinas, vecinos
 from apps.showcase.models import Publication
 
 from .models import Event, Milestone
@@ -38,13 +40,34 @@ def trayectoria(request):
 
 def event_detail(request, slug):
     event = get_object_or_404(
-        Event.objects.filter(published=True).prefetch_related(
-            "participants", "photos__asset", "recordings"
-        ),
+        Event.objects.filter(published=True)
+        .select_related("poster")
+        .prefetch_related("participants", "photos__asset", "recordings"),
         slug=slug,
     )
     recordings = event.recordings.filter(published=True)
-    return render(request, "agenda/event_detail.html", {"event": event, "recordings": recordings})
+    if event.is_past:
+        pie = [
+            puerta(
+                "Trayectoria",
+                str(event.starts_at.year),
+                f"{reverse('agenda:trayectoria')}#anio-{event.starts_at.year}",
+            )
+        ]
+    else:
+        pie = [puerta("Índice", "Agenda", reverse("agenda:agenda"))]
+    if event.photos.all():
+        pie.append(puerta("Fotos", "Galería", reverse("agenda:gallery")))
+    pie.append(puerta("Para programar", "Dossier", reverse("showcase:dossier")))
+    # Las actividades van por fecha: «anterior» es la de antes en el tiempo. `vecinos`
+    # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.
+    mas_reciente, mas_antigua = vecinos(Event.objects.filter(published=True), event, "starts_at")
+    pie += puertas_vecinas(mas_antigua, mas_reciente, "Actividad", lambda e: e.title)
+    return render(
+        request,
+        "agenda/event_detail.html",
+        {"event": event, "recordings": recordings, "pie": pie},
+    )
 
 
 def gallery(request):

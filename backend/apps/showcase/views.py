@@ -1,4 +1,7 @@
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+
+from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Partner, PressMention, Publication, SiteProfile
 
@@ -19,7 +22,30 @@ def publication_detail(request, slug):
     publication = get_object_or_404(
         _published().prefetch_related("participants", "where_to_buy"), slug=slug
     )
-    return render(request, "showcase/publication_detail.html", {"publication": publication})
+    pie = [puerta("Índice", "Todas las publicaciones", reverse("showcase:publication_index"))]
+    if publication.publisher:
+        pie.append(
+            puerta(
+                "Editorial",
+                publication.publisher.name,
+                reverse("reviews:publisher_detail", args=[publication.publisher.slug]),
+            )
+        )
+    if publication.year:
+        pie.append(
+            puerta(
+                "Trayectoria",
+                str(publication.year),
+                f"{reverse('agenda:trayectoria')}#anio-{publication.year}",
+            )
+        )
+    pie += firmas(publication.participants.all())
+    pie += puertas_vecinas(
+        *vecinos_en_lista(_published(), publication), "Publicación", lambda p: p.title
+    )
+    return render(
+        request, "showcase/publication_detail.html", {"publication": publication, "pie": pie}
+    )
 
 
 def press_index(request):

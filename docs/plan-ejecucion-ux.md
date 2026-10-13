@@ -8,26 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, al cerrar el paso 11.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, al cerrar el paso 12.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 11 de 25 pasos.** El último fusionado es el paso 11 (`ux-2-3-tipografia`,
-PR #114). `main` está en verde, con 703 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 12 de 25 pasos.** El último fusionado es el paso 12 (`ux-2-4-lectura-y-fichas`,
+PR #115). `main` está en verde, con 735 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 12, `ux-2-4-lectura-y-fichas`** (sección 2). Antes de empezarlo, lee «Lo que
-espera respuesta del dueño», más abajo.
+**Siguiente: el punto de control B y, tras él, el paso 13, `ux-3a-superficies-y-amarillo`**
+(sección 2). Antes de seguir, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-2-3-tipografia … (#114)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-2-4-lectura-y-fichas … (#115)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 12
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 13
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -51,6 +51,7 @@ nuevo: mira su descripción y la sección 4.
 | 10 | `ux-2-2-indices-y-rejillas` | #105 | Índices como filas, registros en miniaturas, cubiertas como objetos |
 | — | `plan-retomable` | #106 | Este plan, autocontenido; `tools/ux/preparar-entorno.sh` y ayudantes |
 | 11 | `ux-2-3-tipografia` | #114 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
+| 12 | `ux-2-4-lectura-y-fichas` | #115 | Sala de lectura, poema verso a verso, fichas a dos columnas, salidas al pie |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -60,7 +61,7 @@ ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se c
 Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 `tools/ux/linea-base/`.
 
-| Medida | Antes | Tras el paso 11 |
+| Medida | Antes | Tras el paso 12 |
 |---|---|---|
 | Ancho que ocupa el texto en la portada | 53 % | 97 % |
 | Lo mismo a 1920 px | 40 % | 100 % |
@@ -75,6 +76,8 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Elementos de la portada en monoespaciada | 72 % | 39 % |
 | Elementos de la portada en mayúsculas | 30 | 12 |
 | Tamaños de letra distintos en la hoja | 25 | 10, en una escala |
+| Ancho que ocupa el texto en un artículo a 1920 px | 38 % | 73 % |
+| Enlaces internos en la ficha de un poema | 1 | 5 |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -82,9 +85,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Poema, artículo y fichas apilados en el carril estrecho | paso 12 |
-| El poema sin salto de estrofa propio, alineado a la izquierda | paso 12 |
-| En la ficha de integrante, su nombre repetido en cada fila | paso 12 |
 | Cajas blancas con borde: fecha de agenda, próxima actividad, contacto del dossier | paso 13 |
 | Integrantes con avatar circular de 72 px | paso 14 |
 | Placa azul del reproductor sin imagen, a la izquierda de media pantalla vacía | pasos 15 y 20 |
@@ -108,6 +108,9 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Revisión del paso 10 (2026-10-13):** sí a las cubiertas grandes con tres títulos, sí a la
   trayectoria sin cejillas magenta y sí a los registros sin reproductor en el índice. No quiso
   ajustar el umbral de dos columnas de la agenda y la galería («no es necesario»).
+- **Revisión del paso 11 (2026-10-13):** pidió seguir con el paso 12 sin ajustes, así que las
+  decisiones de ese paso quedan aceptadas: la familia «RdV Serif», la navegación en caja de
+  frase, los títulos de sección grandes y la monoespaciada de la portada en el 39 %.
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -115,70 +118,75 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 11 está fusionado y aún no ha dicho que lo vio.** Antes de abrir el paso 12,
-   pregúntale. Si pide un ajuste, va en una rama propia antes del paso 12. Qué mirar:
-   `/articulo/resena-la-casa-vacia/` y `/poema/umbral/` para la lectura; la portada para los
-   títulos de sección y la navegación; el pie de cualquier página.
-2. Decisiones del paso 11 que tomó quien lo ejecutó y conviene que confirme:
-   - la familia de lectura se llama «RdV Serif» porque la licencia no deja llamar «Source» a una
-     versión recortada; el diseño es Source Serif 4;
-   - la navegación pasa a la tipografía de titulares, en caja de frase;
-   - los títulos de sección crecen a 28-40 px en todo el sitio salvo el dossier;
-   - en la portada la monoespaciada queda en el 39 % de los elementos y no en el 30 % pedido,
-     porque los cargos de la cinta son datos (ver la nota Estado del ticket 2.3).
+1. **El paso 12 está fusionado y aún no lo ha visto.** Es el último antes del **punto de
+   control B**: ahí no basta con que lo mire, hay que preguntarle por la dirección (sección 2).
+   Si pide un ajuste, va en una rama propia antes del paso 13.
+2. Decisiones del paso 12 que tomó quien lo ejecutó y conviene que confirme:
+   - todas las fichas terminan con «anterior» y «siguiente», además del índice y quien firma;
+   - la ficha del poema ya no enlaza a YouTube: lleva a la ficha del registro, que pide
+     permiso antes de conectar;
+   - en su ficha, cada integrante deja de ver su propio nombre en cada fila de su obra.
 3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
    enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 12, `ux-2-4-lectura-y-fichas`
+## 2. Qué sigue: punto de control B y paso 13, `ux-3a-superficies-y-amarillo`
 
-Ticket 2.4 del backlog. Lee el ticket entero, con su **Nota de entrada**.
+### Punto de control B
 
-**Qué se hace.** Poema y artículo pasan al carril ancho como «sala de lectura»: una columna ancla
-estrecha y pegajosa con la cejilla, el título, la autoría, la fecha y las etiquetas, y el cuerpo a
-su lado. El poema se marca verso a verso con el filtro `versos` (en `apps/content/templatetags/versos.py`,
-el módulo que ya existe), que escapa cada línea y le da sangría francesa; con eso llega el salto de
-estrofa propio. El artículo enseña su imagen de portada cuando la tiene. Las fichas de integrante,
-publicación y evento pasan a dos columnas, con la imagen a la izquierda. Cada ficha termina con un
-pie de entidad que lleva al índice y a lo relacionado.
+Se le enseñan al dueño la lectura y las fichas, a su ancho de 951 px y al 80 %, donde el
+poema y el artículo ganan aire. Páginas: `/poema/umbral/`, `/articulo/resena-la-casa-vacia/`,
+`/integrantes/`, `/integrante/fernanda-soto/`, `/publicaciones/` y
+`/publicacion/cuadernos-del-ruido/`. Tres preguntas:
 
-**Qué hace falta.** Nada fuera del repositorio. El retrato 4:5 de la ficha de integrante es del
-paso 14: aquí solo se le hace sitio.
+1. ¿La serif nueva se siente del colectivo?
+2. ¿El poema respira: verso a verso, con su salto de estrofa, junto a su columna?
+3. ¿Las fichas a dos columnas se leen mejor que apiladas?
+
+Un «no» a cualquiera se resuelve antes del paso 13, en una rama propia.
+
+### Paso 13
+
+Tickets 3.1 y 3.2 del backlog, decisiones D5 y D6. Lee los dos, con la **Nota de entrada**
+del 3.1.
+
+**Qué se hace.** El sitio pasa de una superficie a cuatro: el papel, una hoja más clara
+(`--paper-2`), el blanco solo para campos y objetos, y bandas de tinta. Como mucho dos bandas
+de tinta por página: el destacado o el cierre de la portada, y el pie. Las cajas blancas con
+borde de 1 px pasan a la hoja clara sin borde. Cada territorio firma su título de índice con
+un filete de 3 px: magenta para la obra, azul para el colectivo, tinta para prensa y gestión.
+El amarillo del cartel entra como fondo, en un solo plano por pantalla: las cifras de la
+portada, y un aviso de convocatoria cuando haya una abierta.
+
+**Qué hace falta.** Nada fuera del repositorio.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Ancho que ocupa el texto a 1920 en poema y artículo | 61 % | 60 % o más |
-| Letras por línea en el artículo | 62 | entre 60 y 75 |
-| Enlaces internos distintos en `<main>` de cada ficha | poema 1, publicación 1, registro 3, evento 5, artículo 5, integrante 6 | 4 o más en todas |
-| El poema conserva versos, sangrías y espacios | sí, con `pre-wrap` | sí: el `innerText` del cuerpo no cambia |
-| `<script>` en el cuerpo de un poema | se escapa | sigue escapándose con el filtro nuevo |
-| Consultas de la ficha de artículo | 7 | 12 o menos |
+| Bandas de tinta por página | 0 | 2 o menos |
+| Texto sobre tinta por debajo de 4,5:1 | no hay tinta | ninguno; los pares, en la prueba |
+| Cajas blancas con borde sobre el papel | 5: `.reviewed`, `.event-date`, `.next-event`, `.dossier-contact`, `.flash` | ninguna |
+| Planos de amarillo por pantalla | 0 | 1 como mucho |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
-El 61 % de hoy ya pasa la meta, pero por la cabecera y el pie, que ocupan el carril ancho: el
-texto de lectura sigue en 780 px. Lo que se juzga es la sala de lectura, no la cifra.
-
-**Pruebas que cambian a propósito.** `tests/test_poems.py` (el filtro `versos` escapa y conserva
-los saltos), `tests/test_poem_recording_visibility.py` sigue, `test_article_detail_query_budget`
-sigue en 12 o menos con `select_related("cover_image")`.
+**Pruebas que cambian a propósito.** `tests/test_contraste_paleta.py` ya tiene los pares de
+tinta y amarillo desde el ticket 1.9; las reglas nuevas que fijen texto y fondo los tienen que
+cumplir solas (`test_toda_regla_que_fija_texto_y_fondo_cumple_aa`).
 
 **Cuidados.**
-- Las cuatro fichas viven hoy en el carril de lectura. Para usar el ancho, la página pide
-  `{% block lienzo %}lienzo--ancho{% endblock %}`; los párrafos siguen limitados por `--medida`.
-- El ancho de la ventana del dueño (951 px) deja 875 px de carril: la columna ancla más el cuerpo
-  a 58 `ch` no caben lado a lado ahí. Decide el umbral midiendo, y dile qué verá él.
-- El enlace al registro desde el poema debe ir a la ficha del registro (`/registro/<slug>/`), no
-  a YouTube: hoy enlaza fuera.
-- En la ficha de integrante, las filas repiten el nombre de la persona: el ticket propone un
-  parámetro en las parciales de fila para omitir la firma propia.
+- `--paper-2` es hoy el fondo de la fila señalada. Si pasa a ser además el de una banda, el
+  estado de una fila sobre esa banda necesita otro tono o deja de verse.
+- La cabecera de un índice comparte filete con la primera fila de la lista; el filete de
+  territorio tiene que convivir con eso.
+- Los campos de formulario y las cubiertas siguen en blanco: son objetos, no cajas.
+- El pie en tinta lo pide el 3.1 y lo repite el 4.4: se hace aquí y el 4.4 se ocupa de su
+  contenido.
 
-**Qué enseñarle al dueño al terminar.** `/poema/umbral/`, `/articulo/resena-la-casa-vacia/`,
-`/integrante/fernanda-soto/`, `/publicacion/cuadernos-del-ruido/` y
-`/evento/recital-nuevas-voces-lanzamiento/`, a su ancho de 951 px y, si cambia algo, al 80 %.
-Es el último paso antes del **punto de control B**.
+**Qué enseñarle al dueño al terminar.** La portada, por las bandas y el amarillo; la agenda,
+por la fecha sin caja; el dossier, por el bloque de contacto; el artículo, por la obra
+reseñada; y el pie de cualquier página.
 
 ## 3. Los pasos
 
@@ -199,8 +207,8 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
 - [x] **9. `ux-2-1-reticula`.** Ticket 2.1 (D7).
 - [x] **10. `ux-2-2-indices-y-rejillas`.** Ticket 2.2.
 - [x] **11. `ux-2-3-tipografia`.** Ticket 2.3 (D3, D4).
-- [ ] **12. `ux-2-4-lectura-y-fichas`.** Ticket 2.4: poema y artículo con columna ancla, fichas a
-  dos columnas, pie de entidad. Detalle en la sección 2.
+- [x] **12. `ux-2-4-lectura-y-fichas`.** Ticket 2.4: poema y artículo con columna ancla, fichas a
+  dos columnas, pie de entidad.
   Cierra cuando: a 1920 el texto ocupa el 60 % o más en poema y artículo; el artículo queda entre
   60 y 75 letras por línea; cada ficha tiene cuatro enlaces internos o más; el poema conserva
   versos, sangrías y espacios (comparar el `innerText` del cuerpo antes y después).
@@ -208,7 +216,7 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Preguntar: si la serif nueva se siente del colectivo; si el poema respira; si las fichas a dos
   columnas se leen mejor que apiladas.
 - [ ] **13. `ux-3a-superficies-y-amarillo`.** Tickets 3.1 y 3.2 (D5, D6): cuatro superficies,
-  bandas de tinta, amarillo como fondo.
+  bandas de tinta, amarillo como fondo. Detalle en la sección 2.
   Cierra cuando: dos bandas de tinta por página como mucho; ningún texto sobre tinta por debajo de
   4,5:1; no quedan cajas blancas con borde de 1 px sobre el papel; el amarillo aparece en un solo
   plano por pantalla.
@@ -310,6 +318,9 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
    docker compose run --rm --entrypoint ruff web check .
    docker compose run --rm --entrypoint ruff web format .
    docker compose run --rm --entrypoint pytest web -q -p no:cacheprovider
+   # El SAST del CI, igual que allí (bloquea severidad media o más):
+   docker run --rm -v "$PWD/backend:/src:ro" -w /src python:3.12-slim sh -c \
+     'pip install -q "bandit==1.9.4" && bandit -r apps config -ll'
    ```
 
 7. **Medir entero.**
@@ -473,6 +484,9 @@ clase en `backend/tests/`.
   `:has()`, para que tres cosas no se arrinconen a la izquierda de cinco columnas.
 - **Syne 800 es un corte extendido** y no se usa. **La cinta no lleva control de pausa.**
 - `responsive_img` emite un texto alternativo vacío con `decorativa=True`, no con `alt=""`.
+- **HTML armado en Python:** con `format_html` o `format_html_join`, nunca `mark_safe`. El SAST
+  del CI (bandit) bloquea `mark_safe`, y con razón: es por donde se cuela un XSS. Le pasó al
+  filtro `versos` en el paso 12.
 - **Tamaños de letra:** solo pasos de la escala (`--t-2` a `--t7`); una prueba lo vigila. La
   monoespaciada, solo en las reglas que lista `MONO_PERMITIDA` en `tests/test_css_sistema.py`.
 - **Fuentes de terceros:** mira si la licencia reserva un nombre. Source Serif 4 reserva

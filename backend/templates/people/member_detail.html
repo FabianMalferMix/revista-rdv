@@ -4,71 +4,84 @@
 {% block title %}{{ member.display_name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ member.short_bio|default:member.display_name }}{% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
-  <header class="index-head member-head">
-    {% if member.photo %}
-      {% responsive_img member.photo css_class="avatar avatar-lg" sizes="240px" lazy=False %}
-    {% else %}
-      <span class="avatar avatar-lg avatar-fallback" aria-hidden="true">{{ member.display_name|iniciales }}</span>
-    {% endif %}
-    <span class="kicker">Integrante{% if not member.active %} · histórico{% endif %}</span>
-    <h1>{{ member.display_name }}</h1>
-    <p class="meta">
-      {% if member.role %}{{ member.role }}{% endif %}
-      {% if member.role and member.member_since %} · {% endif %}
-      {% if member.member_since %}en el colectivo desde {{ member.member_since }}{% endif %}
-    </p>
-    {% if member.short_bio %}<p class="dek">{{ member.short_bio }}</p>{% endif %}
-    {% with links=member.social_links.all %}
-      {% if links or member.website %}
+  {% comment %}
+     Ficha a dos columnas: el retrato a la izquierda, quién es a la derecha. Era un avatar
+     redondo de 104 px encima de todo lo demás.
+  {% endcomment %}
+  <article class="ficha">
+    <div class="ficha-cabecera">
+      <div class="ficha-medio">
+        {% if member.photo %}
+          {% responsive_img member.photo css_class="ficha-retrato" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
+        {% else %}
+          <span class="ficha-retrato ficha-monograma" aria-hidden="true">{{ member.display_name|iniciales }}</span>
+        {% endif %}
+      </div>
+      <header class="ficha-texto">
+        <span class="kicker">Integrante{% if not member.active %} · histórico{% endif %}</span>
+        <h1>{{ member.display_name }}</h1>
         <p class="meta">
-          {% for s in links %}<a href="{{ s.url }}" rel="me nofollow">{{ s.platform }}</a>{% if not forloop.last or member.website %} · {% endif %}{% endfor %}
-          {% if member.website %}<a href="{{ member.website }}" rel="me nofollow">Sitio web</a>{% endif %}
+          {% if member.role %}{{ member.role }}{% endif %}
+          {% if member.role and member.member_since %} · {% endif %}
+          {% if member.member_since %}en el colectivo desde {{ member.member_since }}{% endif %}
         </p>
-      {% endif %}
-    {% endwith %}
-  </header>
+        {% if member.short_bio %}<p class="dek">{{ member.short_bio }}</p>{% endif %}
+        {% with links=member.social_links.all %}
+          {% if links or member.website %}
+            <p class="meta">
+              {% for s in links %}<a href="{{ s.url }}" rel="me nofollow">{{ s.platform }}</a>{% if not forloop.last or member.website %} · {% endif %}{% endfor %}
+              {% if member.website %}<a href="{{ member.website }}" rel="me nofollow">Sitio web</a>{% endif %}
+            </p>
+          {% endif %}
+        {% endwith %}
+        {% if member.poetics %}
+          <blockquote class="poetics">{{ member.poetics|linebreaks }}</blockquote>
+        {% endif %}
+      </header>
+    </div>
 
-  {% if member.poetics %}
-    <blockquote class="poetics">{{ member.poetics|linebreaks }}</blockquote>
-  {% endif %}
+    {% if member.bio %}
+      <section class="member-about">
+        <h2 class="subhead">Trayectoria</h2>
+        {{ member.bio|linebreaks }}
+      </section>
+    {% endif %}
 
-  {% if member.bio %}
-    <section class="member-about">
-      <h2 class="subhead">Trayectoria</h2>
-      {{ member.bio|linebreaks }}
-    </section>
-  {% endif %}
+    {% if poems %}
+      <section>
+        <h2 class="subhead">Poemas</h2>
+        <ul class="filas">
+          {% for p in poems %}
+            {% include "content/partials/_poem_card.html" with sin_cejilla=True sin_firma_de=member %}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
 
-  {% if poems %}
-    <section>
-      <h2 class="subhead">Poemas</h2>
-      <ul class="filas">
-        {% for p in poems %}
-          {% include "content/partials/_poem_card.html" with sin_cejilla=True %}
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
+    {% if recordings %}
+      <section>
+        <h2 class="subhead">Registros</h2>
+        <ul class="work-list">
+          {% for r in recordings %}
+            <li>
+              <a href="{{ r.get_absolute_url }}">{{ r.title }}</a>
+              <span class="muted">{{ r.get_kind_display }}{% if r.recorded_on %} · {{ r.recorded_on|date:"Y" }}{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
 
-  {% if recordings %}
-    <section>
-      <h2 class="subhead">Registros</h2>
-      <ul class="work-list">
-        {% for r in recordings %}
-          <li>
-            <a href="{{ r.get_absolute_url }}">{{ r.title }}</a>
-            <span class="muted">{{ r.get_kind_display }}{% if r.recorded_on %} · {{ r.recorded_on|date:"Y" }}{% endif %}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
+    {% if articles %}
+      <section>
+        <h2 class="subhead">Textos</h2>
+        {% include "content/partials/_article_list.html" with sin_firma_de=member %}
+      </section>
+    {% endif %}
 
-  {% if articles %}
-    <section>
-      <h2 class="subhead">Textos</h2>
-      {% include "content/partials/_article_list.html" %}
-    </section>
-  {% endif %}
+    {% include "content/partials/_pie_de_entidad.html" %}
+  </article>
 {% endblock %}

@@ -12,45 +12,48 @@
   <meta name="twitter:card" content="{% if publication.cover %}summary_large_image{% else %}summary{% endif %}">
 {% endblock %}
 
+{% block lienzo %}lienzo--ancho{% endblock %}
+
 {% block content %}
-  <article class="pub-detail">
-    <header class="index-head">
-      <span class="kicker">{{ publication.get_kind_display }}{% if not publication.is_own %} · participación{% endif %}</span>
-      <h1>{{ publication.title }}</h1>
-      <p class="meta">
-        {% if publication.year %}{{ publication.year }}{% endif %}
-        {% if publication.publisher %} · {{ publication.publisher.name }}{% endif %}
-        {% if publication.isbn %} · ISBN {{ publication.isbn }}{% endif %}
-      </p>
-    </header>
+  <article class="ficha pub-detail">
+    <div class="ficha-cabecera">
+      <div class="ficha-medio">
+        {% if publication.cover %}
+          {% responsive_img publication.cover css_class="ficha-cubierta" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
+        {% else %}
+          <span class="pub-cover-fallback ficha-cubierta" aria-hidden="true"><span>{{ publication.title }}</span></span>
+        {% endif %}
+      </div>
+      <header class="ficha-texto">
+        <span class="kicker">{{ publication.get_kind_display }}{% if not publication.is_own %} · participación{% endif %}</span>
+        <h1>{{ publication.title }}</h1>
+        <p class="meta">
+          {% if publication.year %}{{ publication.year }}{% endif %}
+          {% if publication.publisher %} · <a href="{% url 'reviews:publisher_detail' publication.publisher.slug %}">{{ publication.publisher.name }}</a>{% endif %}
+          {% if publication.isbn %} · ISBN {{ publication.isbn }}{% endif %}
+        </p>
+        {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}
 
-    {% if publication.cover %}
-      {% responsive_img publication.cover css_class="pub-cover" sizes="(max-width: 600px) 70vw, 360px" lazy=False %}
-    {% endif %}
+        {% with people=publication.participants.all %}
+          {% if people %}
+            <h2 class="rotulo ficha-rotulo">Participan</h2>
+            <p class="meta">
+              {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+            </p>
+          {% endif %}
+        {% endwith %}
 
-    {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}
-
-    {% with people=publication.participants.all %}
-      {% if people %}
-        <section>
-          <h2 class="subhead">Participan</h2>
-          <p class="meta">
-            {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-          </p>
-        </section>
-      {% endif %}
-    {% endwith %}
-
-    {% with stores=publication.where_to_buy.all %}
-      {% if stores or publication.pdf %}
-        <section>
-          <h2 class="subhead">Dónde conseguirlo</h2>
-          <p class="buy-links">
-            {% for s in stores %}<a class="btn" href="{{ s.url }}" rel="noopener" target="_blank">{{ s.label }} ↗</a>{% endfor %}
-            {% if publication.pdf %}<a class="btn" href="{{ publication.pdf.url }}">Descargar PDF gratis</a>{% endif %}
-          </p>
-        </section>
-      {% endif %}
-    {% endwith %}
+        {% with stores=publication.where_to_buy.all %}
+          {% if stores or publication.pdf %}
+            <h2 class="rotulo ficha-rotulo">Dónde conseguirlo</h2>
+            <p class="buy-links">
+              {% for s in stores %}<a class="btn" href="{{ s.url }}" rel="noopener" target="_blank">{{ s.label }} ↗</a>{% endfor %}
+              {% if publication.pdf %}<a class="btn" href="{{ publication.pdf.url }}">Descargar PDF gratis</a>{% endif %}
+            </p>
+          {% endif %}
+        {% endwith %}
+      </header>
+    </div>
+    {% include "content/partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

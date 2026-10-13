@@ -603,6 +603,39 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
      la firma cuando coincide con la de la página (como `sin_cejilla` en `_poem_card.html`).
   3. La lista de registros de la ficha (`.work-list`) sigue siendo una lista de enlaces: puede
      pasar a `.filas` con la misma anatomía.
+- **Estado:** hecho (paso 12 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **La sala de lectura reparte 4:7, no `minmax(240px,1fr) minmax(0,66ch)`.** Con el texto a
+     66 `ch` fijos, la columna ancla se quedaba con todo el sobrante y a 1440 medía tanto como el
+     texto. Ahora `minmax(220px,4fr) minmax(0,7fr)`, desde 840 px de ventana; el texto sigue
+     limitado por `--medida`. A 951 px, el ancho del dueño, caben las dos columnas: ancla de unos 300
+     y texto de unos 525. La ancla acompaña al bajar solo si la pantalla mide 700 px de alto o más.
+  2. **El título del artículo baja a `--t5`** dentro de la ancla: a `--t6` partía en cinco o seis
+     líneas de dos palabras. El del poema se queda en `--t6`: son títulos cortos.
+  3. **Retrato de firma de 40 × 50 px, no 56 redondo.** 4:5 como el resto de los retratos y sin
+     círculo, por lo que pide el ticket 3.6. La imagen es decorativa: el nombre va al lado.
+  4. **Salto de estrofa de una línea, no de 60 px.** El filtro agrupa los versos en
+     `<p class="estrofa">`; entre estrofas va exactamente una línea de la interlínea del poema.
+     Varias líneas en blanco seguidas cuentan como un solo salto. El `innerText` del cuerpo es
+     igual al texto guardado en los dos poemas de la base.
+  5. **Obra reseñada con cubierta de 64 px**, no de 140: la ancla mide 300 px a 951.
+  6. **El pie de entidad se arma en la vista** (`apps/content/pie.py`) y todas las fichas llevan
+     «anterior» y «siguiente» en el orden de su índice; el evento, en el orden del tiempo. Así
+     ninguna ficha queda con menos de cuatro salidas salvo un caso: un poema sin colección ni
+     registro y al final de la lista tiene tres (el índice, quien firma y el anterior).
+  7. **Firma propia:** etiqueta `{% firmas_sin %}` y no un filtro. La parcial de fila se incluye
+     también donde nadie define a quién omitir, y un argumento de filtro sin definir rompe la
+     plantilla.
+  8. Las fichas de publicación y evento llevan «Participan» y «Dónde conseguirlo» como rótulos
+     dentro de la columna de texto, no como títulos de sección: al lado de la imagen, un título
+     de 28-40 px pesaba más que el de la ficha.
+  9. Prueba que cambia a propósito: `test_las_paginas_de_lectura_se_quedan_en_su_carril` pasa a
+     afirmar que artículo y poema usan el carril ancho para su sala; formulario y dossier siguen
+     en el de lectura. `test_poem_recording_visibility.py` afirma el enlace interno en lugar del
+     de YouTube.
+  Medido con `tools/ux`: ancho del texto a 1920, artículo de 61 a 73 % y poema de 61 a 67 %; a
+  1440, integrante de 75 a 92 %, publicación de 75 a 88 %, evento de 75 a 90 %; el artículo
+  sigue a 62 letras por línea; consultas por ficha entre 10 y 15 (artículo 11, tope 12). Sin
+  scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920.
 
 ### Épica 3 — Color, imagen y dirección de arte (D5, D6, D10)
 
