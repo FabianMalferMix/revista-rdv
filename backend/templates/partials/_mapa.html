@@ -1,0 +1,56 @@
+{% comment %}
+   Mapa del sitio agrupado: el pie y el menú del teléfono. Antes era una sola fila de
+   once enlaces separados por puntos. Los rótulos dan a cada enlace un lugar donde
+   buscarlo en vez de obligar a leerlos todos.
+
+   etiqueta   nombre del bloque para un lector de pantalla (por defecto «Mapa del sitio»)
+   en_menu    en el menú de la cabecera los rótulos no son encabezados: irían antes del
+              título de la página
+{% endcomment %}
+{% with t=en_menu|yesno:"p,h2" %}
+<nav class="foot-groups" aria-label="{{ etiqueta|default:'Mapa del sitio' }}">
+  <div class="foot-group">
+    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>El colectivo</{{ t }}>
+    <ul>
+      <li><a href="{% url 'people:member_index' %}">Integrantes</a></li>
+      <li><a href="{% url 'agenda:agenda' %}">Agenda</a></li>
+      <li><a href="{% url 'agenda:trayectoria' %}">Trayectoria</a></li>
+      <li><a href="{% url 'agenda:gallery' %}">Galería</a></li>
+    </ul>
+  </div>
+  <div class="foot-group">
+    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>La obra</{{ t }}>
+    <ul>
+      <li><a href="{% url 'content:poem_index' %}">Poemas</a></li>
+      <li><a href="{% url 'content:text_archive' %}">Textos</a></li>
+      <li><a href="{% url 'content:collection_index' %}">Colecciones</a></li>
+      <li><a href="{% url 'showcase:publication_index' %}">Publicaciones</a></li>
+      <li><a href="{% url 'media:recording_index' %}">Registros</a></li>
+    </ul>
+  </div>
+  <div class="foot-group">
+    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>Prensa y gestión</{{ t }}>
+    <ul>
+      <li><a href="{% url 'showcase:dossier' %}">Dossier</a></li>
+      <li><a href="{% url 'showcase:press_index' %}">Prensa</a></li>
+      <li><a href="{% url 'showcase:partner_index' %}">Aliados</a></li>
+      <li><a href="{% url 'submissions:submit' %}">Enviar una propuesta</a></li>
+      {% if site_profile.booking_email %}
+        <li><a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a></li>
+      {% elif site_profile.general_email %}
+        <li><a href="mailto:{{ site_profile.general_email }}">{{ site_profile.general_email }}</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="foot-group">
+    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>Seguir</{{ t }}>
+    <ul>
+      {% for link in redes_del_colectivo %}
+        <li><a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.platform }}</a></li>
+      {% endfor %}
+      <li><a href="{% url 'feed' %}">RSS</a></li>
+      <li><a href="{% url 'recordings_feed' %}">Podcast</a></li>
+    </ul>
+  </div>
+</nav>
+{% endwith %}

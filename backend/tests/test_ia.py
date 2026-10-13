@@ -15,16 +15,18 @@ def _nav(content):
     return re.search(rb"<nav[^>]*>.*?</nav>", content, re.S).group(0)
 
 
-# La barra principal lleva CUATRO enlaces, decididos por el colectivo (2026-10-06).
-# Antes eran nueve, y con nueve una barra solo puede verse como una lista: agrandarlos
-# para darles carácter lo habría empeorado, porque el tamaño multiplica la presencia de
-# cada elemento. La lista se fija aquí para que ampliarla vuelva a ser una decisión
-# explícita y no una acumulación.
+# La barra principal lleva CINCO enlaces (D9, decidido por el dueño del sitio el
+# 2026-10-13, en quien el colectivo delegó las decisiones de diseño). Fueron nueve, luego
+# cuatro; con nueve una barra solo puede verse como una lista. Entra «Textos», que solo
+# estaba en el pie, y el dossier va en el botón de la cabecera, fuera de la barra. La
+# lista se fija aquí para que ampliarla vuelva a ser una decisión explícita y no una
+# acumulación.
 NAV_PRINCIPAL = [
-    "people:member_index",
+    "content:poem_index",
+    "content:text_archive",
     "media:recording_index",
     "showcase:publication_index",
-    "content:poem_index",
+    "people:member_index",
 ]
 
 # Lo que salió de la barra. Ninguno puede quedar huérfano: `Dossier` solo era alcanzable
@@ -41,7 +43,7 @@ NAV_DEGRADADOS = [
 
 
 def test_nav_curated_for_managers(client):
-    """La barra es EXACTAMENTE esos cuatro enlaces, ni uno más."""
+    """La barra es EXACTAMENTE esos cinco enlaces, ni uno más."""
     nav = _nav(client.get(reverse("content:home")).content)
     for nombre in NAV_PRINCIPAL:
         assert reverse(nombre).encode() in nav, f"falta {nombre} en la barra"
