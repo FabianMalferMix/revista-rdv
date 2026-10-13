@@ -25,6 +25,29 @@ def _reglas():
     ]
 
 
+def _tokens():
+    """Las variables de :root con su valor, sin espacios: {"--t2": "19px", ...}."""
+    raiz = re.search(r":root\{(.*?)\n\}", _css(), re.S).group(1)
+    return {
+        nombre: re.sub(r"\s+", "", valor)
+        for nombre, valor in re.findall(r"(--[\w-]+):([^;]+);", raiz)
+    }
+
+
+def _px(valor):
+    """Valor de un tamaño en px, resolviendo un token. Para un clamp(), (mínimo, máximo)."""
+    valor = re.sub(r"\s+", "", valor)
+    token = re.fullmatch(r"var\((--[\w-]+)\)", valor)
+    if token:
+        valor = _tokens()[token.group(1)]
+    pinza = re.fullmatch(r"clamp\(([\d.]+)px,[^,]+,([\d.]+)px\)", valor)
+    if pinza:
+        return float(pinza.group(1)), float(pinza.group(2))
+    fijo = re.fullmatch(r"([\d.]+)px", valor)
+    assert fijo, f"tamaño que no sé leer: {valor}"
+    return float(fijo.group(1)), float(fijo.group(1))
+
+
 def _regla(selector):
     """La PRIMERA regla con ese selector: la de pantalla. Las que la sobrescriben dentro
     de un @media (impresión, pantalla estrecha) vienen después en la hoja."""
@@ -67,20 +90,53 @@ EXENTOS_DEL_MINIMO = {".nav-disclosure summary::after"}
 
 
 def test_ningun_texto_baja_de_12px():
-    """Nueve reglas pintaban texto a 11px; el mínimo legible del sistema es 12."""
+    """Nueve reglas pintaban texto a 11px; el mínimo legible del sistema es 12. Los tamaños
+    son tokens: se resuelven antes de comparar."""
     pequenos = [
         (selector, tam)
         for selector, cuerpo in _reglas()
-        if selector not in EXENTOS_DEL_MINIMO
-        for tam in re.findall(r"font-size:(\d+(?:\.\d+)?)px", cuerpo)
-        if float(tam) < 12
+        if selector not in EXENTOS_DEL_MINIMO and selector != "html"
+        for tam in re.findall(r"font-size:([^;]+)", cuerpo)
+        if not tam.endswith("pt") and _px(tam)[0] < 12
     ]
     assert not pequenos, f"texto por debajo de 12px: {pequenos}"
 
 
+def test_la_escala_es_la_unica_fuente_de_tamanos():
+    """Había 25 tamaños escritos a mano: 17, 18, 19 y 20 px convivían sin que ninguno
+    significara nada. Ahora cada `font-size` es un paso de la escala. Quedan fuera el
+    cuerpo base de `html`, que crece con el monitor y del que cuelgan los `rem`, y la hoja
+    de impresión, que mide en puntos."""
+    sueltos = [
+        (selector, tam)
+        for selector, cuerpo in _reglas()
+        if selector != "html"
+        for tam in re.findall(r"font-size:([^;]+)", cuerpo)
+        if not re.fullmatch(r"var\(--t-?\d\)", tam) and not tam.endswith("pt")
+    ]
+    assert not sueltos, f"tamaños fuera de la escala: {sueltos}"
+    escala = {
+        nombre: valor for nombre, valor in _tokens().items() if re.fullmatch(r"--t-?\d", nombre)
+    }
+    assert len(escala) == 10, f"la escala tiene {len(escala)} pasos: {sorted(escala)}"
+    minimos = [_px(f"var({nombre})")[0] for nombre in sorted(escala, key=lambda n: int(n[3:]))]
+    assert minimos == sorted(minimos), f"la escala no crece de paso en paso: {minimos}"
+
+
+def test_un_titulo_de_seccion_no_mide_menos_que_el_texto_que_encabeza():
+    """Los títulos de sección eran rótulos de 12 px sobre párrafos de 17. El cuerpo crece
+    hasta 19 px (119 % del tamaño del navegador): el título de sección empieza por encima."""
+    minimo, _ = _px(re.search(r"font-size:([^;]+)", _regla(".subhead")).group(1))
+    assert minimo > 19, f"el título de sección arranca en {minimo}px, por debajo del cuerpo"
+    titulares = next(sel for sel, cuerpo in _reglas() if "font-family:var(--display)" in cuerpo)
+    assert ".subhead" in titulares, "el título de sección debe ir en la tipografía de titulares"
+
+
 def test_los_titulos_no_heredan_la_interlinea_de_lectura():
     """El 1.6 del cuerpo es para leer párrafos; en un título separa sus líneas."""
-    assert "line-height:1.1" in _regla("h1,h2,h3")
+    interlinea = re.search(r"line-height:var\((--[\w-]+)\)", _regla("h1,h2,h3"))
+    assert interlinea, "los títulos deben fijar su interlínea con un token"
+    assert float(_tokens()[interlinea.group(1)]) <= 1.2
 
 
 def test_el_cuerpo_de_lectura_tiene_medida():
@@ -131,9 +187,9 @@ def test_todo_boton_comparte_una_receta():
     assert not sueltos, f"botones con tipografía propia: {sueltos}"
 
 
-# Reglas que pintan texto en mayúsculas. La receta es una; la otra es deuda con fecha: la
-# navegación sale de aquí en el ticket 2.3.
-MAYUSCULAS_PENDIENTES = {".nav a"}
+# Reglas que pintan texto en mayúsculas fuera de la receta de rótulo. Estaba la navegación,
+# como deuda con fecha: salió en el ticket 2.3, al pasar a la tipografía de titulares.
+MAYUSCULAS_PENDIENTES = set()
 
 
 def test_las_mayusculas_son_una_sola_receta():
@@ -143,7 +199,8 @@ def test_las_mayusculas_son_una_sola_receta():
     assert len(receta) == 1, f"debe haber exactamente una receta de rótulo: {receta}"
     extra = con_mayusculas - receta - MAYUSCULAS_PENDIENTES
     assert not extra, f"mayúsculas fuera de la receta de rótulo: {extra}"
-    assert "letter-spacing:.1em" in dict(_reglas())[receta.pop()]
+    espaciado = re.search(r"letter-spacing:var\((--[\w-]+)\)", dict(_reglas())[receta.pop()])
+    assert espaciado and _tokens()[espaciado.group(1)] == ".1em"
 
 
 def test_el_movimiento_usa_los_tokens_y_respeta_a_quien_pide_menos():
@@ -393,3 +450,66 @@ def test_la_hoja_de_contactos_fija_la_proporcion_en_la_hoja_no_en_cada_foto():
     fotos = _regla(".hojaimg")
     assert "height:100%" in fotos and "object-fit:cover" in fotos
     assert "aspect-ratio" not in fotos
+
+
+# ── Serif de lectura y monoespaciada (ticket 2.3) ─────────────────────────
+
+
+def test_la_serif_de_lectura_es_propia_y_tiene_reserva_metrica():
+    """La pila de sistema daba Palatino en un Mac, Times en Linux y Georgia en Windows: el
+    sitio tenía tres voces. Ahora la serif viaja con el sitio, y mientras llega la ocupa una
+    reserva escalada para que el texto no salte al cambiar."""
+    css = _css()
+    pila = re.search(r"--serif:([^;]+);", css).group(1)
+    assert pila.startswith('"RdV Serif","RdV Serif Fallback"'), pila
+    propias = re.findall(r'@font-face\{[^}]*font-family:"RdV Serif";[^}]*\}', css)
+    estilos = sorted(re.search(r"font-style:(\w+)", cara).group(1) for cara in propias)
+    assert estilos == ["italic", "normal"], f"faltan la redonda o la cursiva: {estilos}"
+    for cara in propias:
+        assert "font-display:swap" in cara and re.search(
+            r'url\("\.\./fonts/rdv-serif[\w-]*\.woff2"\)', cara
+        )
+    reservas = re.findall(r'@font-face\{[^}]*"RdV Serif Fallback"[^}]*\}', css)
+    assert len(reservas) >= 3, "la reserva necesita redonda, negrita y cursiva"
+    for cara in reservas:
+        assert (
+            "size-adjust:" in cara
+            and 'local("Liberation Serif' in cara
+            and "ascent-override:" in cara
+        )
+
+
+def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
+    """Source Serif 4 tiene «Source» como nombre reservado (OFL, cláusula 3): una versión
+    modificada —y el subconjunto lo es— no puede llamarse así."""
+    familias = re.findall(r'font-family:\s*"([^"]+)"', _css())
+    assert familias, "no se encontró ninguna familia declarada"
+    assert not [f for f in familias if "source" in f.lower()], familias
+
+
+# Reglas que pueden pintar en monoespaciada, cada una por su papel. Decisión D3: la mono
+# queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
+MONO_PERMITIDA = {
+    ".rotulo,.kicker,.dossier-doc.subhead,.foot-grouph2,.reviewedh2,.event-month,.tag,"
+    ".cinta-piea,.nav-disclosuresummary": "rótulo",
+    ".meta,.muted,.member-role": "dato: firma, fecha, lugar, cargo",
+    ".stats-strip": "etiquetas de las cifras",
+    ".pagination-pagesa,.pagination-pagesspan": "números de página",
+    ".lightboxfigcaption": "pie de foto",
+    ".htmx-indicator": "indicador de carga",
+}
+
+
+def test_la_monoespaciada_queda_en_rotulos_y_datos():
+    """La navegación, el pie, los botones y las cifras iban en monoespaciada: la voz del
+    sitio era la de un panel de control. Una regla nueva que la use tiene que justificarse
+    aquí."""
+    con_mono = {
+        re.sub(r"\s+", "", sel) for sel, cuerpo in _reglas() if "font-family:var(--mono)" in cuerpo
+    }
+    sobrantes = con_mono - set(MONO_PERMITIDA)
+    assert not sobrantes, f"monoespaciada fuera de rótulos y datos: {sorted(sobrantes)}"
+    assert "font-family" not in _regla(".nava"), "la navegación toma la familia de los titulares"
+    titulares = next(sel for sel, cuerpo in _reglas() if "font-family:var(--display)" in cuerpo)
+    assert ".nav a" in titulares
+    assert "font-family" not in _regla(".site-foot"), "el pie hereda la serif del cuerpo"

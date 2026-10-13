@@ -30,22 +30,54 @@ def test_nav_links_intact_in_disclosure(client):
         assert reverse(name).encode() in content
 
 
-def test_font_file_is_bundled():
-    font = settings.BASE_DIR / "static" / "fonts" / "syne.woff2"
+FUENTES = ["syne.woff2", "rdv-serif.woff2", "rdv-serif-italic.woff2"]
+
+
+@pytest.mark.parametrize("archivo", FUENTES)
+def test_font_file_is_bundled(archivo):
+    font = settings.BASE_DIR / "static" / "fonts" / archivo
     assert font.exists()
     assert font.read_bytes()[:4] == b"wOF2"  # firma woff2 válida
+
+
+def test_las_fuentes_caben_en_su_presupuesto():
+    """Decisión D4: la serif de lectura entra si el total de fuentes no pasa de 200 KB. Con
+    los dos ejes completos la serif sola pesaba 302 KB."""
+    total = sum((settings.BASE_DIR / "static" / "fonts" / f).stat().st_size for f in FUENTES)
+    assert total <= 200 * 1024, f"las fuentes pesan {total / 1024:.0f} KB"
+
+
+def test_la_licencia_de_la_serif_viaja_con_ella():
+    """La OFL exige que cada copia lleve el aviso de copyright y la licencia, y prohíbe que
+    una versión modificada use el nombre reservado. Las dos cosas quedan escritas junto a
+    los archivos."""
+    carpeta = settings.BASE_DIR / "static" / "fonts"
+    licencia = (carpeta / "OFL-source-serif-4.txt").read_text(encoding="utf-8")
+    assert "SIL OPEN FONT LICENSE Version 1.1" in licencia
+    assert "Reserved Font Name" in licencia and "Adobe" in licencia
+    aviso = (carpeta / "NOTICE.txt").read_text(encoding="utf-8")
+    for clave in (
+        "rdv-serif.woff2",
+        "rdv-serif-italic.woff2",
+        "Source Serif 4",
+        "OFL-source-serif-4.txt",
+    ):
+        assert clave in aviso, f"fonts/NOTICE.txt no menciona «{clave}»"
 
 
 def test_css_declares_self_hosted_display_font():
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
     assert "@font-face" in css
     assert "syne.woff2" in css  # url() relativa (la reescribe WhiteNoise)
+    assert "rdv-serif.woff2" in css and "rdv-serif-italic.woff2" in css
     assert "--display" in css
     assert "font-display:swap" in css
 
 
-def test_la_fuente_de_titulares_se_precarga(client):
-    """Syne se pide sin esperar a que el navegador lea el CSS y descubra que la necesita.
+def test_las_fuentes_de_la_primera_pantalla_se_precargan(client):
+    """Syne y la redonda de la serif se piden sin esperar a que el navegador lea el CSS y
+    descubra que las necesita. La cursiva no: rara vez está en la primera pantalla, y una
+    precarga que no se usa compite con lo que sí.
 
     La URL de la precarga debe ser la MISMA que resuelve el url() de la hoja (sin
     parámetro de versión); si difieren, el archivo se descarga dos veces. `crossorigin`
@@ -54,13 +86,15 @@ def test_la_fuente_de_titulares_se_precarga(client):
     """
     html = client.get(reverse("content:home")).content.decode()
     precargas = re.findall(r'<link rel="preload"[^>]*>', html)
-    assert len(precargas) == 1, f"se esperaba una precarga, hay {len(precargas)}"
-    etiqueta = precargas[0]
-    assert re.search(r'href="[^"?]*fonts/syne[^"?]*\.woff2"', etiqueta), (
-        "la precarga no es la de Syne"
-    )
-    assert 'as="font"' in etiqueta and 'type="font/woff2"' in etiqueta
-    assert "crossorigin" in etiqueta
+    assert len(precargas) == 2, f"se esperaban dos precargas, hay {len(precargas)}"
+    archivos = sorted(re.search(r'href="[^"?]*fonts/([^"?/]+)"', p).group(1) for p in precargas)
+    assert [re.sub(r"\.[0-9a-f]{12}\.", ".", a) for a in archivos] == [
+        "rdv-serif.woff2",
+        "syne.woff2",
+    ]
+    for etiqueta in precargas:
+        assert 'as="font"' in etiqueta and 'type="font/woff2"' in etiqueta
+        assert "crossorigin" in etiqueta
 
 
 def test_no_hay_fuentes_huerfanas():
@@ -128,13 +162,21 @@ def test_la_cifra_grande_esta_acotada_a_la_portada():
     acotado a la portada.
     """
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    raiz = re.search(r":root\{(.*?)\n\}", css, re.S).group(1)
+    escala = dict(re.findall(r"(--t-?\d):\s*([^;]+);", raiz))
+
+    def maximo_px(valor):
+        token = re.fullmatch(r"var\((--t-?\d)\)", valor.strip())
+        valor = escala[token.group(1)] if token else valor
+        return max(float(n) for n in re.findall(r"([\d.]+)px", valor))
+
     reglas = re.findall(r"([^{}]*strong[^{}]*)\{([^{}]*)\}", css)
     grandes = []
     for selector, cuerpo in reglas:
         if "stats" not in selector:
             continue
-        tam = re.search(r"font-size:\s*(\d+)px", cuerpo)
-        if tam and int(tam.group(1)) > 24:
+        tam = re.search(r"font-size:\s*([^;]+)", cuerpo)
+        if tam and maximo_px(tam.group(1)) > 24:
             grandes.append(selector.strip())
     assert grandes, "ya no hay ninguna cifra de portada agrandada"
     for selector in grandes:

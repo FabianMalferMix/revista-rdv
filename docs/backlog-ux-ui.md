@@ -534,6 +534,42 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   7. La regla que fija `font-family:var(--display)` por primera vez en la hoja debe seguir siendo
      el grupo de títulos, con `.article-card h3` dentro: dos pruebas de `test_ui_identity.py` leen
      esa regla.
+- **Estado:** hecho (paso 11 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **La fuente se llama «RdV Serif», no «Source Serif 4».** La OFL de Adobe reserva el nombre
+     «Source» y el subconjunto es una versión modificada (cláusula 3): se renombró en la tabla
+     `name` de los dos archivos y en el CSS. El diseño es Source Serif 4, versión 4.005. Archivos
+     `static/fonts/rdv-serif.woff2` y `rdv-serif-italic.woff2`, con la licencia completa en
+     `fonts/OFL-source-serif-4.txt` y el procedimiento en `fonts/NOTICE.txt`.
+  2. **Sin eje `opsz` y con el de peso entre 400 y 700.** Con los dos ejes enteros la serif pesaba
+     302 KB y no cabía en el presupuesto de D4. Con el tamaño óptico fijo en 20 y el peso acotado,
+     87 KB; el total de fuentes, 120 KB.
+  3. **La reserva métrica es Times, no Georgia.** Times New Roman, Liberation Serif y Tinos miden
+     igual, así que un solo ajuste vale en Windows, macOS, Linux y Android; Georgia no tiene gemela
+     métrica. Medido en el navegador sobre 22 textos del sitio: 111 % en redonda, 107,5 % en
+     negrita y 101,2 % en cursiva.
+  4. **La escala tiene diez pasos y otros valores:** 12, 13, 15, 16, 19, 22 y 26 px, y tres
+     fluidos (28-40, 34-56 y 44-104). El 13 es el del dato y el 15 el de la interfaz, que la
+     escala propuesta no tenía y sí pedían la navegación y el pie. El 16 queda para los campos:
+     por debajo, iOS amplía la página al enfocarlos. `--t5` es el título de sección
+     (`clamp(28px,3vw,40px)`, como pedía el paso 4); así ningún título queda fuera de la escala.
+  5. **Los títulos de sección cambian en todo el sitio**, no solo en portada e índices: `.subhead`
+     pasa a Syne en `--t5` salvo en el dossier, que conserva su rótulo hasta el ticket 5.1. La fila
+     cejilla más título que describe D13 llega con la portada nueva (4.3), donde se decide qué dice
+     cada cejilla. En la ficha del poema, el título sube a `--t6` para seguir por encima de
+     «Escuchar el poema».
+  6. **El poema no se centra todavía.** Tiene el cuerpo, la interlínea y la medida nuevos; el
+     salto de estrofa de 60 px necesita marcar cada verso, y eso lo hace el filtro `versos` del
+     ticket 2.4, que además decide dónde va el poema en la sala de lectura.
+  7. **Monoespaciada en la portada: 39 % de los elementos**, frente al 30 % que pedía la aceptación.
+     Por letras es el 29 %. Lo que queda son rótulos y datos, como fija D3: casi la mitad son los
+     cargos de la cinta de integrantes, que se repite entera para dar la vuelta. No se pasó el cargo
+     a otra letra para cumplir la cifra: es un dato, y el ticket 3.6 lo hace rótulo.
+     `test_la_monoespaciada_queda_en_rotulos_y_datos` fija qué reglas pueden usarla.
+  8. De paso: `body{overflow-wrap:break-word}`. Con la serif, un 11 % más ancha que Times, el correo
+     del dossier ya no cabía a 320 px y desbordaba la página.
+  Medido: la lectura usa la serif en las 21 páginas; mayúsculas en la portada, de 19 a 12; artículo
+  a 62 letras por línea; ningún `font-size` fuera de la escala salvo la base de `html` y la
+  impresión; sin scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920.
 
 #### 2.4 Sala de lectura y fichas a dos columnas
 - **Hallazgos:** ESP-9, CON-3 (paso 2), TIP-7 (sangría), CON-4, IMG-7, NAV-9 (pie de entidad).

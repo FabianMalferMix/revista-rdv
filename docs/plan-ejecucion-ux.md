@@ -8,25 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-08, al cerrar el paso 10.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, al cerrar el paso 11.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 10 de 25 pasos.** El último fusionado es el paso 10 (`ux-2-2-indices-y-rejillas`,
-PR #105). `main` está en verde, con 694 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 11 de 25 pasos.** El último fusionado es el paso 11 (`ux-2-3-tipografia`,
+PR #NUMERO_PASO_11). `main` está en verde, con 703 pruebas. No hay ninguna rama de paso abierta.
+Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 11, `ux-2-3-tipografia`** (sección 2). Antes de empezarlo, lee «Lo que espera
-respuesta del dueño», más abajo.
+**Siguiente: paso 12, `ux-2-4-lectura-y-fichas`** (sección 2). Antes de empezarlo, lee «Lo que
+espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-2-2-indices-y-rejillas … (#105)»
-gh pr list --state open                          # ninguno
+git log --oneline --merges -3                    # debe aparecer «Merge ux-2-3-tipografia … (#NUMERO_PASO_11)»
+gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 11
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 12
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -48,6 +49,8 @@ nuevo: mira su descripción y la sección 4.
 | — | `cinta-sin-icono` | #103 | Fuera el icono de pausa, por decisión del dueño |
 | 9 | `ux-2-1-reticula` | #104 | Tres carriles: lectura, ancho y sangre |
 | 10 | `ux-2-2-indices-y-rejillas` | #105 | Índices como filas, registros en miniaturas, cubiertas como objetos |
+| — | `plan-retomable` | #106 | Este plan, autocontenido; `tools/ux/preparar-entorno.sh` y ayudantes |
+| 11 | `ux-2-3-tipografia` | #NUMERO_PASO_11 | Serif propia, escala de diez tamaños, monoespaciada solo en rótulos y datos |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -57,18 +60,21 @@ ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se c
 Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 `tools/ux/linea-base/`.
 
-| Medida | Antes | Tras el paso 10 |
+| Medida | Antes | Tras el paso 11 |
 |---|---|---|
 | Ancho que ocupa el texto en la portada | 53 % | 97 % |
 | Lo mismo a 1920 px | 40 % | 100 % |
 | Lo mismo en Poemas, Textos y Trayectoria | 47 a 51 % | 92 % |
 | Lo mismo en Integrantes | 53 % | 91 % |
 | Título de un índice | 12 px | 56 px |
-| Letras por línea en un artículo | 102 | 69 |
+| Letras por línea en un artículo | 102 | 62 |
 | Textos de menos de 12 px en la portada | 29 | 0 |
 | Imágenes deformadas en la portada | 3 | 0 |
 | Cubierta en Publicaciones | 180 px, deformada | 421 px |
-| Alto de la portada en un teléfono | 6512 px | 4145 px |
+| Alto de la portada en un teléfono | 6512 px | 4297 px |
+| Elementos de la portada en monoespaciada | 72 % | 39 % |
+| Elementos de la portada en mayúsculas | 30 | 12 |
+| Tamaños de letra distintos en la hoja | 25 | 10, en una escala |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -76,18 +82,18 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| La serif de lectura es la del sistema; la monoespaciada domina (69 % de los elementos de la portada) | paso 11 |
-| Navegación de cuatro enlaces en mayúsculas monoespaciadas | pasos 11 y 18 |
 | Poema, artículo y fichas apilados en el carril estrecho | paso 12 |
+| El poema sin salto de estrofa propio, alineado a la izquierda | paso 12 |
 | En la ficha de integrante, su nombre repetido en cada fila | paso 12 |
 | Cajas blancas con borde: fecha de agenda, próxima actividad, contacto del dossier | paso 13 |
 | Integrantes con avatar circular de 72 px | paso 14 |
 | Placa azul del reproductor sin imagen, a la izquierda de media pantalla vacía | pasos 15 y 20 |
 | Marca como sello magenta, sin icono de pestaña | paso 17 |
-| Buscador siempre visible en la cabecera | paso 18 |
+| Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
 | Titular de la portada solo a la izquierda, sin imagen | paso 19 |
-| En la portada, tres cubiertas en una rejilla de cuatro | paso 20 |
-| Pie en monoespaciada sobre papel | paso 21 |
+| Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
+| Pie sobre papel, sin la identidad del colectivo | paso 21 |
+| Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
 
 ### Lo que ha decidido el dueño del sitio
 
@@ -99,63 +105,80 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   vuelve a proponer salvo que él lo pida.
 - **Quiere ver cada paso al terminarlo.** Después de fusionar un paso hay que **parar** y decirle
   dónde mirar. No se encadenan pasos hasta el siguiente punto de control.
+- **Revisión del paso 10 (2026-10-13):** sí a las cubiertas grandes con tres títulos, sí a la
+  trayectoria sin cejillas magenta y sí a los registros sin reproductor en el índice. No quiso
+  ajustar el umbral de dos columnas de la agenda y la galería («no es necesario»).
+- **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
+  Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
+  pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
 - El material visual es genérico y lo reemplazará él desde el panel (`docs/contenido-visual.md`).
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 10 está fusionado y aún no ha dicho que lo vio.** Antes de abrir el paso 11,
-   pregúntale. Si pide un ajuste, va en una rama propia antes del paso 11, como se hizo con
-   `cinta-sin-icono`. Qué mirar: `/poemas/`, `/textos/`, `/trayectoria/`, `/prensa/`,
-   `/registros/`, `/publicaciones/`, `/galeria/` y `/agenda/`.
-2. Cuatro decisiones del paso 10 las tomó quien lo ejecutó y conviene que las confirme:
-   - con tres títulos, las cubiertas de `/publicaciones/` van a 421 px y ocupan toda la fila;
-   - en `/poemas/` el primer verso tiene columna propia en pantalla ancha;
-   - `/trayectoria/` ya no lleva cejillas magenta: el tipo va a la derecha, en gris;
-   - `/registros/` ya no reproduce nada: cada tarjeta lleva a la ficha.
+1. **El paso 11 está fusionado y aún no ha dicho que lo vio.** Antes de abrir el paso 12,
+   pregúntale. Si pide un ajuste, va en una rama propia antes del paso 12. Qué mirar:
+   `/articulo/resena-la-casa-vacia/` y `/poema/umbral/` para la lectura; la portada para los
+   títulos de sección y la navegación; el pie de cualquier página.
+2. Decisiones del paso 11 que tomó quien lo ejecutó y conviene que confirme:
+   - la familia de lectura se llama «RdV Serif» porque la licencia no deja llamar «Source» a una
+     versión recortada; el diseño es Source Serif 4;
+   - la navegación pasa a la tipografía de titulares, en caja de frase;
+   - los títulos de sección crecen a 28-40 px en todo el sitio salvo el dossier;
+   - en la portada la monoespaciada queda en el 39 % de los elementos y no en el 30 % pedido,
+     porque los cargos de la cinta son datos (ver la nota Estado del ticket 2.3).
 3. **Antes del paso 18** tiene que avisar al colectivo de la decisión D9: la barra pasa de cuatro
    enlaces a cinco más «Dossier», y prensa y aliados vuelven a la portada como una línea.
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 11, `ux-2-3-tipografia`
+## 2. Qué sigue: paso 12, `ux-2-4-lectura-y-fichas`
 
-Ticket 2.3 del backlog, decisiones D3 y D4. Lee el ticket entero, con su **Nota de entrada**.
+Ticket 2.4 del backlog. Lee el ticket entero, con su **Nota de entrada**.
 
-**Qué se hace.** La serif de lectura pasa a ser Source Serif 4, autoalojada, con reserva métrica.
-Los tamaños sueltos de la hoja pasan a una escala de tokens. La monoespaciada se queda en dos
-papeles, cejilla y dato, y sale de la navegación, el pie y las cifras. Los títulos de sección
-pasan de 12 px a cejilla más título en Syne. El poema gana cuerpo, interlínea y medida propios.
+**Qué se hace.** Poema y artículo pasan al carril ancho como «sala de lectura»: una columna ancla
+estrecha y pegajosa con la cejilla, el título, la autoría, la fecha y las etiquetas, y el cuerpo a
+su lado. El poema se marca verso a verso con el filtro `versos` (en `apps/content/templatetags/versos.py`,
+el módulo que ya existe), que escapa cada línea y le da sangría francesa; con eso llega el salto de
+estrofa propio. El artículo enseña su imagen de portada cuando la tiene. Las fichas de integrante,
+publicación y evento pasan a dos columnas, con la imagen a la izquierda. Cada ficha termina con un
+pie de entidad que lleva al índice y a lo relacionado.
 
-**Qué hace falta.** Red para descargar la fuente de la publicación oficial de Adobe en GitHub.
-Un entorno local con `fonttools` y `brotli` para subconjuntarla; no entran en `requirements`.
+**Qué hace falta.** Nada fuera del repositorio. El retrato 4:5 de la ficha de integrante es del
+paso 14: aquí solo se le hace sitio.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Familia del párrafo en todas las páginas | serif del sistema | «Source Serif 4» |
-| Elementos de la portada en monoespaciada | 69 % | 30 % o menos |
-| Elementos de la portada en mayúsculas | 19 | 15 o menos |
-| Peso total de `static/fonts/*.woff2` | 35 KB | 200 KB o menos |
-| Letras por línea en el artículo | 69 | entre 60 y 70 |
-| Título de sección frente al cuerpo | 12 px frente a 17,6 | mayor que el cuerpo |
-| `font-size` fuera de tokens | muchos | solo rótulo y dato |
-| Scroll horizontal a 320, 390, 768, 1024, 1440 y 1920 | no hay | no hay |
+| Ancho que ocupa el texto a 1920 en poema y artículo | 61 % | 60 % o más |
+| Letras por línea en el artículo | 62 | entre 60 y 75 |
+| Enlaces internos distintos en `<main>` de cada ficha | poema 1, publicación 1, registro 3, evento 5, artículo 5, integrante 6 | 4 o más en todas |
+| El poema conserva versos, sangrías y espacios | sí, con `pre-wrap` | sí: el `innerText` del cuerpo no cambia |
+| `<script>` en el cuerpo de un poema | se escapa | sigue escapándose con el filtro nuevo |
+| Consultas de la ficha de artículo | 7 | 12 o menos |
+| Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
-**Pruebas que cambian a propósito.** `tests/test_ui_identity.py` (fuentes empaquetadas y sin
-huérfanas, ahora tres archivos), `tests/test_vendored_assets.py` (licencia de la fuente nueva),
-`tests/test_css_sistema.py` (`MAYUSCULAS_PENDIENTES` queda vacío; existen la escala y la familia).
+El 61 % de hoy ya pasa la meta, pero por la cabecera y el pie, que ocupan el carril ancho: el
+texto de lectura sigue en 780 px. Lo que se juzga es la sala de lectura, no la cifra.
+
+**Pruebas que cambian a propósito.** `tests/test_poems.py` (el filtro `versos` escapa y conserva
+los saltos), `tests/test_poem_recording_visibility.py` sigue, `test_article_detail_query_budget`
+sigue en 12 o menos con `select_related("cover_image")`.
 
 **Cuidados.**
-- El peso 800 de Syne es un corte extendido, un 44 % más ancho que el 700. No se usa en este
-  paso: se decide en el 19, midiendo.
-- `--medida:58ch` se calibró con una serif más estrecha. Con la nueva hay que volver a medir.
-- La primera regla de la hoja que fija `font-family:var(--display)` debe seguir siendo el grupo
-  de títulos, con `.article-card h3` dentro: dos pruebas leen esa regla.
-- Cambia la tipografía de todo el sitio: recaptura las 21 páginas, no una muestra.
+- Las cuatro fichas viven hoy en el carril de lectura. Para usar el ancho, la página pide
+  `{% block lienzo %}lienzo--ancho{% endblock %}`; los párrafos siguen limitados por `--medida`.
+- El ancho de la ventana del dueño (951 px) deja 875 px de carril: la columna ancla más el cuerpo
+  a 58 `ch` no caben lado a lado ahí. Decide el umbral midiendo, y dile qué verá él.
+- El enlace al registro desde el poema debe ir a la ficha del registro (`/registro/<slug>/`), no
+  a YouTube: hoy enlaza fuera.
+- En la ficha de integrante, las filas repiten el nombre de la persona: el ticket propone un
+  parámetro en las parciales de fila para omitir la firma propia.
 
-**Qué enseñarle al dueño al terminar.** `/articulo/resena-la-casa-vacia/` y `/poema/umbral/`
-para la lectura, la portada para los títulos de sección y la cabecera para la navegación.
+**Qué enseñarle al dueño al terminar.** `/poema/umbral/`, `/articulo/resena-la-casa-vacia/`,
+`/integrante/fernanda-soto/`, `/publicacion/cuadernos-del-ruido/` y
+`/evento/recital-nuevas-voces-lanzamiento/`, a su ancho de 951 px y, si cambia algo, al 80 %.
+Es el último paso antes del **punto de control B**.
 
 ## 3. Los pasos
 
@@ -175,9 +198,9 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
 - ◆ **Punto de control A.** Hecho el 2026-10-08 (ver sección 1).
 - [x] **9. `ux-2-1-reticula`.** Ticket 2.1 (D7).
 - [x] **10. `ux-2-2-indices-y-rejillas`.** Ticket 2.2.
-- [ ] **11. `ux-2-3-tipografia`.** Ticket 2.3 (D3, D4). Detalle en la sección 2.
+- [x] **11. `ux-2-3-tipografia`.** Ticket 2.3 (D3, D4).
 - [ ] **12. `ux-2-4-lectura-y-fichas`.** Ticket 2.4: poema y artículo con columna ancla, fichas a
-  dos columnas, pie de entidad.
+  dos columnas, pie de entidad. Detalle en la sección 2.
   Cierra cuando: a 1920 el texto ocupa el 60 % o más en poema y artículo; el artículo queda entre
   60 y 75 letras por línea; cada ficha tiene cuatro enlaces internos o más; el poema conserva
   versos, sangrías y espacios (comparar el `innerText` del cuerpo antes y después).
@@ -294,7 +317,7 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
    ```bash
    node tools/ux/capture.js tools/ux/out/<rama>                                  # las 21 páginas
    python3 tools/ux/metrics.py comparar tools/ux/out/<paso-anterior> tools/ux/out/<rama>
-   for a in 320 768 1024 1920; do node tools/ux/ver.js tools/ux/out/<rama> $a 900 <rutas…>; done
+   for a in 320 768 951 1024 1920; do node tools/ux/ver.js tools/ux/out/<rama> $a 900 <rutas…>; done
    python3 tools/ux/smoke.py                                                     # todas con 200
    ```
 
@@ -324,9 +347,11 @@ Es el flujo de §0 del backlog, con los comandos que se han usado en los diez pr
 
 11. **Parar y enseñar.** Dile al dueño qué páginas abrir, con la URL literal y las palabras que
     verá en pantalla, qué cambió, qué quedó a medias a propósito y qué decisiones tomaste por él.
+    Descríbele lo que verá **a 951 px**, su ancho: si algo solo aparece en pantallas más anchas,
+    díselo y dale el zoom con que verlo.
 
 **Hecho quiere decir:** `ruff` y la suite en verde; CI verde en el PR y en `main`; todas las
-rutas con 200; sin scroll horizontal a 320, 390, 1440 y 1920; enlace de salto, foco visible y
+rutas con 200; sin scroll horizontal a 320, 390, 951, 1440 y 1920; enlace de salto, foco visible y
 regiones intactos; los criterios del ticket medidos, no estimados; la documentación al día.
 
 ## 5. Reglas que no se rompen
@@ -421,6 +446,10 @@ la agenda, `article-card` cinco veces como mucho en la portada, la primera
 clase en `backend/tests/`.
 
 **Sobre medir.**
+- El dueño revisa a **951 px**, no a 1440. Lo que se diseña para pantallas anchas hay que verlo
+  también a ese ancho: en el paso 10 le describimos cosas que su pantalla no enseñaba.
+- La columna `parrafo` de `capture.js` toma el primer `<p>` de `<main>`, que en casi todas las
+  páginas es la cejilla. Para saber en qué letra se lee, mira los párrafos de lectura.
 - La columna `razon` de `tools/ux` mide hasta dónde llega el **texto**. Una página de imágenes
   (galería, publicaciones, registros) puede ocupar todo el carril y marcar 0,75.
 - Un `.py` cambiado y restaurado en segundos puede dejar al servidor de desarrollo con el código
@@ -444,6 +473,11 @@ clase en `backend/tests/`.
   `:has()`, para que tres cosas no se arrinconen a la izquierda de cinco columnas.
 - **Syne 800 es un corte extendido** y no se usa. **La cinta no lleva control de pausa.**
 - `responsive_img` emite un texto alternativo vacío con `decorativa=True`, no con `alt=""`.
+- **Tamaños de letra:** solo pasos de la escala (`--t-2` a `--t7`); una prueba lo vigila. La
+  monoespaciada, solo en las reglas que lista `MONO_PERMITIDA` en `tests/test_css_sistema.py`.
+- **Fuentes de terceros:** mira si la licencia reserva un nombre. Source Serif 4 reserva
+  «Source»: el subconjunto se llama «RdV Serif». Para trabajar con `fonttools` sin instalar nada
+  en la máquina, un contenedor desechable de `python:3.12-slim` basta (ver `fonts/NOTICE.txt`).
 
 ## 8. Al cerrar cada paso, este documento se actualiza
 
