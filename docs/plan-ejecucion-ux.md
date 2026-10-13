@@ -8,27 +8,25 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras los ajustes del paso 13.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 14.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 13 de 25 pasos.** El último fusionado es el paso 13 (`ux-3a-superficies-y-amarillo`,
-PR #117), con sus ajustes tras la revisión del dueño (`cifras-destacado-y-pie`, PR #118).
-`main` está en verde, con 763 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 14 de 25 pasos.** El último fusionado es el paso 14 (`ux-3b-duotono-y-retratos`,
+PR #119). `main` está en verde, con 767 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 14, `ux-3b-duotono-y-retratos`** (sección 2), cuando el dueño haya visto los
-ajustes del 13. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 15, `ux-3c-reproductor`** (sección 2), cuando el dueño haya visto el 14. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge cifras-destacado-y-pie … (#118)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-3b-duotono-y-retratos … (#119)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 14
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 15
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -56,6 +54,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `sala-ancla-sin-solape` | #116 | La columna fija del artículo y del poema ya no se monta sobre las salidas |
 | 13 | `ux-3a-superficies-y-amarillo` | #117 | Hoja clara y tinta, pie en tinta, firma por territorio, cifras en amarillo, sello de convocatoria |
 | — | `cifras-destacado-y-pie` | #118 | Lo que eligió el dueño: cifras con trazo de marcador, destacado sobre el papel a dos columnas, pie compacto y siempre abajo |
+| 14 | `ux-3b-duotono-y-retratos` | #119 | Retratos 4:5 a todo el ancho de la tarjeta, duotono azul en listados y galería, monograma |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -78,13 +77,14 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Cubierta en Publicaciones | 180 px, deformada | 421 px |
 | Alto de la portada en un teléfono | 6512 px | 4297 px |
 | Elementos de la portada en monoespaciada | 72 % | 39 % |
-| Elementos de la portada en mayúsculas | 30 | 12 |
+| Elementos de la portada en mayúsculas | 30 | 18 (12 tras el paso 11; el rol de cada integrante pasó a rótulo en el 14) |
 | Tamaños de letra distintos en la hoja | 25 | 10, en una escala |
 | Ancho que ocupa el texto en un artículo a 1920 px | 38 % | 73 % |
 | Enlaces internos en la ficha de un poema | 1 | 5 |
 | Cajas blancas con borde sobre el papel (21 páginas) | 5 | 0 |
 | Superficies de tinta | 0 | 1 por página: el pie |
 | Alto del pie a 951 px, y desde 1100 | 435 tras el paso 13 | 320 y 236, siempre abajo |
+| Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 76 % y 73 % (63 % de media a 390) |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -93,7 +93,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Integrantes con avatar circular de 72 px | paso 14 |
 | Placa azul del reproductor sin imagen | paso 15 |
 | Marca como sello magenta, sin icono de pestaña | paso 17 |
 | Navegación de cuatro enlaces y buscador siempre visible | paso 18 |
@@ -133,6 +132,7 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   papel a dos columnas. Del pie dijo que pesaba por alto y propuso usar más ancho; también señaló
   el papel que asomaba bajo el pie en una página corta. Todo quedó en `cifras-destacado-y-pie`.
   Quiere **conservar la convocatoria de prueba** en la base de desarrollo.
+- **Ajustes del paso 13 (2026-10-13):** los vio y pidió seguir con el paso 14.
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
   Cada paso se mide y se le describe también a 951 px (sección 4); lo que solo aparece en
   pantallas más anchas se le dice, con el zoom con que verlo (90 % ≈ 1057 px, 80 % ≈ 1189 px).
@@ -140,11 +140,16 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **Los ajustes del paso 13 están fusionados y aún no los ha visto.** Qué mirar, a 951 px:
-   - la portada: las cifras con el trazo amarillo y, debajo, «Registro destacado» sobre el papel,
-     con el reproductor a la izquierda y la ficha a la derecha;
-   - el pie de cualquier página, más bajo, y `/poemas/`, donde ahora llega al borde inferior.
-   Si los aprueba, se abre el paso 14.
+1. **El paso 14 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
+   - `/integrantes/`: retratos 4:5 a una tinta, en azul; al señalar uno se ve el original;
+   - la portada: la cinta de Integrantes con los retratos grandes; al señalarla se detiene y
+     enseña los originales;
+   - `/galeria/`: las hojas de contactos en azul; al señalar un álbum, el original;
+   - una ficha de integrante, por ejemplo `/integrante/fernanda-soto/`, que va sin tratamiento.
+   La tinta del duotono la elegí yo, el azul del cartel. Se le enseñó un tablero con el azul
+   hondo, el magenta y sin tratamiento; si prefiere otra, es un cambio de una regla
+   (`.riso-duo`) y de la prueba de la tinta. En el punto de control C se le pregunta en todo
+   caso. Si lo aprueba, se abre el paso 15.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -153,70 +158,60 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 14, `ux-3b-duotono-y-retratos`
+## 2. Qué sigue: paso 15, `ux-3c-reproductor`
 
-Tickets 3.3 y 3.6 del backlog. Lee los dos, con la **Nota de entrada** del 3.6.
+Ticket 3.4 del backlog, decisión D10. Lee el ticket con sus dos **Notas de entrada**.
 
-**Qué se hace.** Dos cambios en las imágenes:
-- **Fotos a dos tintas.** Las fotos de integrantes y de eventos en los listados y en la cinta
-  pasan a duotono risográfico: la foto en gris, multiplicada sobre magenta o sobre azul. Al
-  señalarla o enfocarla se ve el original.
-- **Retratos 4:5.** Los retratos dejan el círculo de 72 px y pasan a 4:5, a todo el ancho de la
-  tarjeta. Sin foto, llevan un monograma de dos letras en Syne sobre la hoja clara. Toda la
-  tarjeta es el enlace.
+**Qué se hace.** La placa azul del reproductor deja de estar vacía:
+- **Con póster**, el póster cubre la placa.
+- **Sin póster**, la placa lleva una carátula tipográfica: el título en Syne, en papel sobre el
+  azul, y una línea de datos en rótulo («Video · Recital · 2026»).
+- **El botón «Reproducir»** pasa a un bloque blanco cuadrado de 64 px abajo a la izquierda, con
+  el aviso de privacidad al lado. Es la misma marca que la miniatura del índice de registros,
+  y cuadrado porque la hoja ya no admite círculos.
+- **Al pulsar**, el iframe sustituye a la placa, como hoy: `embeds.js` vacía el contenedor.
 
-No llevan tratamiento las cubiertas, los afiches de terceros, los logos de aliados ni las fichas
-(integrante, evento): ahí se ve la imagen original.
-
-**Qué hace falta.** Nada fuera del repositorio. Las fotos de desarrollo son genéricas y el
-tratamiento se aplica igual a las reales.
+**Qué hace falta.** Nada fuera del repositorio. Los dos registros de desarrollo tienen póster:
+la miniatura del índice lo enseña y la placa no. Para ver el caso sin póster hace falta un
+registro sin él. Créalo con el prefijo `zz-medicion-` y bórralo en la misma orden.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Tintas de duotono en una misma pantalla | 0: no hay duotono | 1: magenta o azul, no las dos |
-| Imagen tratada al señalarla o enfocarla | (no hay ninguna) | se ve el original |
-| Cubiertas, afiches de terceros, logos y fichas con tratamiento | 0 | 0 |
-| Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 60 % o más |
-| Reglas con `border-radius:50%` en la hoja | 1 (`.avatar`) | 0 |
-| Textos bajo AA, cajas blancas, bandas de tinta (`tools/ux/superficies.js`) | 0, 0 y 1 (el pie) | igual |
+| Placas azules vacías | 2: el destacado de la portada (488 × 275 a 951) y la ficha del registro (780 × 439) | 0 |
+| Texto sobre la placa | 4,84:1, el aviso en blanco | 4,5:1 o más, también sobre el póster |
+| Foco sobre la placa | blanco, 4,84:1 | 3:1 o más |
+| Al pulsar «Reproducir» | el iframe sustituye a la placa | igual, y no se conecta con nadie antes |
+| Textos bajo AA, cajas blancas, superficies de tinta (`superficies.js`) | 0, 0 y 1 (el pie) | igual |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
-El área del retrato se mide en la página pintada: el área de la imagen (o del monograma) dividida
-por el área de `.member-card`, en las doce tarjetas.
-
 **Pruebas que cambian a propósito.**
-- `tests/test_marcadores.py` fija el marcado del monograma:
-  `<span class="avatar avatar-fallback" aria-hidden="true">RC</span>`. Si cambia la clase, se
-  actualiza en el mismo PR.
-- `tests/test_cinta_integrantes.py` tiene que seguir en verde: la cinta no añade enlaces por
-  tarjeta.
-- En `tests/test_css_sistema.py`, la lista `BLANCO_PERMITIDO` incluye `.avatar`, que hoy pinta
-  blanco. Si el retrato deja de hacerlo, sale de la lista.
-- `tests/test_security_csp.py` sigue igual. El grano con `feTurbulence` solo entra si `img-src`
-  ya admite `data:`; si no, se omite. La CSP no se relaja.
+- `tests/test_embed_consent.py` tiene que seguir en verde: el iframe no existe hasta el clic. El
+  póster es una imagen propia (`MediaAsset`), nunca la miniatura de YouTube, que conectaría con
+  el tercero antes del clic.
+- En `tests/test_css_sistema.py`:
+  - `test_todo_boton_comparte_una_receta`: `.embed-play` sigue en la receta común del botón,
+    aunque cambie de forma.
+  - `test_el_foco_se_ve_sobre_la_placa_del_reproductor`: sigue en pie.
+  - `CON_DUOTONO`: si el póster lleva duotono, se añade `_player.html`.
 
 **Cuidados.**
-- **El contenedor necesita `isolation:isolate`.** Sin él, `mix-blend-mode:multiply` mezcla la
-  foto con lo que haya detrás: la hoja clara de la banda de integrantes o la tinta del pie.
-- Al señalar se quitan a la vez `filter` y `mix-blend-mode`; si solo se quita uno, el original
-  sale teñido.
-- La cinta de integrantes anima con `transform`, lleva una máscara en los bordes y repite las
-  tarjetas en una copia `aria-hidden`. El tratamiento no puede romper ninguna de las tres cosas.
-- **Una tinta por pantalla.** La primera pantalla de la portada ya tiene el trazo amarillo de
-  las cifras y la placa azul del reproductor, que va sobre el papel. Elige el magenta o el azul
-  según lo que comparta pantalla, y mídelo con un guion que recorra la página a 951 y a 1440.
-- «Toda la tarjeta es enlace» ya está escrito en las filas y en las tarjetas de registro: una capa
-  `::after` del enlace del título, y `z-index:1` en los enlaces secundarios.
-- **A 951 px**, el ancho del dueño, la rejilla de integrantes tiene tres columnas de unos 276 px,
-  así que un retrato 4:5 mide unos 276 × 345.
+- **Duotono azul dentro de la placa azul: tinta sobre tinta.** Prueba antes con
+  `tools/ux/variantes.js` el póster tal cual, con duotono y con una capa que asegure el
+  contraste del aviso.
+- En la portada la placa va a dos columnas: mide 488 × 275 a 951. La carátula tipográfica tiene
+  que caber ahí, no solo en la ficha (780 × 439).
+- La miniatura del índice (`.rec-miniatura`, `.rec-caratula`) ya tiene carátula y marca de
+  reproducción. Unifica con ella; no inventes una segunda.
+- El dueño descartó los planos de color que se imponen. La placa azul sí la aceptó en el
+  destacado, pero no la agrandes ni le pongas marco.
 
 **Qué enseñarle al dueño al terminar.**
-- `/integrantes/`: retratos 4:5 a dos tintas; que señale uno para ver el original.
-- La cinta de la portada.
-- La agenda y la galería, si llevan fotos de evento.
-- Una ficha de integrante, que va sin tratamiento.
+- La portada, con el destacado y su póster o carátula.
+- `/registro/recital-nuevas-voces/`, con la placa grande.
+- `/registros/`, si cambió la miniatura.
+- Que pulse «Reproducir», para comprobar que solo entonces se conecta con YouTube.
 
 ## 3. Los pasos
 
@@ -250,12 +245,13 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Cierra cuando: dos bandas de tinta por página como mucho; ningún texto sobre tinta por debajo de
   4,5:1; no quedan cajas blancas con borde de 1 px sobre el papel; el amarillo aparece en un solo
   plano por pantalla.
-- [ ] **14. `ux-3b-duotono-y-retratos`.** Tickets 3.3 y 3.6: tratamiento a dos tintas, retratos
-  4:5 y monograma. Detalle en la sección 2.
+- [x] **14. `ux-3b-duotono-y-retratos`.** Tickets 3.3 y 3.6: tratamiento a dos tintas, retratos
+  4:5 y monograma.
   Cierra cuando: una tinta por pantalla; al señalar una imagen se ve el original; las cubiertas no
   llevan tratamiento; en `/integrantes/` el rostro ocupa el 60 % o más de la tarjeta; no queda
   `border-radius:50%` en la hoja.
 - [ ] **15. `ux-3c-reproductor`.** Ticket 3.4 (D10): póster o carátula tipográfica en la placa.
+  Detalle en la sección 2.
   Cierra cuando: ninguna placa azul vacía en el sitio; el texto sobre la placa da 4,5:1 o más y
   el foco 3:1; al pulsar «Reproducir» el iframe sustituye a la placa;
   `tests/test_embed_consent.py` sigue en verde.
@@ -491,6 +487,11 @@ la agenda, `article-card` cinco veces como mucho en la portada, la primera
 `<span class="kicker">` del archivo de textos. Antes de añadir una clase a un elemento, busca su
 clase en `backend/tests/`.
 
+**Sobre editar con guiones.** Una sustitución por posición (`s.index(...)`) toma la primera
+aparición del texto, que puede estar en otra parte del archivo. En el paso 14 eso borró siete
+pruebas de un tirón, y solo lo delató `mutar.sh` (salida 2: la prueba no llegó a ejecutarse).
+Ancla en un texto que no se repita y mira `git diff --stat` después de cada guion.
+
 **Sobre medir.**
 - El dueño revisa a **951 px**, no a 1440. Lo que se diseña para pantallas anchas hay que verlo
   también a ese ancho: en el paso 10 le describimos cosas que su pantalla no enseñaba.
@@ -531,6 +532,10 @@ clase en `backend/tests/`.
   `TINTA_PERMITIDA`); y el blanco, solo para campos y objetos (`BLANCO_PERMITIDO`). El amarillo
   es un trazo de marcador detrás de las cifras de la portada, nunca un plano ni un texto. Sobre
   la tinta, el texto va en papel, los datos en `--muted-on-ink` y el acento en `--accent-on-ink`.
+- **Duotono.** Una envoltura `<span class="riso-duo">` por imagen (una `<img>` no admite
+  `::after`): la tinta de fondo, la foto en gris con `screen` y el papel en una capa
+  `multiply`. Una sola tinta en todo el sitio, el azul del cartel. Solo en los listados
+  (`CON_DUOTONO`), y al señalar o enfocar, el original.
 - **El pie llega siempre abajo.** `body` es una columna flexible de al menos `100dvh` y el lienzo
   crece (`flex:1 0 auto`) sin separar sus filas (`align-content:start`). Un hijo de `body` con
   `margin-inline:auto` necesita `width:100%`, o en la columna flexible se encoge a su contenido.

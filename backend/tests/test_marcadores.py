@@ -26,12 +26,13 @@ def test_iniciales(nombre, esperado):
 
 
 def test_quien_no_tiene_retrato_lleva_su_monograma(client):
-    """Una sola inicial en un círculo es el avatar por defecto de cualquier aplicación."""
+    """Una sola inicial en un círculo es el avatar por defecto de cualquier aplicación. El
+    monograma va en la misma caja 4:5 que el retrato (ticket 3.6)."""
     Contributor.objects.create(
         slug="rocio", display_name="Rocío Carrasco", is_member=True, active=True
     )
     html = client.get(reverse("people:member_index")).content.decode()
-    assert '<span class="avatar avatar-fallback" aria-hidden="true">RC</span>' in html
+    assert '<span class="retrato monograma" aria-hidden="true">RC</span>' in html
 
 
 def test_una_publicacion_sin_cubierta_ensena_su_titulo(client):

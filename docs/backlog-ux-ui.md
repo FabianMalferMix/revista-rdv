@@ -768,6 +768,33 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Aceptación:** una tinta por pantalla (magenta o azul); hover revela el original; las cubiertas
   no llevan tratamiento.
 - **Tests:** `test_css_sistema.py`: `.riso-duo` existe; `tests/test_security_csp.py` sigue.
+- **Estado:** hecho (paso 14 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **Una sola tinta, el azul del cartel** (`--caratula`), y no magenta con una variante azul.
+     Es la tinta que D10 nombra para el duotono y la de la placa del reproductor. Además es la
+     más suave: tras el paso 13 el dueño rechazó los planos de color que se imponen. Así,
+     «una tinta por pantalla» se cumple en todo el sitio. No hay `.riso-duo--azul`.
+  2. **Un duotono de verdad, de la tinta al papel**, y no la foto multiplicada sobre la tinta.
+     Esa receta solo cambiaba los negros: dejaba los medios tonos grises y apagados (se
+     probó). Ahora la tinta va de fondo, la foto en gris se aclara encima (`screen`) y el papel
+     se multiplica por arriba en una capa `::after`. Cada gris cae entre la tinta y el papel,
+     como una impresión a una tinta. Las luces son el papel que rodea a la foto (la hoja
+     clara, dentro de una banda), así que la foto no tiene marco: está impresa en la página.
+  3. **El tratamiento va en una envoltura** `<span class="riso-duo">` alrededor de cada
+     imagen: una `<img>` no admite la capa `::after`. En la hoja de contactos va una por
+     foto, para que los huecos entre fotos queden en papel y no en tinta.
+  4. **Al señalar o enfocar** el enlace se ve el original: se quitan a la vez el filtro y la
+     mezcla, y la capa del papel pasa a transparente. En la cinta, señalarla (que además la
+     detiene) enseña los originales de todas las tarjetas.
+  5. **Dónde va:** los retratos de los listados y la cinta, y las fotos de la galería. Una
+     lista cerrada en la prueba (`CON_DUOTONO`) impide que llegue a cubiertas, afiches, logos
+     o fichas. El póster del reproductor, que aún no existe, queda para el 3.4.
+  6. **Sin grano.** La CSP lo admitiría (`img-src 'self' data:`), pero el ticket lo deja
+     como opcional y no se añadió.
+  Medido en las páginas con duotono, a 951 y 1440 px: como mucho una tinta por pantalla. Al
+  señalar la reseña de una tarjeta, al enfocarla con el teclado y al señalar un álbum, la
+  foto sale sin filtro ni mezcla. En `/publicaciones/`, una publicación, una ficha de
+  integrante, un evento (13 fotos), `/aliados/` y un artículo no hay ninguna imagen con
+  filtro.
 
 #### 3.4 Reproductor: póster o carátula tipográfica, botón y foco (D10)
 - **Hallazgos:** IMG-2, COL-3, COM-4, POR-7, CON-5.
@@ -795,6 +822,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `.player-consent .meta, .player-consent .meta a{color:#fff}`: el gris de `.meta` no se lee
   sobre el azul. Si la placa cambia de marcado, su texto tiene que seguir en blanco:
   `node tools/ux/superficies.js 951 900 home` lo mide (columna `<AA`).
+  **Nota de entrada** (tras el paso 14): el duotono no es una clase de la imagen sino una
+  envoltura: `<span class="riso-duo">{% responsive_img … %}</span>`, y la tinta ya es la azul,
+  así que `riso-duo--azul` no existe. Dentro de la placa azul el duotono azul se perdería
+  (tinta sobre tinta): para el póster, prueba antes cómo se ve con `tools/ux/variantes.js`.
+  Si el póster lleva duotono, añade `_player.html` a `CON_DUOTONO` en
+  `tests/test_css_sistema.py`.
 
 #### 3.5 Las imágenes del modelo llegan a pantalla
 - **Hallazgos:** IMG-7, IMG-8, IMG-9, IMG-12.
@@ -818,6 +851,11 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   identidad aplicada: el material de prueba lo pone `seed_material_generico`, que ya da afiches,
   cubiertas, carátulas, logos e imágenes de texto a todo lo sembrado.
 
+- **Nota de entrada** (tras el paso 14): el duotono va solo en los listados (retratos y
+  galería) y una lista cerrada en la prueba (`CON_DUOTONO`) lo vigila. Si una imagen nueva
+  entra en un listado (la miniatura de un texto, por ejemplo), decide si lleva duotono. Los
+  afiches de terceros y los logos de aliados nunca lo llevan.
+
 #### 3.6 Retratos 4:5 y monograma
 - **Hallazgos:** IMG-4, COL-5.
 - **Archivos:** `_member_card.html`, `_member_card_cinta.html`, `member_detail.html`,
@@ -833,6 +871,33 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   actualiza en el mismo PR. El patrón de «toda la tarjeta es enlace» ya está escrito para las filas
   y las tarjetas de registro: una capa `::after` del enlace del título y `z-index:1` en los
   secundarios. Reutilízalo tal cual.
+- **Estado:** hecho (paso 14 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **Las clases cambian de nombre**, porque el círculo desaparece: `.avatar` pasa a
+     `.retrato` y `.avatar-fallback` a `.monograma`
+     (`<span class="retrato monograma" aria-hidden="true">RC</span>`). Se actualizaron
+     `test_marcadores.py` y `test_seed_photos.py`.
+  2. **El retrato llena la tarjeta**:
+     - en la rejilla, 276 × 345 px a 951 (tres columnas), 245 × 306 a 1440 (cinco) y 220 × 275
+       a 1920 (seis);
+     - en el teléfono, dos columnas de 163 × 204, porque una columna de 350 px hacía de cada
+       tarjeta una pantalla;
+     - en la cinta, el ancho de su tarjeta: 230 × 288 en modo animado, cinco visibles en el
+       carril ancho (D12), y no 160 × 200;
+     - en la ficha no cambia: ya era 4:5 desde el paso 12.
+  3. **Nombre en Syne a `--t3`** (22 px) desde 720 px y a `--t2` en el teléfono: a 22 px, en
+     una columna de 163 px, los nombres partían en dos líneas. El rol pasa a la receta de
+     rótulo. Por eso la portada lleva 18 elementos en mayúsculas en vez de 12: los roles de
+     la cinta.
+  4. **Toda la tarjeta es el enlace**, con la capa `::after` del enlace. La cinta sigue sin
+     enlaces por tarjeta.
+  5. **El monograma** va sobre la hoja clara y, dentro de una banda, sobre el papel. Usa
+     `--t6` (34-56 px).
+  Medido en `/integrantes/`, como área del retrato sobre la de la tarjeta:
+  - 76 % a 951, 73 % a 1440 y 71 % a 1920;
+  - a 390 px, 63 % de media: la tarjeta con la reseña más larga (cuatro líneas en 163 px)
+    queda en el 56 %.
+
+  No queda ningún `border-radius:50%` en la hoja.
 
 #### 3.7 Glifo, favicon, theme-color y og_image
 - **Hallazgos:** COL-2.
@@ -946,6 +1011,8 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   no existen: la única banda es `.band`, en hoja clara, y dos seguidas comparten el aire. Una
   fila señalada sobre una banda clara se pinta en papel, porque la hoja clara ya es su fondo de
   reposo. La portada hace 17 consultas, no 16. Para medir: `node tools/ux/superficies.js 1440 900 home`.
+  **Tras el paso 14**, la cinta ya es de retratos 4:5 a una tinta, con cinco visibles en el
+  carril ancho.
 
 #### 4.4 Pie en tinta con identidad y mapa
 - **Hallazgos:** NAV-8, COL-8.

@@ -6,9 +6,9 @@
 {% endcomment %}
 <li class="member-card cinta-card"{% if copia %} aria-hidden="true"{% endif %}>
   {% if m.photo %}
-    {% responsive_img m.photo css_class="avatar" sizes="200px" %}
+    <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 720px) 42vw, 230px" %}</span>
   {% else %}
-    <span class="avatar avatar-fallback" aria-hidden="true">{{ m.display_name|iniciales }}</span>
+    <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
   {% endif %}
   <span class="member-name">{{ m.display_name }}</span>
   {% if m.role %}<span class="member-role">{{ m.role }}</span>{% endif %}

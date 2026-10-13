@@ -209,7 +209,7 @@
    cubierta de 1000×1400 se dibujaba a 180×1400, y una foto apaisada de la galería
    como una tira vertical. Con el alto en auto manda la proporción —la que fije el
    CSS o, si no fija ninguna, la del archivo—. Las reglas que dan alto explícito
-   (.avatar, .partner-logo) no cambian: su selector de clase pesa más que este. */
+   (.partner-logo) no cambian: su selector de clase pesa más que este. */
 img, video{max-width:100%; height:auto}
 /* El texto base crece con el monitor: 16 px hasta los 800 de ancho, 17,6 a 1440 y
    18,8 a 1920, con tope en 19. La parte en rem respeta el tamaño que la persona tenga
@@ -386,13 +386,13 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
    y para los datos; lo demás se lee en la serif o en la de titulares. */
 .rotulo, .kicker, .dossier-doc .subhead, .foot-group h2, .reviewed h2, .event-month, .tag,
-.cinta-pie a, .nav-disclosure summary{
+.cinta-pie a, .nav-disclosure summary, .member-role{
   font-family:var(--mono); font-size:var(--t-2); letter-spacing:var(--tr-rotulo); text-transform:uppercase;
   color:var(--muted)}
 .dossier-doc .subhead{margin:34px 0 14px}
 .rotulo--acento, .kicker{color:var(--accent)}
 /* Datos: autoría, fecha, lugar, rol. En caja baja, que se lee de corrido. */
-.meta, .muted, .member-role{font-family:var(--mono); font-size:var(--t-1); letter-spacing:var(--tr-meta);
+.meta, .muted{font-family:var(--mono); font-size:var(--t-1); letter-spacing:var(--tr-meta);
   color:var(--muted)}
 
 /* Filas. Los índices de textos, poemas, trayectoria y prensa son listas de filas
@@ -481,15 +481,52 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .collection-list h2{margin:0 0 4px; font-size:var(--t3)}
 .collection-list h2 a{text-decoration:none; color:var(--ink)}
 
-/* Integrantes */
-.member-grid{list-style:none; padding:0; margin:0;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:32px 24px}
-.member-card a{display:flex; flex-direction:column; gap:10px; text-decoration:none; color:var(--ink)}
+/* Integrantes. El retrato era un círculo de 72 px: ocupaba el 10 % de la tarjeta y era el
+   avatar por defecto de cualquier aplicación. Ahora es 4:5, como el de la ficha, a todo
+   el ancho de la tarjeta. En un teléfono caben dos por fila; desde 720 px, columnas de
+   220 px o más (tres a 951 de ancho, cinco a 1440). */
+.member-grid{list-style:none; padding:0; margin:0; align-items:start;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:var(--s4) var(--s3)}
+@media (min-width:720px){
+  .member-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+}
+/* Toda la tarjeta es el enlace: la capa del enlace cubre también el rol y la reseña. */
+.member-card{position:relative; display:flex; flex-direction:column; gap:6px}
+.member-card a{display:flex; flex-direction:column; gap:12px; text-decoration:none; color:var(--ink)}
+.member-card > a::after{content:""; position:absolute; inset:0}
+/* En una columna de 163 px, a 22 px los nombres partían en dos líneas. */
 .member-name{font-size:var(--t2); font-weight:700; line-height:1.2}
-.member-bio{color:var(--muted); font-size:var(--t0); margin:4px 0 0}
-.avatar{width:72px; height:72px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--border)}
-.avatar-fallback{display:flex; align-items:center; justify-content:center;
-  font-family:var(--display); font-weight:700; font-size:var(--t4); letter-spacing:-.02em; color:var(--ink)}
+@media (min-width:720px){
+  .member-name{font-size:var(--t3)}
+}
+.member-bio{color:var(--muted); font-size:var(--t0); margin:0}
+/* Sin marco ni esquinas: una foto impresa en la página. */
+.retrato{display:block; width:100%; height:auto; aspect-ratio:4/5; object-fit:cover}
+/* Sin foto, el monograma en la misma caja 4:5, sobre la hoja clara; en una banda, que ya
+   es la hoja clara, sobre el papel. */
+.monograma{display:flex; align-items:center; justify-content:center; background:var(--paper-2);
+  font-family:var(--display); font-weight:700; font-size:var(--t6); letter-spacing:-.02em; color:var(--ink)}
+.band .monograma{background:var(--paper)}
+
+/* Duotono risográfico: la foto como una impresión a una tinta sobre el papel. Las sombras
+   toman el azul del cartel (la tinta de la placa del reproductor) y las luces, el papel
+   que la rodea: no hay marco, la foto está impresa en la página. La tinta va de fondo, la
+   foto en gris se aclara encima (`screen`) y el papel se multiplica por arriba: cada gris
+   cae en un tono entre la tinta y el papel. Es una sola tinta en todo el sitio.
+   Lo llevan los retratos de los listados y la cinta, y las fotos de la galería. Las
+   cubiertas, los afiches, los logos y las fichas se ven tal cual. Al señalar o enfocar,
+   el original: hay que quitar a la vez el filtro y la mezcla, o sale teñido. */
+.riso-duo{position:relative; isolation:isolate; background-color:var(--caratula)}
+.riso-duo img{filter:grayscale(1) contrast(1.15); mix-blend-mode:screen;
+  transition:filter var(--dur-base) var(--ease)}
+.riso-duo::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background-color:var(--paper); mix-blend-mode:multiply;
+  transition:background-color var(--dur-base) var(--ease)}
+.band .riso-duo::after{background-color:var(--paper-2)}
+a:hover .riso-duo img, a:focus-visible .riso-duo img,
+.cinta-caja:hover .riso-duo img, .cinta-caja:focus-within .riso-duo img{filter:none; mix-blend-mode:normal}
+a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
+.cinta-caja:hover .riso-duo::after, .cinta-caja:focus-within .riso-duo::after{background-color:transparent}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); color:var(--ink); max-width:var(--medida)}
 .poetics p{margin:0}
@@ -579,10 +616,11 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    la grande también. Con una o dos fotos, las que hay se reparten la hoja entera. */
 .hoja{display:grid; grid-template-columns:2fr 1fr; grid-template-rows:repeat(2,minmax(0,1fr));
   gap:6px; aspect-ratio:9/4; margin-bottom:6px}
+.hoja > *{display:block; min-height:0}
 .hoja img{width:100%; height:100%; min-height:0; object-fit:cover}
-.hoja img:first-child{grid-row:span 2}
-.hoja img:nth-child(2):last-child{grid-row:span 2}
-.hoja img:only-child{grid-column:1 / -1}
+.hoja > :first-child{grid-row:span 2}
+.hoja > :nth-child(2):last-child{grid-row:span 2}
+.hoja > :only-child{grid-column:1 / -1}
 .photo-grid a{display:block; cursor:zoom-in}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
@@ -1065,7 +1103,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    abajo, dejándolo a alturas distintas en cada tarjeta. Reservar el alto de dos
    líneas iguala la retícula sin recortar ningún nombre. */
 .cinta-card .member-name{min-height:2.4em; line-height:1.2}
-.cinta-card .avatar{width:108px; height:108px}
+/* La tarjeta alinea al principio: el retrato se estira a su ancho. */
+.cinta-card > .riso-duo, .cinta-card > .monograma{align-self:stretch}
 
 .cinta-pie{display:flex; align-items:center; justify-content:flex-end; gap:12px; margin:10px auto 0;
   width:min(var(--wide), 100% - 2*var(--gutter))}
