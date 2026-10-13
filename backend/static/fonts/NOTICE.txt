@@ -10,3 +10,28 @@ cubre tildes, eñes, signos de apertura, comillas latinas y raya.
 
 Se autoaloja por obligación, no por gusto: la CSP del sitio declara
 font-src 'self', así que un CDN de fuentes quedaría bloqueado.
+
+rdv-serif.woff2 y rdv-serif-italic.woff2 — «RdV Serif»: versión modificada de
+Source Serif 4, versión 4.005 (release 4.005R de github.com/adobe-fonts/source-serif,
+archivo source-serif-4.005_Desktop.zip, sha256
+549fdb8f9a682bd06944298621404969f6de77c2e422ff3b8244a1dcd6a0c425).
+
+Copyright 2014 - 2023 Adobe (http://www.adobe.com/), with Reserved Font Name
+'Source'. Diseño de Frank Grießhammer para Adobe.
+
+Licencia: SIL Open Font License 1.1. Texto completo en OFL-source-serif-4.txt, junto a
+estos archivos; también va dentro de cada fuente (registros 0, 13 y 14 de la tabla name).
+
+Qué se modificó, con fontTools 4.66.1 (fuera del repositorio):
+  1. instancia del eje de tamaño óptico en 20 y del de peso entre 400 y 700
+     (fontTools.varLib.instancer);
+  2. subconjunto latino: U+0000-017F, U+2000-206F, U+20AC, U+2190-2199, U+2600-26FF,
+     con las funciones tipográficas por defecto más onum, pnum, tnum y lnum;
+  3. WOFF2.
+Resultado: 43 KB la redonda y 44 KB la cursiva, frente a 146 y 156 KB del subconjunto
+con los dos ejes completos.
+
+Por qué el nombre es otro: la cláusula 3 de la OFL prohíbe que una versión modificada
+use el nombre reservado («Source»). La familia se renombró a «RdV Serif» en la tabla
+name (registros 1, 3, 4, 6, 16, 17 y 25) y en el CSS. El registro 10 describe el origen,
+como permite la cláusula 4 para reconocer a los autores.

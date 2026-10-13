@@ -34,13 +34,15 @@
   </script>
 
   {% comment %}
-     Syne se pide ya, sin esperar a que el navegador lea la hoja de estilos y descubra
-     que la necesita: es la fuente del nombre del sitio y de todos los títulos. La URL
-     debe ser EXACTAMENTE la que resuelve el url() del CSS (sin parámetro de versión), o
-     el archivo se descargaría dos veces. `crossorigin` es obligatorio en una precarga
-     de fuente aunque sea del mismo origen.
+     Las dos fuentes que pinta la primera pantalla se piden ya, sin esperar a que el
+     navegador lea la hoja de estilos y descubra que las necesita: Syne (nombre del sitio
+     y títulos) y la redonda de la serif (todo el texto). La cursiva no: rara vez está en
+     la primera pantalla. La URL debe ser EXACTAMENTE la que resuelve el url() del CSS
+     (sin parámetro de versión), o el archivo se descargaría dos veces. `crossorigin` es
+     obligatorio en una precarga de fuente aunque sea del mismo origen.
   {% endcomment %}
   <link rel="preload" href="{% static 'fonts/syne.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/rdv-serif.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/site.css' %}{{ version_estaticos }}">
   {# htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. #}
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
