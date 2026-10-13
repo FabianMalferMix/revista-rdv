@@ -107,7 +107,8 @@ def test_la_miniatura_usa_el_cartel_y_sin_cartel_lleva_el_titulo(client):
     assert con.select_one(".rec-miniatura img")["alt"] == "Cartel del recital"
     assert con.select_one(".rec-caratula") is None
     placa = sin.select_one(".rec-miniatura .rec-caratula")
-    assert placa.get_text() == "Sin Cartel"
+    assert placa.select_one(".rec-caratula-titulo").get_text() == "Sin Cartel"
+    assert placa.select_one(".rotulo").get_text().startswith("Video"), "la carátula dice qué es"
     assert placa["aria-hidden"] == "true", "el título ya se lee en el encabezado de la tarjeta"
     assert sin.select_one("img") is None
 
