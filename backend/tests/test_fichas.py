@@ -172,6 +172,28 @@ def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client, make
     assert sopa.select_one(".lectura-cuerpo .body") is not None
 
 
+@pytest.mark.parametrize("tipo", ["poema", "articulo"])
+def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, make_article, tipo):
+    """La ancla es `position:sticky`, y un elemento fijo se desplaza por todo su
+    contenedor. Con el pie dentro de la misma rejilla, al llegar al final la ancla bajaba y
+    se montaba sobre las salidas: 255 px en un artículo a 951 de ancho (lo vio el dueño del
+    sitio). La sala va en su bloque y el pie, fuera."""
+    if tipo == "poema":
+        objeto = _poema("fijo")
+    else:
+        objeto = make_article(
+            slug="fijo", status=EditorialStatus.PUBLISHED, published_at=timezone.now()
+        )
+    sopa = _sopa(client, objeto.get_absolute_url())
+    ancla = sopa.select_one(".lectura-ancla")
+    sala = ancla.parent
+    assert "lectura-sala" in sala["class"], "la ancla debe vivir en la sala, no en el artículo"
+    assert sala.select_one("nav.pie-entidad") is None, (
+        "el pie no puede compartir contenedor con la ancla"
+    )
+    assert sala.find_next_sibling("nav", class_="pie-entidad") is not None
+
+
 # ── Fichas ────────────────────────────────────────────────────────────────
 
 

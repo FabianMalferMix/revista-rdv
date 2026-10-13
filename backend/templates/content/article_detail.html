@@ -35,6 +35,12 @@
 
 {% block content %}
   <article class="article lectura">
+    {% comment %}
+       La ancla se queda fija al bajar, y un elemento fijo solo puede moverse dentro de su
+       contenedor. Por eso la sala —ancla y texto— va en su propio bloque y el pie queda
+       fuera: dentro del mismo, la ancla bajaba hasta montarse sobre las salidas.
+    {% endcomment %}
+    <div class="lectura-sala">
     <header class="lectura-ancla">
       <span class="kicker">
         {% if article.section and article.seccion_aporta %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
@@ -81,6 +87,7 @@
       {% endif %}
       {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
       <div class="body">{{ article.body|safe }}</div>
+    </div>
     </div>
     {% include "content/partials/_pie_de_entidad.html" %}
   </article>

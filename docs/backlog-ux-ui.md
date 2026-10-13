@@ -636,6 +636,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   1440, integrante de 75 a 92 %, publicación de 75 a 88 %, evento de 75 a 90 %; el artículo
   sigue a 62 letras por línea; consultas por ficha entre 10 y 15 (artículo 11, tope 12). Sin
   scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920.
+  **Corrección tras el punto de control B** (rama `sala-ancla-sin-solape`): la ancla es
+  `position:sticky`, y un elemento fijo se desplaza por todo su contenedor. El pie compartía la
+  rejilla con ella, así que al llegar al final la ancla bajaba y se montaba sobre las salidas:
+  hasta 255 px en el artículo a 951 de ancho. Lo vio el dueño del sitio al desplazarse; las
+  capturas de página entera no lo enseñan porque no se desplazan. La sala va ahora en
+  `.lectura-sala` y el pie queda fuera.
 
 ### Épica 3 — Color, imagen y dirección de arte (D5, D6, D10)
 

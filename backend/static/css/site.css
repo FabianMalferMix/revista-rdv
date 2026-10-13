@@ -770,10 +770,12 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    de 780 px, con el título, la firma y la fecha empujando el texto hacia abajo.
    El reparto es 4:7 y el texto sigue limitado por --medida: lo que se ensancha es la
    página, no la línea. Desde 840 px de ventana: por debajo no caben las dos columnas y la
-   ancla va encima. La ancla acompaña al bajar solo si la pantalla tiene alto para ella. */
+   ancla va encima. La ancla acompaña al bajar solo si la pantalla tiene alto para ella.
+   La rejilla es `.lectura-sala` y no el artículo entero: un elemento fijo (sticky) se mueve
+   por todo su contenedor, y con el pie dentro la ancla bajaba hasta taparlo. */
 /* El mismo aire sobre el título que en la cabecera de un índice. */
 .lectura, .ficha{padding-top:var(--s4)}
-.lectura{display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--s4)}
+.lectura-sala{display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--s4)}
 .lectura-ancla > :first-child{margin-top:0}
 .lectura-ancla .dek{margin:12px 0 0}
 .lectura-ancla .meta{margin:8px 0 0}
@@ -795,9 +797,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .lectura-imagen img{display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover}
 .lectura-imagen figcaption{margin-top:8px}
 @media (min-width:840px){
-  .lectura{grid-template-columns:minmax(220px,4fr) minmax(0,7fr); column-gap:clamp(32px,5vw,96px);
+  .lectura-sala{grid-template-columns:minmax(220px,4fr) minmax(0,7fr); column-gap:clamp(32px,5vw,96px);
     align-items:start}
-  .lectura > .pie-entidad{grid-column:1 / -1}
 }
 @media (min-width:840px) and (min-height:700px){
   .lectura-ancla{position:sticky; top:var(--s3)}
