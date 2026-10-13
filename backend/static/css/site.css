@@ -433,6 +433,12 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* Primer verso del poema: lo que permite reconocerlo sin abrirlo. */
 .fila-verso{margin:4px 0 0; font-style:italic; font-size:var(--t1); line-height:1.4; color:var(--muted)}
 .fila-marca{white-space:nowrap}
+/* La imagen del texto (o el afiche del evento), en miniatura 3:4 a la derecha. Es un área
+   más de la rejilla, no un flotante: en una lista estrecha va junto al título y la fecha
+   queda debajo; con sitio, es la última columna. Se alinea arriba, no por la línea base. */
+.fila--con-miniatura{grid-template-areas:"cuerpo mini" "pie fecha"}
+.fila-miniatura{grid-area:mini; align-self:start; justify-self:end; width:56px}
+.fila-miniatura img{display:block; width:100%; height:auto; aspect-ratio:3/4; object-fit:cover}
 .filas + .pagination{border-top:0; padding-top:0}
 /* Cuando la lista sigue a la cabecera del índice, el filete de la cabecera ES el de la
    primera fila: dos líneas a 32 px una de otra se leían como un error. */
@@ -441,6 +447,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 @container filas (min-width:700px){
   .fila{grid-template-columns:6.5rem minmax(0,1fr) fit-content(17rem);
     grid-template-areas:"fecha cuerpo pie"; column-gap:24px; padding-block:14px}
+  .fila--con-miniatura{grid-template-columns:6.5rem minmax(0,1fr) fit-content(17rem) 72px;
+    grid-template-areas:"fecha cuerpo pie mini"}
+  .fila-miniatura{width:72px}
   .fila-titulo{font-size:var(--t4)}
   .fila-pie{text-align:right}
 }
@@ -513,9 +522,10 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    que la rodea: no hay marco, la foto está impresa en la página. La tinta va de fondo, la
    foto en gris se aclara encima (`screen`) y el papel se multiplica por arriba: cada gris
    cae en un tono entre la tinta y el papel. Es una sola tinta en todo el sitio.
-   Lo llevan los retratos de los listados y la cinta, y las fotos de la galería. Las
-   cubiertas, los afiches, los logos y las fichas se ven tal cual. Al señalar o enfocar,
-   el original: hay que quitar a la vez el filtro y la mezcla, o sale teñido. */
+   Lo llevan las imágenes de los listados: retratos y cinta, fotos de la galería, pósters
+   de los registros, imágenes de los textos y afiches en la agenda y la trayectoria. Las
+   cubiertas de las publicaciones, los logos y las fichas se ven tal cual. Al señalar o
+   enfocar, el original: hay que quitar a la vez el filtro y la mezcla, o sale teñido. */
 .riso-duo{position:relative; isolation:isolate; background-color:var(--caratula)}
 .riso-duo img{filter:grayscale(1) contrast(1.15); mix-blend-mode:screen;
   transition:filter var(--dur-base) var(--ease)}
@@ -523,14 +533,12 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   background-color:var(--paper); mix-blend-mode:multiply;
   transition:background-color var(--dur-base) var(--ease)}
 .band .riso-duo::after{background-color:var(--paper-2)}
-a:hover .riso-duo img, a:focus-visible .riso-duo img,
-.cinta-caja:hover .riso-duo img, .cinta-caja:focus-within .riso-duo img,
-.recording-card:hover .riso-duo img, .recording-card:focus-within .riso-duo img,
-.player-consent:hover .riso-duo img, .player-consent:focus-within .riso-duo img{filter:none; mix-blend-mode:normal}
-a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
-.cinta-caja:hover .riso-duo::after, .cinta-caja:focus-within .riso-duo::after,
-.recording-card:hover .riso-duo::after, .recording-card:focus-within .riso-duo::after,
-.player-consent:hover .riso-duo::after, .player-consent:focus-within .riso-duo::after{background-color:transparent}
+/* Dónde se señala: un enlace, la cinta, la tarjeta de un registro o de un evento, la
+   placa del reproductor, una fila o la próxima actividad. */
+:is(a, .cinta-caja, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
+  .riso-duo img{filter:none; mix-blend-mode:normal}
+:is(a, .cinta-caja, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
+  .riso-duo::after{background-color:transparent}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); color:var(--ink); max-width:var(--medida)}
 .poetics p{margin:0}
@@ -576,6 +584,9 @@ a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
 .event-date{min-width:64px; text-align:center; padding:8px 6px; height:fit-content; background:var(--paper-2)}
 .event-day{display:block; font-size:var(--t4); font-weight:700; line-height:1.1}
 .event-month{display:block}
+/* El afiche, entre la fecha y la ficha: un cuarto de la tarjeta, 128 px como mucho. */
+.event-afiche{flex:none; width:min(128px, 25%)}
+.event-afiche img, .next-event-afiche img{display:block; width:100%; height:auto}
 .event-card h2{margin:6px 0 4px; font-size:var(--t3)}
 .event-card h2 a{text-decoration:none; color:var(--ink)}
 .event-card .btn{margin-top:8px}
@@ -590,6 +601,8 @@ a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
 .next-event{margin:0; padding:16px 22px; border-left:3px solid var(--ink); background:var(--paper-2)}
 /* `.home-block` se declara más abajo y le pisaba el relleno: el aviso quedaba sin margen interior. */
 .home-block.next-event{padding:16px 22px; max-width:var(--measure); margin-block:var(--s4)}
+.next-event:has(> .next-event-afiche){display:grid; grid-template-columns:96px minmax(0,1fr);
+  gap:var(--s3); align-items:center}
 .next-event h2{margin:6px 0 4px; font-size:var(--t3)}
 .next-event h2 a{text-decoration:none; color:var(--ink)}
 /* Trayectoria: cada año es un bloque, con su número a la izquierda y sus filas al lado.
@@ -626,6 +639,7 @@ a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
 .hoja > :nth-child(2):last-child{grid-row:span 2}
 .hoja > :only-child{grid-column:1 / -1}
 .photo-grid a{display:block; cursor:zoom-in}
+.galeria-creditos{margin:var(--s2) 0 0}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
    el objetivo del hash; se cierra enlazando de vuelta a la sección. */
@@ -633,8 +647,10 @@ a:hover .riso-duo::after, a:focus-visible .riso-duo::after,
   padding:24px; background:rgba(0,0,0,.9)}
 .lightbox:target{display:grid}
 .lightbox img{max-width:96vw; max-height:86vh; object-fit:contain; border-radius:3px}
-.lightbox figcaption{position:absolute; bottom:16px; left:0; right:0; text-align:center;
-  color:#e7edf2; font-family:var(--mono); font-size:var(--t-2)}
+/* El pie dice cuál es de cuántas, qué es y de quién: «3 / 12 · Lectura · Archivo». */
+.lightbox figcaption{position:absolute; bottom:16px; left:0; right:0; padding-inline:var(--s3); text-align:center;
+  color:#e7edf2; font-family:var(--mono); font-size:var(--t-1)}
+.lightbox-cuenta{font-variant-numeric:tabular-nums}
 .lightbox-close{position:absolute; top:14px; right:22px; z-index:1;
   color:#fff; font-size:var(--t5); line-height:1; text-decoration:none}
 .lightbox-back{position:absolute; inset:0}
@@ -772,10 +788,17 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   font-style:italic; font-size:var(--t2); max-width:var(--medida)}
 /* Dentro de una fila la cita no necesita su filete: ya la separan las líneas de la fila. */
 .fila .press-quote{margin:8px 0 0; padding-left:0; border-left:0}
-.partner-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:22px}
-.partner-item{display:flex; gap:14px; align-items:flex-start}
-.partner-logo{width:64px; height:64px; object-fit:contain; border:1px solid var(--border);
-  border-radius:4px; background:#fff}
+/* Aliados por tipo. El logo, a 160 × 80, va impreso en la página: multiplicado con el
+   papel, su fondo blanco desaparece (los logos suelen venir sobre blanco). En gris hasta
+   que se señala, el mismo gesto que las fotos a una tinta; nada de bajar la opacidad. */
+.aliados-grupo{margin:0 0 var(--s5)}
+.aliados-grupo > .rotulo{margin:0 0 var(--s3)}
+.partner-list{list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:var(--s4) var(--s3)}
+.partner-item{display:flex; gap:var(--s3); align-items:center}
+.partner-logo{display:block; flex:none; width:160px; height:80px; object-fit:contain;
+  filter:grayscale(1); mix-blend-mode:multiply; transition:filter var(--dur-base) var(--ease)}
+.partner-item:hover .partner-logo, .partner-item:focus-within .partner-logo{filter:none}
 
 /* Hero de portada (CTA hacia gestores).
    El lema es el TITULAR de la portada, no una línea de apoyo: de ahí el salto

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load images %}
 
 {% block title %}Trayectoria — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Recorrido del colectivo: recitales, festivales e hitos.{% endblock %}
@@ -43,13 +44,14 @@
           </li>
         {% endfor %}
         {% for e in block.events %}
-          <li class="fila">
+          <li class="fila{% if e.poster %} fila--con-miniatura{% endif %}">
             <time class="meta fila-fecha" datetime="{{ e.starts_at|date:'Y-m-d' }}">{{ e.starts_at|date:"j M" }}</time>
             <div class="fila-cuerpo">
               <h3 class="fila-titulo"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h3>
               {% if e.is_external and e.host %}<p class="dek">{{ e.host }}</p>{% endif %}
             </div>
             <p class="meta fila-pie">{{ e.get_type_display }}{% if e.city %} · {{ e.city }}{% endif %}</p>
+            {% if e.poster %}<span class="fila-miniatura riso-duo">{% responsive_img e.poster sizes="(max-width: 720px) 64px, 96px" decorativa=True %}</span>{% endif %}
           </li>
         {% endfor %}
       </ul>

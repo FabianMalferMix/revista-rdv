@@ -8,25 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-13, tras el paso 15.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-13, tras el paso 16.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 15 de 25 pasos.** El último fusionado es el paso 15 (`ux-3c-reproductor`, PR #120).
-`main` está en verde, con 773 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 16 de 25 pasos.** El último fusionado es el paso 16 (`ux-3d-imagenes-del-modelo`,
+PR #121). `main` está en verde, con 786 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: paso 16, `ux-3d-imagenes-del-modelo`** (sección 2), cuando el dueño haya visto el 15. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: paso 17, `ux-3e-marca`** (sección 2), cuando el dueño haya visto el 16. Después del
+17 viene el **punto de control C**. Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-3c-reproductor … (#120)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-3d-imagenes-del-modelo … (#121)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 16
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 17
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -56,6 +57,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `cifras-destacado-y-pie` | #118 | Lo que eligió el dueño: cifras con trazo de marcador, destacado sobre el papel a dos columnas, pie compacto y siempre abajo |
 | 14 | `ux-3b-duotono-y-retratos` | #119 | Retratos 4:5 a todo el ancho de la tarjeta, duotono azul en listados y galería, monograma |
 | 15 | `ux-3c-reproductor` | #120 | La placa del reproductor con su póster a una tinta o su carátula, y el mando en un panel sólido |
+| 16 | `ux-3d-imagenes-del-modelo` | #121 | Imágenes de textos y afiches en los listados, crédito y contador en el álbum, aliados por tipo |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -87,6 +89,7 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Alto del pie a 951 px, y desde 1100 | 435 tras el paso 13 | 320 y 236, siempre abajo |
 | Área del retrato sobre la tarjeta en `/integrantes/` | 10 % a 951, 12 % a 1440 | 76 % y 73 % (63 % de media a 390) |
 | Placas del reproductor vacías | 2 | 0 |
+| Imágenes del modelo en los listados | ninguna | las de los textos y los afiches (a una tinta), créditos en el álbum, logos de aliados |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -134,6 +137,7 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   el papel que asomaba bajo el pie en una página corta. Todo quedó en `cifras-destacado-y-pie`.
   Quiere **conservar la convocatoria de prueba** en la base de desarrollo.
 - **Ajustes del paso 13 (2026-10-13):** los vio y pidió seguir con el paso 14.
+- **Revisión del paso 15 (2026-10-13):** visto bueno, sin ajustes.
 - **Revisión del paso 14 (2026-10-13):** aprobó todas las decisiones, también la tinta: «el azul
   del cartel fue la decisión correcta para ambos casos» (retratos y galería).
 - **Revisa en una ventana de 951 px de ancho al 100 %.** A ese ancho el carril ancho mide 875 px.
@@ -143,15 +147,17 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 15 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
-   - la portada: en el destacado, el póster del registro a una tinta, con el botón cuadrado
-     blanco y el aviso abajo a la izquierda; al señalar la placa se ve el original;
-   - `/registro/recital-nuevas-voces/`: la misma placa, grande;
-   - `/registros/`: las miniaturas, también a una tinta;
-   - que pulse el botón: solo entonces se conecta con YouTube.
-   El caso sin póster (la carátula con «Video · Recital · 2026» y el título) no se ve en
-   desarrollo, porque los tres registros tienen póster. Si quiere verlo, se crea un registro
-   sin póster y se le enseña. Si lo aprueba, se abre el paso 16.
+1. **El paso 16 está fusionado y aún no lo ha visto.** Qué mirar, a 951 px:
+   - `/textos/`: la imagen de cada texto en miniatura, a la derecha de su fila;
+   - `/agenda/` y `/trayectoria/`: los afiches, a una tinta; al señalar, el original;
+   - un álbum, por ejemplo `/evento/recital-nuevas-voces-lanzamiento/`: bajo las fotos la
+     línea «Fotos: …», y al ampliar una, «3 / 6 · pie · crédito»;
+   - `/aliados/`: por tipo, con los logos en gris que toman color al señalarlos.
+   «Próxima actividad» en la portada solo aparece con un evento futuro; en desarrollo no hay.
+   **Decisión que tomé por él: los afiches de los listados van a una tinta.** Se le enseñó la
+   alternativa, tal cual. Si la prefiere, basta con quitar `riso-duo` de tres plantillas
+   (`_event_card.html`, `trayectoria.html` y `home.html`) y sacarlas de `CON_DUOTONO`. Si lo
+   aprueba, se abre el paso 17.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -160,67 +166,60 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: paso 16, `ux-3d-imagenes-del-modelo`
+## 2. Qué sigue: paso 17, `ux-3e-marca`
 
-Ticket 3.5 del backlog. Lee el ticket con sus dos **Notas de entrada**.
+Ticket 3.7 del backlog. Después de este paso viene el **punto de control C** (sección 3).
 
-**Qué se hace.** Las imágenes que el modelo ya guarda llegan a los listados:
-- la imagen de cada texto, como miniatura 3:4 a la derecha de su fila en Textos;
-- el afiche de cada evento, en las tarjetas de la agenda, en «Próxima actividad» de la portada
-  y como miniatura en la trayectoria;
-- en la galería y su vista ampliada, el crédito de cada foto con su pie, y un contador «3 / 12»;
-- los logos de los aliados a 160 × 80, en gris hasta que se señalan y agrupados por tipo, más
-  una franja «Con el apoyo de» que se pueda reutilizar (la usará el 4.2).
+**Qué se hace.** La marca del colectivo pasa del bloque magenta a un glifo y un icono:
+- **Glifo:** dos formas simples superpuestas, en magenta y azul, multiplicadas y con 1 o 2 px de
+  desregistro. Es un `<svg>` **en línea** en la cabecera, de 28 a 32 px, junto al nombre en Syne
+  y sin fondo: el sello magenta desaparece.
+- **Iconos:** `tools/ux/make_icons.py` dibuja el mismo glifo en PNG y en ICO, a 32, 180 y 48 px.
+  Entran dos `<link rel="icon">` y `<meta name="theme-color" content="#d9e8f7">`.
+- **Tarjeta para compartir:** `make_icons.py --og` genera una tarjeta tipográfica de
+  1200 × 630, para que el dueño la suba como imagen para compartir desde el panel. El archivo
+  queda en `tools/ux/out/og-card.png`.
 
-**Qué hace falta.** Nada fuera del repositorio. En desarrollo ya hay material:
-- los 6 textos publicados tienen imagen;
-- los 4 eventos, afiche;
-- 72 recursos tienen crédito;
-- los 3 aliados, logo.
-
-No hay ningún evento futuro, así que «Próxima actividad» no aparece. Para verla, crea un
-evento `zz-medicion-` y bórralo en la misma orden. **No uses `seed_demo`**: la base tiene la
-identidad aplicada.
+**Qué hace falta.** Nada fuera del repositorio. Subir la tarjeta para compartir es tarea del
+dueño, desde el panel.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Miniatura en las filas de Textos (textos con imagen) | 0 de 6 | 6 de 6 |
-| Afiche en las tarjetas de la agenda y en «Próxima actividad» | en ninguna | en las de los eventos con afiche |
-| Miniatura del afiche en la trayectoria | 0 | en las filas con afiche |
-| Crédito en la galería y en la vista ampliada | no se muestra (el pie sí) | se muestra cuando existe, a 4,5:1 o más |
-| Contador en la vista ampliada | no hay | «3 / 12» |
-| Logos de aliados | 64 px con marco blanco, sin agrupar | 160 × 80 en gris, color al señalar, por tipo |
-| Consultas (`tests/test_performance.py`) | portada 17, con tope 24 | sin pasar de ningún tope |
-| `superficies.js` y scroll horizontal en siete anchos | en orden | igual |
+| Icono de pestaña | no hay (`/favicon.ico` da 404) | 32 y 180 px, y un `.ico` |
+| `theme-color` | no hay | `#d9e8f7` |
+| Nombre en la cabecera | sobre el sello magenta | sin fondo, con el glifo |
+| Archivos `.svg` en `static/` | 0 | 0 (`tests/test_security_csp.py`) |
+| `<svg` en `base.html` | 0 | 1 o más |
+| Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 **Pruebas que cambian a propósito.**
-- Se amplían `tests/test_seed_photos.py` y `tests/test_images.py`.
-- Nueva: el crédito se muestra cuando existe.
-- `CON_DUOTONO` en `tests/test_css_sistema.py`: si la miniatura de un texto lleva duotono, se
-  añade su plantilla. Los afiches y los logos nunca lo llevan.
-- `BLANCO_PERMITIDO`: `.partner-logo` pinta blanco hoy. Si cambia, se actualiza.
+- `tests/test_contraste_paleta.py::test_contraste_del_sello_de_la_cabecera`: sin sello, pasa a
+  afirmar tinta sobre papel.
+- `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` tiene que seguir en
+  verde.
+- `tests/test_security_csp.py` sigue: ningún `.svg` en `static/`, y el SVG en línea no necesita
+  `style=` (atributos de presentación o clases).
 
 **Cuidados.**
-- **La miniatura de una fila es una cuarta área de su rejilla**, dentro de la consulta de
-  contenedor de `.filas`, no un flotante. La misma parcial vive en el carril ancho (875 px a
-  951), en el de lectura y en el teléfono.
-- **El dueño rechaza lo que se impone.** Un afiche de colores en cada tarjeta de la agenda
-  puede serlo: mantenlos pequeños (la tarjeta pide 64 px, o 128 en el carril ancho) y mira la
-  agenda a 951 antes de seguir. Si dudas, enséñale alternativas con `tools/ux/variantes.js`.
-- **Los logos en gris** con `filter:grayscale(1)` y el color al señalar: es el mismo gesto que
-  el duotono. Como allí, nada de bajar la opacidad.
-- **Las consultas:** `select_related` de `cover_image` y `poster` en las vistas, y el `figcaption`
-  sin consultas nuevas por foto.
+- **La marca es lo más identitario del sitio y el dueño decide viendo.** Aprobó el sello
+  magenta girado de la convocatoria y rechazó al verlas dos decisiones que había delegado. Antes
+  de construir, prepárale **alternativas del glifo y del nombre** con `tools/ux/variantes.js`,
+  sobre la cabecera real a 951 px, y publícalas en una página para que elija. Una de ellas debe
+  ser el nombre sin glifo y otra el sello actual. El punto de control C le pregunta justo eso:
+  si el glifo lo representa y si acepta el nombre sin sello.
+- `test_todo_boton_comparte_una_receta`: `.btn--primary` deja de compartir receta con la marca.
+- El glifo es decorativo (`aria-hidden="true"`); el enlace de la marca sigue llamándose como el
+  colectivo.
+- Pillow ya está instalado en el contenedor `web`; corre `make_icons.py` allí o en un
+  contenedor desechable de `python:3.12-slim`.
 
 **Qué enseñarle al dueño al terminar.**
-- `/textos/`, por las miniaturas.
-- `/agenda/` y la trayectoria, por los afiches.
-- La galería: abrir un álbum y ampliar una foto, por el crédito y el contador.
-- `/aliados/`.
-- «Próxima actividad» en la portada solo aparece con un evento futuro: díselo, o enséñaselo
-  con uno temporal.
+- La cabecera de cualquier página, con el glifo y el nombre.
+- La pestaña del navegador, con el icono.
+- La tarjeta para compartir, `tools/ux/out/og-card.png`: él decide si la sube.
+- Después, el punto de control C (sección 3).
 
 ## 3. Los pasos
 
@@ -263,12 +262,12 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Cierra cuando: ninguna placa azul vacía en el sitio; el texto sobre la placa da 4,5:1 o más y
   el foco 3:1; al pulsar «Reproducir» el iframe sustituye a la placa;
   `tests/test_embed_consent.py` sigue en verde.
-- [ ] **16. `ux-3d-imagenes-del-modelo`.** Ticket 3.5: imagen de texto, afiche, crédito y logos
-  llegan a pantalla. Detalle en la sección 2.
+- [x] **16. `ux-3d-imagenes-del-modelo`.** Ticket 3.5: imagen de texto, afiche, crédito y logos
+  llegan a pantalla.
   Cierra cuando: cada imagen aparece donde dice el ticket; el crédito se muestra si existe; los
   presupuestos de consultas de `tests/test_performance.py` no suben.
 - [ ] **17. `ux-3e-marca`.** Ticket 3.7: glifo, icono de pestaña, `theme-color`, tarjeta para
-  compartir.
+  compartir. Detalle en la sección 2.
   Cierra cuando: `tests/test_security_csp.py` sigue en verde (ningún `.svg` en `static/`); la
   pestaña enseña el icono; el nombre de la cabecera ya no lleva fondo.
 - ◆ **Punto de control C.** Registros, galería, aliados y la marca en la cabecera.

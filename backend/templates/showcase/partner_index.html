@@ -8,18 +8,27 @@
 
 {% block content %}
   {% include "content/partials/_index_head.html" with titulo="Aliados y financiamiento" territorio="prensa" cuenta=partners|length singular="aliado" plural="aliados" dek="Fondos, instituciones y espacios que apoyan al colectivo." %}
-  <ul class="partner-list">
-    {% for p in partners %}
-      <li class="partner-item">
-        {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="180px" %}{% endif %}
-        <div>
-          <span class="kicker">{{ p.get_kind_display }}</span>
-          <strong>{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }} ↗</a>{% else %}{{ p.name }}{% endif %}</strong>
-          {% if p.description %}<p class="dek">{{ p.description }}</p>{% endif %}
-        </div>
-      </li>
-    {% empty %}
-      <li class="empty">Aún no hay aliados registrados. El <a href="{% url 'showcase:dossier' %}">dossier</a> reúne la trayectoria y el contacto del colectivo.</li>
-    {% endfor %}
-  </ul>
+  {% comment %}
+     Por tipo, en el orden de los tipos: un fondo y una sala no son lo mismo para quien
+     programa. El logo va en gris y toma su color al señalarlo, el mismo gesto que las
+     fotos a una tinta.
+  {% endcomment %}
+  {% for rotulo, grupo in grupos %}
+    <section class="aliados-grupo">
+      <h2 class="rotulo">{{ rotulo }}</h2>
+      <ul class="partner-list">
+        {% for p in grupo %}
+          <li class="partner-item">
+            {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="160px" %}{% endif %}
+            <div>
+              <strong>{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }} ↗</a>{% else %}{{ p.name }}{% endif %}</strong>
+              {% if p.description %}<p class="dek">{{ p.description }}</p>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% empty %}
+    <p class="empty">Aún no hay aliados registrados. El <a href="{% url 'showcase:dossier' %}">dossier</a> reúne la trayectoria y el contacto del colectivo.</p>
+  {% endfor %}
 {% endblock %}

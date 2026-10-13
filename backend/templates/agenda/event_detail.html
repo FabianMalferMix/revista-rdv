@@ -93,7 +93,7 @@
           <ul class="photo-grid">
             {% for p in photos %}
               <li>
-                <a href="#lb-{{ event.slug }}-{{ forloop.counter }}" aria-label="Ampliar foto">
+                <a href="#lb-{{ event.slug }}-{{ forloop.counter }}" aria-label="Ampliar foto {{ forloop.counter }} de {{ photos|length }}">
                   {% responsive_img p.asset sizes="(max-width: 600px) 45vw, 280px" alt=p.caption %}
                 </a>
                 {% if p.caption %}<span class="muted">{{ p.caption }}</span>{% endif %}
@@ -102,11 +102,13 @@
                   <a class="lightbox-back" href="#galeria-{{ event.slug }}" tabindex="-1" aria-label="Cerrar"></a>
                   <a class="lightbox-close" href="#galeria-{{ event.slug }}" aria-label="Cerrar">×</a>
                   {% responsive_img p.asset sizes="90vw" alt=p.caption %}
-                  {% if p.caption %}<figcaption>{{ p.caption }}</figcaption>{% endif %}
+                  {% comment %} La foto se ve entera, sin la rejilla: el pie dice cuál es de cuántas y de quién. {% endcomment %}
+                  <figcaption><span class="lightbox-cuenta">{{ forloop.counter }} / {{ photos|length }}</span>{% if p.caption %} · {{ p.caption }}{% endif %}{% if p.asset.credit %} · {{ p.asset.credit }}{% endif %}</figcaption>
                 </figure>
               </li>
             {% endfor %}
           </ul>
+          {% if creditos %}<p class="meta galeria-creditos">Fotos: {{ creditos|join:" · " }}</p>{% endif %}
         </section>
       {% endif %}
     {% endwith %}

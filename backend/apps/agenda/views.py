@@ -63,10 +63,13 @@ def event_detail(request, slug):
     # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.
     mas_reciente, mas_antigua = vecinos(Event.objects.filter(published=True), event, "starts_at")
     pie += puertas_vecinas(mas_antigua, mas_reciente, "Actividad", lambda e: e.title)
+    # Quién hizo las fotos, una vez bajo el álbum; cada foto lo repite en su vista ampliada.
+    # Sale de la caché del prefetch (photos__asset): no añade consultas.
+    creditos = sorted({p.asset.credit for p in event.photos.all() if p.asset.credit})
     return render(
         request,
         "agenda/event_detail.html",
-        {"event": event, "recordings": recordings, "pie": pie},
+        {"event": event, "recordings": recordings, "pie": pie, "creditos": creditos},
     )
 
 

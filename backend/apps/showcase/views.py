@@ -53,9 +53,27 @@ def press_index(request):
     return render(request, "showcase/press_index.html", {"mentions": mentions})
 
 
+# El rótulo de cada grupo de aliados: el tipo, en plural.
+GRUPOS_DE_ALIADOS = {
+    Partner.Kind.FINANCIAMIENTO: "Financiamiento",
+    Partner.Kind.INSTITUCION: "Instituciones",
+    Partner.Kind.EDITORIAL: "Editoriales",
+    Partner.Kind.MEDIO: "Medios",
+    Partner.Kind.ESPACIO: "Espacios",
+    Partner.Kind.OTRO: "Otros apoyos",
+}
+
+
 def partner_index(request):
-    partners = Partner.objects.filter(active=True).select_related("logo")
-    return render(request, "showcase/partner_index.html", {"partners": partners})
+    """Aliados agrupados por tipo, en el orden de los tipos: un fondo y una sala no son lo
+    mismo para quien programa. Se agrupan en Python: una sola consulta."""
+    partners = list(Partner.objects.filter(active=True).select_related("logo"))
+    grupos = [
+        (rotulo, [p for p in partners if p.kind == kind])
+        for kind, rotulo in GRUPOS_DE_ALIADOS.items()
+        if any(p.kind == kind for p in partners)
+    ]
+    return render(request, "showcase/partner_index.html", {"partners": partners, "grupos": grupos})
 
 
 def dossier(request):
