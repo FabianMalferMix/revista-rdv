@@ -1,6 +1,5 @@
 from django import template
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html_join
 
 register = template.Library()
 
@@ -39,8 +38,9 @@ def versos(cuerpo):
     verso largo que no cabe —la continuación se lee como continuación, no como un verso
     nuevo— y un salto propio entre estrofas.
 
-    El texto lo escribe una persona: cada línea se escapa ANTES de envolverla, y solo el
-    resultado completo se marca como seguro. La sangría inicial de cada verso se conserva
+    El texto lo escribe una persona: `format_html_join` escapa cada verso al envolverlo,
+    y nada se marca como seguro a mano (el SAST del CI bloquea `mark_safe`, con razón: es
+    donde se cuela un XSS). La sangría inicial de cada verso se conserva
     tal cual (el CSS la respeta con `white-space:pre-wrap`); varias líneas en blanco
     seguidas cuentan como un solo salto de estrofa.
     """
@@ -53,10 +53,15 @@ def versos(cuerpo):
             actual = []
     if actual:
         estrofas.append(actual)
-    html = "".join(
-        '<p class="estrofa">'
-        + "".join(f'<span class="verso">{escape(verso)}</span>' for verso in estrofa)
-        + "</p>"
-        for estrofa in estrofas
+    return format_html_join(
+        "",
+        '<p class="estrofa">{}</p>',
+        (
+            (
+                format_html_join(
+                    "", '<span class="verso">{}</span>', ((verso,) for verso in estrofa)
+                ),
+            )
+            for estrofa in estrofas
+        ),
     )
-    return mark_safe(html)
