@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "content/partials/_index_head.html" with titulo="Integrantes" cuenta=members|length singular="integrante" plural="integrantes" dek="Quiénes integran el colectivo: poetas, trayectorias y obra." %}
+  {% include "content/partials/_index_head.html" with titulo="Integrantes" territorio="colectivo" cuenta=members|length singular="integrante" plural="integrantes" dek="Quiénes integran el colectivo: poetas, trayectorias y obra." %}
   <ul class="member-grid">
     {% for m in members %}
       {% include "people/partials/_member_card.html" %}

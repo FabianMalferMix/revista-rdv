@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "content/partials/_index_head.html" with titulo="Agenda" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
+  {% include "content/partials/_index_head.html" with titulo="Agenda" territorio="colectivo" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
   {% if events %}
     <ul class="event-list">
       {% for e in events %}

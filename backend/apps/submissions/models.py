@@ -30,6 +30,12 @@ class Call(models.Model):
     def is_open(self):
         return self.opens_at <= timezone.now() <= self.closes_at
 
+    @classmethod
+    def open_now(cls):
+        """Convocatorias abiertas en este momento (formulario de envío, sello de la portada)."""
+        now = timezone.now()
+        return cls.objects.filter(opens_at__lte=now, closes_at__gte=now)
+
 
 class Submission(models.Model):
     """Envío externo (portal de colaboraciones)."""

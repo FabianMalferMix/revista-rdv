@@ -4,7 +4,7 @@
 {% block description %}{{ contributor.bio|default:contributor.display_name }}{% endblock %}
 
 {% block content %}
-  <header class="index-head">
+  <header class="index-head" data-territorio="obra">
     <span class="kicker">Colaborador</span>
     <h1>{{ contributor.display_name }}</h1>
     {% if contributor.bio %}<p class="dek">{{ contributor.bio }}</p>{% endif %}

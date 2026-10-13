@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "content/partials/_index_head.html" with titulo="Publicaciones" cuenta=publications|length singular="publicación" plural="publicaciones" dek="Libros, plaquettes y fanzines del colectivo." %}
+  {% include "content/partials/_index_head.html" with titulo="Publicaciones" territorio="obra" cuenta=publications|length singular="publicación" plural="publicaciones" dek="Libros, plaquettes y fanzines del colectivo." %}
   <ul class="pub-grid">
     {% for pub in publications %}
       {% include "showcase/partials/_publication_card.html" %}

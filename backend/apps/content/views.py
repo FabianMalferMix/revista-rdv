@@ -15,6 +15,7 @@ from apps.agenda.services import stats as trajectory_stats
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
+from apps.submissions.models import Call
 
 from .models import (
     Article,
@@ -90,6 +91,8 @@ def home(request):
             "next_event": Event.upcoming().first(),
             "stats": trajectory_stats(),
             "publications": Publication.objects.filter(published=True).select_related("cover")[:4],
+            # El sello del titular: solo mientras haya una convocatoria abierta.
+            "convocatoria": Call.open_now().first(),
         },
     )
 
