@@ -41,6 +41,7 @@ def test_member_with_photo_renders_avatar_image(client):
         slug="con-foto", display_name="Con Foto", is_member=True, photo=asset
     )
     resp = client.get(reverse("people:member_index"))
-    # Con foto se muestra <img class="avatar">, no el span de inicial (avatar-fallback).
-    assert b'class="avatar"' in resp.content
+    # Con foto se muestra <img class="retrato">, no el monograma.
+    assert b'class="retrato"' in resp.content
+    assert b"monograma" not in resp.content
     assert b"Retrato demo" in resp.content

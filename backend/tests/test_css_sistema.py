@@ -491,8 +491,8 @@ def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
 # queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
 MONO_PERMITIDA = {
     ".rotulo,.kicker,.dossier-doc.subhead,.foot-grouph2,.reviewedh2,.event-month,.tag,"
-    ".cinta-piea,.nav-disclosuresummary": "rótulo",
-    ".meta,.muted,.member-role": "dato: firma, fecha, lugar, cargo",
+    ".cinta-piea,.nav-disclosuresummary,.member-role": "rótulo, también el cargo de cada integrante",
+    ".meta,.muted": "dato: firma, fecha, lugar",
     ".stats-strip": "etiquetas de las cifras",
     ".pagination-pagesa,.pagination-pagesspan": "números de página",
     ".lightboxfigcaption": "pie de foto",
@@ -552,10 +552,18 @@ def test_cada_salida_del_pie_se_pulsa_entera():
 
 def test_los_retratos_nuevos_no_son_circulos():
     """El retrato es 4:5, como el del colectivo; el círculo es el avatar de una app de
-    mensajería (decisión del ticket 3.6, que ya cumplen los retratos de las fichas)."""
-    for selector in (".firma-retrato", ".ficha-retrato", ".ficha-monograma"):
+    mensajería (ticket 3.6). En los listados era un círculo de 72 px."""
+    for selector in (
+        ".firma-retrato",
+        ".ficha-retrato",
+        ".ficha-monograma",
+        ".retrato",
+        ".monograma",
+    ):
         assert "border-radius" not in _regla(selector), f"«{selector}» redondea el retrato"
-    assert "aspect-ratio:4/5" in _regla(".ficha-retrato")
+    for selector in (".ficha-retrato", ".retrato"):
+        assert "aspect-ratio:4/5" in _regla(selector), f"«{selector}» no es 4:5"
+    assert "border-radius:50%" not in _css(), "queda un círculo en la hoja"
 
 
 # ── Superficies, tinta y amarillo (tickets 3.1 y 3.2) ─────────────────────
@@ -585,7 +593,6 @@ BLANCO_PERMITIDO = {
     ".newsletter input[type=email]",
     ".form input, .form textarea, .form select",
     "#search-results:not(:empty)",
-    ".avatar",
     ".pub-card img, .pub-cover-fallback",
     ".partner-logo",
     ".embed-play",
@@ -749,3 +756,60 @@ def test_el_destacado_va_a_dos_columnas_sobre_el_papel():
         ".featured.player-frame"
     )
     assert "max-width:none" in _regla(".featured>.player-frame,.featured>video")
+
+
+# ── Duotono y retratos (tickets 3.3 y 3.6) ────────────────────────────────
+
+
+def test_el_duotono_es_una_tinta_sobre_el_papel():
+    """La tinta va de fondo, la foto en gris se aclara encima y el papel se multiplica por
+    arriba: cada gris cae entre la tinta y el papel. Una sola tinta en todo el sitio, el
+    azul del cartel; sin `isolation` la mezcla alcanzaría lo que hay detrás de la foto."""
+    duo = _regla(".riso-duo")
+    assert "isolation:isolate" in duo and "background-color:var(--caratula)" in duo
+    foto = _regla(".riso-duoimg")
+    assert "filter:grayscale(1)" in foto and "mix-blend-mode:screen" in foto
+    papel = _regla(".riso-duo::after")
+    assert "mix-blend-mode:multiply" in papel and "background-color:var(--paper)" in papel
+    assert "pointer-events:none" in papel, "la capa del papel no puede tapar el enlace"
+    # La tinta es el fondo de las reglas del duotono que no son la capa del papel.
+    tintas = {
+        tinta
+        for selector, cuerpo in _reglas()
+        if "riso-duo" in selector and "::after" not in selector
+        for tinta in re.findall(r"background-color:var\((--[\w-]+)\)", cuerpo)
+    }
+    assert tintas == {"--caratula"}, f"más de una tinta de duotono: {tintas}"
+
+
+def test_al_senalar_o_enfocar_se_ve_el_original():
+    """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
+    teñido. Y la capa del papel se vuelve transparente."""
+    original = _regla(
+        "a:hover.riso-duoimg,a:focus-visible.riso-duoimg,"
+        ".cinta-caja:hover.riso-duoimg,.cinta-caja:focus-within.riso-duoimg"
+    )
+    assert "filter:none" in original and "mix-blend-mode:normal" in original
+    papel = _regla(
+        "a:hover.riso-duo::after,a:focus-visible.riso-duo::after,"
+        ".cinta-caja:hover.riso-duo::after,.cinta-caja:focus-within.riso-duo::after"
+    )
+    assert "background-color:transparent" in papel
+
+
+# El duotono, solo en los listados: tarjetas de integrante, cinta y hoja de contactos. Las
+# cubiertas, los afiches, los logos y las fichas se ven tal cual.
+CON_DUOTONO = {"_member_card.html", "_member_card_cinta.html", "gallery.html"}
+
+
+def test_el_duotono_solo_va_en_los_listados():
+    plantillas = Path(__file__).resolve().parent.parent / "templates"
+    con_duo = {p.name for p in plantillas.rglob("*.html") if "riso-duo" in p.read_text("utf-8")}
+    assert con_duo == CON_DUOTONO, f"duotono en: {sorted(con_duo)}"
+
+
+def test_toda_la_tarjeta_de_integrante_es_el_enlace():
+    """El rol y la reseña quedaban fuera del enlace: la capa del enlace cubre la tarjeta."""
+    assert "position:relative" in _regla(".member-card")
+    capa = _regla(".member-card>a::after")
+    assert 'content:""' in capa and "inset:0" in capa
