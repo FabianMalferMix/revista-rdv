@@ -5,6 +5,10 @@
 > `CON-n`, `COM-n`). Este backlog agrupa esos 91 hallazgos en lotes ejecutables, en orden, con
 > las decisiones ya tomadas. Fecha: 2026-10-08. Las líneas de `site.css` que se citan son las de
 > ese día; comprueba antes de editar, porque cada lote las mueve.
+>
+> **Cerrado el 2026-10-14.** Los 39 tickets están hechos, cada uno con su estado y su PR, y el
+> dueño del sitio aprobó el resultado. La verificación, criterio a criterio:
+> `docs/auditoria-ux-ui-verificacion.md`.
 
 ---
 

@@ -8,25 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 25, el último.** Quien cierre un paso actualiza la
-> sección 1 y, si hace falta, la 2 (ver sección 8).
+> **Actualizado el 2026-10-14: el plan está cerrado, con la aprobación final del dueño.** Lo
+> que venga después ya no son pasos de este plan (ver sección 2).
 
 ## 1. Dónde estamos
 
-**Hechos los 25 pasos.** El último fusionado es el 25 (`ux-6-cierre`, PR #135). `main` está en
-verde, con 881 pruebas. No hay ninguna rama de paso abierta.
+**El plan está cerrado.** Los 25 pasos están hechos y el dueño del sitio aprobó el punto de
+control final el 2026-10-14 («Quedó bien, doy mi aprobación final»), después de probar las
+páginas de lectura con los textos largos de prueba (#136). `main` está en verde, con 893
+pruebas. No hay ninguna rama abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el punto de control final** (sección 2): que el dueño apruebe la tabla de antes y
-después de `docs/auditoria-ux-ui-verificacion.md`. Antes quiso probar las páginas de lectura con
-textos largos: están sembrados (`seed_textos_largos`, #136). Lee «Lo que espera respuesta del dueño», más
-abajo.
+**Siguiente: nada de este plan.** Lo que pida el dueño a partir de ahora va en su propia rama,
+con el mismo método, y se mide contra `tools/ux/final/` (sección 2). Lee «Lo que espera
+respuesta del dueño», más abajo: son tareas suyas, no pasos.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-6-cierre … (#135)»
+git log --oneline --merges -3                    # debe aparecer «Merge plan-ux-cerrado …»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
 grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # ninguno: los 25 están marcados
@@ -75,6 +76,7 @@ nuevo: mira su descripción y la sección 4.
 | 24 | `ux-5-4-busqueda` | #134 | La búsqueda encuentra personas, registros, publicaciones y actividades además de textos y poemas, por grupos; cinco por grupo en la lupa y diez en la página; una consulta menos |
 | 25 | `ux-6-cierre` | #135 | La verificación de §10 criterio a criterio, con capturas de antes y después (`docs/auditoria-ux-ui-verificacion.md`); la pasada de accesibilidad; los enlaces de la barra a 45 px; D1 a D14 y lo diferido documentados |
 | — | `textos-largos-de-prueba` | #136 | Lo pidió el dueño antes del cierre: `seed_textos_largos` siembra seis textos y cinco poemas largos; arreglados el bloque preformateado que desbordaba la página, la columna ancla más alta que la pantalla, los títulos larguísimos y el adelanto de los poemas en la portada |
+| — | `plan-ux-cerrado` | #137 | La aprobación final del dueño, anotada; el plan, cerrado |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -202,6 +204,10 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Dossier (2026-10-14):** mantiene «En números», «Prensa» y «Con el apoyo de», aunque los
   quitó de la portada («Sí, mantén todo eso en el Dossier»).
 - **Paso 22 (2026-10-14):** pidió empezarlo («Sigue con el paso 22») sin comentar el #131.
+- **Punto de control final (2026-10-14):** aprobado («Quedó bien, doy mi aprobación final»).
+  Antes de darlo pidió probar las páginas de lectura con textos largos y realistas (#136). No
+  pidió nada distinto para el poema en prosa, así que se queda como está: cada párrafo se
+  compone como un verso largo, con sangría francesa.
 - **Revisión del paso 24 (2026-10-14):** dio paso al 25 («Sigue al paso 25») sin ajustes:
   quedan aceptados el orden de los grupos de la búsqueda, sus topes y quién sale como persona.
 - **Revisión del paso 23 (2026-10-14):** dio paso al 24 («Sigue al paso 24») sin ajustes:
@@ -242,27 +248,13 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **Los textos largos de prueba (#136)**, que pidió antes de aprobar el cierre. Seis textos y
-   cinco poemas con `zz-largo-` en la dirección; los más exigentes:
-   - http://localhost:8000/articulo/zz-largo-repetir-el-verso/ (15 min, una partitura);
-   - http://localhost:8000/articulo/zz-largo-contra-la-lectura-apurada/ (título de 200 letras,
-     cuatro firmas, ocho etiquetas, palabras y enlaces larguísimos);
-   - http://localhost:8000/poema/zz-largo-letania-para-una-casa-que-se-vende/ (106 versos) y
-     http://localhost:8000/poema/zz-largo-inventario-del-patio/ (en prosa).
-   **Pendiente de su decisión**: cómo componer un poema en prosa (hoy, como versos largos con
-   sangría francesa; ver `docs/deferidos-y-decisiones.md` §4). Se borran con
+1. **Los textos largos de prueba (#136) siguen sembrados** en desarrollo, con `zz-largo-` en la
+   dirección: aparecen arriba en la portada y en los índices. Cuando ya no los quiera:
    `docker compose exec web python manage.py seed_textos_largos --borrar`.
-2. **El punto de control final (#135).** Qué mirar:
-   - la tabla de §10 en `docs/auditoria-ux-ui-verificacion.md`, con las capturas de antes y
-     después de la portada, un índice, un poema y una ficha;
-   - lo que no se cumple y por qué, en su §1 y en `docs/deferidos-y-decisiones.md` §4;
-   - las 12 casillas sin marcar de `docs/guia-pruebas-manuales.md` (§1 y §1.5, la portada, el
-     dossier, la ficha de un evento, la cabecera, el menú, la cinta, los índices, el teclado y
-     los textos largos; §2, la búsqueda por grupos).
-   Cambió una cosa a la vista, pero no se nota: los enlaces de la barra se pulsan ahora en
-   45 px de alto (eran 23), sin moverse de sitio.
-3. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22 a 25 sin
-   comentarla.
+2. **Doce casillas por comprobar** en `docs/guia-pruebas-manuales.md` (§1, §1.5 y §2): las que
+   describen lo que cambió con el rediseño. `docs/retomar-barrido.md` dice cuáles.
+3. **La relación entre publicaciones y reseñas (#131)**: no la comentó; con la aprobación final
+   queda aceptada.
    Qué mirar, a 951 px:
    - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
    - http://localhost:8000/obra/zz-demo-cuadernos-del-ruido/: «Publicación del colectivo:
@@ -284,29 +276,26 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 7. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el punto de control final
+## 2. Después del plan
 
-Los 25 pasos están hechos. Queda que el dueño del sitio apruebe el conjunto viendo la tabla de
-antes y después: `docs/auditoria-ux-ui-verificacion.md`. Pídele su visto bueno expreso. Antes
-de darlo quiso probar las páginas de lectura con textos largos y realistas: los siembra
-`seed_textos_largos` (#136), que de paso destapó y arregló cuatro fallos (sección 1).
+El plan está cerrado: los 25 pasos y el punto de control final, aprobado por el dueño del sitio
+el 2026-10-14. Este documento queda como registro de cómo se hizo y de lo que él decidió por el
+camino (sección 1).
 
-**Qué decirle que no se cumple, y por qué.** Está en el §1 de la verificación. Cuatro cosas las
-decidió él al verlas: el alto de la portada, el control de pausa de la cinta, las cifras en la
-portada y la poca tinta de su primera pantalla, sin planos de color ni bandas oscuras. Las demás
-tienen su causa y su seguimiento en `docs/deferidos-y-decisiones.md` §4: la monoespaciada y
-las mayúsculas de la portada, los diez tamaños de la escala, la medida del manifiesto del
-dossier, los enlaces del pie y la tinta de cuatro índices de filas.
+**Si el dueño pide un cambio**, ya no es un paso de este plan, pero se trabaja igual:
+- una rama y un PR por cambio, con el método de la sección 4 y las reglas de la sección 5;
+- se le enseña antes de construir si choca con algo que él aprobó;
+- se mide contra `tools/ux/final/`, la medida del cierre, que es ahora la línea base:
+  `python3 tools/ux/metrics.py comparar tools/ux/final tools/ux/out/<rama>`.
 
-**Después de su aprobación**, el plan está cerrado:
-- marca el punto de control final en la sección 3 y anótalo en «Lo que ha decidido el dueño»;
-- lo que siga ya no es un paso de este plan: un ajuste que él pida va en su propia rama, con
-  el mismo método (sección 4), y se mide contra `tools/ux/final/`, que es la nueva línea base;
-- quedan sus pendientes de la sección 1: la reseña de prueba del #131, la convocatoria de
-  prueba, la tarjeta para compartir, el hito de 2019 y el material real.
+**Lo que quedó sin cumplir de la auditoría** tiene su causa y su seguimiento en
+`docs/deferidos-y-decisiones.md` §4, con lo que costaría cada punto. Lo que él decidió no se
+«arregla» sin preguntarle: el alto de la portada, la pausa de la cinta, las cifras y la tinta
+de la portada, y el poema en prosa compuesto como verso largo.
 
-**Si pide cambios en lo que no se cumple**, el seguimiento de cada punto, con lo que costaría,
-está en `docs/deferidos-y-decisiones.md` §4.
+**Sus tareas** (sección 1, «Lo que espera respuesta del dueño»): borrar los textos de prueba y
+la reseña de prueba del #131 cuando quiera, la convocatoria de prueba, la tarjeta para
+compartir, el hito de 2019, las doce casillas de la guía y el material real del colectivo.
 
 ## 3. Los pasos
 
@@ -401,8 +390,7 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   `tools/ux/linea-base/`, documentación y decisiones.
   Cierra cuando: hay una tabla con cada criterio de §10 de la auditoría, cumplido o explicado;
   ningún documento describe un estado que ya no existe.
-- ◆ **Punto de control final.** Pendiente: que el dueño apruebe la tabla de antes y después de
-  `docs/auditoria-ux-ui-verificacion.md` (sección 2).
+- ◆ **Punto de control final.** Hecho el 2026-10-14: aprobado (ver sección 1).
 
 Tamaño de lo que queda, según §5 del backlog: los pasos 11, 12, 15, 16, 17, 18, 20 y 22 son
 medianos; el 19 es el grande; el resto, pequeños.

@@ -7,6 +7,9 @@
 >
 > Los datos son los de desarrollo: la identidad real del colectivo, sus 12 integrantes y el
 > material visual genérico (`docs/contenido-visual.md`).
+>
+> **Aprobado por el dueño del sitio el 2026-10-14** («Quedó bien, doy mi aprobación final»),
+> después de probar las páginas de lectura con textos largos (§6).
 
 ## 1. En una página
 
@@ -292,8 +295,8 @@ demostración no podía enseñar, ya arreglados:
 | La portada citaba tres «versos» de un poema sin tope: una oda de versos larguísimos ocupaba diez líneas, y un poema en prosa habría puesto tres párrafos | tres versos, y no más de 160 letras |
 
 Con los arreglos, ninguna de las 25 páginas recorridas se sale de la pantalla en ningún ancho.
-Queda una decisión del dueño: cómo componer un poema en prosa (`docs/deferidos-y-decisiones.md`
-§4).
+El poema en prosa se sigue componiendo como un verso largo, con sangría francesa: el dueño
+aprobó el cierre sin pedir otra cosa (`docs/deferidos-y-decisiones.md` §4).
 
 ## 7. Cómo repetir la medida
 
