@@ -1222,13 +1222,15 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió conservar el bloque de
   publicaciones: la portada mide 4415 px a 1440 (eran 4459, sin poemas ni cierre) y 4084 a 951.
   Lo construido difiere de lo escrito arriba en estos puntos:
-  1. **El orden** es titular, destacado, integrantes, la obra, publicaciones y cierre. Poemas y
-     textos van juntos, lado a lado desde 900 px («la obra»): apilados, cada uno ocupaba una
-     pantalla. Van después de las integrantes, como pide la prueba existente: el tablero los
-     enseñaba antes, y se corrigió al construir.
-  2. **Las superficies** alternan sin tinta: el destacado sobre el papel, las integrantes en la
-     banda clara, la obra sobre el papel, las publicaciones en la banda y el cierre sobre el
-     papel, antes del pie.
+  1. **El orden** es titular, destacado, la obra, integrantes, publicaciones y cierre. Poemas
+     y textos van juntos, lado a lado desde 900 px («la obra»): apilados, cada uno ocupaba una
+     pantalla. **La obra va antes que las integrantes**, al revés de lo que pedía este ticket
+     y de la prueba de julio (`test_home_members_appear_before_texts`): al construir se dejó
+     a las integrantes primero, y el dueño, al verlo, pidió el orden del tablero (PR #127).
+     La prueba se invirtió: `test_home_texts_appear_before_members`.
+  2. **Las superficies** alternan sin tinta: el destacado sobre el papel, la obra en la banda
+     clara, las integrantes sobre el papel (a sangre), las publicaciones en la banda y el
+     cierre sobre el papel, antes del pie.
   3. **Las cabezas de sección** (`_cabeza_de_seccion.html`, D13) llevan como cejilla el grupo
      del pie al que pertenecen («El colectivo», «La obra», «Prensa y gestión») y, bajo el título,
      el filete de su territorio, la misma regla que las cabeceras de índice. La obra lleva su

@@ -68,11 +68,14 @@ def test_home_shows_single_featured_recording_over_poem(client, make_poem):
     assert "Poema Destacado" not in destacados[0].get_text()
 
 
-def test_home_members_appear_before_texts(client, make_article):
+def test_home_texts_appear_before_members(client, make_article):
+    """La obra (poemas y textos) va antes que las integrantes. Desde julio iba al revés,
+    porque las integrantes son lo primero que buscan los programadores; el 2026-10-14 el
+    dueño del sitio, al ver la portada completa, pidió la obra primero (paso 20)."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     _pub(make_article, slug="tx", title="Texto Portada")
     content = client.get(reverse("content:home")).content
-    assert content.index(b"Integrante Uno") < content.index(b"Texto Portada")
+    assert content.index(b"Texto Portada") < content.index(b"Integrante Uno")
 
 
 def test_home_hero_has_manifesto_and_stats(client):

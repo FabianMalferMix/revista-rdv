@@ -143,9 +143,38 @@
     </section>
   {% endif %}
 
+  {% if poemas or articles %}
+    {% comment %}
+       La obra (ticket 4.3): los últimos poemas, con sus tres primeros versos, y los
+       últimos textos. Con sitio van lado a lado; apilados, la portada crecía una pantalla.
+       Va antes que las integrantes: lo pidió el dueño del sitio al ver la portada.
+    {% endcomment %}
+    <section class="home-block band home-obra">
+      <div class="band-in"><p class="rotulo home-obra-cejilla">La obra</p></div>
+      <div class="band-in home-obra-columnas">
+        {% if poemas %}
+          <div class="home-obra-columna">
+            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Poemas" territorio="obra" only %}
+            <ul class="filas">
+              {% for p in poemas %}{% include "content/partials/_poem_card.html" with sin_cejilla=True versos=3 %}{% endfor %}
+            </ul>
+            <p class="home-mas"><a href="{% url 'content:poem_index' %}">Todos los poemas →</a></p>
+          </div>
+        {% endif %}
+        {% if articles %}
+          <div class="home-obra-columna">
+            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Textos" territorio="obra" only %}
+            {% include "content/partials/_article_list.html" %}
+            <p class="home-mas"><a href="{% url 'content:text_archive' %}">Todos los textos →</a></p>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
   {% if members %}
-    {% comment %} En la banda clara, a sangre: la cinta llega a los bordes de la ventana. {% endcomment %}
-    <section class="home-block band home-integrantes">
+    {% comment %} A sangre y sobre el papel: la cinta llega a los bordes de la ventana. {% endcomment %}
+    <section class="home-block sangre home-integrantes">
       <div class="band-in">{% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo=titulo_integrantes territorio="colectivo" only %}</div>
       {% comment %}
          La cinta solo se monta por encima de UMBRAL_CINTA integrantes. Por debajo
@@ -187,36 +216,6 @@
           <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
         </div>
       {% endif %}
-    </section>
-  {% endif %}
-
-  {% if poemas or articles %}
-    {% comment %}
-       La obra (ticket 4.3): los últimos poemas, con sus tres primeros versos, y los
-       últimos textos. Con sitio van lado a lado; apilados, la portada crecía una pantalla.
-       Va después de las integrantes: son lo primero que buscan los programadores (las
-       subió la reorganización de la portada de julio, y el ticket lo mantiene).
-    {% endcomment %}
-    <section class="home-block home-obra">
-      <p class="rotulo home-obra-cejilla">La obra</p>
-      <div class="home-obra-columnas">
-        {% if poemas %}
-          <div class="home-obra-columna">
-            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Poemas" territorio="obra" only %}
-            <ul class="filas">
-              {% for p in poemas %}{% include "content/partials/_poem_card.html" with sin_cejilla=True versos=3 %}{% endfor %}
-            </ul>
-            <p class="home-mas"><a href="{% url 'content:poem_index' %}">Todos los poemas →</a></p>
-          </div>
-        {% endif %}
-        {% if articles %}
-          <div class="home-obra-columna">
-            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Textos" territorio="obra" only %}
-            {% include "content/partials/_article_list.html" %}
-            <p class="home-mas"><a href="{% url 'content:text_archive' %}">Todos los textos →</a></p>
-          </div>
-        {% endif %}
-      </div>
     </section>
   {% endif %}
 

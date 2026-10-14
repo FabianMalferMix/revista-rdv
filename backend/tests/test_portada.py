@@ -1,8 +1,8 @@
 """La portada completa (backlog UX, ticket 4.3; D13).
 
-Después del titular, la portada ordena sus bloques: el destacado, las integrantes («12
-voces»), la obra (los últimos poemas con sus tres primeros versos, junto a los últimos
-textos), las publicaciones que el titular no enseña ya y un cierre para programadores y
+Después del titular, la portada ordena sus bloques: el destacado, la obra (los últimos
+poemas con sus tres primeros versos, junto a los últimos textos), las integrantes («12
+voces»), las publicaciones que el titular no enseña ya y un cierre para programadores y
 jurados. Cada sección lleva encima su parte del sitio y, bajo el título, el filete de su
 territorio. El dueño del sitio eligió conservar el bloque de publicaciones.
 """
@@ -62,8 +62,8 @@ def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client, make_poem):
 
 
 def test_el_orden_de_los_bloques(client, make_poem, make_article):
-    """Las integrantes van antes que la obra: son lo que buscan los programadores. El
-    cierre, al final."""
+    """La obra, las integrantes, las publicaciones y el cierre. La obra va primero porque
+    lo pidió el dueño del sitio al ver la portada; el cierre, al final."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     make_poem(status=PUBLICADO, published_at=timezone.now())
     make_article(status=PUBLICADO, published_at=timezone.now())
@@ -75,7 +75,7 @@ def test_el_orden_de_los_bloques(client, make_poem, make_article):
         for clase in seccion["class"]
         if clase.startswith("home-") and clase != "home-block"
     ]
-    assert secciones == ["home-integrantes", "home-obra", "home-publicaciones", "home-cierre"]
+    assert secciones == ["home-obra", "home-integrantes", "home-publicaciones", "home-cierre"]
 
 
 def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client, make_poem, make_article):
