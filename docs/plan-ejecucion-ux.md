@@ -13,7 +13,8 @@
 
 ## 1. Dónde estamos
 
-**Hechos 18 de 25 pasos.** El último fusionado es el paso 18 (`ux-4-1-cabecera`, PR #123). `main`
+**Hechos 18 de 25 pasos.** El último paso fusionado es el 18 (`ux-4-1-cabecera`, PR #123); después
+entró una corrección del entorno de desarrollo (#124). `main`
 está en verde, con 806 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
@@ -60,6 +61,7 @@ nuevo: mira su descripción y la sección 4.
 | 16 | `ux-3d-imagenes-del-modelo` | #121 | Imágenes de textos y afiches en los listados, crédito y contador en el álbum, aliados por tipo |
 | 17 | `ux-3e-marca` | #122 | El sello con el monograma RV, el icono «RdV», `theme-color` y la tarjeta para compartir |
 | 18 | `ux-4-1-cabecera` | #123 | Cabecera de una fila y fija: cinco enlaces con la página actual marcada, lupa, «Dossier»; «Menú» con el mapa en el teléfono |
+| — | `dev-conexiones-runserver` | #124 | El servidor de desarrollo ya no agota las conexiones de Postgres al medir |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -553,10 +555,11 @@ Ancla en un texto que no se repita y mira `git diff --stat` después de cada gui
 - **Mide también los anchos intermedios.** La fila de la cabecera del paso 18 cabía a 390, 951
   y 1440, pero a 768 y a 820 el botón «Dossier» se salía de la pantalla, y a 320 se salía
   «Menú». `node tools/ux/ver.js <dir> 768 900 …` sale con 1 si una página desborda.
-- **El servidor de desarrollo se queda sin conexiones** si se le piden cientos de páginas
-  seguidas: `runserver` abre un hilo por petición y, con `CONN_MAX_AGE=60`, cada hilo deja su
-  conexión abierta. Postgres admite 100 y a partir de ahí responde 500 («too many clients
-  already»). Mide en tandas, con un minuto entre ellas.
+- **El servidor de desarrollo se quedaba sin conexiones** con cientos de páginas seguidas:
+  `runserver` abre un hilo por petición y, con `CONN_MAX_AGE=60`, cada hilo dejaba su conexión
+  abierta hasta llenar las 100 de Postgres (500, «too many clients already»). Desde el PR #124,
+  `docker-compose.override.yml` le pone `DJANGO_CONN_MAX_AGE=0`: con 357 páginas seguidas no
+  pasa de 2 conexiones. Si vuelve a pasar en otro entorno, mira que el override esté cargado.
 
 - **La prueba de contraste de la hoja solo ve las reglas que declaran a la vez `color` y
   `background`.** Un texto que hereda su color de una banda y está encima de otro fondo (el aviso
