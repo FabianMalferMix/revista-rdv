@@ -13,8 +13,9 @@
 
 ## 1. Dónde estamos
 
-**Hechos 20 de 25 pasos.** El último fusionado es el paso 20 (`ux-4-3-portada`, PR #126). `main`
-está en verde, con 835 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 20 de 25 pasos.** El último paso fusionado es el 20 (`ux-4-3-portada`, PR #126);
+después entró el orden de la portada que pidió el dueño (#127). `main` está en verde, con 835
+pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
 **Siguiente: el paso 21, `ux-4-4-pie-y-enlaces`** (sección 2), cuando el dueño haya visto el
@@ -64,6 +65,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `dev-conexiones-runserver` | #124 | El servidor de desarrollo ya no agota las conexiones de Postgres al medir |
 | 19 | `ux-4-2-hero` | #125 | El nombre como titular junto a la cubierta del catálogo; cifras con su página y línea de respaldo de prensa y aliados |
 | 20 | `ux-4-3-portada` | #126 | La portada completa: integrantes, poemas con sus versos junto a los textos, publicaciones y un cierre para programadores y jurados |
+| — | `portada-obra-antes` | #127 | La obra antes que las integrantes, como en el tablero: lo pidió el dueño |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -170,8 +172,9 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   algo. Vio dos maneras sobre la portada real
   (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió la A: conservar el bloque de
   publicaciones (4415 px a 1440) frente a quitarlo (3841). Antes, al ver el 19, dio paso al 20
-  sin ajustes. Al construir, las integrantes quedaron antes que la obra, como pedía la prueba
-  de julio; el tablero las enseñaba después. Se le avisa.
+  sin ajustes. Al construir, las integrantes quedaron antes que la obra, por la prueba de
+  julio; al verlo, pidió el orden del tablero, con la obra primero (#127). La prueba se
+  invirtió.
 - **Titular de la portada (2026-10-14, paso 19):** vio tres disposiciones capturadas sobre la
   portada real (https://claude.ai/artifact/7iU76LZaaiuhyVPTazCvMv) y eligió la A: el nombre en
   dos líneas y, a su lado, la cubierta del catálogo. Descartó el nombre en una línea como
@@ -191,16 +194,14 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 1. **El paso 20 está fusionado y aún no lo ha visto construido.** Qué mirar en la portada,
    http://localhost:8000/, a 951 px, bajando desde el registro destacado:
-   - «El colectivo» y «12 voces» con su filete azul, sobre la cinta;
    - «La obra»: a la izquierda «Poemas», con «Umbral» y «Oficio de la lluvia» y sus tres
      primeros versos; a la derecha «Textos», con los tres últimos;
+   - «El colectivo» y «12 voces» con su filete azul, sobre la cinta;
    - «Publicaciones», con «Correspondencias» y «Umbral y otras salidas»: el libro del titular
      no se repite;
    - «Para programadores y jurados»: «Dossier», «Prensa», «Aliados» y «Escríbenos», y debajo
      «Última actividad: Recital de invierno, 10 Sep 2026 · Actualizado el 26 de julio de 2026».
-   Se le avisa de que las integrantes van antes que la obra, al revés que en el tablero, para
-   respetar un acuerdo anterior (las integrantes son lo que buscan los programadores). Si
-   prefiere el orden del tablero, es mover un bloque.
+   El orden es el del tablero, con la obra antes que las integrantes, como pidió (#127).
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
