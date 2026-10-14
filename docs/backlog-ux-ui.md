@@ -1527,6 +1527,40 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `max-height:64vh` con scroll propio. Con los resultados agrupados por tipo la lista crece:
   compruébala a 390 y a 951. `test_search_query_budget` mide hoy 9 consultas de 10 (en frío,
   como la cuenta la prueba): cuatro tipos más no caben sin consolidar.
+- **Estado:** hecho (paso 24 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **Las personas** son las integrantes (también las históricas, cuya ficha sigue
+     abierta) y quien firma algo publicado: una firma sin nada publicado no tiene qué
+     enseñar en su página. La integrante lleva su cargo; la firma, «Colaborador», como su
+     ficha.
+  2. **Los cuatro tipos por nombre son una sola consulta**: `coincidencias_por_nombre()` en
+     `apps/content/services.py` une personas, registros, publicaciones y actividades
+     (UNION ALL), cada parte con su orden y su tope. Todas las columnas son anotaciones en el
+     mismo orden, y los huecos, NULL con su tipo (`Cast`): PostgreSQL resuelve los tipos de
+     la UNION de dos en dos, y dos NULL sin tipo quedaban como texto, que luego no casaba con
+     la fecha de una actividad. Los textos y los poemas ya no precargan sus autores, que los
+     resultados no enseñan: la búsqueda hace **8 consultas** en frío (eran 9) y 5 en
+     caliente.
+  3. **Grupos y topes**: Personas, Poemas, Textos, Registros, Publicaciones y Actividades,
+     en ese orden (quien busca un nombre lo encuentra arriba; después, la obra en el orden
+     de la barra). **Cinco por grupo en el panel de la lupa, que es un adelanto, y diez en la
+     página**: el `LIMIT` de cada parte viaja al SQL. La cejilla de cada grupo es un `h2` con
+     la receta de rótulo, y el dato de cada resultado (cargo, «Video · 2026», «Recital · 10
+     Sep 2026 · Santiago», «Plaquette · 2022») va debajo del título: a la derecha se partía
+     en dos líneas en el panel.
+  4. **Una letra sola no busca por nombre**: casaría con casi todos. Los comodines de LIKE
+     (`%`, `_`) se buscan como letras. La fecha de una actividad es la de su hora local.
+  5. El campo de la cabecera y el de la página dicen «Buscar en el sitio…» (decían «Buscar
+     textos…»); la bajada de la página, «Textos, poemas, personas, registros, publicaciones y
+     actividades del colectivo». Cambia a propósito `tests/test_paginas_error.py`, que
+     buscaba el texto anterior en el 404.
+  6. **La guía de pruebas manuales** (`docs/guia-pruebas-manuales.md`, §2) describe ya la
+     búsqueda por grupos: tres casillas quedan sin marcar para que el dueño las compruebe.
+  Medido en desarrollo, a 951 y a 390: «Fernanda» da PERSONAS: Fernanda Soto (Fundadora ·
+  edición); «recital», REGISTROS: «Recital «Nuevas voces» (registro)» y ACTIVIDADES: dos
+  recitales con su fecha y su ciudad; «nunez», Javiera Núñez; «casa», un poema y dos textos.
+  El panel no se sale de la pantalla a 390 y no hay scroll horizontal en `/buscar/` a 320,
+  390, 768, 951, 1024, 1440 y 1920. Pruebas: once nuevas en `tests/test_search.py`;
+  `tests/test_search_hardening.py` y `test_search_query_budget` (≤ 10) siguen en verde.
 
 ### Épica 6 — Cierre: accesibilidad, métricas y documentación
 
@@ -1544,6 +1578,9 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   vista ampliada de una de ellas solo la enseña si el navegador abre el `<details>` al saltar
   al ancla (Chrome lo hace). Al recorrer con teclado, mira el foco sobre las miniaturas del
   mosaico (el enlace cubre la celda entera) y el `summary` con aspecto de botón.
+- **Nota de entrada** (tras el paso 24): los resultados del buscador van por grupos, cada uno
+  con un `h2`, dentro de la región `aria-live` del panel de la lupa: comprueba con un lector de
+  pantalla que el anuncio de cada búsqueda no sea un muro de texto.
 
 #### 6.2 Métricas finales frente a la línea base
 - **Pasos:** recapturar las 21 páginas en `tools/ux/out/final/` y correr
@@ -1569,6 +1606,10 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   docs/auditoria-ux-ui.md y docs/backlog-ux-ui.md (2026-10-08)»; este backlog con cada ticket
   marcado como cerrado y el número de PR.
 - **Aceptación:** ningún documento describe un estado que ya no existe.
+- **Nota de entrada** (tras el paso 24): `docs/retomar-barrido.md` sigue diciendo «Estado a
+  2026-08-24» y «91 de 104 casillas», y la guía tiene 105 marcadas: está desfasado. La guía
+  tiene tres casillas sin marcar en su §2 (la búsqueda por grupos), a la espera de que el
+  dueño las compruebe; `docs/deferidos-y-decisiones.md` §1 no tiene aún D1–D14.
 
 ---
 

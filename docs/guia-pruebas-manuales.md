@@ -146,16 +146,23 @@ no una plantilla vacía.
 > proponía antes esta guía —«poesia»— devuelve **cero resultados**, así que la prueba de
 > acentos no demostraba nada: dos búsquedas vacías también «encuentran lo mismo».
 
-- [x] **Con JavaScript:** escribe `oficio` en la caja de la cabecera. Los resultados
-      aparecen **en vivo** en un overlay, sin recargar (htmx, 300 ms de rebote). Deben
-      salir dos: «Sobre el oficio de la crítica» y «Oficio de la lluvia».
+- [ ] **Con JavaScript:** pulsa la lupa de la cabecera y escribe `oficio`. Los resultados
+      aparecen **en vivo** en un panel, sin recargar (htmx, 300 ms de rebote), **agrupados
+      por tipo**: «Oficio de la lluvia» bajo POEMAS y «Sobre el oficio de la crítica» bajo
+      TEXTOS, con «Ensayo» debajo del título. (Cambió en el paso 24 del plan UX: era una
+      sola lista.)
 - [x] **Sin acentos:** busca `critica` y luego `crítica`. **Ambas deben encontrar lo
       mismo** (extensión `unaccent`): los mismos dos resultados. Con la eñe igual:
       `resena` y `reseña`.
 - [x] **Sin JavaScript:** ve directo a **`/buscar/?q=umbral`**. Debe salir la **página
       completa** con cabecera y pie, no un fragmento suelto.
-- [x] **Busca en poemas y artículos a la vez:** `oficio` devuelve uno de cada — «Sobre el
-      oficio de la crítica» es artículo y «Oficio de la lluvia» es poema.
+- [ ] **Busca en todo el sitio:** `umbral` devuelve el poema «Umbral» (POEMAS), el
+      registro «"Umbral" — lectura de la autora» (REGISTROS) y la publicación «Umbral y
+      otras salidas» (PUBLICACIONES). Antes del paso 24 solo buscaba en poemas y textos.
+- [ ] **Por nombre:** `Fernanda` devuelve a la integrante «Fernanda Soto» bajo PERSONAS, con
+      su cargo debajo; `recital`, el registro bajo REGISTROS y dos actividades bajo
+      ACTIVIDADES, con su fecha y su ciudad. `nunez` (sin eñe ni tilde) encuentra a
+      «Javiera Núñez».
 - [x] **Borradores excluidos:** busca `borrador` → **cero resultados**, aunque haya dos
       piezas sin publicar con esa palabra **en el título** (el poema «Borrador de
       invierno» y el artículo «Antología del margen (borrador)»). Ese es el punto: no

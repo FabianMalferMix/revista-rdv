@@ -1,15 +1,22 @@
+{% comment %}
+   Los resultados por tipo (ticket 5.4): cada grupo bajo su cejilla, con su tope. Era una
+   sola lista de textos y poemas, cada uno con su tipo al lado; ahora el tipo es el grupo y
+   al lado va el dato que distingue a cada resultado (el cargo, la fecha, el lugar).
+{% endcomment %}
 {% if limited %}
   <p class="empty">Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo.</p>
 {% elif q %}
-  {% if results %}
-    <ul class="search-list">
-      {% for r in results %}
-        <li>
-          <a href="{{ r.url }}">{{ r.title }}</a>
-          <span class="kicker">{{ r.kind }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+  {% if grupos %}
+    {% for grupo in grupos %}
+      <section class="search-grupo">
+        <h2 class="rotulo">{{ grupo.titulo }}</h2>
+        <ul class="search-list">
+          {% for r in grupo.resultados %}
+            <li><a href="{{ r.url }}">{{ r.title }}</a>{% if r.dato %} <span class="meta">{{ r.dato }}</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
     {% if panel %}
       <p class="search-all"><a href="{% url 'content:search' %}?q={{ q|urlencode }}">Abrir estos resultados en una página →</a></p>
     {% endif %}

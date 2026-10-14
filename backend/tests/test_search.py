@@ -143,3 +143,159 @@ def test_la_pagina_de_busqueda_tiene_un_solo_campo(client):
     html = client.get(reverse("content:search")).content.decode()
     assert len(re.findall(r'<input[^>]*name="q"', html)) == 1
     assert 'id="search-results"' not in html
+
+
+# ── Cobertura completa y grupos por tipo (backlog UX, ticket 5.4) ───────────
+
+BUSCAR = reverse("content:search")
+
+
+def _grupos(client, q, panel=False):
+    """{cejilla: [(título, dato), …]} de los resultados, en su orden."""
+    from bs4 import BeautifulSoup
+
+    cabeceras = {"HX-Request": "true"} if panel else {}
+    sopa = BeautifulSoup(client.get(BUSCAR, {"q": q}, headers=cabeceras).content, "html.parser")
+    grupos = {}
+    for grupo in sopa.select(".search-grupo"):
+        filas = []
+        for li in grupo.select(".search-list > li"):
+            dato = li.select_one(".meta")
+            filas.append((li.a.get_text(), dato.get_text() if dato else ""))
+        grupos[grupo.h2.get_text()] = filas
+    return grupos
+
+
+def _integrante(nombre, slug, **extra):
+    from apps.people.models import Contributor
+
+    return Contributor.objects.create(display_name=nombre, slug=slug, is_member=True, **extra)
+
+
+def test_fernanda_devuelve_a_la_integrante(client):
+    """La aceptación del ticket: buscar un nombre lleva a la ficha de la integrante."""
+    _integrante("Fernanda Soto", "fernanda-soto", role="Fundadora · edición")
+    grupos = _grupos(client, "Fernanda")
+    assert grupos == {"Personas": [("Fernanda Soto", "Fundadora · edición")]}
+    html = client.get(BUSCAR, {"q": "Fernanda"}).content.decode()
+    assert f'href="{reverse("people:member_detail", args=["fernanda-soto"])}"' in html
+
+
+def test_recital_devuelve_el_registro_y_la_actividad(client):
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from tests.factories import make_event, make_recording
+
+    make_recording(slug="recital-registro", title="Recital «Nuevas voces» (registro)", kind="video")
+    make_event(
+        slug="recital-actividad",
+        title="Recital de invierno",
+        type="recital",
+        city="Santiago",
+        # A las 22:30 de Santiago, en UTC ya es el 11: la fecha es la de la hora local.
+        starts_at=datetime(2026, 9, 10, 22, 30, tzinfo=ZoneInfo("America/Santiago")),
+    )
+    grupos = _grupos(client, "recital")
+    assert list(grupos) == ["Registros", "Actividades"]
+    assert grupos["Registros"] == [("Recital «Nuevas voces» (registro)", "Video")]
+    assert grupos["Actividades"] == [("Recital de invierno", "Recital · 10 Sep 2026 · Santiago")]
+
+
+def test_los_nombres_se_buscan_sin_acentos_ni_mayusculas(client):
+    _integrante("Javiera Núñez", "javiera-nunez")
+    for q in ("nunez", "NÚÑEZ", "Javiera Nu"):
+        assert _grupos(client, q) == {"Personas": [("Javiera Núñez", "Integrante")]}, q
+
+
+def test_una_firma_aparece_solo_si_tiene_algo_publicado(client, make_article):
+    """Una firma sin nada publicado no tiene qué enseñar en su página."""
+    from apps.content.models import EditorialStatus
+    from apps.people.models import Contributor
+
+    con_obra = Contributor.objects.create(display_name="Diego Salinas", slug="diego")
+    sin_obra = Contributor.objects.create(display_name="Diego Borrador", slug="diego-b")
+    make_article(status=EditorialStatus.PUBLISHED).authors.add(con_obra)
+    make_article(status=EditorialStatus.DRAFT).authors.add(sin_obra)
+    assert _grupos(client, "diego") == {"Personas": [("Diego Salinas", "Colaborador")]}
+    html = client.get(BUSCAR, {"q": "diego"}).content.decode()
+    assert f'href="{reverse("content:contributor_detail", args=["diego"])}"' in html
+
+
+def test_lo_que_no_esta_publicado_no_aparece(client):
+    from tests.factories import make_event, make_publication, make_recording
+
+    make_recording(slug="r-oculto", title="Faro oculto", published=False)
+    make_publication(slug="p-oculta", title="Faro oculto", published=False)
+    make_event(slug="e-oculto", title="Faro oculto", published=False)
+    assert _grupos(client, "faro oculto") == {}
+
+
+def test_los_grupos_van_en_su_orden_y_con_su_dato(client, make_poem):
+    from tests.factories import make_publication
+
+    make_publication(slug="umbral-libro", title="Umbral", kind="plaquette", year=2022)
+    _publish(make_poem(slug="umbral-poema", title="Umbral", body="la casa guarda un idioma"))
+    _integrante("Ana Umbral", "ana-umbral")
+    grupos = _grupos(client, "umbral")
+    assert list(grupos) == ["Personas", "Poemas", "Publicaciones"]
+    assert grupos["Publicaciones"] == [("Umbral", "Plaquette · 2022")]
+    assert grupos["Poemas"] == [("Umbral", "")]
+
+
+def test_el_panel_adelanta_cinco_por_grupo_y_la_pagina_diez(client):
+    for n in range(12):
+        _integrante(f"Poeta Número {n:02}", f"poeta-{n:02}")
+    assert len(_grupos(client, "poeta", panel=True)["Personas"]) == 5
+    assert len(_grupos(client, "poeta")["Personas"]) == 10
+
+
+def test_una_letra_sola_no_busca_por_nombre(client):
+    """Casaría con casi todos los nombres: no dice nada."""
+    _integrante("Ana Pérez", "ana")
+    assert "Personas" not in _grupos(client, "a")
+
+
+def test_los_comodines_no_se_cuelan_en_la_busqueda_por_nombre(client):
+    """`%` y `_` se buscan como letras: no casan con todo."""
+    _integrante("Ana Pérez", "ana")
+    for q in ("%%", "__", "%a%"):
+        assert "Personas" not in _grupos(client, q), q
+
+
+def test_un_titulo_con_etiquetas_se_escapa(client):
+    from tests.factories import make_event
+
+    make_event(slug="xss", title="<script>alert(1)</script> recital")
+    html = client.get(BUSCAR, {"q": "recital"}).content.decode()
+    assert "<script>alert(1)</script>" not in html
+    assert "&lt;script&gt;alert(1)&lt;/script&gt; recital" in html
+
+
+def test_los_cuatro_tipos_por_nombre_son_una_sola_consulta(client):
+    """Unidos (UNION ALL), cada uno con su tope: con una consulta por tipo, la búsqueda
+    pasaba de su techo. Y el coste no crece con lo que encuentra."""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    from tests.factories import make_event, make_publication, make_recording
+
+    def consultas():
+        with CaptureQueriesContext(connection) as capturadas:
+            client.get(BUSCAR, {"q": "faro"})
+        return [q["sql"] for q in capturadas if "UNION" in q["sql"]]
+
+    def sembrar(n):
+        _integrante(f"Faro {n}", f"faro-{n}")
+        make_recording(slug=f"faro-r{n}", title=f"Faro {n}")
+        make_publication(slug=f"faro-p{n}", title=f"Faro {n}")
+        make_event(slug=f"faro-e{n}", title=f"Faro {n}")
+
+    sembrar(0)
+    pocas = consultas()
+    for n in range(1, 12):
+        sembrar(n)
+    muchas = consultas()
+    assert len(pocas) == len(muchas) == 1
+    assert muchas[0].count("UNION ALL") == 3
+    assert muchas[0].count("LIMIT 10") == 4, "cada tipo lleva su tope en el SQL"

@@ -48,7 +48,7 @@ def test_el_404_trae_la_navegacion_del_sitio():
     html = Client().get("/una-ruta-que-no-existe/").content.decode()
     assert "Saltar al contenido" in _texto(html)
     assert 'class="masthead"' in html
-    assert 'placeholder="Buscar textos' in html
+    assert 'placeholder="Buscar en el sitio' in html
     assert 'class="site-foot"' in html
 
 
