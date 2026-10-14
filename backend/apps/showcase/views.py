@@ -96,23 +96,29 @@ def dossier(request):
     Un gestor cultural obtiene aquí —o en el PDF maquetado, si se subió— el
     resumen reenviable: quiénes son, qué han hecho, qué han publicado, qué ha
     dicho la prensa y cómo contactarlos. Fuente única: la base de datos.
+
+    La trayectoria es una sola, por años y del más reciente al más antiguo: los hitos, las
+    publicaciones y los ocho últimos eventos. Eran dos listas seguidas, y los años salían
+    desordenados. Retratos, cubiertas y logos vienen en la consulta de su lista.
     """
     from apps.agenda.models import Event, Milestone
-    from apps.agenda.services import stats
+    from apps.agenda.services import cronologia, stats
+    from apps.content.services import ultima_publicacion
     from apps.people.models import Contributor
 
     profile = SiteProfile.load()
+    publicaciones = list(_published())
     return render(
         request,
         "showcase/dossier.html",
         {
             "profile": profile,
-            "stats": stats(),
-            "members": Contributor.members(),
-            "events": Event.past().prefetch_related("participants")[:8],
-            "milestones": Milestone.objects.all(),
-            "publications": _published().prefetch_related("participants"),
+            "stats": stats(profile),
+            "members": list(Contributor.members()),
+            "cronologia": cronologia(Event.past()[:8], Milestone.objects.all(), publicaciones),
+            "publications": publicaciones,
             "mentions": PressMention.objects.filter(published=True).exclude(quote=""),
-            "partners": Partner.objects.filter(active=True),
+            "partners": Partner.objects.filter(active=True).select_related("logo"),
+            "ultima_publicacion": ultima_publicacion(),
         },
     )

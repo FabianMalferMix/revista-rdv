@@ -147,15 +147,16 @@ def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
         )
 
 
-# `.stats-strip` es la tira de cifras del dossier y de la trayectoria: cifras de dato, no de
-# cartel. La portada tuvo una con número grande (`.hero-stats`) hasta que el dueño la quitó.
+# `.stats-strip` es la tira de cifras de la trayectoria: cifras de dato, no de cartel. La
+# cifra grande es la del dossier (`.dossier-cifras`, ticket 5.1): la portada tuvo una
+# (`.hero-stats`) hasta que el dueño la quitó, el 2026-10-14.
 
 
-def test_ninguna_tira_de_cifras_lleva_la_cifra_grande_fuera_de_la_portada():
-    """Ninguna regla puede agrandar el <strong> de una tira de cifras sin acotarla a la
-    portada. Si la regla del número grande pasara a `.stats-strip strong`, /dossier/ y
-    /trayectoria/ mostrarían cifras de cartel sin que nadie lo hubiera pedido. Hoy no hay
-    ninguna: la portada ya no lleva cifras.
+def test_la_cifra_grande_solo_esta_en_el_dossier():
+    """Ninguna regla puede agrandar el <strong> de una tira de cifras fuera del dossier. Si
+    la regla del número grande pasara a `.stats-strip strong`, /trayectoria/ mostraría
+    cifras de cartel sin que nadie lo hubiera pedido. En el dossier sí: es lo primero que
+    busca un jurado (D11).
     """
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
     raiz = re.search(r":root\{(.*?)\n\}", css, re.S).group(1)
@@ -166,27 +167,28 @@ def test_ninguna_tira_de_cifras_lleva_la_cifra_grande_fuera_de_la_portada():
         valor = escala[token.group(1)] if token else valor
         return max(float(n) for n in re.findall(r"([\d.]+)px", valor))
 
-    reglas = re.findall(r"([^{}]*strong[^{}]*)\{([^{}]*)\}", css)
-    for selector, cuerpo in reglas:
-        if "stats" not in selector:
+    grandes = []
+    for selector, cuerpo in re.findall(r"([^{}]*strong[^{}]*)\{([^{}]*)\}", css):
+        if "stats" not in selector and "cifras" not in selector:
             continue
         tam = re.search(r"font-size:\s*([^;]+)", cuerpo)
         if tam and maximo_px(tam.group(1)) > 24:
-            assert ".hero-stats" in selector, (
-                f"la cifra grande dejó de estar acotada a la portada: «{selector.strip()}»; "
-                f"así se filtra a /dossier/ y /trayectoria/"
-            )
+            grandes.append(selector.strip())
+    assert grandes == [".dossier-cifras strong"], (
+        f"la cifra grande tiene que estar en el dossier y solo ahí: {grandes}"
+    )
 
 
-def test_el_dossier_y_la_trayectoria_no_llevan_la_marca_de_portada():
-    """`hero-stats` marcaba la tira con estilo de portada: las otras no la llevan."""
+def test_la_trayectoria_conserva_su_tira_y_el_dossier_tiene_sus_cifras():
+    """La trayectoria rotula sus cifras como dato; el dossier, con número grande. Ninguna de
+    las dos lleva la marca de portada, que heredaría su estilo."""
     tpl = settings.BASE_DIR / "templates"
-    for otra in ("showcase/dossier.html", "agenda/trayectoria.html"):
-        texto = (tpl / otra).read_text(encoding="utf-8")
-        assert "stats-strip" in texto, f"{otra} ya no usa la tira de cifras"
-        assert "hero-stats" not in texto, (
-            f"{otra} adoptó la marca de portada y heredaría la cifra grande"
-        )
+    trayectoria = (tpl / "agenda/trayectoria.html").read_text(encoding="utf-8")
+    dossier = (tpl / "showcase/dossier.html").read_text(encoding="utf-8")
+    assert "stats-strip" in trayectoria, "la trayectoria ya no usa la tira de cifras"
+    assert "dossier-cifras" in dossier and "stats-strip" not in dossier
+    for texto in (trayectoria, dossier):
+        assert "hero-stats" not in texto
 
 
 def test_ninguna_regla_estiliza_un_titular_que_las_tarjetas_no_emiten():

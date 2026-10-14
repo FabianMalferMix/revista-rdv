@@ -37,6 +37,15 @@ def make_photo(event, position=0):
     return EventPhoto.objects.create(event=event, asset=asset, position=position)
 
 
+def make_image(nombre, alt="Imagen"):
+    """Un recurso de imagen real, de 30 × 40, para retratos, cubiertas y logos."""
+    buffer = BytesIO()
+    Image.new("RGB", (30, 40), (10, 20, 30)).save(buffer, format="JPEG")
+    asset = MediaAsset(alt_text=alt)
+    asset.file.save(f"{nombre}.jpg", ContentFile(buffer.getvalue()))
+    return asset
+
+
 def make_recording(**kwargs):
     n = Recording.objects.count()
     defaults = {

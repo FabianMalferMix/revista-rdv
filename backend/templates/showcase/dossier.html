@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static images personas %}
 
 {% block title %}Dossier — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Kit de prensa del colectivo: quiénes somos, trayectoria, publicaciones y contacto.{% endblock %}
@@ -10,77 +10,129 @@
 {% endblock %}
 
 {% block content %}
+{% comment %}
+   Kit de prensa (ticket 5.1): lo que un gestor o un jurado reenvía. Se lee en el carril
+   de lectura, que mide lo que una hoja A4: lo que se ve es lo que se imprime. Las
+   imágenes no esperan a que se baje hasta ellas (`lazy=False`): una imagen diferida que
+   el navegador aún no ha pedido sale en blanco al imprimir.
+{% endcomment %}
 <article class="dossier-doc">
-  <div class="no-print dossier-toolbar">
-    <button class="btn" type="button" data-print>Imprimir / guardar como PDF</button>
-    {% if profile.dossier_pdf %}
-      <a class="btn" href="{{ profile.dossier_pdf.url }}">Descargar PDF maquetado</a>
-    {% endif %}
-  </div>
-
   <header class="dossier-head">
-    <h1>{{ profile.name|default:"Colectivo" }}</h1>
-    {% if profile.tagline %}<p class="dek">{{ profile.tagline }}</p>{% endif %}
-    <p class="meta">
-      {% if profile.location %}{{ profile.location }} · {% endif %}
-      {% if profile.founded_year %}desde {{ profile.founded_year }} · {% endif %}
-      {{ request.scheme }}://{{ request.get_host }}
-    </p>
+    <div>
+      <p class="kicker">Dossier · kit de prensa</p>
+      <h1>{{ profile.name|default:"Colectivo" }}</h1>
+      {% if profile.tagline %}<p class="dek">{{ profile.tagline }}</p>{% endif %}
+    </div>
+    {# Sin JavaScript el botón no haría nada: dossier.js lo enseña al enlazarlo. #}
+    <div class="no-print dossier-toolbar">
+      <button class="btn" type="button" data-print hidden>Imprimir / guardar como PDF</button>
+      {% if profile.dossier_pdf %}
+        <a class="btn" href="{{ profile.dossier_pdf.url }}">Descargar PDF maquetado</a>
+      {% endif %}
+    </div>
   </header>
 
-  {% if profile.manifesto %}
+  <div class="dossier-intro">
+    {% if profile.manifesto %}
+      <section class="dossier-section dossier-quienes">
+        <h2 class="subhead">Quiénes somos</h2>
+        {{ profile.manifesto|linebreaks }}
+      </section>
+    {% endif %}
+    <section class="dossier-section dossier-ficha">
+      <h2 class="subhead">Ficha</h2>
+      <dl class="dossier-datos">
+        {% if profile.founded_year %}<div><dt class="rotulo">Fundado</dt><dd>{{ profile.founded_year }}</dd></div>{% endif %}
+        {% if profile.location %}<div><dt class="rotulo">Lugar</dt><dd>{{ profile.location }}</dd></div>{% endif %}
+        {% if profile.correo_de_contacto %}<div><dt class="rotulo">Contacto</dt><dd><a href="mailto:{{ profile.correo_de_contacto }}">{{ profile.correo_de_contacto }}</a></dd></div>{% endif %}
+        {% if instagram_del_colectivo %}<div><dt class="rotulo">Instagram</dt><dd><a href="{{ instagram_del_colectivo.url }}">{{ instagram_del_colectivo.usuario }}</a></dd></div>{% endif %}
+        <div><dt class="rotulo">Sitio</dt><dd>{{ request.get_host }}</dd></div>
+        {% if ultima_publicacion %}<div><dt class="rotulo">Actualizado</dt><dd>el {{ ultima_publicacion|date:"j \d\e F \d\e Y" }}</dd></div>{% endif %}
+      </dl>
+    </section>
+  </div>
+
+  {% if stats.years or members or stats.events or stats.publications %}
     <section class="dossier-section">
-      <h2 class="subhead">Quiénes somos</h2>
-      {{ profile.manifesto|linebreaks }}
+      <h2 class="subhead">En números</h2>
+      <ul class="dossier-cifras">
+        {% if stats.years %}<li><strong>{{ stats.years }}</strong> <span class="meta">año{{ stats.years|pluralize }} de trabajo</span></li>{% endif %}
+        {% if members %}<li><strong>{{ members|length }}</strong> <span class="meta">integrante{{ members|length|pluralize }}</span></li>{% endif %}
+        {% if stats.events %}<li><strong>{{ stats.events }}</strong> <span class="meta">actividad{{ stats.events|pluralize:"es" }}</span></li>{% endif %}
+        {% if stats.festivales %}<li><strong>{{ stats.festivales }}</strong> <span class="meta">festival{{ stats.festivales|pluralize:"es" }}</span></li>{% endif %}
+        {% if stats.ferias %}<li><strong>{{ stats.ferias }}</strong> <span class="meta">feria{{ stats.ferias|pluralize }}</span></li>{% endif %}
+        {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> <span class="meta">publicaci{{ stats.publications|pluralize:"ón,ones" }}</span></li>{% endif %}
+      </ul>
     </section>
   {% endif %}
-
-  <section class="dossier-section">
-    <h2 class="subhead">En números</h2>
-    <ul class="stats-strip">
-      {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
-      <li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }}</li>
-      {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</li>{% endif %}
-      {% if stats.festivals %}<li><strong>{{ stats.festivals }}</strong> festival{{ stats.festivals|pluralize:"es" }}/ferias</li>{% endif %}
-    </ul>
-  </section>
 
   {% if members %}
     <section class="dossier-section">
       <h2 class="subhead">Integrantes</h2>
-      <ul class="dossier-members">
+      <ul class="dossier-integrantes">
         {% for m in members %}
-          <li>
-            <strong>{{ m.display_name }}</strong>{% if m.role %} · {{ m.role }}{% endif %}
-            {% if m.short_bio %}<p class="dek">{{ m.short_bio }}</p>{% endif %}
+          <li class="dossier-integrante">
+            {% if m.photo %}
+              {% responsive_img m.photo css_class="retrato" sizes="96px" lazy=False decorativa=True %}
+            {% else %}
+              <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
+            {% endif %}
+            <div>
+              <h3><a href="{{ m.get_absolute_url }}">{{ m.display_name }}</a></h3>
+              {% if m.role %}<p class="member-role">{{ m.role }}</p>{% endif %}
+              {% if m.short_bio %}<p class="member-bio">{{ m.short_bio }}</p>{% endif %}
+            </div>
           </li>
         {% endfor %}
       </ul>
     </section>
   {% endif %}
 
-  {% if events or milestones %}
+  {% if cronologia %}
     <section class="dossier-section">
-      <h2 class="subhead">Trayectoria destacada</h2>
-      <ul class="dossier-list-plain">
-        {% for m in milestones %}
-          <li><strong>{{ m.year }}</strong> — {{ m.title }}</li>
+      <h2 class="subhead">Trayectoria</h2>
+      {% comment %}
+         Una sola lista, por años: el año a la izquierda y, a su lado, qué fue (el tipo),
+         cómo se llamó y dónde. Los hitos no enlazan a nada.
+      {% endcomment %}
+      <ol class="cronologia">
+        {% for bloque in cronologia %}
+          <li class="cronologia-anio">
+            <h3>{{ bloque.year }}</h3>
+            <ul class="cronologia-filas">
+              {% for m in bloque.milestones %}
+                <li><span class="rotulo">Hito</span><span class="cronologia-titulo">{{ m.title }}</span></li>
+              {% endfor %}
+              {% for pub in bloque.publications %}
+                <li><span class="rotulo">{{ pub.get_kind_display }}</span><span class="cronologia-titulo"><a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a></span>{% if pub.publisher %}<span class="meta">{{ pub.publisher.name }}</span>{% endif %}</li>
+              {% endfor %}
+              {% for e in bloque.events %}
+                <li><span class="rotulo">{{ e.get_type_display }}</span><span class="cronologia-titulo"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></span>{% if e.city or e.is_external and e.host %}<span class="meta">{% if e.is_external and e.host %}{{ e.host }}{% if e.city %} · {% endif %}{% endif %}{{ e.city }}</span>{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </li>
         {% endfor %}
-        {% for e in events %}
-          <li><strong>{{ e.starts_at|date:"Y" }}</strong> — {{ e.title }}{% if e.is_external and e.host %} ({{ e.host }}){% endif %}{% if e.city %}, {{ e.city }}{% endif %}</li>
-        {% endfor %}
-      </ul>
-      <p class="meta no-print"><a href="{% url 'agenda:trayectoria' %}">Trayectoria completa →</a></p>
+      </ol>
+      <p class="meta no-print dossier-mas"><a href="{% url 'agenda:trayectoria' %}">Trayectoria completa →</a></p>
     </section>
   {% endif %}
 
   {% if publications %}
     <section class="dossier-section">
       <h2 class="subhead">Publicaciones</h2>
-      <ul class="dossier-list-plain">
+      <ul class="dossier-publicaciones">
         {% for pub in publications %}
-          <li>
-            <strong>{{ pub.title }}</strong> ({{ pub.get_kind_display|lower }}{% if pub.year %}, {{ pub.year }}{% endif %}{% if pub.publisher %}, {{ pub.publisher.name }}{% endif %})
+          <li class="dossier-publicacion">
+            {% if pub.cover %}
+              {% responsive_img pub.cover css_class="dossier-cubierta" sizes="120px" lazy=False decorativa=True %}
+            {% else %}
+              <span class="pub-cover-fallback dossier-cubierta" aria-hidden="true"><span>{{ pub.title }}</span></span>
+            {% endif %}
+            <div>
+              <h3 class="pub-title"><a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a></h3>
+              <p class="meta">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
+              {% if pub.synopsis %}<p class="dossier-sinopsis">{{ pub.synopsis|truncatewords:40 }}</p>{% endif %}
+            </div>
           </li>
         {% endfor %}
       </ul>
@@ -90,27 +142,36 @@
   {% if mentions %}
     <section class="dossier-section">
       <h2 class="subhead">Prensa</h2>
-      {% for m in mentions %}
-        <blockquote class="press-quote">«{{ m.quote }}» <cite>— {{ m.outlet }}{% if m.published_on %}, {{ m.published_on|date:"Y" }}{% endif %}</cite></blockquote>
-      {% endfor %}
+      <div class="dossier-prensa">
+        {% for m in mentions %}
+          <blockquote class="press-quote">«{{ m.quote }}» <cite class="meta">{{ m.outlet }}{% if m.published_on %}, {{ m.published_on|date:"Y" }}{% endif %}</cite></blockquote>
+        {% endfor %}
+      </div>
     </section>
   {% endif %}
 
   {% if partners %}
     <section class="dossier-section">
       <h2 class="subhead">Con el apoyo de</h2>
-      <p>{% for p in partners %}{{ p.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+      <ul class="dossier-aliados">
+        {% for p in partners %}
+          <li>
+            {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="160px" lazy=False decorativa=True %}{% endif %}
+            <span class="meta">{{ p.name }}</span>
+          </li>
+        {% endfor %}
+      </ul>
     </section>
   {% endif %}
 
   <section class="dossier-section dossier-contact" id="contacto">
     <h2 class="subhead">Contacto</h2>
-    <p>
-      {% if profile.booking_email %}<strong>Gestión y contrataciones:</strong> {{ profile.booking_email }}<br>{% endif %}
-      {% if profile.general_email %}<strong>General:</strong> {{ profile.general_email }}<br>{% endif %}
-      {% if profile.phone %}<strong>Teléfono:</strong> {{ profile.phone }}<br>{% endif %}
-      {% for link in profile.social_links.all %}{{ link.platform }}: {{ link.url }}<br>{% endfor %}
-    </p>
+    <dl class="dossier-datos">
+      {% if profile.booking_email %}<div><dt class="rotulo">Gestión y contrataciones</dt><dd><a href="mailto:{{ profile.booking_email }}">{{ profile.booking_email }}</a></dd></div>{% endif %}
+      {% if profile.general_email %}<div><dt class="rotulo">General</dt><dd><a href="mailto:{{ profile.general_email }}">{{ profile.general_email }}</a></dd></div>{% endif %}
+      {% if profile.phone %}<div><dt class="rotulo">Teléfono</dt><dd>{{ profile.phone }}</dd></div>{% endif %}
+      {% for link in redes_del_colectivo %}<div><dt class="rotulo">{{ link.platform }}</dt><dd><a href="{{ link.url }}">{{ link.usuario|default:link.url }}</a></dd></div>{% endfor %}
+    </dl>
   </section>
 </article>
 {% endblock %}

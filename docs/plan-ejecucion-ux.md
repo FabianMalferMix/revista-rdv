@@ -8,27 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 21.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-14, tras el paso 22.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 21 de 25 pasos.** El último paso fusionado es el 21 (`ux-4-4-pie-y-enlaces`, PR #130);
-después entró la relación entre publicaciones y reseñas que pidió el dueño (#131). `main` está
-en verde, con 845 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 22 de 25 pasos.** El último paso fusionado es el 22 (`ux-5-1-dossier`, PR #132). `main`
+está en verde, con 855 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el paso 22, `ux-5-1-dossier`** (sección 2), cuando el dueño haya visto el #131. El
-punto de control D está aprobado. Lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el paso 23, `ux-5-2-agenda-galeria-aliados`** (sección 2), cuando el dueño haya
+visto el 22. Lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-4-4-pie-y-enlaces … (#130)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-5-1-dossier … (#132)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 22
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 23
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -69,6 +68,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `portada-sin-cita` | #129 | Fuera de la portada la cita de prensa: lo pidió el dueño |
 | 21 | `ux-4-4-pie-y-enlaces` | #130 | El pie abre con la identidad del colectivo; actividades en la ficha de cada integrante; «Aliados» se titula así |
 | — | `publicaciones-y-resenas` | #131 | Cada publicación enseña sus reseñas: una obra reseñada puede ser un libro del colectivo (con migración) |
+| 22 | `ux-5-1-dossier` | #132 | El dossier como kit de prensa: ficha, cifras grandes, retratos, una sola trayectoria por años, cubiertas, prensa, logos; se imprime con sus imágenes |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -115,6 +115,10 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Identidad del colectivo en el pie | no | sí, sin subir el alto: 320 px a 951 y 236 desde 1100 |
 | Enlaces internos en la ficha de una integrante | 10 | 13: con sus actividades |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
+| Años de la trayectoria del dossier | 2022, 2019, 2026, 2026, 2026, 2025 | en orden: 2026, 2025, 2024, 2023, 2022, 2019 |
+| Imágenes del dossier al imprimir desde el navegador | ninguna | 12 retratos, 3 cubiertas y 3 logos; A4 en cuatro hojas |
+| Fotos a una tinta al imprimir cualquier página | salían en blanco | tal cual |
+| Consultas del dossier (prueba, en frío) | 17 | 15, con retratos, cubiertas, logos y la fecha |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -122,7 +126,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
+| El afiche de un evento a 320 px, sin su pie; sus fotos en una rejilla uniforme | paso 23 |
+| Un aliado sin logo no enseña nada en su lugar en `/aliados/` | paso 23 |
 
 ### Lo que ha decidido el dueño del sitio
 
@@ -180,6 +185,7 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
   publicación del colectivo (`reviews.Work.publicacion`, #131).
 - **Dossier (2026-10-14):** mantiene «En números», «Prensa» y «Con el apoyo de», aunque los
   quitó de la portada («Sí, mantén todo eso en el Dossier»).
+- **Paso 22 (2026-10-14):** pidió empezarlo («Sigue con el paso 22») sin comentar el #131.
 - **Revisión del paso 20 (2026-10-14):** tras los tres ajustes de la portada (#127 a #129), dio
   paso al 21 («Adelante, sigue al paso 21»).
 - **Cifras y aliados (2026-10-14, después del paso 20):** los quitó de la portada por ahora,
@@ -213,7 +219,21 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **La relación entre publicaciones y reseñas (#131) está fusionada y aún no la ha visto.**
+1. **El paso 22, el dossier (#132).** Qué mirar, a 951 px:
+   - http://localhost:8000/dossier/: arriba, «DOSSIER · KIT DE PRENSA» sobre el nombre y el
+     botón «Imprimir / guardar como PDF» a la derecha; debajo, «Quiénes somos» y la «Ficha»
+     lado a lado; «En números» con el trazo amarillo; «Integrantes» con su retrato;
+     «Trayectoria» por años (2026 a 2019); «Publicaciones» con su cubierta; «Prensa»; «Con el
+     apoyo de» con los logos; «Contacto»;
+   - el botón «Imprimir / guardar como PDF», con la vista previa: cuatro hojas A4 con retratos,
+     cubiertas y logos;
+   - http://localhost:8000/dossier/#contacto: el bloque «Contacto».
+   Dos decisiones que puede cambiar: los retratos van **en su color**, sin el duotono azul de
+   `/integrantes/` (el dossier es un documento, como las fichas), y el dossier sigue en la
+   columna de lectura (780 px, como una hoja). Un dato de la base que se ve raro: el hito
+   «Fundación del colectivo» dice **2019** y la ficha dice «Fundado 2023»; se corrige en el
+   panel (Agenda → Hitos, o Perfil del sitio).
+2. **La relación entre publicaciones y reseñas (#131)**: siguió al paso 22 sin comentarla.
    Qué mirar, a 951 px:
    - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
    - http://localhost:8000/obra/zz-demo-cuadernos-del-ruido/: «Publicación del colectivo:
@@ -224,64 +244,68 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
    `docker compose exec web python manage.py shell -c "from apps.content.models import Article; from apps.reviews.models import Work; Article.objects.filter(slug='zz-demo-resena-cuadernos-del-ruido').delete(); Work.objects.filter(slug='zz-demo-cuadernos-del-ruido').delete()"`.
    Sigue abierto si quiere quitar el «12 integrantes» de la cejilla y el «12 voces»: no lo ha
    contestado, y se quedan.
-2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
+3. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
-3. **La tarjeta para compartir** del paso 17 está en `tools/ux/out/tarjeta-para-compartir.png`:
+4. **La tarjeta para compartir** del paso 17 está en `tools/ux/out/tarjeta-para-compartir.png`:
    él decide si la sube desde el panel (Perfil del sitio → imagen para compartir).
-4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
+5. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el punto de control D y el paso 22, `ux-5-1-dossier`
+## 2. Qué sigue: el paso 23, `ux-5-2-agenda-galeria-aliados`
 
-**Primero, el punto de control D**: la portada completa (pasos 18 a 21: cabecera, titular,
-bloques y pie), vista a 1440, 1920 y 390. Pide al dueño su aprobación expresa del conjunto.
-Mucho ya lo decidió por el camino: el titular, conservar las publicaciones, la obra antes que
-las integrantes, y sin cifras, aliados ni cita en la portada.
+**Antes**, el dueño tiene que haber visto el paso 22 (sección 1, «Lo que espera respuesta del
+dueño»). Si pide ajustes del dossier, van primero, en su propia rama.
 
-**El paso 22: ticket 5.1 (D11).** Lee su nota de entrada tras los pasos 20 y 21.
+**El paso 23: tickets 5.2 y 5.3.** Lee sus notas de entrada tras el paso 22: buena parte la dejó
+el paso 16 (el afiche en la agenda, en «Próxima actividad» y en la ficha; el crédito y el
+contador de las fotos; los aliados por tipo con su logo).
 
-**Qué se hace.** El dossier pasa a ser un kit de prensa:
-- una cejilla «Dossier · kit de prensa» sobre el título;
-- una ficha: fundado, ciudad, integrantes, contacto, Instagram y «Actualizado el…»;
-- una sola trayectoria en orden descendente, con hitos, eventos y publicaciones juntos;
-- las integrantes con su retrato y las publicaciones con su cubierta;
-- el bloque de contacto;
-- y la impresión desde el navegador con sus imágenes.
+**Qué se hace.**
+- En la ficha de un evento, el afiche como objeto a 420 px, con su pie «Afiche · {pie} ·
+  {crédito}».
+- Sus fotos, como un mosaico de seis en 3:2 con la primera a doble columna, y «Ver las N fotos»
+  cuando hay más.
+- En `/aliados/`, un reemplazo tipográfico de 160 × 80 para el aliado sin logo.
+- La ampliación de las fotos sigue funcionando sin JavaScript.
 
-**Qué hace falta.** Nada: el dueño quiere en el dossier las cifras («En números»), la prensa y
-«Con el apoyo de», aunque los quitó de la portada (2026-10-14). Junto a cada publicación, el
-dossier puede enseñar también sus reseñas, ahora que el modelo las relaciona
-(`publication.obra_resenada.reviews`).
+**Qué hace falta.** Nada del dueño. Para ver el reemplazo hace falta un aliado sin logo en
+desarrollo: quítale el logo a uno y devuélveselo al terminar, o crea uno y bórralo.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Años de la trayectoria del dossier | 2022, 2019, 2026, 2026, 2026, 2025 | en orden descendente estricto |
-| Retratos y cubiertas al imprimir desde el navegador | ninguno: el dossier no tiene imágenes | sí |
-| `/dossier/#contacto` lleva al bloque de contacto | sí, desde el paso 18 | sí |
-| El título dice que es el dossier | no: el `h1` es el nombre del colectivo | sí |
+| Afiche en la ficha de un evento, a 1440 y a 951 | 320 px, sin pie | 420 px, con «Afiche · …» |
+| Fotos en la ficha de un evento | seis iguales, de 207 × 129 | mosaico 3:2, la primera a doble columna; «Ver las N fotos» si hay más de seis |
+| Aliado sin logo en `/aliados/` | no enseña nada en su lugar | un reemplazo tipográfico de 160 × 80 |
+| Afiche en la agenda, en «Próxima actividad» y en la ficha | sí, desde el paso 16 | sí |
+| Ampliación de fotos sin JavaScript | sí | sí |
+| Ratio de `/galeria/` y `/aliados/` a 1440 | 0,90 y 0,90 | 0,85 o más |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
-**Pruebas que cambian a propósito.**
-- `tests/test_dossier.py` sigue en verde, con lo que cambie de su estructura.
-- `tests/test_ui_identity.py`: la cifra grande podrá estar en `.dossier-doc`, si el dueño
-  quiere cifras ahí; hoy la prueba solo la admite en `.hero-stats`, que ya no existe.
+**Pruebas que cambian a propósito.** Ninguna conocida. Siguen las de
+`tests/test_imagenes_del_modelo.py` (afiches, crédito, contador, aliados por tipo) y
+`tests/test_ui_ux.py::test_event_gallery_renders_lightbox`; se añaden las del afiche de la
+ficha, el mosaico y el reemplazo.
 
 **Cuidados.**
 - **Si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes** de
   construir: lo que aprueba viendo un tablero manda.
-- **Las imágenes del dossier** salen del modelo: `Contributor.photo` y `Publication.cover`.
-  Tráelas con `select_related` y mira los techos de `tests/test_performance.py` (el dossier
-  tiene 22; hace 17 en la prueba).
-- **La hoja de impresión** oculta hoy la cabecera, el pie y `.no-print`; comprueba que no
-  oculte las imágenes, con `emulateMedia({media: 'print'})` de Playwright.
-- `SiteProfile.presentacion` da «Colectivo de poesía · Chile · desde 2023» para la ficha.
+- **El afiche de la ficha se ve tal cual**, y en los listados a una tinta: lo decidió el paso 16
+  y el dueño lo aprobó. Las fotos de la ficha no llevan duotono: `CON_DUOTONO`, en
+  `tests/test_css_sistema.py`, es la lista cerrada de plantillas con duotono.
+- **Al imprimir**, las fotos a una tinta ya salen tal cual (`.riso-duo` en `@media print`, paso
+  22).
+- **El dossier enseña los mismos logos** (`.partner-logo`, con el nombre como pie): si el
+  reemplazo cambia la clase o el tamaño del logo, míralo también en `/dossier/`.
+- Las fotos de la ficha y la galería no deben añadir una consulta por foto: las pruebas de
+  `tests/test_imagenes_del_modelo.py` cuentan con dos y con seis filas.
 
 **Qué enseñarle al dueño al terminar.**
-- El dossier a 951 px.
-- La vista previa de impresión, con los retratos y las cubiertas.
+- La ficha de un evento a 951 px:
+  http://localhost:8000/evento/recital-nuevas-voces-lanzamiento/ (afiche, pie y mosaico).
+- `/aliados/` con un aliado sin logo, y la ampliación de una foto.
 
 ## 3. Los pasos
 
@@ -358,7 +382,9 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   4,5:1 o más; cada ficha tiene cuatro enlaces internos o más.
 - ◆ **Punto de control D.** Hecho el 2026-10-14: aprobado (ver sección 1). Portada completa a
   1440, 1920 y 390.
-- [ ] **22. `ux-5-1-dossier`.** Ticket 5.1 (D11): el dossier como kit de prensa.
+- [x] **22. `ux-5-1-dossier`.** Ticket 5.1 (D11): el dossier como kit de prensa. Sigue en la
+  columna de lectura, como una hoja; de paso, las fotos a una tinta ya no salen en blanco al
+  imprimir cualquier página.
   Cierra cuando: los años van en orden descendente estricto; el PDF impreso desde el navegador
   enseña retratos y cubiertas; `/dossier/#contacto` lleva al bloque de contacto.
 - [ ] **23. `ux-5-2-agenda-galeria-aliados`.** Tickets 5.2 y 5.3.

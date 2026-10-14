@@ -278,7 +278,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 /* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
 .brand, .hero-nombre,
-.index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
+.index-head h1, .article h1, .poem h1, .dossier-head h1, .dossier-doc h3, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
 .member-name, .pub-title, .album-title, .year-mark, .rec-caratula-titulo, .subhead, .nav a, .subnav a{
@@ -463,19 +463,17 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .index-head .meta{margin:12px 0 0}
 .index-head > .btn, .index-head > p > .btn{margin-top:16px}
 /* Título de sección: un encabezado no puede medir menos que el texto que encabeza. Era
-   un rótulo de 12 px sobre párrafos de 17. El dossier conserva su rótulo hasta el
-   ticket 5.1 (ver la receta de abajo). */
+   un rótulo de 12 px sobre párrafos de 17; el del dossier lo fue hasta el ticket 5.1. */
 .subhead{margin:var(--s5) 0 var(--s3); font-size:var(--t5); font-weight:700; line-height:var(--lh-titulo);
   color:var(--ink)}
 
 /* Rótulos. UNA receta para todo el texto en mayúsculas: quince reglas tenían la suya,
    con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
    y para los datos; lo demás se lee en la serif o en la de titulares. */
-.rotulo, .kicker, .dossier-doc .subhead, .foot-group h2, .reviewed h2, .event-month, .tag,
+.rotulo, .kicker, .foot-group h2, .reviewed h2, .event-month, .tag,
 .cinta-pie a, .nav-disclosure summary, .member-role, .foot-group-titulo{
   font-family:var(--mono); font-size:var(--t-2); letter-spacing:var(--tr-rotulo); text-transform:uppercase;
   color:var(--muted)}
-.dossier-doc .subhead{margin:34px 0 14px}
 .rotulo--acento, .kicker{color:var(--accent)}
 /* Datos: autoría, fecha, lugar, rol. En caja baja, que se lee de corrido. */
 .meta, .muted{font-family:var(--mono); font-size:var(--t-1); letter-spacing:var(--tr-meta);
@@ -557,7 +555,8 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    :hover hacían lo mismo —pasar a magenta— cada una por su cuenta. */
 .fila-titulo a:hover, .pie-entidad a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
 .next-event h2 a:hover, .recording-card h2 a:hover, .featured h2 a:hover,
-.member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title{
+.member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title,
+.dossier-doc h3 a:hover, .cronologia-titulo a:hover{
   text-decoration:underline; text-decoration-color:var(--accent);
   text-decoration-thickness:2px; text-underline-offset:4px}
 .dek{color:var(--muted); margin:6px 0; max-width:var(--medida)}
@@ -1039,17 +1038,102 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .rec-ficha a{text-decoration:none; border-bottom:1px solid var(--border)}
 .rec-sumario{margin:0 0 16px; font-size:var(--t1); color:var(--ink); max-width:var(--medida)}
 
-/* Dossier / kit de prensa (pantalla + impresión) */
-.dossier-toolbar{display:flex; gap:10px; margin:22px 0 6px}
-.dossier-head{padding:26px 0 10px; border-bottom:2px solid var(--ink)}
-.dossier-head h1{font-size:var(--t6); margin:0 0 6px}
-.dossier-section{margin:26px 0}
-.dossier-section > p{max-width:var(--medida)}
-.dossier-members{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px}
-.dossier-members .dek{margin:2px 0 0}
-.dossier-list-plain{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px}
+/* Dossier / kit de prensa (ticket 5.1; D11), en pantalla y en papel. Se lee en el carril
+   de lectura, que mide lo que una hoja: lo que se ve es lo que se imprime. Arriba, la
+   cejilla «Dossier · kit de prensa» —el título era solo el nombre del colectivo, y la
+   barra, el pie y el botón de la cabecera llaman a la página «Dossier»— y el botón de
+   imprimir, a la derecha del título: iba antes que él. Cada sección abre con su título
+   en la tipografía de titulares; era un rótulo de 12 px. */
+.dossier-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+  gap:var(--s2) var(--s4); padding:var(--s5) 0 var(--s3); border-bottom:2px solid var(--ink)}
+.dossier-head .kicker{margin:0}
+.dossier-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0}
+.dossier-head .dek{font-size:var(--t2); margin:var(--s1) 0 0}
+.dossier-toolbar{display:flex; flex-wrap:wrap; gap:10px}
+/* `.btn` fija su `display`, y eso pesa más que el `hidden` del navegador. */
+.dossier-toolbar [hidden]{display:none}
+.dossier-section{margin:var(--s5) 0 0}
+.dossier-doc .subhead{margin:0 0 var(--s3)}
+.dossier-doc h3{margin:0}
+.dossier-doc h3 a, .cronologia-titulo a{text-decoration:none; color:var(--ink)}
+/* Quiénes somos y la ficha, lado a lado cuando caben (también en la hoja impresa, que
+   mide unos 720 px): el manifiesto toma tres partes y la ficha dos. */
+.dossier-intro{display:flex; flex-wrap:wrap; column-gap:var(--s5)}
+.dossier-intro > .dossier-quienes{flex:3 1 340px}
+.dossier-intro > .dossier-ficha{flex:2 1 260px}
+.dossier-quienes p{margin:0 0 var(--s2); font-size:var(--t2); max-width:var(--medida)}
+/* La ficha y el contacto: cada dato bajo su rótulo, entre filetes. */
+.dossier-datos{margin:0}
+.dossier-datos > div{padding-block:10px; border-top:1px solid var(--line)}
+.dossier-datos > div:last-child{border-bottom:1px solid var(--line)}
+.dossier-datos dd{margin:2px 0 0; overflow-wrap:anywhere}
+/* Las cifras (D11): lo primero que busca un jurado. El número, grande y en la tipografía
+   de titulares, con el trazo de marcador amarillo que el dueño eligió para las cifras
+   de la portada (paso 13), que ya no las lleva; la etiqueta, debajo. El trazo se
+   imprime: es el amarillo del cartel, no un fondo de pantalla. */
+.dossier-cifras{list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:var(--s3) var(--s4)}
+.dossier-cifras strong{display:block; width:fit-content; margin:0 0 6px -.12em; padding:0 .12em;
+  font-family:var(--display); font-weight:700; font-size:var(--t6); line-height:1;
+  font-variant-numeric:tabular-nums; color:var(--ink);
+  background:linear-gradient(to top, transparent .06em, var(--riso-amarillo) .06em,
+    var(--riso-amarillo) .48em, transparent .48em);
+  -webkit-print-color-adjust:exact; print-color-adjust:exact}
+/* En el teléfono, de dos en dos: en fila, cada línea partía donde caía. */
+@media screen and (max-width:719px){
+  .dossier-cifras{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+}
+/* Integrantes y publicaciones: dos por fila en el carril y en la hoja impresa, una en el
+   teléfono. El retrato, a 96 px y en su color: el dossier es un documento, y se ve tal
+   cual, como las fichas. */
+.dossier-integrantes, .dossier-publicaciones{list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap:var(--s4)}
+.dossier-integrante{display:grid; grid-template-columns:96px minmax(0,1fr); gap:var(--s2); align-items:start}
+.dossier-integrante .retrato{width:96px}
+.dossier-integrante .monograma{font-size:var(--t5)}
+.dossier-integrante h3{font-size:var(--t2); line-height:1.2}
+.dossier-integrante .member-role{margin:6px 0 0}
+.dossier-integrante .member-bio{margin:6px 0 0}
+/* Trayectoria: una sola lista, por años. El año a la izquierda y, a su lado, cada entrada
+   con su tipo, su título y su lugar, que en una columna estrecha van uno bajo otro. */
+.cronologia{list-style:none; padding:0; margin:0}
+/* La columna del año se mide en el cuerpo del año, no en rem: el rem crece con la ventana
+   y en la hoja impresa es menor, y ahí «2026» se partía en «202» y «6». */
+.cronologia-anio{display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:var(--s3);
+  padding-block:var(--s2); border-top:1px solid var(--line)}
+.cronologia-anio:last-child{border-bottom:1px solid var(--line)}
+.cronologia-anio > h3{min-width:3.2em; white-space:nowrap; font-size:var(--t4); font-weight:700;
+  line-height:1.1; font-variant-numeric:tabular-nums}
+.cronologia-filas{list-style:none; padding:0; margin:0; display:grid; gap:var(--s2);
+  container:cronologia / inline-size}
+.cronologia-filas > li{display:grid; grid-template-columns:minmax(0,1fr); gap:2px}
+.cronologia-titulo{font-family:var(--display); font-weight:700; font-size:var(--t1); line-height:var(--lh-ui)}
+@container cronologia (min-width:520px){
+  .cronologia-filas > li{grid-template-columns:6.5rem minmax(0,1fr) fit-content(14rem);
+    column-gap:var(--s2); align-items:baseline}
+  .cronologia-filas .meta{text-align:right}
+}
+.dossier-mas{margin:var(--s2) 0 0}
+/* Publicaciones: la cubierta a 120 px, como objeto, con la sombra plana de las del
+   catálogo; al lado, el título, el tipo, el año, la editorial y la sinopsis. */
+.dossier-publicacion{display:grid; grid-template-columns:120px minmax(0,1fr); gap:var(--s3); align-items:start}
+.dossier-cubierta{display:block; width:120px; height:auto; aspect-ratio:5/7; object-fit:cover; margin:0;
+  box-shadow:6px 6px 0 var(--line)}
+.dossier-publicacion img{border:1px solid var(--line)}
+.dossier-publicacion .pub-cover-fallback{padding:10px; font-size:var(--t0)}
+.dossier-publicacion .meta{margin:6px 0 0}
+.dossier-sinopsis{margin:var(--s1) 0 0; font-size:var(--t0)}
+/* Prensa: las citas, lado a lado cuando caben dos. */
+.dossier-prensa{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap:var(--s3) var(--s4)}
+.dossier-prensa .press-quote{margin:0}
+.dossier-prensa cite{display:block; margin:var(--s1) 0 0; font-style:normal}
+/* Aliados: el logo a 160 × 80, en gris y multiplicado con el papel como en su página, y
+   el nombre debajo, como pie: un logo sin letras no dice de quién es. */
+/* El hueco crece con la ventana: en el teléfono caben dos logos por fila. */
+.dossier-aliados{list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap;
+  gap:var(--s3) clamp(var(--s3), 4vw, var(--s5))}
+.dossier-aliados li{display:flex; flex-direction:column; gap:var(--s1); width:160px}
 .dossier-contact{padding:var(--s3); background:var(--paper-2)}
-.dossier-contact > .subhead:first-child{margin-top:0}
 
 /* Pie: la identidad del colectivo, el mapa, el boletín (lista de prensa) y lo legal. */
 /* La identidad abre el pie (ticket 4.4): el sello, de dónde es y desde cuándo, y cómo
@@ -1120,8 +1204,18 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .wrap{max-width:none; padding:0}
   .lienzo{display:block; padding:0}
   a{color:#000; text-decoration:none}
+  /* El duotono se pinta mezclando la foto con un fondo azul, y el navegador no imprime los
+     fondos: la foto, aclarada sobre el blanco de la hoja, salía en blanco. En papel, la
+     foto tal cual, como al señalarla. */
+  .riso-duo img{filter:none; mix-blend-mode:normal}
+  .riso-duo::after{content:none}
+  .dossier-head{padding-top:0}
   .dossier-contact{border:1px solid #999; background:#fff}
-  .dossier-section{break-inside:avoid}
+  /* Ni un título al pie de una hoja ni una entrada partida entre dos. Una sección
+     entera sin partir dejaba media hoja en blanco: la de integrantes no cabe en una. */
+  .dossier-doc .subhead{break-after:avoid}
+  .dossier-intro > section, .dossier-integrante, .cronologia-anio, .dossier-publicacion,
+  .press-quote, .dossier-aliados li, .dossier-contact{break-inside:avoid}
   .stats-strip{border-bottom:1px solid #999}
   .press-quote{border-left-color:#000}
 }
