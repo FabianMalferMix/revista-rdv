@@ -38,12 +38,20 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
+  {% comment %}
+     Ficha a dos columnas (ticket 5.2): el afiche como objeto, a 420 px, con su pie; al
+     lado, qué fue, cuándo, dónde, quiénes y sus registros, como en la ficha de una
+     publicación. Debajo, las fotos en mosaico.
+  {% endcomment %}
   <article class="ficha">
-    <div class="ficha-cabecera{% if not event.poster %} ficha-cabecera--sin-medio{% endif %}">
+    <div class="ficha-cabecera{% if event.poster %} ficha-cabecera--afiche{% else %} ficha-cabecera--sin-medio{% endif %}">
       {% if event.poster %}
-        <div class="ficha-medio">
-          {% responsive_img event.poster css_class="ficha-afiche" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
-        </div>
+        <figure class="ficha-medio">
+          {% responsive_img event.poster css_class="ficha-afiche" sizes="(max-width: 720px) 60vw, 420px" lazy=False %}
+          {% if event.poster.caption or event.poster.credit %}
+            <figcaption class="meta">Afiche{% if event.poster.caption %} · {{ event.poster.caption }}{% endif %}{% if event.poster.credit %} · {{ event.poster.credit }}{% endif %}</figcaption>
+          {% endif %}
+        </figure>
       {% endif %}
       <header class="ficha-texto">
         <span class="kicker">{{ event.get_type_display }}{% if event.is_external and event.host %} · {{ event.host }}{% endif %}{% if event.is_past %} · realizado{% endif %}</span>
@@ -58,56 +66,54 @@
           <p><a class="btn" href="{{ event.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>
         {% endif %}
         {% if event.description %}<div class="member-about">{{ event.description|linebreaks }}</div>{% endif %}
-      </header>
-    </div>
 
-    {% with people=event.participants.all %}
-      {% if people %}
-        <section>
-          <h2 class="subhead">Participan</h2>
-          <p class="meta">
-            {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-          </p>
-        </section>
-      {% endif %}
-    {% endwith %}
+        {% with people=event.participants.all %}
+          {% if people %}
+            <h2 class="rotulo ficha-rotulo">Participan</h2>
+            <p class="meta">
+              {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+            </p>
+          {% endif %}
+        {% endwith %}
 
-    {% if recordings %}
-      <section>
-        <h2 class="subhead">Registros del evento</h2>
-        <ul class="work-list">
-          {% for r in recordings %}
-            <li>
-              <a href="{{ r.get_absolute_url }}">{{ r.title }}</a>
-              <span class="muted">{{ r.get_kind_display }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </section>
-    {% endif %}
-
-    {% with photos=event.photos.all %}
-      {% if photos %}
-        <section id="galeria-{{ event.slug }}">
-          <h2 class="subhead">Galería</h2>
-          <ul class="photo-grid">
-            {% for p in photos %}
+        {% if recordings %}
+          <h2 class="rotulo ficha-rotulo">Registros</h2>
+          <ul class="work-list">
+            {% for r in recordings %}
               <li>
-                <a href="#lb-{{ event.slug }}-{{ forloop.counter }}" aria-label="Ampliar foto {{ forloop.counter }} de {{ photos|length }}">
-                  {% responsive_img p.asset sizes="(max-width: 600px) 45vw, 280px" alt=p.caption %}
-                </a>
-                {% if p.caption %}<span class="muted">{{ p.caption }}</span>{% endif %}
-                {# Vista ampliada honesta (CSS :target), no un modal: sin semántica de diálogo (no hay trampa de foco); la imagen lleva su alt y el figcaption la describe. #}
-                <figure class="lightbox" id="lb-{{ event.slug }}-{{ forloop.counter }}">
-                  <a class="lightbox-back" href="#galeria-{{ event.slug }}" tabindex="-1" aria-label="Cerrar"></a>
-                  <a class="lightbox-close" href="#galeria-{{ event.slug }}" aria-label="Cerrar">×</a>
-                  {% responsive_img p.asset sizes="90vw" alt=p.caption %}
-                  {% comment %} La foto se ve entera, sin la rejilla: el pie dice cuál es de cuántas y de quién. {% endcomment %}
-                  <figcaption><span class="lightbox-cuenta">{{ forloop.counter }} / {{ photos|length }}</span>{% if p.caption %} · {{ p.caption }}{% endif %}{% if p.asset.credit %} · {{ p.asset.credit }}{% endif %}</figcaption>
-                </figure>
+                <a href="{{ r.get_absolute_url }}">{{ r.title }}</a>
+                <span class="muted">{{ r.get_kind_display }}</span>
               </li>
             {% endfor %}
           </ul>
+        {% endif %}
+      </header>
+    </div>
+
+    {% with photos=event.photos.all %}
+      {% if photos %}
+        {% comment %}
+           Las seis primeras, en mosaico; las demás, en «Ver las N fotos», que se abre sin
+           JavaScript. La lista sale de la caché del prefetch (photos__asset): recortarla no
+           añade consultas.
+        {% endcomment %}
+        <section id="galeria-{{ event.slug }}">
+          <h2 class="subhead">Galería</h2>
+          <ul class="photo-grid">
+            {% for p in photos|slice:":6" %}
+              {% include "agenda/partials/_foto.html" with foto=p numero=forloop.counter total=photos|length slug=event.slug only %}
+            {% endfor %}
+          </ul>
+          {% if photos|length > 6 %}
+            <details class="mas-fotos">
+              <summary class="btn">Ver las {{ photos|length }} fotos</summary>
+              <ul class="photo-grid-resto">
+                {% for p in photos|slice:"6:" %}
+                  {% include "agenda/partials/_foto.html" with foto=p numero=forloop.counter|add:6 total=photos|length slug=event.slug only %}
+                {% endfor %}
+              </ul>
+            </details>
+          {% endif %}
           {% if creditos %}<p class="meta galeria-creditos">Fotos: {{ creditos|join:" · " }}</p>{% endif %}
         </section>
       {% endif %}

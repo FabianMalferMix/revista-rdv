@@ -155,9 +155,14 @@
       <h2 class="subhead">Con el apoyo de</h2>
       <ul class="dossier-aliados">
         {% for p in partners %}
+          {# Sin logo, su nombre en la caja del logo: una vez, sin pie que lo repita. #}
           <li>
-            {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="160px" lazy=False decorativa=True %}{% endif %}
-            <span class="meta">{{ p.name }}</span>
+            {% if p.logo %}
+              {% responsive_img p.logo css_class="partner-logo" sizes="160px" lazy=False decorativa=True %}
+              <span class="meta">{{ p.name }}</span>
+            {% else %}
+              <span class="partner-logo partner-logo--texto">{{ p.name }}</span>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>

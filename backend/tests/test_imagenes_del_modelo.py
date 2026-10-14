@@ -145,6 +145,21 @@ def test_los_aliados_van_por_tipo_en_el_orden_de_los_tipos(client):
     assert len(sopa.select(".aliados-grupo .partner-logo")) == 3
 
 
+def test_un_aliado_sin_logo_lleva_su_nombre_en_la_caja_del_logo(client):
+    """En /aliados/ la caja quedaba vacía y el nombre arrancaba donde los demás tienen el
+    logo. Allí el nombre ya va escrito al lado: la caja no se lee dos veces. En el dossier
+    el nombre va solo en la caja, sin el pie que llevan los logos."""
+    Partner.objects.create(name="Fondo Sin Logo", kind=Partner.Kind.FINANCIAMIENTO)
+    Partner.objects.create(name="Fondo Con Logo", logo=_imagen("logo-con"))
+    caja = _sopa(client, reverse("showcase:partner_index")).select_one(".partner-logo--texto")
+    assert caja.get_text() == "Fondo Sin Logo" and caja["aria-hidden"] == "true"
+    aliados = _sopa(client, reverse("showcase:dossier")).select(".dossier-aliados li")
+    textos = {li.get_text(" ", strip=True): li for li in aliados}
+    assert set(textos) == {"Fondo Sin Logo", "Fondo Con Logo"}
+    sin_logo = textos["Fondo Sin Logo"].select_one(".partner-logo--texto")
+    assert sin_logo is not None and not sin_logo.has_attr("aria-hidden")
+
+
 # ── Ninguna imagen cuesta una consulta por fila ───────────────────────────
 
 

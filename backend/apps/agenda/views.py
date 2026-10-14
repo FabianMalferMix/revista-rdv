@@ -37,7 +37,9 @@ def event_detail(request, slug):
         .prefetch_related("participants", "photos__asset", "recordings"),
         slug=slug,
     )
-    recordings = event.recordings.filter(published=True)
+    # Los registros publicados salen de la caché del prefetch: un `.filter()` la saltaba y
+    # hacía una consulta más.
+    recordings = [r for r in event.recordings.all() if r.published]
     if event.is_past:
         pie = [
             puerta(

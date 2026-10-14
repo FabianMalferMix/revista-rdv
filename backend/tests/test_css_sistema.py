@@ -930,6 +930,64 @@ def test_los_logos_se_imprimen_en_gris_y_toman_color_al_senalar():
     )
 
 
+def test_un_aliado_sin_logo_no_se_oscurece_al_mezclarse_con_el_papel():
+    """La caja sin logo es la hoja clara: multiplicada con el papel, quedaba más oscura que
+    él. Va sin mezcla ni filtro, y con su nombre en la tipografía de titulares."""
+    caja = _regla(".partner-logo--texto")
+    for declaracion in ("mix-blend-mode:normal", "filter:none", "background:var(--paper-2)"):
+        assert declaracion in caja, f"a la caja le falta «{declaracion}»"
+    assert "font-family:var(--display)" in caja
+
+
+# ── La ficha de un evento y sus fotos (ticket 5.2) ────────────────────────
+
+
+def test_el_afiche_llega_a_420_px_si_al_texto_le_quedan_360():
+    ficha = _bloque("@media (min-width:720px){\n  .ficha-cabecera{")
+    assert (
+        ".ficha-cabecera--afiche{grid-template-columns:minmax(200px,420px)minmax(360px,1fr)}"
+        in ficha
+    )
+    assert "box-shadow:8px8px0var(--line)" in _regla(".ficha-afiche"), "el afiche no es un objeto"
+
+
+def test_el_mosaico_no_deja_huecos_con_ninguna_cantidad_de_fotos():
+    """Seis columnas: tercios por defecto; la primera a doble tamaño con tres fotos o con
+    seis o más; a medias con dos o cuatro, y las dos primeras con cinco; a todo el ancho
+    con una."""
+    assert "grid-template-columns:repeat(6,minmax(0,1fr))" in _regla(
+        ".photo-grid,.photo-grid-resto"
+    )
+    celda = _regla(".photo-grid>li,.photo-grid-resto>li")
+    assert "grid-column:span2" in celda and "aspect-ratio:3/2" in celda
+    assert "grid-column:1/-1" in _regla(".photo-grid>li:only-child")
+    assert "grid-column:span3" in _regla(
+        ".photo-grid:has(>:nth-child(2):last-child)>li,"
+        ".photo-grid:has(>:nth-child(4):last-child)>li,"
+        ".photo-grid:has(>:nth-child(5):last-child)>li:nth-child(-n+2)"
+    )
+    doble = _regla(
+        ".photo-grid:has(>:nth-child(3):last-child)>li:first-child,"
+        ".photo-grid:has(>:nth-child(6))>li:first-child"
+    )
+    assert "grid-column:span4" in doble and "grid-row:span2" in doble
+
+
+def test_la_regla_de_las_miniaturas_no_alcanza_a_la_vista_ampliada():
+    """`.photo-grid img` también recortaba a 8:5 la foto ampliada, que está dentro de la
+    misma lista: no se veía entera. Las reglas del mosaico van por hijos directos."""
+    selectores = [re.sub(r"\s+", "", sel) for sel, _ in _reglas()]
+    assert ".photo-gridimg" not in selectores and ".photo-grida" not in selectores
+    assert "object-fit:cover" in _regla(".photo-grid>li>aimg,.photo-grid-resto>li>aimg")
+
+
+def test_la_vista_ampliada_cubre_toda_la_pantalla():
+    """Una <figure> trae márgenes (40 px a los lados): la capa no llegaba a los bordes y la
+    foto quedaba corrida."""
+    capa = _regla(".lightbox")
+    assert "position:fixed" in capa and "inset:0" in capa and "margin:0" in capa
+
+
 def test_el_pie_de_la_vista_ampliada_se_lee():
     """Contador, pie y crédito a 13 px: a 12 era la letra más pequeña del sitio."""
     assert "font-size:var(--t-1)" in _regla(".lightboxfigcaption")
