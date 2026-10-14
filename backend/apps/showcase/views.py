@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from apps.content.models import Article, EditorialStatus
 from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Partner, PressMention, Publication, SiteProfile
@@ -43,8 +44,21 @@ def publication_detail(request, slug):
     pie += puertas_vecinas(
         *vecinos_en_lista(_published(), publication), "Publicación", lambda p: p.title
     )
+    # Las reseñas de la publicación: los textos que reseñan la obra que la representa
+    # (`Work.publicacion`). Lo pidió el dueño del sitio después del paso 21 del plan.
+    resenas = list(
+        Article.objects.filter(
+            status=EditorialStatus.PUBLISHED, reviewed_works__publicacion=publication
+        )
+        .select_related("section", "cover_image")
+        .prefetch_related("authors")
+        .order_by("-published_at")
+        .distinct()
+    )
     return render(
-        request, "showcase/publication_detail.html", {"publication": publication, "pie": pie}
+        request,
+        "showcase/publication_detail.html",
+        {"publication": publication, "pie": pie, "resenas": resenas},
     )
 
 

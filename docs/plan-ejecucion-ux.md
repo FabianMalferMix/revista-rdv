@@ -13,13 +13,13 @@
 
 ## 1. Dónde estamos
 
-**Hechos 21 de 25 pasos.** El último fusionado es el paso 21 (`ux-4-4-pie-y-enlaces`, PR #130).
-`main` está en verde, con 839 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 21 de 25 pasos.** El último paso fusionado es el 21 (`ux-4-4-pie-y-enlaces`, PR #130);
+después entró la relación entre publicaciones y reseñas que pidió el dueño (#131). `main` está
+en verde, con 845 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el punto de control D** (la portada completa) **y luego el paso 22,
-`ux-5-1-dossier`** (sección 2), que necesita una respuesta del dueño antes de construir. Lee
-«Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el paso 22, `ux-5-1-dossier`** (sección 2), cuando el dueño haya visto el #131. El
+punto de control D está aprobado. Lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
@@ -68,6 +68,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `portada-sin-cifras-ni-aliados` | #128 | Fuera de la portada, por ahora, las cifras y «Con el apoyo de»: lo pidió el dueño |
 | — | `portada-sin-cita` | #129 | Fuera de la portada la cita de prensa: lo pidió el dueño |
 | 21 | `ux-4-4-pie-y-enlaces` | #130 | El pie abre con la identidad del colectivo; actividades en la ficha de cada integrante; «Aliados» se titula así |
+| — | `publicaciones-y-resenas` | #131 | Cada publicación enseña sus reseñas: una obra reseñada puede ser un libro del colectivo (con migración) |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -171,6 +172,14 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **D9 no necesitó aviso (2026-10-13):** no avisó al colectivo porque «todas las decisiones
   fueron delegadas a mí». Las decisiones de diseño las toma él; no hace falta preguntar si el
   colectivo está avisado.
+- **Punto de control D (2026-10-14):** visto bueno a la portada completa («Doy el visto bueno
+  para el control D»).
+- **Reseñas de cada publicación (2026-10-14):** pidió enlazar cada publicación con sus reseñas,
+  «correcto para futuras features», aunque el plan no lo incluía y pedía una migración. Eligió
+  el diseño recomendado («hazlo como mejor encuentres»): la obra reseñada puede señalar su
+  publicación del colectivo (`reviews.Work.publicacion`, #131).
+- **Dossier (2026-10-14):** mantiene «En números», «Prensa» y «Con el apoyo de», aunque los
+  quitó de la portada («Sí, mantén todo eso en el Dossier»).
 - **Revisión del paso 20 (2026-10-14):** tras los tres ajustes de la portada (#127 a #129), dio
   paso al 21 («Adelante, sigue al paso 21»).
 - **Cifras y aliados (2026-10-14, después del paso 20):** los quitó de la portada por ahora,
@@ -204,16 +213,17 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 21 está fusionado y aún no lo ha visto construido.** Qué mirar, a 951 px:
-   - el pie de cualquier página: a la izquierda el sello, «Colectivo de poesía · Chile · desde
-     2023», el correo y «Instagram @repitentesdelverso»; al lado, los cuatro grupos del mapa
-     (ya sin el correo ni el Instagram); debajo, el boletín en una línea y lo legal;
-   - http://localhost:8000/integrante/fernanda-soto/: la sección «Actividades», con «Recital de
-     invierno» y «Recital «Nuevas voces»»;
-   - http://localhost:8000/aliados/: el título dice ahora «Aliados».
-   Después, **el punto de control D**: su aprobación expresa de la portada completa (pasos 18 a
-   21). Sigue abierto si quiere quitar también el «12 integrantes» de la cejilla y el «12
-   voces» de la sección de integrantes.
+1. **La relación entre publicaciones y reseñas (#131) está fusionada y aún no la ha visto.**
+   Qué mirar, a 951 px:
+   - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
+   - http://localhost:8000/obra/zz-demo-cuadernos-del-ruido/: «Publicación del colectivo:
+     Cuadernos del ruido»;
+   - en el panel, al editar una obra reseñada, el campo «Publicación del colectivo».
+   La reseña que se ve es **de prueba** («Reseña de prueba: Cuadernos del ruido»): se borra
+   cuando la haya visto, con
+   `docker compose exec web python manage.py shell -c "from apps.content.models import Article; from apps.reviews.models import Work; Article.objects.filter(slug='zz-demo-resena-cuadernos-del-ruido').delete(); Work.objects.filter(slug='zz-demo-cuadernos-del-ruido').delete()"`.
+   Sigue abierto si quiere quitar el «12 integrantes» de la cejilla y el «12 voces»: no lo ha
+   contestado, y se quedan.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -239,11 +249,10 @@ las integrantes, y sin cifras, aliados ni cita en la portada.
 - el bloque de contacto;
 - y la impresión desde el navegador con sus imágenes.
 
-**Qué hace falta.** Una respuesta del dueño **antes de construir**. Quitó de la portada las
-cifras, «Con el apoyo de» y la cita de prensa porque el colectivo aún es pequeño, y el ticket
-pide agrandar las cifras del dossier y darle una cita y los aliados con logo. Pregúntale si
-los quiere en el dossier, que es el kit de prensa y donde suelen ir, o si salen también de
-ahí.
+**Qué hace falta.** Nada: el dueño quiere en el dossier las cifras («En números»), la prensa y
+«Con el apoyo de», aunque los quitó de la portada (2026-10-14). Junto a cada publicación, el
+dossier puede enseñar también sus reseñas, ahora que el modelo las relaciona
+(`publication.obra_resenada.reviews`).
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
@@ -261,8 +270,8 @@ ahí.
   quiere cifras ahí; hoy la prueba solo la admite en `.hero-stats`, que ya no existe.
 
 **Cuidados.**
-- **Lo que decida el dueño sobre cifras, prensa y aliados manda** sobre lo que dice el
-  ticket: si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes.
+- **Si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes** de
+  construir: lo que aprueba viendo un tablero manda.
 - **Las imágenes del dossier** salen del modelo: `Contributor.photo` y `Publication.cover`.
   Tráelas con `select_related` y mira los techos de `tests/test_performance.py` (el dossier
   tiene 22; hace 17 en la prueba).
@@ -347,7 +356,8 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
 - [x] **21. `ux-4-4-pie-y-enlaces`.** Tickets 4.4 y 4.5: pie en tinta, enlaces cruzados.
   Cierra cuando: los enlaces del pie tienen 28 px o más de paso vertical; todo el texto del pie da
   4,5:1 o más; cada ficha tiene cuatro enlaces internos o más.
-- ◆ **Punto de control D.** Portada completa a 1440, 1920 y 390.
+- ◆ **Punto de control D.** Hecho el 2026-10-14: aprobado (ver sección 1). Portada completa a
+  1440, 1920 y 390.
 - [ ] **22. `ux-5-1-dossier`.** Ticket 5.1 (D11): el dossier como kit de prensa.
   Cierra cuando: los años van en orden descendente estricto; el PDF impreso desde el navegador
   enseña retratos y cubiertas; `/dossier/#contacto` lleva al bloque de contacto.
@@ -471,7 +481,9 @@ dueño.
 - **Todo funciona sin JavaScript.**
 - **Una sola paleta, clara.** Los valores de `:root` que ya existen no cambian; se pueden añadir.
 - **El video de un tercero solo se carga al pulsar** (`static/js/embeds.js`).
-- **Sin modelos ni migraciones nuevas.**
+- **Sin modelos ni migraciones nuevas**, salvo la que pidió el dueño el 2026-10-14:
+  `reviews.Work.publicacion` (migración `reviews.0003`), que dice qué obra reseñada es un libro
+  del colectivo. Otra excepción, solo si él la pide.
 - **`.wrap{max-width:820px}` conserva su valor.**
 - **Nunca `seed_demo` sobre una base con la identidad aplicada:** reescribe el perfil del sitio.
 - **Nunca un push forzado ni borrar ramas remotas a mano.** La rama remota la borra GitHub al

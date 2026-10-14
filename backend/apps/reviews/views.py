@@ -16,7 +16,9 @@ def _reviews_of(work_ids):
 
 def work_detail(request, slug):
     work = get_object_or_404(
-        Work.objects.select_related("publisher").prefetch_related("authors"), slug=slug
+        # Con su publicación del colectivo, si la tiene: la cabecera enlaza a ella.
+        Work.objects.select_related("publisher", "publicacion").prefetch_related("authors"),
+        slug=slug,
     )
     return render(
         request,
