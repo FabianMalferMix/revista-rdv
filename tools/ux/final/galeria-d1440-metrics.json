@@ -1,0 +1,191 @@
+{
+ "titulo": "Galería — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 1479,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Galería",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "4 ÁLBUMES",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 60,
+  "porTipo": {
+   "mono": 9,
+   "display": 24,
+   "lectura": 27
+  },
+  "mayusculas": 5,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 12,
+  "enPrimerViewport": 10,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "riso-duo",
+    "ancho": 427,
+    "alto": 307,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 521,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 427,
+    "alto": 307,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 521,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 427,
+    "alto": 307,
+    "natural": "439x275",
+    "ajuste": "cover",
+    "arriba": 776,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x137",
+    "ajuste": "cover",
+    "arriba": 776,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 932,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 427,
+    "alto": 307,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 776,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 776,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 213,
+    "alto": 150,
+    "natural": "219x146",
+    "ajuste": "cover",
+    "arriba": 932,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 46,
+  "bajo24": 28,
+  "bajo44": 37
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/galeria/",
+ "estado": 200
+}

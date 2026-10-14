@@ -103,7 +103,7 @@ Formato de cada ticket: objetivo · hallazgos · archivos · pasos · aceptació
 
 #### 0.1 Herramienta de capturas y métricas dentro del repo
 - **Objetivo:** que cada ticket pueda medir lo que promete, con el mismo instrumento de la auditoría.
-- **Estado:** hecho. `tools/ux/` contiene `capture.js` (Playwright-core + Chrome del sistema; un solo
+- **Estado:** hecho (paso 2 del plan, PR #95). `tools/ux/` contiene `capture.js` (Playwright-core + Chrome del sistema; un solo
   navegador para todas las páginas de `pages.txt`, en 1440, 390 y, en las marcadas, 1920),
   `metrics.py` (`tabla <dir>` y `comparar <antes> <despues>`, solo biblioteca estándar), `smoke.py`
   (recorre los enlaces internos y falla si alguno responde 400 o más) y su `README.md`.
@@ -120,7 +120,7 @@ Formato de cada ticket: objetivo · hallazgos · archivos · pasos · aceptació
 - **Objetivo:** capturar el estado actual antes de tocar nada para comparar al final (ticket 6.2).
 - **Pasos:** con el sitio en `http://localhost:8000`, capturar las 21 páginas de la auditoría en
   `tools/ux/out/baseline/` y guardar la tabla en `tools/ux/out/baseline/tabla.txt`.
-- **Estado:** hecho el 2026-10-08, con el material genérico ya cargado. La carpeta no se versiona.
+- **Estado:** hecho (paso 2 del plan, PR #95) el 2026-10-08, con el material genérico ya cargado. La carpeta no se versiona.
 - **Aceptación:** la tabla reproduce las cifras de la auditoría: ratio 0,54 a 1440 en índices,
   h1 de índices a 12 px y cubiertas deformadas (180 px de ancho por la altura del atributo HTML:
   780 con las cubiertas de la siembra, 1400 con las del material genérico).
@@ -132,7 +132,7 @@ Formato de cada ticket: objetivo · hallazgos · archivos · pasos · aceptació
   con formatos, tamaños mínimos, dónde se usa cada pieza y a qué campo del panel va (Medios → Recursos,
   luego el campo). Enlazar desde `README.md`.
 - **Aceptación:** el documento existe; ningún cambio de código.
-- **Estado:** hecho el 2026-10-08, junto con el comando `seed_material_generico`, que deja cargado
+- **Estado:** hecho el 2026-10-08 (PR #94), junto con el comando `seed_material_generico`, que deja cargado
   material genérico con las proporciones de esa lista (retratos 4:5, afiches, seis fotos por evento,
   cubiertas 5:7, carátulas 16:9, logos, foto de grupo).
 
@@ -153,7 +153,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   de 1006 px a ≈ 480 px.
 - **Tests:** nuevo `tests/test_css_imagenes.py` al estilo de `test_nav_css.py`: la hoja contiene la
   regla global y ninguna regla con `aspect-ratio` carece de `height:auto`.
-- **Estado:** hecho (paso 3 del plan). Sin `display:block` global: cambiaba las imágenes en línea del
+- **Estado:** hecho (paso 3 del plan, PR #96). Sin `display:block` global: cambiaba las imágenes en línea del
   cuerpo de los textos sin necesidad. El afiche del evento queda topado en 420 px, porque a todo el
   ancho de la columna medía más de una pantalla. Las pruebas viven en `tests/test_css_sistema.py`.
 
@@ -173,7 +173,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   cada índice muestra cejilla, h1 y dek.
 - **Tests:** ampliar `tests/test_views.py` (o nuevo `test_indices.py`): cada índice responde 200 y
   su `<h1>` no lleva `page-title`; `grep -c "page-title" templates static` = 0.
-- **Estado:** hecho (paso 4 del plan). El parcial recibe `cuenta`, `singular` y `plural` en vez de una
+- **Estado:** hecho (paso 4 del plan, PR #97). El parcial recibe `cuenta`, `singular` y `plural` en vez de una
   cejilla ya armada, para concordar en número («1 texto», «2 textos») y omitirse con cero. El tamaño
   del h1 (`clamp(34px,4.6vw,56px)`) se aplica también a las fichas, que comparten `.index-head`.
 
@@ -190,7 +190,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   de dos líneas con interlínea ≤ 1.1.
 - **Tests:** `tests/test_css_sistema.py`: ningún texto bajo 12 px, títulos con interlínea propia, medida
   en `ch` y sin guionado en poemas.
-- **Estado:** hecho (paso 3 del plan). La medida quedó en el token `--medida:58ch`, no en 66ch:
+- **Estado:** hecho (paso 3 del plan, PR #96). La medida quedó en el token `--medida:58ch`, no en 66ch:
   medido en la página, 66ch daban 82 letras por línea con la serif de reserva (Liberation Serif) y
   58ch dan 74; con una serif de ancho normal serán unas 65. La bajada a 20 px se acotó al artículo
   (`.article .dek`) para no agrandar las de las tarjetas.
@@ -221,7 +221,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   enlace), la copia lleva `aria-hidden`, y nueva prueba de que el CSS contiene el selector de pausa
   sobre `.cinta-caja` y el selector de hermanos del control; `test_la_cinta_se_detiene_con_prefers_reduced_motion`
   pasa a comprobar la media query de `hover`.
-- **Estado:** hecho en dos tiempos. El paso 5 del plan corrigió la pausa, dejó la cinta quieta en táctil y
+- **Estado:** hecho en dos tiempos (PR #98 y #103). El paso 5 del plan corrigió la pausa, dejó la cinta quieta en táctil y
   añadió un icono de pausa. El dueño del sitio retiró el icono al verlo (2026-10-08): lo descrito arriba
   en el punto (4) ya no existe. Sin casilla que retenga el foco, la pausa por `:focus-within` volvió:
   es lo que alcanza quien navega con teclado. Verificado en navegador: en marcha con el puntero fuera,
@@ -239,7 +239,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   el overlay no es visible; `/buscar/?q=casa` muestra cabecera de índice y resultados.
 - **Tests:** `tests/test_ui_ux.py::test_search_results_is_live_overlay` sigue; añadir comprobación de
   la fila «Ver todos» en `tests/test_search.py`.
-- **Estado:** hecho (paso 6 del plan). En móvil el campo ocupa la línea entera y el panel lo mismo que
+- **Estado:** hecho (paso 6 del plan, PR #100). En móvil el campo ocupa la línea entera y el panel lo mismo que
   el campo, sin unidades `vw`. El enlace del panel dice «Abrir estos resultados en una página» y va
   fuera de la lista: «ver todos» prometía más de los diez que la página también muestra.
 
@@ -255,7 +255,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** `grep -c "opacity:.9\|opacity:.88\|opacity:.92" site.css` = 0; una sola regla
   `transition` global más la de la cinta; foco visible ≥ 3:1 sobre la placa.
 - **Tests:** `test_css_sistema.py`: tokens presentes, sin hover por opacidad.
-- **Estado:** hecho (paso 6 del plan). `--line` no se añadió: ningún componente lo usa todavía.
+- **Estado:** hecho (paso 6 del plan, PR #100). `--line` no se añadió: ningún componente lo usa todavía.
 
 #### 1.7 Componentes `.rotulo` y `.btn` unificados (D3 parcial, D14)
 - **Hallazgos:** TIP-10, COM-2, COM-9 (botón del formulario).
@@ -273,7 +273,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   `metrics.py` muestra ≤ 20 elementos en mayúsculas en la portada (≤ 15 tras 2.3, cuando la nav sale de la mono).
 - **Tests:** `tests/test_ui_identity.py::test_titulo_de_tarjeta_usa_la_tipografia_de_titular` sigue;
   `test_css_sistema.py`: existe `.rotulo`, no quedan `text-transform:uppercase` fuera de `.rotulo` y `.nav-disclosure summary`.
-- **Estado:** hecho (paso 6 del plan). El botón primario ya va en tinta (lo pedía 1.9) para no dejar el
+- **Estado:** hecho (paso 6 del plan, PR #100). El botón primario ya va en tinta (lo pedía 1.9) para no dejar el
   componente a medias. Quedan dos mayúsculas fuera de la receta, con fecha: `.nav a` (2.3) y
   `.form label` (1.11); la prueba las lista y falla si aparece una tercera.
 
@@ -289,7 +289,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   mismo que con Syne ± 2 %; sin salto visible al cargar.
 - **Tests:** `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` sigue;
   añadir: `base.html` contiene el preload de la fuente que el CSS declara.
-- **Estado:** hecho (paso 6 del plan), salvo el peso 800, que NO se aplica. Medido: el 800 de Syne es un
+- **Estado:** hecho (paso 6 del plan, PR #100), salvo el peso 800, que NO se aplica. Medido: el 800 de Syne es un
   corte extendido, un 44 % más ancho que el 700; el nombre del sitio pasaría de 292 a 420 px y no cabría
   en un móvil. Se decide en 4.2, con el titular nuevo a la vista. La reserva son tres caras de Arial
   escaladas al 102, 103 y 114,1 %; con el archivo bloqueado, marca, titular y títulos varían menos de un 2 %.
@@ -310,7 +310,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** `grep -c "color:var(--accent)" site.css` ≤ 6; todos los pares en verde; el
   comentario de `:root` documenta el reparto.
 - **Tests:** `test_contraste_paleta.py` ampliado como se indica.
-- **Estado:** hecho (paso 7 del plan). El criterio «≤ 6 usos de `color:var(--accent)`» era irreal: los
+- **Estado:** hecho (paso 7 del plan, PR #101). El criterio «≤ 6 usos de `color:var(--accent)`» era irreal: los
   estados (`:hover`, foco, marcado) también lo usan y son legítimos. La regla que se prueba es otra y
   más útil: el magenta solo es color de texto EN REPOSO en la cejilla y en el asterisco de campo
   obligatorio. Los «pares prohibidos» se prueban de dos formas: una tabla con su número, y una
@@ -328,7 +328,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   `aria-current`; cada objetivo mide ≥ 44 × 44.
 - **Tests:** `tests/test_home_ui.py::test_text_archive_paginates_full_list` sigue; añadir prueba del
   parcial (contador y `rel`).
-- **Estado:** hecho (paso 8 del plan). El rango con elipsis lo da una etiqueta de plantilla,
+- **Estado:** hecho (paso 8 del plan, PR #102). El rango con elipsis lo da una etiqueta de plantilla,
   `rango_paginas`, porque una plantilla no puede pasar argumentos a `get_elided_page_range`.
 
 #### 1.11 Formulario de envío
@@ -342,7 +342,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
 - **Aceptación:** HTML servido con `autocomplete` en nombre y correo; cada campo con ayuda o error
   lleva `aria-describedby` resuelto; `tests/test_ui_ux.py::test_submit_file_help_aria_reference_resolves` sigue.
 - **Tests:** ampliar `tests/test_submissions.py` con los atributos.
-- **Estado:** hecho (paso 8 del plan). El hallazgo era más grave de lo que decía la auditoría: Django
+- **Estado:** hecho (paso 8 del plan, PR #102). El hallazgo era más grave de lo que decía la auditoría: Django
   5.2 marca cada campo inválido con `aria-describedby="<id>_error"` y la plantilla pintaba los errores
   sin ese id, así que TODA referencia apuntaba a nada. Ahora cada error vive en un contenedor con su id.
 
@@ -362,7 +362,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   todas las rutas públicas termina en el nombre del sitio.
 - **Tests:** `tests/test_indices.py`: ninguna plantilla cierra su `<title>` con el nombre fijo, y la
   cejilla de la tarjeta según sección y tipo. `tests/test_dossier.py`: el rótulo del botón por estado.
-- **Estado:** hecho (paso 4 del plan). En vez de `Article.kicker()` hay una propiedad
+- **Estado:** hecho (paso 4 del plan, PR #97). En vez de `Article.kicker()` hay una propiedad
   `Article.seccion_aporta`: la plantilla necesita el enlace a la sección, no una cadena. Cuando la
   sección repite al tipo, el tipo enlaza a la sección. La cejilla de `/enviar/` («Colaboraciones») se
   conserva: lo que se unificó es el rótulo del enlace del pie con el h1 de la página.
@@ -381,7 +381,7 @@ Cada ticket es un PR pequeño. Secuenciales, porque todos editan `site.css`.
   botones; el fallback de cubierta no contiene el nombre del tipo.
 - **Tests:** `tests/test_agenda.py`: agenda vacía muestra pasados; presupuesto de consultas de
   `test_performance.py` intacto.
-- **Estado:** hecho (paso 8 del plan). El monograma conserva por ahora el círculo del avatar; la forma
+- **Estado:** hecho (paso 8 del plan, PR #102). El monograma conserva por ahora el círculo del avatar; la forma
   4:5 llega con los retratos en 3.6. Una actividad ya realizada deja de ofrecer «Inscripción / entradas».
 
 ### Épica 2 — Retícula y tipografía (D3, D4, D7)
@@ -408,7 +408,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Tests:** `tests/test_ui_ux.py` (si afirma `.wrap` en `<main>`, pasa a afirmar `id="main"` y la
   rejilla); `test_nav_css.py` sigue; `test_css_sistema.py`: existe `grid-template-columns:[full-start]`
   y no existe `100vw`.
-- **Estado:** hecho (paso 9 del plan). Lo construido difiere de lo escrito arriba en cinco puntos:
+- **Estado:** hecho (paso 9 del plan, PR #104). Lo construido difiere de lo escrito arriba en cinco puntos:
   1. Los carriles van en px, no en rem (`--measure:780px`, `--wide:1320px`, 1440 px desde 1600 de
      ancho). La medida de lectura ya está en `ch` (ticket 1.3), así que no hace falta que el carril
      escale con el texto. El carril de lectura mide 780, lo que medía el contenido de la caja de 820.
@@ -446,7 +446,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   con 2 registros cabe en una pantalla; cubiertas ≥ 240 px; `metrics.py` ratio ≥ 0,85 en los cuatro índices.
 - **Tests:** `tests/test_ui_ux.py::test_article_card_title_is_h3` sigue; `tests/test_recordings.py`:
   el índice no emite `player-consent` (sí el detalle); `tests/test_embed_consent.py` sigue.
-- **Estado:** hecho (paso 10 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 10 del plan, PR #105). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **La fila se dispone según su contenedor**, no según la ventana (`container:filas / inline-size`
      en la lista, clase `.filas`). La misma parcial vive en el carril ancho, en el de lectura (ficha
      de integrante) y en un teléfono: con menos de 700 px de lista el título va arriba y los datos
@@ -534,7 +534,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   7. La regla que fija `font-family:var(--display)` por primera vez en la hoja debe seguir siendo
      el grupo de títulos, con `.article-card h3` dentro: dos pruebas de `test_ui_identity.py` leen
      esa regla.
-- **Estado:** hecho (paso 11 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 11 del plan, PR #114). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **La fuente se llama «RdV Serif», no «Source Serif 4».** La OFL de Adobe reserva el nombre
      «Source» y el subconjunto es una versión modificada (cláusula 3): se renombró en la tabla
      `name` de los dos archivos y en el CSS. El diseño es Source Serif 4, versión 4.005. Archivos
@@ -603,7 +603,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
      la firma cuando coincide con la de la página (como `sin_cejilla` en `_poem_card.html`).
   3. La lista de registros de la ficha (`.work-list`) sigue siendo una lista de enlaces: puede
      pasar a `.filas` con la misma anatomía.
-- **Estado:** hecho (paso 12 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 12 del plan, PR #115 y #116). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **La sala de lectura reparte 4:7, no `minmax(240px,1fr) minmax(0,66ch)`.** Con el texto a
      66 `ch` fijos, la columna ancla se quedaba con todo el sobrante y a 1440 medía tanto como el
      texto. Ahora `minmax(220px,4fr) minmax(0,7fr)`, desde 840 px de ventana; el texto sigue
@@ -665,7 +665,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   señalada; si pasa a ser además superficie de bandas, el estado de fila sobre esa banda necesita
   otro tono o se vuelve invisible. `.index-head` comparte filete con la primera fila de la lista
   que le sigue: la «firma por territorio» de 3 px tiene que convivir con eso.
-- **Estado:** hecho (paso 13 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 13 del plan, PR #117 y #118). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Sin `.band--papel2`.** La banda por defecto (`.band`) pasa a la hoja clara y la única
      variante es `.band--tinta`. Las bandas solo viven en la portada: dos superficies, dos clases.
   2. **Un token nuevo, `--muted-on-ink:#9fadbf`** (7,80:1 sobre la tinta), porque el gris de los
@@ -730,7 +730,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `rotate(-3deg)`, sin animación) en el hero cuando exista un `Call` abierto; nada de amarillo como texto.
 - **Aceptación:** el amarillo aparece como fondo en un solo plano por pantalla; los pares están en
   la prueba (1.9).
-- **Estado:** hecho (paso 13 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 13 del plan, PR #117 y #118). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **El sello es HTML y CSS, no un SVG.** Es un enlace con su texto, girado −3° con `transform`
      y sin animación: se lee, se selecciona y se pulsa, y lleva al formulario de envío. Es
      **magenta y no amarillo**, porque el amarillo de la primera pantalla ya es el de las cifras.
@@ -768,7 +768,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Aceptación:** una tinta por pantalla (magenta o azul); hover revela el original; las cubiertas
   no llevan tratamiento.
 - **Tests:** `test_css_sistema.py`: `.riso-duo` existe; `tests/test_security_csp.py` sigue.
-- **Estado:** hecho (paso 14 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 14 del plan, PR #119). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Una sola tinta, el azul del cartel** (`--caratula`), y no magenta con una variante azul.
      Es la tinta que D10 nombra para el duotono y la de la placa del reproductor. Además es la
      más suave: tras el paso 13 el dueño rechazó los planos de color que se imponen. Así,
@@ -828,7 +828,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   (tinta sobre tinta): para el póster, prueba antes cómo se ve con `tools/ux/variantes.js`.
   Si el póster lleva duotono, añade `_player.html` a `CON_DUOTONO` en
   `tests/test_css_sistema.py`.
-- **Estado:** hecho (paso 15 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 15 del plan, PR #120). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **El póster va a una tinta**, como pide D10. Cubre la placa entera, así que la tinta de
      la placa no se pierde: la placa sigue siendo azul, pero con imagen. Al señalarla se ve
      el original. Las miniaturas del índice llevan el mismo tratamiento, y `CON_DUOTONO`
@@ -883,7 +883,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   galería) y una lista cerrada en la prueba (`CON_DUOTONO`) lo vigila. Si una imagen nueva
   entra en un listado (la miniatura de un texto, por ejemplo), decide si lleva duotono. Los
   afiches de terceros y los logos de aliados nunca lo llevan.
-- **Estado:** hecho (paso 16 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 16 del plan, PR #121). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Las imágenes de los listados van a una tinta, afiches incluidos**: la imagen de cada
      texto y los afiches de la agenda, de «Próxima actividad» y de la trayectoria. El 3.3
      dejaba fuera los afiches de terceros, pero en los listados pesa más el sistema de una
@@ -934,7 +934,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   actualiza en el mismo PR. El patrón de «toda la tarjeta es enlace» ya está escrito para las filas
   y las tarjetas de registro: una capa `::after` del enlace del título y `z-index:1` en los
   secundarios. Reutilízalo tal cual.
-- **Estado:** hecho (paso 14 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 14 del plan, PR #119). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Las clases cambian de nombre**, porque el círculo desaparece: `.avatar` pasa a
      `.retrato` y `.avatar-fallback` a `.monograma`
      (`<span class="retrato monograma" aria-hidden="true">RC</span>`). Se actualizaron
@@ -977,7 +977,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   muestra el icono; `grep -c "<svg" templates/base.html` ≥ 1; el nombre en la cabecera no lleva fondo.
 - **Tests:** `tests/test_ui_identity.py::test_css_declares_self_hosted_display_font` sigue;
   `test_contraste_del_sello_de_la_cabecera` se adapta (ya no hay sello: afirmar tinta sobre papel).
-- **Estado:** hecho (paso 17 del plan), con lo que eligió el dueño del sitio tras dos rondas de
+- **Estado:** hecho (paso 17 del plan, PR #122), con lo que eligió el dueño del sitio tras dos rondas de
   alternativas sobre la cabecera real. Lo construido difiere de lo escrito arriba en estos puntos:
   1. **El sello magenta se queda**: el ticket lo retiraba y el dueño eligió conservarlo. Lleva
      dentro el monograma RV, con la R en blanco y la V en celeste (`--celeste:#9cc3ea`), más un
@@ -1037,7 +1037,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   de 40 px de alto (`.brand`, `.brand-mono`, `.brand-nombre`). La cabecera de una fila tiene que
   dejarle sitio. A 320 px el sello ya parte el nombre en dos líneas, así que la fila de 56 px en
   el teléfono necesita probarse con el sello a 320 y a 390.
-- **Estado:** hecho (paso 18 del plan). El dueño eligió entre tres maneras de que la fila cupiera
+- **Estado:** hecho (paso 18 del plan, PR #123). El dueño eligió entre tres maneras de que la fila cupiera
   a 951 px, enseñadas sobre la cabecera real
   (https://claude.ai/artifact/SPdVbArnaZeDSm32H6UVi7). Lo construido difiere de lo escrito arriba
   en estos puntos:
@@ -1131,7 +1131,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   titular no repite el dossier como primario. Por ejemplo: «Escríbenos» de primario, o el
   dossier como `.btn` normal si es el PDF. Decídelo y díselo al dueño. La portada hace 16
   consultas en `tests/test_performance.py` (eran 17) y 20 en la base de desarrollo.
-- **Estado:** hecho (paso 19 del plan). El dueño eligió entre tres disposiciones capturadas
+- **Estado:** hecho (paso 19 del plan, PR #125). El dueño eligió entre tres disposiciones capturadas
   sobre la portada real (https://claude.ai/artifact/7iU76LZaaiuhyVPTazCvMv) la A: el nombre en
   dos líneas y, a su lado, el objeto. Lo construido difiere de lo escrito arriba en estos
   puntos:
@@ -1227,7 +1227,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   actividad y la fecha de actualización. La portada mide 4459 px a 1440 (meta: 3300) y
   hace 17 consultas en la prueba y 21 en la base de desarrollo, sobre un techo de 24. En la
   vista, `publications` ya es una lista: el objeto del titular sale de ella.
-- **Estado:** hecho (paso 20 del plan). La meta de 3300 px a 1440 no cabía sin quitar algo: el
+- **Estado:** hecho (paso 20 del plan, PR #126; ajustes del dueño en #127 a #129). La meta de 3300 px a 1440 no cabía sin quitar algo: el
   titular del paso 19 mide unos 1000 px. El dueño vio dos maneras sobre la portada real
   (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió conservar el bloque de
   publicaciones: la portada mide 4415 px a 1440 (eran 4459, sin poemas ni cierre) y 4084 a 951.
@@ -1315,7 +1315,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   jurados», con las puertas al dossier, la prensa, los aliados y el correo, sobre el papel.
   El pie no tiene que repetirlas en otra forma: su grupo «Prensa y gestión» ya las lleva.
   El paso vertical de los enlaces del pie ya es de 28 px a 951.
-- **Estado:** hecho (paso 21 del plan). Lo construido difiere de lo escrito arriba en estos
+- **Estado:** hecho (paso 21 del plan, PR #130). Lo construido difiere de lo escrito arriba en estos
   puntos:
   1. **La identidad** abre el pie: el sello de la cabecera (ahora una parcial,
      `partials/_sello.html`, con el nombre siempre en dos líneas y en blanco), «Colectivo de
@@ -1349,7 +1349,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   por la FK inversa de `Poem.recording`, «Ver el evento»), `event_detail.html` (puertas
   «← Trayectoria {año}» y «Agenda»).
 - **Aceptación:** cada detalle con ≥ 4 enlaces internos en `<main>`; presupuestos de consultas intactos.
-- **Estado:** hecho (paso 21 del plan). Casi todo lo había dejado el paso 12 con las salidas al
+- **Estado:** hecho (paso 21 del plan, PR #130 y #131). Casi todo lo había dejado el paso 12 con las salidas al
   pie de cada ficha: el registro lleva al poema registrado y al evento, y el evento, a la
   trayectoria de su año (o a la agenda, si aún no ha sido). Faltaban las actividades de cada
   integrante: su ficha enseña ahora «Actividades», las doce más recientes en que participó
@@ -1391,7 +1391,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   botón «Dossier» de la cabecera lleva a él desde todas las páginas. Si el dossier se reordena,
   el `id` se queda en el bloque de contacto (`tests/test_cabecera.py` lo comprueba). Como la
   cabecera es fija, el salto deja el bloque 16 px por debajo de ella (`scroll-padding-top`).
-- **Estado:** hecho (paso 22 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 22 del plan, PR #132). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Sigue en el carril de lectura** (780 px), como lo dejó la auditoría y lo vigila
      `test_las_paginas_de_lectura_se_quedan_en_su_carril`: mide lo que una hoja A4, y lo que
      se ve es lo que se imprime. A 951 px no cambia casi nada (el ancho mediría 875).
@@ -1453,7 +1453,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   a doble columna, y no hay «Ver las N fotos». Al imprimir, las fotos a una tinta ya salen tal
   cual (la hoja de impresión neutraliza `.riso-duo`). El año de un evento en la trayectoria y
   en el ancla de su ficha es el de su hora local (`cronologia()` en `apps/agenda/services.py`).
-- **Estado:** hecho (paso 23 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 23 del plan, PR #133). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **El afiche llega a 420 px si al texto le quedan 360** (`.ficha-cabecera--afiche`): mide
      420 a 951 y a 1440, 308 a 768, 266 a 720 de ventana y 260 en el teléfono. Va como objeto,
      con la sombra plana de las cubiertas, y con su pie «Afiche · {pie} · {crédito}» solo si
@@ -1496,7 +1496,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   en `/aliados/` (en desarrollo los tres tienen logo; la plantilla no enseña nada en su lugar).
   El dossier enseña los mismos logos (`.partner-logo`) con el nombre como pie
   (`.dossier-aliados`): si el reemplazo cambia la clase o el tamaño del logo, míralo también ahí.
-- **Estado:** hecho (paso 23 del plan). La aceptación ya se cumplía (0,90 de ratio en
+- **Estado:** hecho (paso 23 del plan, PR #133). La aceptación ya se cumplía (0,90 de ratio en
   `/galeria/` y `/aliados/` a 1440, ninguna imagen deformada); faltaba el reemplazo de un aliado
   sin logo. Es su nombre en la tipografía de titulares, en la misma caja de 160 × 80 y sobre la
   hoja clara, como el monograma de una integrante sin retrato (`.partner-logo--texto`). No se
@@ -1527,7 +1527,7 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `max-height:64vh` con scroll propio. Con los resultados agrupados por tipo la lista crece:
   compruébala a 390 y a 951. `test_search_query_budget` mide hoy 9 consultas de 10 (en frío,
   como la cuenta la prueba): cuatro tipos más no caben sin consolidar.
-- **Estado:** hecho (paso 24 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+- **Estado:** hecho (paso 24 del plan, PR #134). Lo construido difiere de lo escrito arriba en estos puntos:
   1. **Las personas** son las integrantes (también las históricas, cuya ficha sigue
      abierta) y quien firma algo publicado: una firma sin nada publicado no tiene qué
      enseñar en su página. La integrante lleva su cargo; la firma, «Colaborador», como su
@@ -1581,6 +1581,25 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Nota de entrada** (tras el paso 24): los resultados del buscador van por grupos, cada uno
   con un `h2`, dentro de la región `aria-live` del panel de la lupa: comprueba con un lector de
   pantalla que el anuncio de cada búsqueda no sea un muro de texto.
+- **Estado:** hecho (paso 25 del plan, PR #135). La tabla está en
+  `docs/auditoria-ux-ui-verificacion.md` §3. Con Chrome y el teclado sobre las páginas reales:
+  1. **Teclado**: el primer Tab va a «Saltar al contenido» en la portada, un poema, un evento y
+     el dossier, y el foco se ve en todas las paradas (contorno magenta de 2 px). La lupa y
+     «Menú» se abren con Enter; la vista ampliada de una foto se abre con Enter, Tab lleva a
+     «Cerrar» y Enter la cierra.
+  2. **La cinta** se detiene al señalarla y con el foco dentro, y no se mueve con «menos
+     movimiento». `lang="es"`; el nombre del colectivo en el título de las 61 páginas
+     recorridas.
+  3. **Objetivos**: los enlaces de la barra medían 23 px de alto y los de la sub-fila del
+     colectivo 43; ahora 45 (`padding-block:11px`), sin mover nada. El tamaño de objetivo
+     (WCAG 2.5.8) se midió con sus excepciones —separación y enlaces en línea—: 0 fallos en 821
+     objetivos a 1440 y 822 a 390, con un comprobador validado contra una página de control.
+     Los del pie miden de 17 a 21 px: cumplen 2.5.8 por separación, no los 44 de la auditoría.
+  4. **Contraste**: ningún texto por debajo de AA contra su fondo real en las 21 páginas a 1440,
+     951 y 390 (`superficies.js`).
+  5. **Sin un lector de pantalla** no se pudo comprobar el anuncio de la región `aria-live` de
+     la lupa ni el orden de lectura de la vista ampliada: queda en `docs/deferidos-y-decisiones.md`.
+  Prueba: `tests/test_css_sistema.py::test_los_enlaces_de_la_barra_se_pulsan_en_44_px`.
 
 #### 6.2 Métricas finales frente a la línea base
 - **Pasos:** recapturar las 21 páginas en `tools/ux/out/final/` y correr
@@ -1597,6 +1616,20 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Nota de entrada** (tras el paso 23): la ficha de un evento a 1440 pasa de 1768 a 2330 px y
   de 1 a 3 imágenes en la primera pantalla: el afiche crece a 420 px y las fotos van en
   mosaico (la primera, de 878 × 587). Tampoco es una regresión.
+- **Estado:** hecho (paso 25 del plan, PR #135). `docs/auditoria-ux-ui-verificacion.md` reúne
+  los doce grupos de criterios de §10, uno por uno, con su meta, el valor de antes, el de ahora
+  y cómo se midió; la comparación de métricas de las 21 páginas, y las ocho capturas de antes y
+  después. Las métricas finales y esas capturas se versionan en `tools/ux/final/`, junto a la
+  línea base. Lo que difiere de lo escrito arriba:
+  1. **La tinta de la primera pantalla** no la medía `capture.js`: se midió aparte, con el
+     método de la auditoría, que reproduce su 4,8 % en poemas sobre la captura de la línea base.
+  2. **Se cumplen** el ancho, la jerarquía, el contraste, las imágenes, el rendimiento (LCP de
+     2,1 s en un teléfono estrangulado, CLS 0) y casi toda la accesibilidad. **No se cumplen**,
+     explicados con su causa: el alto de la portada, el control de pausa, las cifras y la tinta
+     de la portada (decisiones del dueño), y la monoespaciada y las mayúsculas de la portada,
+     los diez tamaños de la escala, la medida del manifiesto del dossier, los enlaces del pie y
+     la tinta de cuatro índices de filas. El seguimiento de cada uno está en
+     `docs/deferidos-y-decisiones.md` §4.
 
 #### 6.3 Documentación y decisiones
 - **Pasos:** `docs/deferidos-y-decisiones.md` §1 con D1-D14 y su porqué (copiar de la sección 1 de
@@ -1610,6 +1643,19 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   2026-08-24» y «91 de 104 casillas», y la guía tiene 105 marcadas: está desfasado. La guía
   tiene tres casillas sin marcar en su §2 (la búsqueda por grupos), a la espera de que el
   dueño las compruebe; `docs/deferidos-y-decisiones.md` §1 no tiene aún D1–D14.
+- **Estado:** hecho (paso 25 del plan, PR #135):
+  1. **D1 a D14** están en `docs/deferidos-y-decisiones.md` §1, con su porqué y cómo quedaron, y
+     una advertencia: ese documento ya tenía otras «D1» y «D2», técnicas. Su §4 suma lo que la
+     verificación deja sin cumplir y corrige tres afirmaciones que ya no eran ciertas (la
+     identidad del sitio, el `LIMIT` de la búsqueda y «menos movimiento»).
+  2. **La guía de pruebas manuales** describe la portada, el dossier y la ficha de un evento de
+     hoy, y suma un bloque §1.5: cabecera, menú, cinta sin control de pausa, índices y
+     teclado. Lo que cambió queda sin marcar para que lo compruebe el dueño: **11 de 111
+     casillas**. `docs/retomar-barrido.md` dice ya que el barrido se cerró el 2026-09-02 (104 de
+     104) y que esas once son lo siguiente.
+  3. **El README** enlaza la verificación y nombra `tools/ux/final/`, que su propio README
+     explica. **`docs/plan-ui.md`** abre con la nota de superado. **Cada ticket de este backlog**
+     lleva en su estado el paso y el PR.
 
 ---
 

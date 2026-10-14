@@ -1,0 +1,191 @@
+{
+ "titulo": "Integrantes — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 2040,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Integrantes",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "12 INTEGRANTES",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 87,
+  "porTipo": {
+   "mono": 16,
+   "display": 32,
+   "lectura": 39
+  },
+  "mayusculas": 16,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 12,
+  "enPrimerViewport": 10,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 364,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 826,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 826,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 826,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 826,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 826,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 1287,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 245,
+    "alto": 306,
+    "natural": "289x362",
+    "ajuste": "cover",
+    "arriba": 1287,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 54,
+  "bajo24": 28,
+  "bajo44": 37
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/integrantes/",
+ "estado": 200
+}

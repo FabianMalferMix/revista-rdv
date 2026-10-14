@@ -77,6 +77,30 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
   dependencias de orden). Hay un `ignore` acotado para el warning benigno de WhiteNoise
   «No directory at: staticfiles/» (en tests no se corre collectstatic).
 
+### Decisiones del rediseño UX/UI (D1 a D14, 2026-10-08)
+
+> Numeración propia del backlog `docs/backlog-ux-ui.md` §1: **no son las D1 y D2 de arriba**.
+> El dueño del sitio delegó las catorce el 2026-10-08; la última columna dice cómo quedaron,
+> con lo que él cambió al ver cada paso. La verificación está en
+> `docs/auditoria-ux-ui-verificacion.md`.
+
+| # | Decisión | Porqué | Cómo quedó |
+|---|---|---|---|
+| D1 | Cinta de integrantes sin control de pausa | Se detiene al señalarla y con el foco dentro; en táctil es una fila; con «menos movimiento», quieta | El dueño descartó dos veces el control (un rótulo y un icono). WCAG 2.2.2 queda discutible; no volver a proponerlo salvo que él lo pida |
+| D2 | El buscador, plegado en una lupa | Sitio pequeño; el sitio de la cabecera va al botón «Dossier» | Lupa con panel (paso 18). La búsqueda cubre personas, registros, publicaciones y actividades, por grupos (paso 24, #134) |
+| D3 | La monoespaciada, solo para rótulos y datos | La voz dominante es la de lectura | Navegación y títulos en Syne, cuerpo en serif (paso 11). La portada queda en 38 % de elementos en mono (meta: 30) por los cargos de la cinta |
+| D4 | Serif de lectura autoalojada | La misma voz en todos los sistemas | «RdV Serif», un subconjunto de Source Serif 4 renombrado por la OFL; fuentes en 120 KB (paso 11) |
+| D5 | El amarillo del cartel, solo como fondo | Como texto da 1,03:1 | El dueño rechazó el plano amarillo («invasivo»); queda el trazo de marcador bajo las cifras, que hoy solo están en el dossier (pasos 13 y 22) |
+| D6 | Bandas de tinta, dos por página como mucho | Peso visual dentro de una paleta clara | El dueño rechazó la banda oscura del destacado; la tinta queda solo en el pie (paso 13) |
+| D7 | Tres carriles: lectura, ancho y sangre | Usar el ancho sin alargar la línea de lectura | Paso 9. El dossier y el formulario siguen en el de lectura |
+| D8 | El nombre del colectivo como titular | El lema era una categoría genérica | El dueño eligió el nombre en dos líneas con la cubierta del catálogo al lado (paso 19) |
+| D9 | Barra de cinco enlaces y «Dossier»; prensa y aliados como línea de respaldo | Lo de gestores vivía solo en el pie | Barra hecha (paso 18). La línea de respaldo de la portada la quitó el dueño (#128, #129) |
+| D10 | La placa azul del reproductor, nunca vacía | Figura y fondo | Póster a una tinta o carátula tipográfica (paso 15) |
+| D11 | Cifras del dossier en grande | Es lo primero que busca un jurado | Syne de 34 a 56 px con el trazo amarillo, también al imprimir (paso 22) |
+| D12 | La cinta, desde 12 integrantes | La cinta no era el problema; sus tarjetas sí | Retratos 4:5 a una tinta; fila con scroll en táctil (paso 14) |
+| D13 | Títulos de sección en Syne con cejilla | Un título no puede medir menos que su texto | En todo el sitio; en el dossier desde el paso 22 |
+| D14 | Estados por color, radios y filetes en tokens | Acabado consistente; WCAG 1.4.11 | `--r-1`, `--line` y `--edge` (paso 6) |
+
 ---
 
 ## 2. Diferidos que dependen de INFRAESTRUCTURA del usuario
@@ -132,11 +156,45 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
 - **Portada de podcast cuadrada (`itunes:image`).** Para publicar el feed
   `/feed/registros/` en Apple Podcasts falta un asset cuadrado ≥1400px en `SiteProfile`.
   El namespace iTunes ya se emite (`media/feeds.py`).
-- **Configurar identidad del sitio.** `SiteProfile.name` es el placeholder «Reseñas» y
-  `og_image` está sin asignar: configurarlos en el admin (afecta título, OG y JSON-LD).
-- **Índice `Event(published, starts_at)`**, `LIMIT` explícito en la consulta FTS,
-  `prefers-reduced-motion`, epigraph en el trigger FTS de Poem — micro-optimizaciones de
-  la auditoría #2, sin impacto observado.
+- **Configurar la identidad del sitio en producción.** En desarrollo ya está:
+  `tools/ux/preparar-entorno.sh` pone el nombre, el lema y las redes, y el comando
+  `seed_material_generico`, que el mismo guion corre, la imagen para compartir (genérica). En
+  una base nueva de producción hay que ponerlos en el panel (Perfil del sitio): afectan al
+  título, al Open Graph y al JSON-LD.
+- **Índice `Event(published, starts_at)`** y epigraph en el trigger FTS de Poem —
+  micro-optimizaciones de la auditoría #2, sin impacto observado. (El `LIMIT` de la búsqueda
+  ya viaja al SQL desde el hallazgo S-04, y `prefers-reduced-motion` se respeta desde el
+  rediseño UX.)
+
+### Del rediseño UX/UI (cierre, 2026-10-14)
+
+Lo que la verificación (`docs/auditoria-ux-ui-verificacion.md`) deja sin cumplir, con su causa.
+Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin preguntarle.
+
+- **La portada mide 4092 px a 1440** (meta: 3300). Eligió conservar las publicaciones (paso 20).
+- **Sin control de pausa en la cinta** (D1).
+- **Sin cifras en la portada** (#128): «aún somos un grupo pequeño». Están en el dossier.
+- **Poca tinta en la primera pantalla de la portada** (16,5 %; meta: 50 %): sin planos de color
+  ni bandas oscuras, que descartó al verlos (paso 13).
+- **Cuatro índices de filas con poca tinta** (textos, agenda, trayectoria y aliados, entre 3 % y
+  9 %; meta: 20 %). Subiría con más imágenes reales: miniaturas en textos, afiches en la agenda.
+- **Monoespaciada y mayúsculas en la portada** (38 % y 26; metas: 30 % y 15). Casi la mitad son
+  los cargos de la cinta, que se repite para dar la vuelta. Si se quisiera la cifra: el cargo en
+  caja baja, o sin rótulo en la copia oculta.
+- **El manifiesto del dossier a 49 letras por línea** (meta: 60 a 75), por ir al lado de la
+  ficha. Si molesta, a todo el ancho del carril de lectura.
+- **Los enlaces del pie, de 17 a 21 px de alto** (meta: 44). Cumplen WCAG 2.5.8 por separación;
+  a 44 px el pie crecería, y el dueño lo quiere bajo.
+- **En el teléfono, Textos y el dossier a dos toques**, dentro de «Menú» (paso 18).
+- **La vista ampliada de las fotos sin «anterior» ni «siguiente»**: se cierra y se abre otra.
+  Hacerlo sin JavaScript pide un enlace por lado en cada foto.
+- **Sin comprobar con un lector de pantalla** (no hay uno en el entorno): cómo anuncia la región
+  `aria-live` del panel de la lupa los resultados agrupados, y el orden de lectura de la vista
+  ampliada.
+- **LCP y CLS medidos en desarrollo**, con la red y la CPU estranguladas (2,1 s y 0). Repetir en
+  la vista previa de producción, que comprime y cachea los estáticos.
+- **Fotos, afiches y cubiertas reales**: el material es genérico hasta que el colectivo aporte el
+  suyo (`docs/contenido-visual.md`).
 - ~~**Páginas 404 y 500 con la identidad del sitio.**~~ **CERRADO** (`fix-paginas-error`,
   2026-09-02). El 404 pasa de 179 a 5117 bytes con cabecera, pie y cuatro salidas.
 

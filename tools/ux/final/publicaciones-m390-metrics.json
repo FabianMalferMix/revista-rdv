@@ -1,0 +1,111 @@
+{
+ "titulo": "Publicaciones — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1808,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Publicaciones",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "3 PUBLICACIONES",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "RdV Serif",
+  "px": 15,
+  "peso": "400",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 77
+ },
+ "boton": {
+  "texto": "Suscribirme",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 129
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 68,
+  "porTipo": {
+   "mono": 13,
+   "display": 11,
+   "lectura": 44
+  },
+  "mayusculas": 10,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 30,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 3,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "img",
+    "ancho": 165,
+    "alto": 231,
+    "natural": "175x245",
+    "ajuste": "cover",
+    "arriba": 301,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 165,
+    "alto": 231,
+    "natural": "175x245",
+    "ajuste": "cover",
+    "arriba": 301,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 165,
+    "alto": 231,
+    "natural": "175x245",
+    "ajuste": "cover",
+    "arriba": 665,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 51,
+  "bajo24": 23,
+  "bajo44": 25
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/publicaciones/",
+ "estado": 200,
+ "desborde320": false
+}

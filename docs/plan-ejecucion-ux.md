@@ -8,26 +8,27 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 24.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-14, tras el paso 25, el último.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 24 de 25 pasos.** El último paso fusionado es el 24 (`ux-5-4-busqueda`, PR #134). `main`
-está en verde, con 880 pruebas. No hay ninguna rama de paso abierta.
+**Hechos los 25 pasos.** El último fusionado es el 25 (`ux-6-cierre`, PR #135). `main` está en
+verde, con 881 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el paso 25, `ux-6-cierre`** (sección 2), el último, cuando el dueño haya visto el 24.
-Lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el punto de control final** (sección 2): que el dueño apruebe la tabla de antes y
+después de `docs/auditoria-ux-ui-verificacion.md`. Lee «Lo que espera respuesta del dueño», más
+abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-5-4-busqueda … (#134)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-6-cierre … (#135)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 25
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # ninguno: los 25 están marcados
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -71,6 +72,7 @@ nuevo: mira su descripción y la sección 4.
 | 22 | `ux-5-1-dossier` | #132 | El dossier como kit de prensa: ficha, cifras grandes, retratos, una sola trayectoria por años, cubiertas, prensa, logos; se imprime con sus imágenes |
 | 23 | `ux-5-2-agenda-galeria-aliados` | #133 | Ficha de evento con el afiche a 420 px y su pie, «Participan» y «Registros» a su lado, fotos en mosaico con «Ver las N fotos»; la vista ampliada cubre la pantalla; logo tipográfico para el aliado sin logo |
 | 24 | `ux-5-4-busqueda` | #134 | La búsqueda encuentra personas, registros, publicaciones y actividades además de textos y poemas, por grupos; cinco por grupo en la lupa y diez en la página; una consulta menos |
+| 25 | `ux-6-cierre` | #135 | La verificación de §10 criterio a criterio, con capturas de antes y después (`docs/auditoria-ux-ui-verificacion.md`); la pasada de accesibilidad; los enlaces de la barra a 45 px; D1 a D14 y lo diferido documentados |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -129,6 +131,9 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | «Fernanda» y «recital» en el buscador | sin resultados | la integrante; el registro y dos actividades |
 | Tipos que encuentra el buscador | 2: textos y poemas, en una lista | 6, por grupos |
 | Consultas de la búsqueda (prueba, en frío) | 9 | 8 |
+| Alto de los enlaces de la barra y de la sub-fila del colectivo | 23 y 43 px | 45 px |
+| Objetivos que fallan WCAG 2.5.8, con sus excepciones (21 páginas, 1440 y 390) | sin medir | 0 de 821 y 822 |
+| LCP y CLS de la portada en un teléfono (4G lento, CPU ×4, desarrollo) | sin medir | 2,1 s y 0 |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -136,7 +141,7 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| La vista ampliada de las fotos no tiene «anterior» ni «siguiente» | se mira en el paso 25 (6.1) |
+| Nada pendiente de un paso: lo que la verificación deja sin cumplir está, con su causa, en `docs/deferidos-y-decisiones.md` §4 («Del rediseño UX/UI») | — |
 
 ### Lo que ha decidido el dueño del sitio
 
@@ -195,6 +200,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Dossier (2026-10-14):** mantiene «En números», «Prensa» y «Con el apoyo de», aunque los
   quitó de la portada («Sí, mantén todo eso en el Dossier»).
 - **Paso 22 (2026-10-14):** pidió empezarlo («Sigue con el paso 22») sin comentar el #131.
+- **Revisión del paso 24 (2026-10-14):** dio paso al 25 («Sigue al paso 25») sin ajustes:
+  quedan aceptados el orden de los grupos de la búsqueda, sus topes y quién sale como persona.
 - **Revisión del paso 23 (2026-10-14):** dio paso al 24 («Sigue al paso 24») sin ajustes:
   quedan aceptados «Participan» y «Registros» junto al afiche.
 - **Revisión del paso 22 (2026-10-14):** dio paso al 23 («Sigue al paso 23») sin ajustes, así
@@ -233,16 +240,16 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 24, la búsqueda (#134).** Qué mirar, a 951 px:
-   - la lupa de la cabecera, en cualquier página: con «Fernanda», el grupo PERSONAS con
-     «Fernanda Soto» y «Fundadora · edición» debajo; con «recital», REGISTROS y ACTIVIDADES,
-     cada actividad con su fecha y su ciudad;
-   - http://localhost:8000/buscar/?q=umbral: la página, con POEMAS, REGISTROS y PUBLICACIONES;
-   - las tres casillas sin marcar de `docs/guia-pruebas-manuales.md` §2, que son esto mismo.
-   Dos decisiones que puede cambiar: el orden de los grupos (personas primero; después la
-   obra en el orden de la barra, y las actividades) y el tope (cinco por grupo en la lupa,
-   diez en la página).
-2. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22, 23 y 24 sin
+1. **El punto de control final (#135).** Qué mirar:
+   - la tabla de §10 en `docs/auditoria-ux-ui-verificacion.md`, con las capturas de antes y
+     después de la portada, un índice, un poema y una ficha;
+   - lo que no se cumple y por qué, en su §1 y en `docs/deferidos-y-decisiones.md` §4;
+   - las 11 casillas sin marcar de `docs/guia-pruebas-manuales.md` (§1 y §1.5, la portada, el
+     dossier, la ficha de un evento, la cabecera, el menú, la cinta, los índices y el teclado;
+     §2, la búsqueda por grupos).
+   Cambió una cosa a la vista, pero no se nota: los enlaces de la barra se pulsan ahora en
+   45 px de alto (eran 23), sin moverse de sitio.
+2. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22 a 25 sin
    comentarla.
    Qué mirar, a 951 px:
    - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
@@ -265,70 +272,27 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 6. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el paso 25, `ux-6-cierre`
+## 2. Qué sigue: el punto de control final
 
-**Antes**, el dueño tiene que haber visto el paso 24 (sección 1, «Lo que espera respuesta del
-dueño»). Si pide ajustes, van primero, en su propia rama.
+Los 25 pasos están hechos. Queda que el dueño del sitio apruebe el conjunto viendo la tabla de
+antes y después: `docs/auditoria-ux-ui-verificacion.md`. Pídele su visto bueno expreso.
 
-**El paso 25: tickets 6.1, 6.2 y 6.3.** Es el cierre: no rediseña nada, lo mide y lo documenta.
-Lee las notas de entrada de los tres.
+**Qué decirle que no se cumple, y por qué.** Está en el §1 de la verificación. Cuatro cosas las
+decidió él al verlas: el alto de la portada, el control de pausa de la cinta, las cifras en la
+portada y la poca tinta de su primera pantalla, sin planos de color ni bandas oscuras. Las demás
+tienen su causa y su seguimiento en `docs/deferidos-y-decisiones.md` §4: la monoespaciada y
+las mayúsculas de la portada, los diez tamaños de la escala, la medida del manifiesto del
+dossier, los enlaces del pie y la tinta de cuatro índices de filas.
 
-**Qué se hace.**
-- **6.1, accesibilidad**: recorrer con teclado las rutas (el salto al contenido, el orden y
-  el foco visible, la lupa y «Menú», la vista ampliada de las fotos, «Ver las N fotos»);
-  objetivos de 44 px en la barra, el pie, la paginación y los botones; `aria-current`;
-  títulos de pestaña; `prefers-reduced-motion`.
-- **6.2, métricas**: recapturar las 21 páginas en `tools/ux/out/final/`, compararlas con
-  `tools/ux/linea-base/` (`metrics.py comparar`) y volcar en
-  `docs/auditoria-ux-ui-verificacion.md` la tabla de §10 de la auditoría, con cada criterio
-  cumplido o explicado, y capturas de antes y después.
-- **6.3, documentación**: D1 a D14 en `docs/deferidos-y-decisiones.md` §1;
-  `docs/guia-pruebas-manuales.md` y `docs/retomar-barrido.md` al día; `tools/ux/` en el
-  README (ya lo nombra: compruébalo); la nota de superado en `docs/plan-ui.md`; cada ticket
-  del backlog con su estado y su PR.
+**Después de su aprobación**, el plan está cerrado:
+- marca el punto de control final en la sección 3 y anótalo en «Lo que ha decidido el dueño»;
+- lo que siga ya no es un paso de este plan: un ajuste que él pida va en su propia rama, con
+  el mismo método (sección 4), y se mide contra `tools/ux/final/`, que es la nueva línea base;
+- quedan sus pendientes de la sección 1: la reseña de prueba del #131, la convocatoria de
+  prueba, la tarjeta para compartir, el hito de 2019 y el material real.
 
-**Qué hace falta.** Nada del dueño para hacerlo. Al final, su visto bueno: es el punto de
-control final.
-
-**Lo que §10 pedía y no se cumple por decisión del dueño**: se explica en la tabla, no se
-«arregla».
-- La portada mide 4092 px a 1440 y la meta era 3300: eligió conservar las publicaciones
-  (paso 20).
-- 2.2.2 pedía en la portada un control de pausa para la cinta: lo retiró dos veces (D1).
-- Las cifras de la portada, enlazadas a su prueba: las quitó, porque el colectivo aún es
-  pequeño (#128). Están en el dossier.
-- Las fotos reales (retratos, afiches, carátulas): el material es genérico hasta que el
-  colectivo aporte el suyo (`docs/contenido-visual.md`).
-
-**Se da por cerrado cuando**:
-
-| Criterio | Hoy | Meta |
-|---|---|---|
-| La tabla de §10 en `docs/auditoria-ux-ui-verificacion.md` | no existe | cada criterio, cumplido o explicado |
-| D1 a D14 en `docs/deferidos-y-decisiones.md` | no están | con su porqué y su fecha |
-| `docs/retomar-barrido.md` | «Estado a 2026-08-24», «91 de 104 casillas» | al día |
-| Casillas sin marcar en la guía de pruebas manuales | 3 (§2, la búsqueda por grupos) | las que el dueño no haya comprobado, dichas en el cierre |
-| Tickets del backlog con su estado | 36 de 39 | 39 de 39 |
-| Incumplimientos A o AA verificables sin herramientas externas | sin medir en conjunto | ninguno |
-
-**Pruebas que cambian a propósito.** Ninguna prevista: si la pasada de accesibilidad
-encuentra un fallo pequeño, se corrige con su prueba en el mismo PR; si no es pequeño, se
-anota en `docs/deferidos-y-decisiones.md`.
-
-**Cuidados.**
-- **Si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes** de
-  construir.
-- **Las notas de entrada de 6.2**: en el dossier, los elementos en mayúsculas pasan de 18 a
-  33, y la ficha de un evento crece de 1768 a 2330 px a 1440. No son regresiones: explícalo.
-- **La reseña de prueba del #131** sigue en la base de desarrollo: si mides con ella, dilo,
-  o bórrala antes si el dueño ya la vio (la orden está en la sección 1).
-- **Mide en tandas**: con `CONN_MAX_AGE=0` en desarrollo (#124) ya no se agotan las
-  conexiones, pero 21 páginas en tres anchos son muchas peticiones seguidas.
-
-**Qué enseñarle al dueño al terminar.**
-- La tabla de antes y después de `docs/auditoria-ux-ui-verificacion.md`: es el punto de
-  control final.
-- Lo que quedó fuera y por qué, en `docs/deferidos-y-decisiones.md`.
+**Si pide cambios en lo que no se cumple**, el seguimiento de cada punto, con lo que costaría,
+está en `docs/deferidos-y-decisiones.md` §4.
 
 ## 3. Los pasos
 
@@ -419,11 +383,12 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   tipos nuevos son una sola consulta.
   Cierra cuando: «Fernanda» devuelve a la integrante y «recital» al registro; la búsqueda no pasa
   de 10 consultas.
-- [ ] **25. `ux-6-cierre`.** Tickets 6.1, 6.2 y 6.3: accesibilidad, métricas finales contra
+- [x] **25. `ux-6-cierre`.** Tickets 6.1, 6.2 y 6.3: accesibilidad, métricas finales contra
   `tools/ux/linea-base/`, documentación y decisiones.
   Cierra cuando: hay una tabla con cada criterio de §10 de la auditoría, cumplido o explicado;
   ningún documento describe un estado que ya no existe.
-- ◆ **Punto de control final.** Tabla de antes y después.
+- ◆ **Punto de control final.** Pendiente: que el dueño apruebe la tabla de antes y después de
+  `docs/auditoria-ux-ui-verificacion.md` (sección 2).
 
 Tamaño de lo que queda, según §5 del backlog: los pasos 11, 12, 15, 16, 17, 18, 20 y 22 son
 medianos; el 19 es el grande; el resto, pequeños.

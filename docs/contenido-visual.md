@@ -21,12 +21,12 @@ preparar tamaños.
 | Pieza | Formato mínimo | Dónde se usa | Campo del panel |
 |---|---|---|---|
 | Retrato de cada integrante | 1200×1500 px (4:5), color, fondo neutro, mirando a cámara | rejilla y cinta de integrantes, ficha, dossier | Integrante → Foto |
-| Seis fotos por lectura | 3:2, ≥ 2400 px de ancho, con nombre de quien fotografió | galería, ficha del evento, portada | Evento → Fotos (pie y crédito) |
+| Seis fotos por lectura | 3:2, ≥ 2400 px de ancho, con nombre de quien fotografió | galería y ficha del evento | Evento → Fotos (pie y crédito) |
 | Afiche de cada evento | PDF o PNG a 300 dpi, el original de imprenta | agenda, próxima actividad, ficha, portada | Evento → Afiche |
 | Cubierta de cada publicación y una foto del libro en mano | 1000×1400 px (5:7); foto 3:2 | catálogo, ficha, portada, dossier | Publicación → Cubierta |
 | Fotograma de cada registro | 1920×1080 px, un plano nítido de la lectura | placa del reproductor, listado, destacado | Registro → Póster |
-| Logo de cada aliado y medio | SVG o PNG ≥ 600 px, sobre fondo transparente o blanco | aliados, línea de respaldo, dossier | Aliado → Logo; Prensa → Logo |
-| Foto de grupo | 2400×1260 px, horizontal | portada si no hay otro objeto, y la imagen al compartir en redes | Perfil del sitio → og_image |
+| Logo de cada aliado y medio | SVG o PNG ≥ 600 px, sobre fondo transparente o blanco | aliados y dossier | Aliado → Logo; Prensa → Logo |
+| Foto de grupo | 2400×1260 px, horizontal | la imagen al compartir en redes y el logo de los datos estructurados (la portada no la usa: lleva el nombre escrito y lo repetiría) | Perfil del sitio → og_image |
 | Ciudad o comuna | texto | cejilla de la portada, ficha, dossier | Perfil → Ubicación |
 | Correo de gestión | texto, solo si existe de verdad | portada, pie, dossier | Perfil → Correo de gestión |
 | Manifiesto propio | 60 a 120 palabras | portada (recortado) y dossier (entero) | Perfil → Manifiesto |

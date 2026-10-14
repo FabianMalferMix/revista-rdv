@@ -127,9 +127,12 @@ python3 tools/ux/smoke.py                     # todos los enlaces internos respo
 
 Detalle en [tools/ux/README.md](tools/ux/README.md). No forma parte del despliegue.
 
-El rediseño que salió de esa auditoría se ejecuta por pasos. **En qué punto está, qué sigue y
-con qué criterios** está en [docs/plan-ejecucion-ux.md](docs/plan-ejecucion-ux.md). Para
-continuarlo en una máquina nueva, un solo guion reconstruye el entorno de diseño (demostración,
+El rediseño que salió de esa auditoría se hizo en 25 pasos, del 2026-10-08 al 2026-10-14: cómo
+se hizo, en [docs/plan-ejecucion-ux.md](docs/plan-ejecucion-ux.md), y lo que se midió al cerrarlo,
+criterio a criterio y con capturas de antes y después, en
+[docs/auditoria-ux-ui-verificacion.md](docs/auditoria-ux-ui-verificacion.md). Las métricas de
+antes y de después están versionadas en `tools/ux/linea-base/` y `tools/ux/final/`. Para
+trabajar sobre el diseño en una máquina nueva, un solo guion reconstruye el entorno (demostración,
 identidad del colectivo, doce integrantes y material genérico):
 
 ```bash

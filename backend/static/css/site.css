@@ -354,7 +354,11 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .nav{display:flex; flex-wrap:nowrap; align-items:baseline; gap:4px 0; padding:0}
 /* En la tipografía de titulares y en caja de frase: era la monoespaciada en mayúsculas
    de un panel de control. La familia la da la regla de titulares. */
-.nav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); white-space:nowrap}
+/* El relleno vertical da a cada enlace una zona pulsable de 45 px de alto (meta de la
+   auditoría: 44) sin mover nada: la fila mide 64 y la marca de la página actual es un
+   subrayado, que va con el texto y no con la caja. Medía 23 px. */
+.nav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); white-space:nowrap;
+  padding-block:11px}
 .nav a:hover{color:var(--accent)}
 /* La página actual, o el territorio en el que se está: subrayado magenta de 2 px. */
 .nav a[aria-current], .subnav a[aria-current]{text-decoration:underline; text-decoration-color:var(--accent);
@@ -453,7 +457,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .index-head .dek{font-size:var(--t2); line-height:1.45; margin:14px 0 0}
 /* La sub-fila del colectivo (D9): en sus índices, el resto de su territorio. */
 .subnav{display:flex; flex-wrap:wrap; gap:0 20px; margin:var(--s2) 0 0}
-.subnav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); padding-block:10px}
+.subnav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); padding-block:11px}
 .subnav a:hover{color:var(--accent)}
 /* Firma por territorio: un filete de 3 px bajo el título dice en qué parte del sitio se
    está, con el mismo reparto que los grupos del pie. Magenta para la obra, el azul de la

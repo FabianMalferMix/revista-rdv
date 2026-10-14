@@ -1,5 +1,10 @@
 # Plan UI/UX — jerarquía, identidad y pulido
 
+> **Superado por `docs/auditoria-ux-ui.md` y `docs/backlog-ux-ui.md` (2026-10-08).** Este plan
+> se ejecutó en julio (PRs #13 a #15) y queda como registro. Su principio rector —«la sobriedad
+> es intencional»— lo revisó la auditoría de octubre, y el sitio de hoy es el que describen el
+> backlog y su verificación (`docs/auditoria-ux-ui-verificacion.md`).
+
 > Aborda los puntos 1–4 de la revisión visual. **Principio rector:** la sobriedad es
 > intencional (calza con un colectivo de poesía); no se redecora — se añade **jerarquía**
 > a la portada y **un** gesto de identidad, y se pulen detalles de UX/accesibilidad. El

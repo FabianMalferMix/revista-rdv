@@ -1,0 +1,119 @@
+{
+ "titulo": "Agenda — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 2287,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Agenda",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "Lo más reciente",
+  "familia": "Syne",
+  "px": 28,
+  "peso": "700",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Próximos recitales, lanzamientos y talleres.",
+  "familia": "RdV Serif",
+  "px": 19,
+  "peso": "400",
+  "interlinea": "27.55px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 79
+ },
+ "boton": {
+  "texto": "Escríbenos",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 122
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 88,
+  "porTipo": {
+   "mono": 18,
+   "display": 21,
+   "lectura": 49
+  },
+  "mayusculas": 15,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 33,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "event-afiche riso-duo",
+    "ancho": 88,
+    "alto": 117,
+    "natural": "128x170",
+    "ajuste": "fill",
+    "arriba": 758,
+    "desvio": false
+   },
+   {
+    "clase": "event-afiche riso-duo",
+    "ancho": 88,
+    "alto": 117,
+    "natural": "128x170",
+    "ajuste": "fill",
+    "arriba": 966,
+    "desvio": false
+   },
+   {
+    "clase": "event-afiche riso-duo",
+    "ancho": 88,
+    "alto": 117,
+    "natural": "128x170",
+    "ajuste": "fill",
+    "arriba": 1198,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 60,
+  "bajo24": 24,
+  "bajo44": 32
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/agenda/",
+ "estado": 200,
+ "desborde320": false
+}

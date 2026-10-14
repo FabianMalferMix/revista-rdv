@@ -1,0 +1,90 @@
+{
+ "titulo": "Umbral — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 960,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Umbral",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "64.4px",
+  "mayus": false,
+  "ancho": 454
+ },
+ "h2": {
+  "texto": "ESCUCHAR EL POEMA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 454
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "POEMAS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 454
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 65,
+  "porTipo": {
+   "mono": 11,
+   "display": 19,
+   "lectura": 35
+  },
+  "mayusculas": 10,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 43,
+  "bajo24": 30,
+  "bajo44": 38
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/poema/umbral/",
+ "estado": 200
+}

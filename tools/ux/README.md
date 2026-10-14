@@ -85,3 +85,15 @@ python3 tools/ux/metrics.py comparar tools/ux/linea-base tools/ux/out/<rama>
 El ticket 6.2 del backlog (métricas finales) compara contra esta carpeta. Al comparar, ten en
 cuenta que la base de datos de entonces no tenía fechas de agenda por venir: en un entorno recién
 sembrado la portada y `/agenda/` miden distinto por los datos, no por el diseño.
+
+## Medida final versionada
+
+`final/` guarda lo mismo **después** del backlog: las métricas de las 21 páginas (capturadas el
+2026-10-14, al cerrar el paso 25) y las ocho capturas equivalentes en `final/capturas/`. La tabla
+de §10 de la auditoría, criterio a criterio, está en `docs/auditoria-ux-ui-verificacion.md`.
+Para ver si algo empeora desde entonces:
+
+```bash
+node tools/ux/capture.js tools/ux/out/<rama>
+python3 tools/ux/metrics.py comparar tools/ux/final tools/ux/out/<rama>
+```

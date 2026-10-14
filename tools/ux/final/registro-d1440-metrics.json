@@ -1,0 +1,100 @@
+{
+ "titulo": "Recital «Nuevas voces» (registro) — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 1668,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Recital «Nuevas voces» (registro)",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "h2": {
+  "texto": "Participan",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "44px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Recital «Nuevas voces»",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "400",
+  "interlinea": "20.15px",
+  "mayus": false,
+  "ancho": 780
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 60,
+  "porTipo": {
+   "mono": 13,
+   "display": 19,
+   "lectura": 28
+  },
+  "mayusculas": 9,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 1,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "riso-duo",
+    "ancho": 780,
+    "alto": 439,
+    "natural": "779x438",
+    "ajuste": "cover",
+    "arriba": 354,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 44,
+  "bajo24": 31,
+  "bajo44": 36
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/registro/recital-nuevas-voces/",
+ "estado": 200
+}

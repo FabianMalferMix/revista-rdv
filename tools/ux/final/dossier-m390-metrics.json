@@ -1,0 +1,262 @@
+{
+ "titulo": "Dossier — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 7241,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Repitentes del Verso",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "Quiénes somos",
+  "familia": "Syne",
+  "px": 28,
+  "peso": "700",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h3": {
+  "texto": "Fernanda Soto",
+  "familia": "Syne",
+  "px": 19,
+  "peso": "700",
+  "interlinea": "22.8px",
+  "mayus": false,
+  "ancho": 238
+ },
+ "parrafo": {
+  "texto": "DOSSIER · KIT DE PRENSA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "RdV Serif",
+  "px": 15,
+  "peso": "400",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 77
+ },
+ "boton": {
+  "texto": "Imprimir / guardar como PDF",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 261
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 180,
+  "porTipo": {
+   "mono": 57,
+   "display": 53,
+   "lectura": 70
+  },
+  "mayusculas": 38,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 18,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1860,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2020,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2180,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2340,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2500,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2660,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2820,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2980,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 3140,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 3300,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 3460,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 3620,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 4836,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 5044,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 5252,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 5856,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 5856,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 6008,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 76,
+  "bajo24": 48,
+  "bajo44": 52
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/dossier/",
+ "estado": 200,
+ "desborde320": false
+}
