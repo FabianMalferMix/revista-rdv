@@ -7,10 +7,10 @@
   {% comment %}
      Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular, y
      el lema baja a la cejilla. A su lado, un objeto real: la primera cubierta del
-     catálogo o el afiche de la próxima actividad. Debajo, una cita de prensa. El dueño
-     del sitio eligió esta disposición entre tres, vistas sobre la portada real. Las cifras
-     (integrantes, actividades, publicaciones) y los aliados los quitó después: el colectivo
-     aún es pequeño y prefiere no enseñarlos por ahora.
+     catálogo o el afiche de la próxima actividad. El dueño del sitio eligió esta
+     disposición entre tres, vistas sobre la portada real. Después quitó lo que iba debajo:
+     las cifras (integrantes, actividades, publicaciones), los aliados y la cita de prensa.
+     El colectivo aún es pequeño y prefiere no enseñarlos por ahora.
   {% endcomment %}
   <section class="hero{% if objeto_titular %} hero--con-objeto{% endif %}">
     {% if cejilla or instagram_del_colectivo.usuario %}
@@ -59,17 +59,6 @@
         <a class="hero-cubierta" href="{{ objeto_titular.url }}" tabindex="-1" aria-hidden="true">{% responsive_img objeto_titular.imagen sizes="380px" lazy=False decorativa=True %}</a>
         <figcaption class="meta">{{ objeto_titular.rotulo }} · <a href="{{ objeto_titular.url }}">{{ objeto_titular.titulo }}</a>{% if objeto_titular.dato %}, {{ objeto_titular.dato }}{% endif %}</figcaption>
       </figure>
-    {% endif %}
-    {% if cita_de_prensa %}
-      {% comment %} La línea de respaldo (D9): una cita de prensa. La prensa tiene su página. {% endcomment %}
-      <div class="hero-respaldo">
-        {% if cita_de_prensa %}
-          <figure class="hero-cita">
-            <blockquote><p>«{{ cita_de_prensa.quote }}»</p></blockquote>
-            <figcaption class="meta"><cite><a href="{% url 'showcase:press_index' %}">{{ cita_de_prensa.outlet }}</a></cite>{% if cita_de_prensa.published_on %}, {{ cita_de_prensa.published_on|date:"Y" }}{% endif %}</figcaption>
-          </figure>
-        {% endif %}
-      </div>
     {% endif %}
   </section>
 

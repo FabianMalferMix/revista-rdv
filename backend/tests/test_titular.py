@@ -2,8 +2,8 @@
 
 El titular era el lema, «Colectivo de poesía», con el nombre escondido en un h1 para
 lectores de pantalla. Ahora el nombre es el titular y el lema baja a la cejilla. A su lado
-va un objeto real y, debajo, una línea de respaldo con una cita de prensa y los aliados. El
-dueño del sitio eligió la disposición entre tres; después quitó las cifras.
+va un objeto real. El dueño del sitio eligió la disposición entre tres; después quitó lo que
+iba debajo: las cifras, los aliados y la cita de prensa.
 """
 
 from datetime import date, timedelta
@@ -165,11 +165,9 @@ def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
     assert piezas.index("sello-convocatoria") > piezas.index("hero-ctas")
 
 
-def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_no_los_aliados(client):
-    """Los aliados («Con el apoyo de») los quitó el dueño de la portada por ahora."""
-    PressMention.objects.create(
-        title="a", outlet="Diario Uno", quote="Reciente.", published_on=date(2026, 5, 1)
-    )
+def test_la_portada_no_lleva_cita_de_prensa_ni_aliados(client):
+    """Bajo el titular iba una línea con una cita de prensa y «Con el apoyo de». El dueño del
+    sitio la quitó entera (2026-10-14): el colectivo aún es pequeño."""
     PressMention.objects.create(
         title="b",
         outlet="Radio Dos",
@@ -177,19 +175,8 @@ def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_no_los_aliados(client):
         featured=True,
         published_on=date(2025, 1, 1),
     )
-    PressMention.objects.create(title="c", outlet="Sin cita", featured=True)
-    PressMention.objects.create(
-        title="d", outlet="Oculta", quote="Oculta.", featured=True, published=False
-    )
     Partner.objects.create(name="Casa del Libro")
-    respaldo = _portada(client).select_one("section.hero .hero-respaldo")
-    assert respaldo.select_one(".hero-cita blockquote").get_text(strip=True) == "«Destacada.»"
-    pie_de_cita = respaldo.select_one(".hero-cita figcaption")
-    assert _texto(pie_de_cita) == "Radio Dos, 2025"
-    assert pie_de_cita.a["href"] == reverse("showcase:press_index")
-    assert "Casa del Libro" not in respaldo.get_text()
-
-
-def test_sin_cita_no_hay_linea_de_respaldo_aunque_haya_aliados(client):
-    Partner.objects.create(name="Casa del Libro")
-    assert _portada(client).select_one(".hero-respaldo") is None
+    sopa = _portada(client)
+    assert sopa.select_one(".hero-respaldo, .hero-cita") is None
+    assert "Destacada." not in sopa.get_text()
+    assert "Casa del Libro" not in sopa.get_text()

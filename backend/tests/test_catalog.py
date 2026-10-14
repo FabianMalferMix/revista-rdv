@@ -59,10 +59,12 @@ def test_partner_index_lists_active_only(client):
     assert b"Fondo Inactivo" not in resp.content
 
 
-def test_home_shows_catalog_and_a_press_quote_but_not_partners(client):
-    """La portada mantiene el catálogo y, desde el ticket 4.2, una cita de prensa bajo el
-    titular. Los aliados también iban en esa línea («Con el apoyo de»): el dueño del sitio
-    los quitó de la portada por ahora (2026-10-14). Siguen en /aliados/.
+def test_home_shows_catalog_but_not_press_or_partners(client):
+    """La portada mantiene el catálogo y deja fuera la prensa y los aliados.
+
+    El ticket 4.2 los había devuelto como una línea bajo el titular (D9): una cita de prensa
+    y «Con el apoyo de». El dueño del sitio quitó las dos cosas de la portada (2026-10-14):
+    el colectivo aún es pequeño. Siguen en /prensa/ y /aliados/.
     """
     make_publication(slug="en-home", title="Plaquette En Portada", featured=True)
     PressMention.objects.create(title="n", outlet="Radio Cita", quote="Imprescindibles.")
@@ -70,8 +72,8 @@ def test_home_shows_catalog_and_a_press_quote_but_not_partners(client):
     Partner.objects.create(name="Aliado Retirado", active=False)
     resp = client.get(reverse("content:home"))
     assert b"Plaquette En Portada" in resp.content
-    assert "«Imprescindibles.»".encode() in resp.content
-    assert b"Radio Cita" in resp.content
+    assert b"Imprescindibles." not in resp.content
+    assert b"Radio Cita" not in resp.content
     assert b"Aliado En Portada" not in resp.content
     assert b"Aliado Retirado" not in resp.content
 
