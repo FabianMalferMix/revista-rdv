@@ -83,7 +83,8 @@ def test_home_shows_next_event_and_stats(client):
     make_event(slug="hecho", title="Hecho", starts_at=timezone.now() - timedelta(days=5))
     resp = client.get(reverse("content:home"))
     assert b"Actividad Siguiente" in resp.content
-    assert b"evento realizado" in resp.content  # stats strip
+    # La tira de cifras del titular (ticket 4.2): «1 actividad», enlazada a la trayectoria.
+    assert b"</strong> actividad</a>" in resp.content
 
 
 def test_event_absolute_url(client):
@@ -97,9 +98,14 @@ def test_stats_service_shape_and_counts():
 
     make_event(slug="pasado-1", starts_at=timezone.now() - timedelta(days=10))
     make_event(slug="pasado-2", starts_at=timezone.now() - timedelta(days=20))
+    make_event(slug="festival", type="festival", starts_at=timezone.now() - timedelta(days=30))
+    make_event(slug="feria", type="feria", starts_at=timezone.now() - timedelta(days=40))
     result = stats()
-    assert set(result) == {"years", "events", "festivals", "publications"}
-    assert result["events"] == 2
+    assert set(result) == {"years", "events", "festivals", "festivales", "ferias", "publications"}
+    assert result["events"] == 4
+    # La trayectoria y el dossier rotulan «festivales/ferias»: `festivals` suma los dos. La
+    # portada los nombra por separado.
+    assert (result["festivals"], result["festivales"], result["ferias"]) == (2, 1, 1)
 
 
 # ── Agenda sin fechas (backlog UX, ticket 1.13) ─────────────────────────────

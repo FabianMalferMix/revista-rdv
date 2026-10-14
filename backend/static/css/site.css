@@ -113,16 +113,23 @@
        --t4  26   título de fila; día de la agenda
        --t5  28-40   título de sección, año, cifra
        --t6  34-56   título de página
-       --t7  44-104  titular de portada
+       --t7  44-125  el nombre del colectivo en la portada (62 como mucho en el teléfono)
      El cuerpo base no es un paso: crece con el monitor (ver `html`). */
   --t-2:12px; --t-1:13px; --t0:15px; --t1:16px; --t2:19px; --t3:22px; --t4:26px;
-  --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px); --t7:clamp(44px, 9vw, 104px);
+  --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px); --t7:clamp(44px, 15vw, 62px);
   /* Interlíneas por papel y espaciado de letra: abierto en los rótulos, cerrado en los títulos. */
   --lh-titular:.92; --lh-titulo:1.1; --lh-ui:1.35; --lh-lectura:1.55; --lh-verso:1.5;
   --tr-rotulo:.1em; --tr-meta:.02em; --tr-titulo:-.015em;
 }
 @supports (color:color-mix(in srgb, #000 50%, transparent)){
   :root{--line:color-mix(in srgb, var(--ink) 22%, transparent)}
+}
+/* El nombre de la portada tiene que caber: «Repitentes» mide 5,61 veces su cuerpo. En el
+   teléfono va a todo el carril (15vw); desde 720 px, en la columna de 7/12 junto al
+   objeto (8,6vw). Los dos tramos se tocan en 62 px, y arriba se queda en 125: a 1920 el
+   nombre mide 112 px o más, como pide el ticket. */
+@media (min-width:720px){
+  :root{--t7:clamp(44px, 8.6vw, 125px)}
 }
 /* En monitores muy grandes el carril ancho crece; el de lectura, no. */
 @media (min-width:1600px){
@@ -270,7 +277,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 
 /* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
-.brand, .hero-tagline,
+.brand, .hero-nombre, .hero-aliado,
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
@@ -877,31 +884,69 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   filter:grayscale(1); mix-blend-mode:multiply; transition:filter var(--dur-base) var(--ease)}
 .partner-item:hover .partner-logo, .partner-item:focus-within .partner-logo{filter:none}
 
-/* Hero de portada (CTA hacia gestores).
-   El lema es el TITULAR de la portada, no una línea de apoyo: de ahí el salto
-   de escala. El <h1> con el nombre sigue oculto (sr-only) porque el nombre ya
-   vive en el sello de la cabecera; lo que crece aquí es el lema. */
-.hero{margin:22px 0 0; padding:26px 0 34px; border-bottom:2px solid var(--ink)}
-.hero-tagline{font-size:var(--t7); font-weight:700; line-height:var(--lh-titular);
-  letter-spacing:-.035em; margin:0 0 24px; max-width:13ch; text-wrap:balance}
-.hero-manifesto{color:var(--ink); font-size:var(--t2); max-width:54ch; margin:0 0 16px}
+/* Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular: era
+   el lema, en el tamaño más grande, con el nombre oculto. El dueño del sitio eligió la
+   disposición entre tres, vistas sobre la portada real: el nombre en dos líneas y, a su
+   lado, un objeto real; debajo, las cifras y la línea de respaldo. En el teléfono va todo
+   en una columna, en el orden del marcado: nombre, manifiesto, botones, sello, objeto,
+   cifras y respaldo. */
+.hero{display:grid; grid-template-columns:minmax(0,1fr); column-gap:clamp(32px,6vw,96px);
+  padding:clamp(28px,4vw,56px) 0 var(--s4); border-bottom:2px solid var(--ink)}
+.hero-cejilla{margin:0 0 var(--s2)}
+.hero-cejilla a{color:inherit}
+/* «Repitentes» mide 5,61 veces el cuerpo de letra: --t7 está calculado para que quepa en
+   su columna a cualquier ancho (ver la escala, arriba). */
+.hero-nombre{font-size:var(--t7); font-weight:700; line-height:var(--lh-titular);
+  letter-spacing:-.035em; margin:0 0 var(--s4); text-wrap:balance}
+.hero-texto{display:flex; flex-direction:column; align-items:flex-start; min-width:0}
+.hero-manifesto{color:var(--ink); font-size:var(--t2); max-width:54ch; margin:0}
 .hero-manifesto a{white-space:nowrap}
-.hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 0}
+.hero-ctas{display:flex; flex-wrap:wrap; gap:10px; margin:var(--s3) 0 0}
+/* Un solo botón principal por pantalla: desde 900 px es el «Dossier» de la cabecera. */
+@media (min-width:900px){
+  .hero-dossier{display:none}
+}
 /* Sello de convocatoria: solo existe mientras hay una abierta. Un timbre en magenta,
    girado tres grados y quieto, que lleva al formulario de envío. Es magenta y no
-   amarillo: el amarillo de la primera pantalla ya es el de las cifras. */
-.sello-convocatoria{display:inline-flex; flex-direction:column; gap:4px; margin:0 0 var(--s3);
-  padding:var(--s2); background:var(--accent); color:var(--paper); text-decoration:none;
+   amarillo: el amarillo de la primera pantalla ya es el de las cifras. Va bajo los
+   botones: flotaba a la derecha del lema, donde ahora está el objeto. */
+.sello-convocatoria{display:inline-flex; flex-direction:column; gap:4px; margin:var(--s4) 0 0 6px;
+  padding:var(--s2) var(--s3); background:var(--accent); color:var(--paper); text-decoration:none;
   transform:rotate(-3deg)}
 .sello-convocatoria .rotulo{color:var(--paper)}
 .sello-convocatoria-fecha{font-family:var(--display); font-weight:700; font-size:var(--t2);
   line-height:var(--lh-titulo)}
 .sello-convocatoria:hover{background:var(--ink)}
-/* Con sitio, el sello se pega a la derecha del titular, como en un afiche, y el lema lo
-   rodea: el lema lo escribe el colectivo y puede ser largo, así que no se superpone. */
 @media (min-width:720px){
-  .sello-convocatoria{float:right; margin:var(--s3) 0 var(--s3) var(--s3); padding:var(--s2) var(--s3)}
   .sello-convocatoria-fecha{font-size:var(--t3)}
+}
+/* El objeto, apoyado sobre el papel: girado dos grados y con la sombra plana de las
+   cubiertas del catálogo, que pasa a magenta al señalarlo. Sin recortar: una cubierta
+   es 5:7, y un afiche, lo que mida. En el teléfono deja 12 px a cada lado: girado y con
+   su sombra, a todo el carril asomaba por el margen. */
+.hero-objeto{width:min(100% - 24px, 380px); margin:var(--s5) 0 0; justify-self:center}
+.hero-cubierta{display:block; transform:rotate(-2deg)}
+.hero-cubierta img{display:block; width:100%; height:auto; border:1px solid var(--line);
+  background:var(--surface); box-shadow:12px 12px 0 var(--line);
+  transition:box-shadow var(--dur-base) var(--ease)}
+.hero-objeto:hover .hero-cubierta img, .hero-objeto:focus-within .hero-cubierta img{
+  box-shadow:12px 12px 0 var(--accent)}
+.hero-objeto figcaption{margin:var(--s3) 0 0}
+/* Desde 720 px, dos columnas 7:5: el objeto acompaña al nombre y al texto, y lo demás va
+   de lado a lado. Las filas son fijas, para que una pieza ausente (la cejilla, el
+   sello) no descoloque a las otras. Sin objeto, el titular sigue en una columna. */
+@media (min-width:720px){
+  .hero--con-objeto{grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+    grid-template-rows:auto auto 1fr auto auto}
+  .hero--con-objeto > *{grid-column:1 / -1}
+  .hero--con-objeto > .hero-cejilla{grid-row:1}
+  .hero--con-objeto > .hero-nombre{grid-row:2; grid-column:1}
+  .hero--con-objeto > .hero-texto{grid-row:3; grid-column:1}
+  .hero--con-objeto > .hero-stats{grid-row:4}
+  .hero--con-objeto > .hero-respaldo{grid-row:5}
+  /* Al borde derecho del carril, metido los 12 px que mide su sombra. */
+  .hero--con-objeto > .hero-objeto{grid-row:2 / span 2; grid-column:2; width:min(100%, 380px);
+    justify-self:end; align-self:start; margin:0 12px 0 0}
 }
 /* Las cifras se leen como dato de revista: número grande, etiqueta debajo, bajo un
    filete de tinta. El amarillo del cartel pasa por detrás de la mitad baja de cada
@@ -911,12 +956,34 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    texto amarillo (1,03:1 sobre el papel).
    Acotado a .hero-stats A PROPÓSITO: .stats-strip se reutiliza tal cual en
    /dossier/ y /trayectoria/, donde un número a 42px no tiene sentido. */
-.hero-stats{margin:30px 0 0; padding:var(--s3) 0 0; border-top:2px solid var(--ink); border-bottom:0;
+.hero-stats{margin:var(--s5) 0 0; padding:var(--s3) 0 0; border-top:2px solid var(--ink); border-bottom:0;
   gap:var(--s3) var(--s6); align-items:end}
+/* Cada cifra lleva a su prueba: integrantes, trayectoria, publicaciones. */
+.hero-stats a{display:block; color:inherit; text-decoration:none}
+.hero-stats a:hover{color:var(--ink)}
+/* En el teléfono, de dos en dos y en columna: en fila, la segunda de cada línea quedaba a
+   una altura distinta según lo largo de la primera. */
+@media (max-width:719px){
+  .hero-stats{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+}
 .hero-stats strong{display:block; width:fit-content; font-family:var(--display); font-size:var(--t6);
   line-height:1; margin:0 0 6px -.12em; padding:0 .12em;
   background:linear-gradient(to top, transparent .06em, var(--riso-amarillo) .06em,
     var(--riso-amarillo) .48em, transparent .48em)}
+/* La línea de respaldo (D9): una cita de prensa y los aliados, bajo un filete fino. Prensa
+   y aliados tienen su página; aquí van en una línea, que en el teléfono se apila. */
+.hero-respaldo{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:var(--s3) var(--s5); margin:var(--s4) 0 0; padding:var(--s3) 0 0; border-top:1px solid var(--line)}
+.hero-cita{margin:0; max-width:44ch}
+.hero-cita blockquote{margin:0}
+.hero-cita p{margin:0; font-style:italic; font-size:var(--t2); line-height:var(--lh-ui)}
+.hero-cita figcaption{margin:6px 0 0}
+.hero-cita cite{font-style:normal}
+.hero-apoyo{display:flex; flex-direction:column; gap:var(--s2)}
+.hero-apoyo ul{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s3); margin:0; padding:0;
+  list-style:none}
+.hero-apoyo .partner-logo{width:104px; height:52px}
+.hero-aliado{font-size:var(--t0)}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin

@@ -9,13 +9,15 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.formats import date_format
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
 from apps.agenda.services import stats as trajectory_stats
 from apps.people.models import Contributor
 from apps.reviews.models import Work
-from apps.showcase.models import Publication, SiteProfile
+from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
 from apps.submissions.models import Call
 
 from .models import (
@@ -66,6 +68,32 @@ UMBRAL_CINTA = 12
 TOPE_CINTA = 16
 
 
+def _objeto_del_titular(publicaciones, proximo):
+    """El objeto real que acompaña al nombre en el titular de la portada (ticket 4.2): la
+    primera cubierta del catálogo o, si no hay, el afiche de la próxima actividad. No el
+    póster del registro destacado, que se ve justo debajo, ni la imagen para compartir,
+    que lleva el nombre escrito y lo repetiría. Sin objeto, el titular va a todo el ancho.
+    Sale de lo que la portada ya trae: no añade consultas."""
+    for pub in publicaciones:
+        if pub.cover:
+            return {
+                "imagen": pub.cover,
+                "url": pub.get_absolute_url(),
+                "rotulo": pub.get_kind_display(),
+                "titulo": pub.title,
+                "dato": pub.year or "",
+            }
+    if proximo and proximo.poster:
+        return {
+            "imagen": proximo.poster,
+            "url": proximo.get_absolute_url(),
+            "rotulo": "Próxima actividad",
+            "titulo": proximo.title,
+            "dato": date_format(timezone.localtime(proximo.starts_at), "j \\d\\e F"),
+        }
+    return None
+
+
 def home(request):
     profile = SiteProfile.load()  # garantiza la fila singleton (nunca None)
     featured_poem = profile.featured_poem
@@ -82,6 +110,22 @@ def home(request):
         featured = {"kind": "poem", "object": featured_poem}
     # Se materializa para poder contar sin una segunda consulta.
     _members = list(Contributor.members()[:TOPE_CINTA])
+    # Cuántas integrantes hay: la cinta ya las trajo, salvo que lleguen a su tope.
+    integrantes = len(_members) if len(_members) < TOPE_CINTA else Contributor.members().count()
+    publicaciones = list(Publication.objects.filter(published=True).select_related("cover")[:4])
+    proximo = Event.upcoming().first()
+    # La cejilla del titular: el lema, el lugar, el año y cuántas son. El Instagram lo
+    # añade la plantilla, con las redes que ya trae el procesador del perfil.
+    cejilla = [
+        parte
+        for parte in (
+            profile.tagline,
+            profile.location,
+            f"desde {profile.founded_year}" if profile.founded_year else "",
+            f"{integrantes} integrante{'s' if integrantes != 1 else ''}" if integrantes else "",
+        )
+        if parte
+    ]
     return render(
         request,
         "content/home.html",
@@ -90,11 +134,21 @@ def home(request):
             "members": _members,
             "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
-            "next_event": Event.upcoming().first(),
+            "next_event": proximo,
             "stats": trajectory_stats(),
-            "publications": Publication.objects.filter(published=True).select_related("cover")[:4],
+            "publications": publicaciones,
             # El sello del titular: solo mientras haya una convocatoria abierta.
             "convocatoria": Call.open_now().first(),
+            "integrantes": integrantes,
+            "cejilla": cejilla,
+            "objeto_titular": _objeto_del_titular(publicaciones, proximo),
+            # La línea de respaldo (D9): una cita de prensa, la destacada si la hay, y los
+            # aliados. Prensa y aliados tienen su página; aquí van en una línea.
+            "cita_de_prensa": PressMention.objects.filter(published=True)
+            .exclude(quote="")
+            .order_by("-featured", "position", "-published_on")
+            .first(),
+            "aliados": list(Partner.objects.filter(active=True).select_related("logo")[:6]),
         },
     )
 

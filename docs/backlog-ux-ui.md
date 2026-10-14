@@ -1131,6 +1131,50 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   titular no repite el dossier como primario. Por ejemplo: «Escríbenos» de primario, o el
   dossier como `.btn` normal si es el PDF. Decídelo y díselo al dueño. La portada hace 16
   consultas en `tests/test_performance.py` (eran 17) y 20 en la base de desarrollo.
+- **Estado:** hecho (paso 19 del plan). El dueño eligió entre tres disposiciones capturadas
+  sobre la portada real (https://claude.ai/artifact/7iU76LZaaiuhyVPTazCvMv) la A: el nombre en
+  dos líneas y, a su lado, el objeto. Lo construido difiere de lo escrito arriba en estos
+  puntos:
+  1. **El nombre va en Syne 700, no 800**: el 800 es un corte extendido que el sitio no usa.
+     `--t7` pasa a medir el nombre: `clamp(44px, 15vw, 62px)` en el teléfono y
+     `clamp(44px, 8.6vw, 125px)` desde 720 px. «Repitentes» mide 5,61 veces su cuerpo y así
+     cabe en su columna a cualquier ancho; a 1920 mide 125 px.
+  2. **Un solo botón principal**: «Ver el dossier» (o «Descargar dossier (PDF)») sigue en el
+     titular, pero se oculta desde 900 px, donde lo lleva la cabecera. «Escríbenos» usa
+     `SiteProfile.correo_de_contacto` (el de gestión o, si falta, el general), que ahora
+     también usa el pie: no pueden divergir.
+  3. **El sello de convocatoria va bajo los botones**, sin flotar: a la derecha, donde
+     flotaba, ahora está el objeto, y la nota de entrada pedía no taparlo.
+  4. **El objeto es la primera cubierta del catálogo o, si no hay, el afiche de la próxima
+     actividad.** No el póster del registro destacado, que se ve justo debajo, ni la imagen
+     para compartir: desde el paso 17 lleva el nombre escrito y lo repetiría. Sin objeto, el
+     titular va en una columna. Sale de lo que la portada ya consultaba: no añade consultas.
+     Su pie dice el tipo, el título y el año («Libro · Cuadernos del ruido, 2024»), sin
+     «último»: el orden es el que el colectivo da a su catálogo.
+  5. **Festivales y ferias son cifras distintas.** `apps.agenda.services.stats()` cuenta
+     actividades, festivales y ferias en una sola consulta (eran dos); `festivals` sigue
+     sumando los dos para la trayectoria y el dossier. Una cifra en cero no se enseña. Los
+     años de trabajo dejan de ser cifra: «desde 2023» va en la cejilla.
+  6. **No se aplicó «si una cifra es menor que 3, nombres en vez de número».** Los nombres
+     serían títulos de lecturas («Lectura en Festival de Poesía Joven»), no de festivales, y
+     el dueño aprobó el tablero con números.
+  7. **La línea de respaldo** prefiere la cita destacada de prensa, y si no la hay, la
+     primera del orden del panel; el medio enlaza a `/prensa/` y «Con el apoyo de», a
+     `/aliados/`. Los logos, a 104 × 52 en gris; sin logo, el nombre. Son dos consultas.
+  8. **La cejilla toma el Instagram de las redes del perfil** sin otra consulta
+     (`instagram_del_colectivo`, de la misma lista que el pie), y el usuario sale de la URL
+     (`SiteSocialLink.usuario`). Las integrantes se cuentan con la lista de la cinta, salvo
+     que llegue a su tope de 16.
+  9. **`tools/ux/capture.js` mide cada imagen por su caja**, no por el rectángulo que la
+     envuelve: la cubierta girada salía como deformada.
+  Medido: el nombre, 124 px a 1440 y 125 a 1920; una imagen en la primera pantalla a 1440,
+  1920 y 390; un botón principal por pantalla; la portada, 17 consultas en
+  `tests/test_performance.py` (eran 16) y 21 en la base de desarrollo. La portada crece: 4459
+  px a 1440 (eran 4019) y 5648 a 390. Pruebas: `tests/test_titular.py`, tres reglas en
+  `tests/test_css_sistema.py` (el nombre cabe, el botón se oculta donde aparece el de la
+  cabecera, el sello no flota), y cambian a propósito `test_catalog.py` (la portada muestra
+  cita y aliado), `test_home_ui.py`, `test_dossier.py` («Escríbenos»), `test_agenda.py` (las
+  claves de `stats()`) y `BLANCO_PERMITIDO` (la cubierta del titular es un objeto).
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
@@ -1167,6 +1211,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   carril ancho.
   **Tras el paso 16**, «Textos recientes» ya enseña la imagen de cada texto: la parcial de la
   fila lleva la miniatura 3:4 a una tinta. «Próxima actividad» ya lleva su afiche.
+  **Tras el paso 19**, el titular ya lleva la línea de respaldo (una cita de prensa y los
+  aliados) y el botón «Escríbenos». El cierre «Para programadores y jurados» no debe
+  repetirlos: puede llevar las puertas al dossier, la prensa y los aliados, la última
+  actividad y la fecha de actualización. La portada mide 4459 px a 1440 (meta: 3300) y
+  hace 17 consultas en la prueba y 21 en la base de desarrollo, sobre un techo de 24. En la
+  vista, `publications` ya es una lista: el objeto del titular sale de ella.
 
 #### 4.4 Pie en tinta con identidad y mapa
 - **Hallazgos:** NAV-8, COL-8.
@@ -1205,6 +1255,9 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   enlaces son bloques de 44 px (`.menu-mapa .foot-group a`), y el paso de 28 px del pie no debe
   alcanzarlos. Las redes llegan en `redes_del_colectivo`, que se consulta una vez por página:
   úsala, y no `site_profile.social_links.all`.
+  **Tras el paso 19:** el correo del pie es `site_profile.correo_de_contacto` (el de gestión
+  o, si falta, el general), el mismo que «Escríbenos» en el titular. Si el pie enseña el
+  correo en otro sitio (la identidad), que use esa propiedad.
 
 #### 4.5 Enlaces cruzados entre entidades
 - **Hallazgos:** NAV-9 (lo que no cubrió 2.4).
@@ -1231,6 +1284,9 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `id="contacto"` en el bloque de contacto; `@media print` conserva las imágenes y las cifras.
 - **Aceptación:** años en orden descendente estricto; el PDF impreso desde el navegador muestra
   retratos y cubiertas; `/dossier/#contacto` desplaza al bloque; `tests/test_dossier.py` en verde.
+- **Nota de entrada** (tras el paso 19): `stats()` devuelve también `festivales` y `ferias`
+  por separado (`festivals` sigue sumando los dos). El dossier puede nombrarlos como la
+  portada, sin el «festivales/ferias».
 - **Nota de entrada** (tras el paso 18): el bloque de contacto ya tiene `id="contacto"`, y el
   botón «Dossier» de la cabecera lleva a él desde todas las páginas. Si el dossier se reordena,
   el `id` se queda en el bloque de contacto (`tests/test_cabecera.py` lo comprueba). Como la

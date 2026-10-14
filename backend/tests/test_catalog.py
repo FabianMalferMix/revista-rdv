@@ -59,20 +59,23 @@ def test_partner_index_lists_active_only(client):
     assert b"Fondo Inactivo" not in resp.content
 
 
-def test_home_shows_catalog_but_not_press_or_partners(client):
-    """La portada mantiene el catálogo y deja fuera prensa y aliados.
+def test_home_shows_catalog_and_a_backing_line_of_press_and_partners(client):
+    """La portada mantiene el catálogo y, desde el ticket 4.2, una línea de respaldo: una
+    cita de prensa y los aliados.
 
-    Las dos franjas se retiraron de la portada a propósito; sus páginas siguen
-    existiendo y se llegan desde el pie. Esta prueba vigila las dos cosas: que
-    el catálogo siga, y que las otras dos NO vuelvan sin que nadie lo decida.
+    Las dos franjas se habían retirado de la portada. La decisión D9 las devolvió como una
+    sola línea compacta bajo el titular, no como franjas; sus páginas siguen existiendo.
     """
     make_publication(slug="en-home", title="Plaquette En Portada", featured=True)
     PressMention.objects.create(title="n", outlet="Radio Cita", quote="Imprescindibles.")
     Partner.objects.create(name="Aliado En Portada")
+    Partner.objects.create(name="Aliado Retirado", active=False)
     resp = client.get(reverse("content:home"))
     assert b"Plaquette En Portada" in resp.content
-    assert b"Imprescindibles." not in resp.content
-    assert b"Aliado En Portada" not in resp.content
+    assert "«Imprescindibles.»".encode() in resp.content
+    assert b"Radio Cita" in resp.content
+    assert b"Aliado En Portada" in resp.content
+    assert b"Aliado Retirado" not in resp.content
 
 
 def test_trayectoria_includes_publications_by_year(client):

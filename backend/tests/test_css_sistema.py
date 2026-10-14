@@ -596,6 +596,8 @@ BLANCO_PERMITIDO = {
     ".form input, .form textarea, .form select",
     "#search-results:not(:empty)",
     ".pub-card img, .pub-cover-fallback",
+    # El objeto del titular de la portada: una cubierta, como las del catálogo.
+    ".hero-cubierta img",
     ".embed-play",
     ".embed-play:hover::after",
     ".rec-miniatura::before",
@@ -971,3 +973,40 @@ def test_el_campo_del_buscador_ocupa_su_panel():
     assert "flex:1" in _regla(".searchinput")
     assert "position:absolute" in _regla(".busqueda.htmx-indicator")
     assert "right:var(--gutter)" in _regla(".busqueda.search")
+
+
+# ── Titular de la portada (ticket 4.2, la opción A del dueño) ─────────────
+
+
+def test_el_nombre_de_la_portada_cabe_en_su_columna_y_llega_a_112_px():
+    """«Repitentes» mide 5,61 veces su cuerpo de letra. Desde 720 px va en la columna de
+    7/12 del carril (el carril es el 92 % de la ventana, y el hueco entre columnas, el 6 %);
+    en el teléfono, en el carril entero, que a 320 px es el 87,5 %. Si alguien agranda el
+    nombre, se sale de su columna en algún ancho."""
+    desde = re.search(
+        r"@media \(min-width:720px\)\{\n  :root\{--t7:clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)\}",
+        _css(),
+    )
+    minimo, vw, tope = int(desde[1]), float(desde[2]), int(desde[3])
+    assert min(max(minimo, vw * 19.2), tope) >= 112, "a 1920 el nombre mide menos de 112 px"
+    assert vw * 5.61 <= 7 / 12 * (92 - 6), "el nombre no cabe en su columna desde 720 px"
+    assert tope * 5.61 <= 7 / 12 * (1320 - 96), "el nombre no cabe con el carril en 1320 px"
+    telefono = re.fullmatch(r"clamp\((\d+)px,([\d.]+)vw,(\d+)px\)", _tokens()["--t7"])
+    assert float(telefono[2]) * 5.61 <= 87.5, "en un teléfono de 320 px el nombre no cabe"
+    assert abs(int(telefono[3]) - vw * 7.2) < 1, "los dos tramos no se tocan en 720 px"
+
+
+def test_el_boton_del_titular_se_oculta_donde_aparece_el_de_la_cabecera():
+    """Un solo botón principal por pantalla: el dossier del titular se oculta en el mismo
+    ancho en el que la cabecera enseña el suyo."""
+    cabecera = re.search(r"@media \(min-width:(\d+)px\)\{\n  :root\{--alto-cabecera:64px\}", _css())
+    titular = _bloque(f"@media (min-width:{cabecera[1]}px){{\n  .hero-dossier")
+    assert ".hero-dossier{display:none}" in titular
+
+
+def test_el_sello_de_la_convocatoria_ya_no_flota():
+    """Flotaba a la derecha del lema, donde ahora va el objeto: no debe taparlo."""
+    flotantes = [
+        sel for sel, cuerpo in _reglas() if "sello-convocatoria" in sel and "float:" in cuerpo
+    ]
+    assert not flotantes, f"el sello vuelve a flotar: {flotantes}"
