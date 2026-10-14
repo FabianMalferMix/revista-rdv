@@ -1453,6 +1453,37 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   a doble columna, y no hay «Ver las N fotos». Al imprimir, las fotos a una tinta ya salen tal
   cual (la hoja de impresión neutraliza `.riso-duo`). El año de un evento en la trayectoria y
   en el ancla de su ficha es el de su hora local (`cronologia()` en `apps/agenda/services.py`).
+- **Estado:** hecho (paso 23 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **El afiche llega a 420 px si al texto le quedan 360** (`.ficha-cabecera--afiche`): mide
+     420 a 951 y a 1440, 308 a 768, 266 a 720 de ventana y 260 en el teléfono. Va como objeto,
+     con la sombra plana de las cubiertas, y con su pie «Afiche · {pie} · {crédito}» solo si
+     tiene alguno de los dos: un pie que solo dijera «Afiche» no dice nada.
+  2. **«Participan» y «Registros» suben junto al afiche**, con un rótulo, como en la ficha de
+     una publicación: al crecer el afiche, la columna de al lado se quedaba vacía bajo la
+     descripción. «Registros del evento» pasa a «Registros»: ya se está en el evento.
+  3. **El mosaico no deja huecos con ninguna cantidad**: seis columnas, y la primera foto a
+     doble tamaño solo con tres o con seis o más; con dos o cuatro, a medias; con cinco, dos
+     a medias y tres a tercios; con una, a todo el ancho. Cada celda es 3:2 y la imagen la
+     llena (`object-fit:cover`). El pie de cada foto ya no va bajo la miniatura: rompía el
+     mosaico, y se lee en el texto alternativo y en la vista ampliada.
+  4. **«Ver las N fotos» es un `<details>`** con las fotos de la séptima en adelante, a
+     tercios: se abre sin JavaScript. La vista ampliada no tiene «anterior» ni «siguiente»
+     (no la tenía), así que un enlace a la primera foto no habría servido para ver las demás.
+     Cada foto conserva su número («8 / 8»). La parcial `agenda/partials/_foto.html` pinta
+     la miniatura y su vista ampliada, y pide a cada miniatura el tamaño que ocupa.
+  5. **Dos fallos de la vista ampliada, de antes**: la capa no cubría la pantalla (una
+     `<figure>` trae 40 px de margen a los lados y 16 arriba y abajo) y la regla de las
+     miniaturas (`.photo-grid img`, 8:5) también recortaba la foto ampliada, que no se veía
+     entera. Las reglas del mosaico van ahora por hijos directos.
+  6. Los registros publicados salen de la caché del prefetch: la ficha hace 12 consultas en
+     frío en la prueba (eran 13).
+  Medido a 951: afiche de 420 px con su pie, texto de 407; la primera foto mide 581 × 390 y
+  las demás 288 × 192 (878 × 587 y 436 × 291 a 1440). Con un evento futuro temporal con afiche
+  (creado y borrado en la misma orden): el afiche sale en la agenda (128 px) y en «Próxima
+  actividad» de la portada (96 px). Con un evento temporal de ocho fotos: seis en el mosaico,
+  dos en «Ver las 8 fotos», y la octava se amplía como «8 / 8». Sin scroll horizontal a 320,
+  390, 768, 951, 1024, 1440 y 1920. Pruebas: `tests/test_ficha_de_evento.py` y, en
+  `tests/test_css_sistema.py`, las columnas del afiche, el mosaico, la vista ampliada.
 
 #### 5.3 Galería como hoja de contactos y aliados con logo `[paralelo]`
 - **Hallazgos:** IMG-9, IMG-12 (lo que no cubrió 3.5).
@@ -1465,6 +1496,15 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   en `/aliados/` (en desarrollo los tres tienen logo; la plantilla no enseña nada en su lugar).
   El dossier enseña los mismos logos (`.partner-logo`) con el nombre como pie
   (`.dossier-aliados`): si el reemplazo cambia la clase o el tamaño del logo, míralo también ahí.
+- **Estado:** hecho (paso 23 del plan). La aceptación ya se cumplía (0,90 de ratio en
+  `/galeria/` y `/aliados/` a 1440, ninguna imagen deformada); faltaba el reemplazo de un aliado
+  sin logo. Es su nombre en la tipografía de titulares, en la misma caja de 160 × 80 y sobre la
+  hoja clara, como el monograma de una integrante sin retrato (`.partner-logo--texto`). No se
+  multiplica con el papel: la hoja clara multiplicada quedaba más oscura que él. En
+  `/aliados/` va `aria-hidden`, porque el nombre ya está escrito al lado; en el dossier va
+  solo en la caja, sin el pie que llevan los logos. Medido con un aliado temporal sin logo
+  (creado y borrado en la misma orden). Prueba:
+  `tests/test_imagenes_del_modelo.py::test_un_aliado_sin_logo_lleva_su_nombre_en_la_caja_del_logo`.
 
 #### 5.4 Búsqueda con cobertura completa (D2)
 - **Hallazgos:** NAV-4 (resto).
@@ -1476,6 +1516,11 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Aceptación:** «Fernanda» devuelve a la integrante y «recital» al registro;
   `tests/test_search.py` y `tests/test_search_hardening.py` en verde; `test_search_query_budget` ≤ 10
   (si no cabe, consolidar en una consulta por tipo y anotar la medición).
+- **Nota de entrada** (tras el paso 23): medido hoy en desarrollo, «Fernanda» y «recital» no
+  devuelven nada; «casa» devuelve dos textos y un poema, y «Cuadernos» dos reseñas, ninguna
+  publicación. Una de ellas es la reseña de prueba del #131 (`zz-demo-resena-cuadernos-del-ruido`),
+  que sigue en la base de desarrollo hasta que el dueño la haya visto: no la cuentes como
+  resultado real.
 - **Nota de entrada** (tras el paso 18): el buscador de la cabecera vive en el panel de la lupa
   (`details.busqueda`). El panel mide 440 px en escritorio y va de lado a lado por debajo de
   900 px; la lista de resultados (`#search-results`) mide lo mismo que el panel y ya tiene
@@ -1493,6 +1538,12 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   `prefers-reduced-motion` en todas las animaciones; `lang="es"` y guionado solo donde se indicó.
 - **Aceptación:** una tabla en el PR con cada criterio de §10 de la auditoría marcado; cero
   incumplimientos de nivel A o AA en lo verificable sin herramientas externas.
+- **Nota de entrada** (tras el paso 23): la vista ampliada de las fotos de un evento ya cubre la
+  pantalla, pero sigue sin «anterior» ni «siguiente»: se cierra y se abre otra. Las fotos de
+  la séptima en adelante van dentro de «Ver las N fotos» (`<details>`); un enlace directo a la
+  vista ampliada de una de ellas solo la enseña si el navegador abre el `<details>` al saltar
+  al ancla (Chrome lo hace). Al recorrer con teclado, mira el foco sobre las miniaturas del
+  mosaico (el enlace cubre la celda entera) y el `summary` con aspecto de botón.
 
 #### 6.2 Métricas finales frente a la línea base
 - **Pasos:** recapturar las 21 páginas en `tools/ux/out/final/` y correr
@@ -1506,6 +1557,9 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   mayúsculas 18 → 33** y alto 2735 → 4450 px. No es una regresión: son los rótulos de la ficha,
   del tipo de cada entrada de la trayectoria y del cargo de cada integrante (la receta de rótulo
   de D3), y la página ahora lleva retratos, cubiertas y logos. Explícalo en la tabla.
+- **Nota de entrada** (tras el paso 23): la ficha de un evento a 1440 pasa de 1768 a 2330 px y
+  de 1 a 3 imágenes en la primera pantalla: el afiche crece a 420 px y las fotos van en
+  mosaico (la primera, de 878 × 587). Tampoco es una regresión.
 
 #### 6.3 Documentación y decisiones
 - **Pasos:** `docs/deferidos-y-decisiones.md` §1 con D1-D14 y su porqué (copiar de la sección 1 de

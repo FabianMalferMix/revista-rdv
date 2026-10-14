@@ -703,14 +703,11 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   /* El número acompaña mientras se recorren sus filas. */
   .year-mark{position:sticky; top:calc(var(--alto-cabecera) + var(--s3)); margin:0; padding-top:4px}
 }
-.photo-grid, .album-grid{list-style:none; padding:0; margin:0;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px}
 /* Galería: dos álbumes por fila en el carril ancho. `auto-fit` reparte el ancho entre
    los que haya; el tope evita que un álbum solo se estire de lado a lado. */
-.album-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%, 440px),1fr)); gap:var(--s4) 28px}
+.album-grid{list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%, 440px),1fr)); gap:var(--s4) 28px}
 .album-card{max-width:880px}
-.photo-grid img{width:100%; height:auto; aspect-ratio:8/5; object-fit:cover;
-  border:1px solid var(--border); border-radius:4px}
 .album-card a{display:flex; flex-direction:column; gap:6px; text-decoration:none; color:var(--ink)}
 .album-title{font-weight:700; font-size:var(--t3); line-height:1.2}
 /* Hoja de contactos: hasta tres fotos del álbum, la primera a doble tamaño (2fr / 1fr).
@@ -723,12 +720,37 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .hoja > :first-child{grid-row:span 2}
 .hoja > :nth-child(2):last-child{grid-row:span 2}
 .hoja > :only-child{grid-column:1 / -1}
-.photo-grid a{display:block; cursor:zoom-in}
+/* Las fotos de un evento (ticket 5.2): un mosaico de hasta seis, en 3:2, sobre una rejilla
+   de seis columnas. Con tres, o con seis o más, la primera va a doble tamaño (cuatro
+   columnas y dos filas); con dos o cuatro, a medias; con cinco, dos a medias y tres a
+   tercios; con una, a todo el ancho. Ninguna cantidad deja un hueco. Eran miniaturas
+   iguales de 207 × 129, cada una con su pie debajo; el pie se lee en la vista ampliada.
+   Cada celda tiene la proporción de la foto y la imagen la llena sin contar para el alto
+   de la fila: la grande mide lo que las dos filas que cruza. Las que no caben en el
+   mosaico van en «Ver las N fotos», a tercios. Los selectores van por hijos directos: la
+   vista ampliada de cada foto también tiene enlaces. */
+.photo-grid, .photo-grid-resto{list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(6, minmax(0,1fr)); gap:6px}
+.photo-grid > li, .photo-grid-resto > li{position:relative; grid-column:span 2; aspect-ratio:3/2}
+.photo-grid > li:only-child{grid-column:1 / -1}
+.photo-grid:has(> :nth-child(2):last-child) > li,
+.photo-grid:has(> :nth-child(4):last-child) > li,
+.photo-grid:has(> :nth-child(5):last-child) > li:nth-child(-n+2){grid-column:span 3}
+.photo-grid:has(> :nth-child(3):last-child) > li:first-child,
+.photo-grid:has(> :nth-child(6)) > li:first-child{grid-column:span 4; grid-row:span 2; aspect-ratio:auto}
+.photo-grid > li > a, .photo-grid-resto > li > a{position:absolute; inset:0; display:block; cursor:zoom-in}
+.photo-grid > li > a img, .photo-grid-resto > li > a img{display:block; width:100%; height:100%; object-fit:cover}
+.mas-fotos{margin:var(--s3) 0 0}
+.mas-fotos > summary{list-style:none}
+.mas-fotos > summary::-webkit-details-marker{display:none}
+.mas-fotos > .photo-grid-resto{margin-top:var(--s3)}
 .galeria-creditos{margin:var(--s2) 0 0}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
    el objetivo del hash; se cierra enlazando de vuelta a la sección. */
-.lightbox{position:fixed; inset:0; z-index:120; display:none; place-items:center;
+/* Sin margen: una <figure> trae 40 px a los lados y 16 arriba y abajo, y la capa no
+   cubría la pantalla (asomaba la página por los bordes y la foto quedaba corrida). */
+.lightbox{position:fixed; inset:0; z-index:120; display:none; place-items:center; margin:0;
   padding:24px; background:rgba(0,0,0,.9)}
 .lightbox:target{display:grid}
 .lightbox img{max-width:96vw; max-height:86vh; object-fit:contain; border-radius:3px}
@@ -884,6 +906,13 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .partner-logo{display:block; flex:none; width:160px; height:80px; object-fit:contain;
   filter:grayscale(1); mix-blend-mode:multiply; transition:filter var(--dur-base) var(--ease)}
 .partner-item:hover .partner-logo, .partner-item:focus-within .partner-logo{filter:none}
+/* Un aliado sin logo: su nombre en la tipografía de titulares, en la misma caja de 160 × 80
+   y sobre la hoja clara, como el monograma de una integrante sin retrato. No se mezcla
+   con el papel: la hoja clara multiplicada quedaba más oscura que él. */
+.partner-logo--texto{display:flex; align-items:center; justify-content:center; padding:var(--s1);
+  background:var(--paper-2); filter:none; mix-blend-mode:normal; text-align:center;
+  font-family:var(--display); font-weight:700; font-size:var(--t0); line-height:1.15;
+  color:var(--ink); overflow-wrap:anywhere}
 
 /* Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular: era
    el lema, en el tamaño más grande, con el nombre oculto. El dueño del sitio eligió la
@@ -1264,10 +1293,14 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    La imagen a la izquierda —retrato 4:5, cubierta 5:7, afiche— y quién o qué es, a su
    lado. Era una imagen suelta encima de una cabecera de índice. */
 .ficha-cabecera{display:grid; gap:var(--s3); align-items:start; margin:0 0 var(--s5)}
-.ficha-medio{max-width:260px}
+.ficha-medio{max-width:260px; margin:0}
+.ficha-medio figcaption{margin:var(--s2) 0 0}
 @media (min-width:720px){
   .ficha-cabecera{grid-template-columns:minmax(200px,320px) minmax(0,1fr); column-gap:clamp(24px,5vw,80px)}
   .ficha-cabecera--sin-medio{grid-template-columns:minmax(0,1fr)}
+  /* El afiche de un evento llega a 420 px (ticket 5.2) si al texto le quedan 360; con
+     menos sitio, se queda con lo que sobra (266 px a 720 de ventana, 420 a 951). */
+  .ficha-cabecera--afiche{grid-template-columns:minmax(200px,420px) minmax(360px,1fr)}
   .ficha-medio{max-width:none}
 }
 .ficha-texto > :first-child{margin-top:0}
@@ -1283,7 +1316,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   font-family:var(--display); font-weight:700; font-size:var(--t6); letter-spacing:-.02em; color:var(--ink)}
 .ficha-cubierta{display:block; width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
   border:1px solid var(--line); box-shadow:8px 8px 0 var(--line)}
-.ficha-afiche{display:block; width:100%; height:auto; border:1px solid var(--line)}
+/* El afiche como objeto, con la sombra plana de las cubiertas: un cartel apoyado en la página. */
+.ficha-afiche{display:block; width:100%; height:auto; border:1px solid var(--line);
+  box-shadow:8px 8px 0 var(--line)}
 
 /* ── Pie de entidad: adónde ir después de una ficha ──
    Cada celda se pulsa entera; las celdas se reparten el ancho y caen a una por fila en

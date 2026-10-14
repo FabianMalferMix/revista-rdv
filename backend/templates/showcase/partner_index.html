@@ -19,7 +19,8 @@
       <ul class="partner-list">
         {% for p in grupo %}
           <li class="partner-item">
-            {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="160px" %}{% endif %}
+            {% comment %} Sin logo, su nombre en la misma caja: el nombre ya va escrito al lado. {% endcomment %}
+            {% if p.logo %}{% responsive_img p.logo css_class="partner-logo" sizes="160px" %}{% else %}<span class="partner-logo partner-logo--texto" aria-hidden="true">{{ p.name }}</span>{% endif %}
             <div>
               <strong>{% if p.url %}<a href="{{ p.url }}" rel="noopener" target="_blank">{{ p.name }} ↗</a>{% else %}{{ p.name }}{% endif %}</strong>
               {% if p.description %}<p class="dek">{{ p.description }}</p>{% endif %}

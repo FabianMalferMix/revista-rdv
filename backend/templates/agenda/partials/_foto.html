@@ -1,0 +1,28 @@
+{% load images %}
+{% comment %}
+   Una foto del álbum de un evento: la miniatura y su vista ampliada. Se incluye con
+   `only`: foto, numero (de 1 a total), total y slug (el del evento). Las fotos que no
+   caben en el mosaico van en «Ver las N fotos», con su número de verdad.
+   La vista ampliada es honesta (CSS :target), no un modal: sin semántica de diálogo (no
+   hay trampa de foco); la imagen lleva su alt y el figcaption dice cuál es de cuántas,
+   qué es y de quién. El pie de cada foto ya no va bajo la miniatura: rompía el mosaico,
+   y se lee en la vista ampliada y en el texto alternativo.
+{% endcomment %}
+<li>
+  <a href="#lb-{{ slug }}-{{ numero }}" aria-label="Ampliar foto {{ numero }} de {{ total }}">
+    {% comment %} El tamaño que pide cada miniatura es el que ocupa en el mosaico (ver site.css). {% endcomment %}
+    {% if numero == 1 %}
+      {% responsive_img foto.asset sizes="(max-width: 720px) 66vw, 880px" alt=foto.caption %}
+    {% elif total == 2 or total == 4 or total == 5 and numero <= 2 %}
+      {% responsive_img foto.asset sizes="(max-width: 720px) 50vw, 660px" alt=foto.caption %}
+    {% else %}
+      {% responsive_img foto.asset sizes="(max-width: 720px) 33vw, 440px" alt=foto.caption %}
+    {% endif %}
+  </a>
+  <figure class="lightbox" id="lb-{{ slug }}-{{ numero }}">
+    <a class="lightbox-back" href="#galeria-{{ slug }}" tabindex="-1" aria-label="Cerrar"></a>
+    <a class="lightbox-close" href="#galeria-{{ slug }}" aria-label="Cerrar">×</a>
+    {% responsive_img foto.asset sizes="90vw" alt=foto.caption %}
+    <figcaption><span class="lightbox-cuenta">{{ numero }} / {{ total }}</span>{% if foto.caption %} · {{ foto.caption }}{% endif %}{% if foto.asset.credit %} · {{ foto.asset.credit }}{% endif %}</figcaption>
+  </figure>
+</li>
