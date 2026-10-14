@@ -76,6 +76,7 @@ nuevo: mira su descripción y la sección 4.
 | 24 | `ux-5-4-busqueda` | #134 | La búsqueda encuentra personas, registros, publicaciones y actividades además de textos y poemas, por grupos; cinco por grupo en la lupa y diez en la página; una consulta menos |
 | 25 | `ux-6-cierre` | #135 | La verificación de §10 criterio a criterio, con capturas de antes y después (`docs/auditoria-ux-ui-verificacion.md`); la pasada de accesibilidad; los enlaces de la barra a 45 px; D1 a D14 y lo diferido documentados |
 | — | `textos-largos-de-prueba` | #136 | Lo pidió el dueño antes del cierre: `seed_textos_largos` siembra seis textos y cinco poemas largos; arreglados el bloque preformateado que desbordaba la página, la columna ancla más alta que la pantalla, los títulos larguísimos y el adelanto de los poemas en la portada |
+| — | `plan-ux-cerrado` | #137 | La aprobación final del dueño, anotada; el plan, cerrado |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
