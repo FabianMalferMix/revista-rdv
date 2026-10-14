@@ -30,7 +30,7 @@
     <div class="lectura-sala">
     <header class="lectura-ancla">
       <p class="kicker"><a href="{% url 'content:poem_index' %}">Poemas</a></p>
-      <h1>{{ poem.title }}</h1>
+      <h1{% if poem.title|length > 90 %} class="titulo-largo"{% endif %}>{{ poem.title }}</h1>
       {% if poem.epigraph %}<p class="dek poem-epigraph">{{ poem.epigraph }}</p>{% endif %}
       {% include "content/partials/_firmas_lectura.html" with personas=poem.authors.all %}
       {% if poem.published_at %}<p class="meta"><time datetime="{{ poem.published_at|date:'Y-m-d' }}">{{ poem.published_at|date:"j M Y" }}</time></p>{% endif %}

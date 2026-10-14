@@ -498,6 +498,8 @@ MONO_PERMITIDA = {
     ".stats-strip": "etiquetas de las cifras",
     ".pagination-pagesa,.pagination-pagesspan": "números de página",
     ".lightboxfigcaption": "pie de foto",
+    ".article.bodypre": "texto preformateado del autor: una partitura, una tabla hecha con espacios",
+    ".article.bodycode": "código o un nombre de archivo dentro de un texto",
     ".htmx-indicator": "indicador de carga",
 }
 
@@ -529,6 +531,28 @@ def test_la_sala_de_lectura_pone_la_ancla_al_lado_solo_si_cabe():
     fija = _bloque("@media (min-width:840px) and (min-height:700px)")
     assert ".lectura-ancla{position:sticky;" in fija, "la ancla solo acompaña si hay alto para ella"
     assert "position:sticky" not in _regla(".lectura-ancla>:first-child")
+
+
+def test_un_bloque_preformateado_no_empuja_la_pagina():
+    """Con sus líneas enteras, la partitura de un ensayo de prueba empujaba la página hacia
+    los lados a cualquier ancho: el bloque se desplaza dentro de su caja."""
+    bloque = _regla(".article.bodypre")
+    assert "max-width:100%" in bloque and "overflow-x:auto" in bloque
+
+
+def test_la_columna_ancla_que_no_cabe_se_desplaza_por_dentro():
+    """Una columna ancla más alta que la pantalla (un título de doscientas letras, cuatro
+    firmas, ocho etiquetas) dejaba su final fuera de la vista durante toda la lectura."""
+    fija = _bloque("@media (min-width:840px) and (min-height:700px)")
+    assert "max-height:calc(100dvh-var(--alto-cabecera)-2*var(--s3));overflow-y:auto" in fija
+
+
+def test_un_titulo_larguisimo_baja_un_paso_y_se_divide_con_guion():
+    """Unas diez letras caben por línea en la columna ancla: una palabra más larga se partía
+    por la mitad y sin guion. Donde el navegador sabe dividir en español, divide."""
+    assert "hyphens:auto" in _regla(".lectura-anclah1")
+    assert "font-size:var(--t5)" in _regla(".poem.lectura-anclah1.titulo-largo")
+    assert "font-size:var(--t4)" in _regla(".article.lectura-anclah1.titulo-largo")
 
 
 def test_un_verso_largo_continua_con_sangria_francesa():

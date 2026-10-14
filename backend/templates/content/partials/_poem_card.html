@@ -5,7 +5,8 @@
    cuerpo que la consulta ya trae, no cuesta ninguna consulta más.
    `sin_cejilla`: en un listado donde todo son poemas, «Poema» en cada fila no dice nada.
    `versos`: cuántos versos enseñar, uno por línea, en vez del primero solo. La portada
-   enseña tres: es lo que permite leer un poema sin abrirlo.
+   enseña tres: es lo que permite leer un poema sin abrirlo. Con un tope de letras
+   (`adelanto`): los versos larguísimos o la prosa no llenan la portada.
 {% endcomment %}
 <li class="article-card fila fila--poema">
   {% if p.published_at %}<time class="meta fila-fecha" datetime="{{ p.published_at|date:'Y-m-d' }}">{{ p.published_at|date:"j M Y" }}</time>{% endif %}
@@ -13,7 +14,7 @@
     {% if not sin_cejilla %}<span class="kicker">Poema</span>{% endif %}
     <h3 class="fila-titulo"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h3>
     {% if versos %}
-      {% with lineas=p.body|primeros_versos:versos %}{% if lineas %}<p class="fila-verso fila-versos">{% for v in lineas %}<span>{{ v }}</span>{% endfor %}</p>{% endif %}{% endwith %}
+      {% with lineas=p.body|adelanto:versos %}{% if lineas %}<p class="fila-verso fila-versos">{% for v in lineas %}<span>{{ v }}</span>{% endfor %}</p>{% endif %}{% endwith %}
     {% else %}
       {% with verso=p.body|primer_verso %}{% if verso %}<p class="fila-verso">{{ verso|truncatechars:90 }}</p>{% endif %}{% endwith %}
     {% endif %}

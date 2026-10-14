@@ -162,6 +162,12 @@ no una plantilla vacía.
       Trayectoria · Agenda · Galería · Prensa · Aliados».
 - [ ] **Teclado.** El primer Tab de cualquier página enseña «Saltar al contenido», y todo lo
       que se puede pulsar lleva un contorno magenta al recibir el foco.
+- [ ] **Textos largos.** Con `python manage.py seed_textos_largos` (en desarrollo) hay seis
+      textos y cinco poemas largos, con el prefijo `zz-largo-` en la dirección. A 390 px y a
+      951, ninguno debe salirse de la pantalla. El ensayo «Repetir el verso…» tiene una
+      partitura que se desplaza dentro de su caja. La crítica «Contra la lectura apurada…»
+      tiene una columna izquierda más alta que la pantalla, que se recorre por dentro. Al
+      terminar, `seed_textos_largos --borrar` los quita.
 
 ### 1.6 Catálogo bibliográfico
 

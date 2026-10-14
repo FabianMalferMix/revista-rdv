@@ -277,7 +277,25 @@ se pueden regenerar: el código que las produjo ya cambió.
 | Una integrante, 1440 | ![](../tools/ux/linea-base/capturas/integrante-d1440-view.png) | ![](../tools/ux/final/capturas/integrante-d1440-view.png) |
 | Una integrante, 390 | ![](../tools/ux/linea-base/capturas/integrante-m390-view.png) | ![](../tools/ux/final/capturas/integrante-m390-view.png) |
 
-## 6. Cómo repetir la medida
+## 6. Después de la medida: textos largos (#136)
+
+Antes de aprobar el cierre, el dueño del sitio pidió probar las páginas de lectura con textos
+largos y cercanos a los reales. `seed_textos_largos` siembra seis textos y cinco poemas, y
+recorridos a siete anchos (de 320 a 1920 px) destaparon cuatro fallos que el contenido de
+demostración no podía enseñar, ya arreglados:
+
+| Fallo | Arreglo |
+|---|---|
+| Un bloque preformateado (una partitura, una tabla hecha con espacios) empujaba la página hacia los lados, a cualquier ancho | se desplaza dentro de su caja |
+| La columna ancla de un texto con título de 200 letras, cuatro firmas y ocho etiquetas medía 1248 px, más que la pantalla: su final quedaba fuera de la vista durante toda la lectura | si no cabe, se desplaza por dentro |
+| Un título de 125 letras ocupaba catorce líneas y partía palabras por la mitad («imposibilida / d») | los títulos de más de noventa letras bajan un paso; se dividen con guion donde el navegador sabe hacerlo |
+| La portada citaba tres «versos» de un poema sin tope: una oda de versos larguísimos ocupaba diez líneas, y un poema en prosa habría puesto tres párrafos | tres versos, y no más de 160 letras |
+
+Con los arreglos, ninguna de las 25 páginas recorridas se sale de la pantalla en ningún ancho.
+Queda una decisión del dueño: cómo componer un poema en prosa (`docs/deferidos-y-decisiones.md`
+§4).
+
+## 7. Cómo repetir la medida
 
 ```bash
 node tools/ux/capture.js tools/ux/out/otra                       # las 21 páginas, 1440, 390 y 1920
