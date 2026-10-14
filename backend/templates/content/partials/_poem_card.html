@@ -4,13 +4,19 @@
    versos» de una antología: es lo que permite reconocer un poema sin abrirlo. Sale del
    cuerpo que la consulta ya trae, no cuesta ninguna consulta más.
    `sin_cejilla`: en un listado donde todo son poemas, «Poema» en cada fila no dice nada.
+   `versos`: cuántos versos enseñar, uno por línea, en vez del primero solo. La portada
+   enseña tres: es lo que permite leer un poema sin abrirlo.
 {% endcomment %}
 <li class="article-card fila fila--poema">
   {% if p.published_at %}<time class="meta fila-fecha" datetime="{{ p.published_at|date:'Y-m-d' }}">{{ p.published_at|date:"j M Y" }}</time>{% endif %}
   <div class="fila-cuerpo">
     {% if not sin_cejilla %}<span class="kicker">Poema</span>{% endif %}
     <h3 class="fila-titulo"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h3>
-    {% with verso=p.body|primer_verso %}{% if verso %}<p class="fila-verso">{{ verso|truncatechars:90 }}</p>{% endif %}{% endwith %}
+    {% if versos %}
+      {% with lineas=p.body|primeros_versos:versos %}{% if lineas %}<p class="fila-verso fila-versos">{% for v in lineas %}<span>{{ v }}</span>{% endfor %}</p>{% endif %}{% endwith %}
+    {% else %}
+      {% with verso=p.body|primer_verso %}{% if verso %}<p class="fila-verso">{{ verso|truncatechars:90 }}</p>{% endif %}{% endwith %}
+    {% endif %}
   </div>
   <p class="meta fila-pie">
     {% firmas_sin p.authors.all sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if firmas %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}

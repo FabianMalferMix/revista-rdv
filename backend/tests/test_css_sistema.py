@@ -638,7 +638,7 @@ def test_la_banda_es_la_hoja_clara_y_la_fila_senalada_sobre_ella_pasa_al_papel()
 # 3 px que firma el territorio de prensa (una línea, no una superficie) y el pie.
 TINTA_PERMITIDA = {
     ".btn:hover",
-    ".index-head[data-territorio] h1::after",
+    ".index-head[data-territorio] h1::after, .seccion-cabeza[data-territorio] h2::after",
     ".btn--primary, .form button",
     ".pagination-pages a:hover",
     ".sello-convocatoria:hover",
@@ -698,13 +698,18 @@ def test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto():
 
 
 def test_la_firma_de_territorio_es_un_filete_de_tres_pixeles():
-    firma = _regla(".index-head[data-territorio]h1::after")
+    """La misma en las cabeceras de índice y en las secciones de la portada (ticket 4.3):
+    un solo selector por color, para que no se separen."""
+    firma = _regla(
+        ".index-head[data-territorio]h1::after,.seccion-cabeza[data-territorio]h2::after"
+    )
     assert "height:3px" in firma and "background-color:var(--ink)" in firma
     assert "background-color:var(--accent)" in _regla(
-        '.index-head[data-territorio="obra"]h1::after'
+        '.index-head[data-territorio="obra"]h1::after,.seccion-cabeza[data-territorio="obra"]h2::after'
     )
     assert "background-color:var(--caratula)" in _regla(
-        '.index-head[data-territorio="colectivo"]h1::after'
+        '.index-head[data-territorio="colectivo"]h1::after,'
+        '.seccion-cabeza[data-territorio="colectivo"]h2::after'
     )
 
 
@@ -1010,3 +1015,27 @@ def test_el_sello_de_la_convocatoria_ya_no_flota():
         sel for sel, cuerpo in _reglas() if "sello-convocatoria" in sel and "float:" in cuerpo
     ]
     assert not flotantes, f"el sello vuelve a flotar: {flotantes}"
+
+
+# ── La portada completa (ticket 4.3) ──────────────────────────────────────
+
+
+def test_la_obra_va_a_dos_columnas_solo_con_poemas_y_textos():
+    """Con una sola de las dos listas va a todo el ancho: en media columna quedaba un hueco."""
+    obra = _bloque("@media (min-width:900px){\n  .home-obra-columnas")
+    assert ".home-obra-columnas:has(>:nth-child(2)){display:grid" in obra
+
+
+def test_las_puertas_del_cierre_van_en_una_fila_sin_huecos():
+    """Una columna por puerta desde 900 px, tres o cuatro según haya correo: en la rejilla de
+    tres, «Escríbenos» quedaba sola en la segunda fila. En el teléfono, de dos en dos."""
+    assert "grid-auto-flow:column" in _bloque(
+        "@media (min-width:900px){\n  .home-cierre .pie-entidad ul"
+    )
+    assert "grid-template-columns:repeat(2,minmax(0,1fr))" in _regla(".home-cierre.pie-entidadul")
+
+
+def test_las_cubiertas_de_la_portada_no_pasan_de_240_px():
+    """Una columna por cubierta: con dos, a todo el ancho, cada una medía 470 px."""
+    publicaciones = _bloque("@media (min-width:900px){\n  .home-publicaciones .band-in")
+    assert "grid-auto-columns:minmax(0,240px)" in publicaciones

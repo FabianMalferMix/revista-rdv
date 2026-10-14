@@ -17,9 +17,10 @@ pytestmark = pytest.mark.django_db
 # vista -> techo de consultas (medido hoy + holgura). «Medido» es la primera petición, la que
 # cuenta la prueba: hace tres consultas más que las siguientes. Medido tras el paso 18 del
 # backlog UX, que dejó las redes del colectivo en una consulta por página, y del 19, que
-# añadió a la portada su línea de respaldo (+2) y contó las cifras en una consulta (-1).
+# añadió a la portada su línea de respaldo (+2) y contó las cifras en una consulta (-1), y del
+# 20: poemas y sus firmas, la última actividad y la fecha (+4), y el perfil una vez (-1).
 BUDGETS = {
-    "content:home": 24,  # medido 17 (el sello de convocatoria pregunta si hay una abierta)
+    "content:home": 24,  # medido 20 (el sello de convocatoria pregunta si hay una abierta)
     "content:text_archive": 10,  # 8
     "content:poem_index": 10,  # 8
     "people:member_index": 8,  # 6

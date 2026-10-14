@@ -8,26 +8,27 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 19.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-14, tras el paso 20.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 19 de 25 pasos.** El último fusionado es el paso 19 (`ux-4-2-hero`, PR #125). `main`
-está en verde, con 823 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 20 de 25 pasos.** El último fusionado es el paso 20 (`ux-4-3-portada`, PR #126). `main`
+está en verde, con 835 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el paso 20, `ux-4-3-portada`** (sección 2), cuando el dueño haya visto el 19.
-Antes de empezarlo, lee «Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el paso 21, `ux-4-4-pie-y-enlaces`** (sección 2), cuando el dueño haya visto el
+20; después, el punto de control D. Antes de empezarlo, lee «Lo que espera respuesta del
+dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-4-2-hero … (#125)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-4-3-portada … (#126)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 20
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 21
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -62,6 +63,7 @@ nuevo: mira su descripción y la sección 4.
 | 18 | `ux-4-1-cabecera` | #123 | Cabecera de una fila y fija: cinco enlaces con la página actual marcada, lupa, «Dossier»; «Menú» con el mapa en el teléfono |
 | — | `dev-conexiones-runserver` | #124 | El servidor de desarrollo ya no agota las conexiones de Postgres al medir |
 | 19 | `ux-4-2-hero` | #125 | El nombre como titular junto a la cubierta del catálogo; cifras con su página y línea de respaldo de prensa y aliados |
+| 20 | `ux-4-3-portada` | #126 | La portada completa: integrantes, poemas con sus versos junto a los textos, publicaciones y un cierre para programadores y jurados |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -102,7 +104,9 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Titular de la portada | el lema, con el nombre oculto | el nombre: 124 px a 1440 y 125 a 1920 |
 | Imágenes en la primera pantalla de la portada (1440, 1920 y 390) | 1, 1 y 0 | 1, 1 y 1 |
 | Botones principales en la primera pantalla de la portada | 2 desde 900 px | 1 |
-| Alto de la portada a 1440 | 4019 px tras el paso 13 | 4459 px: el titular creció; el paso 20 la ordena |
+| Alto de la portada a 1440 | 4459 px tras el paso 19 | 4415 px, ya con poemas y el cierre; la meta de 3300 no cabía (decisión del dueño, paso 20) |
+| Versos que se leen en la portada | 0 | 6: tres por poema |
+| Consultas de la portada (prueba, en frío; desarrollo) | 17; 21 | 20; 19, con un techo de 24 |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -111,7 +115,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Títulos de sección de la portada sin su cejilla; tres cubiertas en una rejilla de cuatro | paso 20 |
 | Pie en tinta y compacto, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
 | Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
 
@@ -163,6 +166,12 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **D9 no necesitó aviso (2026-10-13):** no avisó al colectivo porque «todas las decisiones
   fueron delegadas a mí». Las decisiones de diseño las toma él; no hace falta preguntar si el
   colectivo está avisado.
+- **Portada completa (2026-10-14, paso 20):** la meta de 3300 px a 1440 no cabía sin quitar
+  algo. Vio dos maneras sobre la portada real
+  (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió la A: conservar el bloque de
+  publicaciones (4415 px a 1440) frente a quitarlo (3841). Antes, al ver el 19, dio paso al 20
+  sin ajustes. Al construir, las integrantes quedaron antes que la obra, como pedía la prueba
+  de julio; el tablero las enseñaba después. Se le avisa.
 - **Titular de la portada (2026-10-14, paso 19):** vio tres disposiciones capturadas sobre la
   portada real (https://claude.ai/artifact/7iU76LZaaiuhyVPTazCvMv) y eligió la A: el nombre en
   dos líneas y, a su lado, la cubierta del catálogo. Descartó el nombre en una línea como
@@ -180,18 +189,18 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 19 está fusionado y aún no lo ha visto construido.** Qué mirar en la portada,
-   http://localhost:8000/, a 951 px:
-   - arriba, la línea «COLECTIVO DE POESÍA · CHILE · DESDE 2023 · 12 INTEGRANTES ·
-     @REPITENTESDELVERSO» y, debajo, el nombre «Repitentes del Verso» en dos líneas;
-   - a la derecha, la cubierta de «Cuadernos del ruido», girada; al pasar el puntero, su
-     sombra pasa a magenta;
-   - bajo el manifiesto, el botón «Escríbenos» y, debajo, el sello «Convocatoria abierta»;
-   - las cifras «12 integrantes», «4 actividades», «1 festival» y «3 publicaciones», cada una
-     con su página;
-   - al final del titular, la cita «Uno de los colectivos más activos de la escena joven.» de
-     El Mercurio de Valparaíso y «Con el apoyo de», con los tres logos;
-   - en una ventana de menos de 900 px, «Ver el dossier» junto a «Escríbenos».
+1. **El paso 20 está fusionado y aún no lo ha visto construido.** Qué mirar en la portada,
+   http://localhost:8000/, a 951 px, bajando desde el registro destacado:
+   - «El colectivo» y «12 voces» con su filete azul, sobre la cinta;
+   - «La obra»: a la izquierda «Poemas», con «Umbral» y «Oficio de la lluvia» y sus tres
+     primeros versos; a la derecha «Textos», con los tres últimos;
+   - «Publicaciones», con «Correspondencias» y «Umbral y otras salidas»: el libro del titular
+     no se repite;
+   - «Para programadores y jurados»: «Dossier», «Prensa», «Aliados» y «Escríbenos», y debajo
+     «Última actividad: Recital de invierno, 10 Sep 2026 · Actualizado el 26 de julio de 2026».
+   Se le avisa de que las integrantes van antes que la obra, al revés que en el tablero, para
+   respetar un acuerdo anterior (las integrantes son lo que buscan los programadores). Si
+   prefiere el orden del tablero, es mover un bloque.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -200,22 +209,20 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el paso 20, `ux-4-3-portada`
+## 2. Qué sigue: el paso 21, `ux-4-4-pie-y-enlaces`
 
-Ticket 4.3 del backlog. Lee el ticket con sus **notas de entrada**, tras los pasos 13, 14, 16
-y 19: no hay bandas de tinta en el cuerpo de la portada, el destacado ya está construido sobre
-el papel, la cinta y los textos ya llevan imagen, y el titular ya lleva la cita de prensa, los
-aliados y «Escríbenos».
+Tickets 4.4 y 4.5 del backlog. Lee el 4.4 con sus **notas de entrada** (tras los pasos 13, 18,
+19 y 20): el pie ya es de tinta, compacto y siempre abajo; el mapa es una parcial que comparte
+con «Menú»; el correo sale de una propiedad del perfil; y justo encima está el cierre de la
+portada. Después del 21 viene el **punto de control D**: la portada completa a 1440, 1920 y 390.
 
-**Qué se hace.** Después del titular y del destacado, la portada se ordena en bloques:
-- Poemas: los tres últimos publicados, como filas con sus tres primeros versos;
-- Integrantes: la cinta de retratos, con la cifra en el título («12 voces»);
-- Textos: tres, con su imagen;
-- Publicaciones: las cubiertas;
-- un cierre «Para programadores y jurados», sobre el papel: las puertas al dossier, la prensa
-  y los aliados, la última actividad y la fecha de la última actualización.
-
-Los títulos de sección llevan su cejilla encima (D13), y la portada se acorta.
+**Qué se hace.**
+- El pie (4.4): primero la identidad del colectivo (el sello, el nombre, «Chile · desde
+  2023», el correo como enlace y el Instagram); después los cuatro grupos del mapa; el
+  boletín, en una línea; y lo legal. Sin volver a subir su alto.
+- Los enlaces cruzados (4.5): en la ficha de una integrante, sus actividades; en la de un
+  registro, el poema registrado y el evento; en la de un evento, la trayectoria de su año y
+  la agenda; en la de una publicación, las reseñas sobre ella, si el modelo las relaciona.
 
 **Qué hace falta.** Nada de fuera del repositorio.
 
@@ -223,36 +230,34 @@ Los títulos de sección llevan su cejilla encima (D13), y la portada se acorta.
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Alto de la portada a 1440 | 4459 px | 3300 px o menos |
-| Versos que se leen en la portada | 0: el destacado es un registro | 3 o más |
-| Integrantes antes que textos | sí | sí |
-| Consultas de la portada | 17 en `tests/test_performance.py`, 21 en la base de desarrollo | 24 o menos |
-| Bandas de tinta en el cuerpo de la portada | 0: la tinta es solo el pie | 0 |
+| Paso vertical de los enlaces del pie | 28 px a 951 | 28 px o más |
+| Textos del pie por debajo de 4,5:1 (`superficies.js`) | 0 | 0 |
+| Enlaces internos en `<main>` de cada ficha | integrante 10, evento 10, artículo 7, registro 6, publicación 5, poema 5 | 4 o más, con las relaciones del ticket |
+| Alto del pie a 951 y desde 1100 | 320 y 236 px | no sube |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 **Pruebas que cambian a propósito.**
-- `test_home_caps_articles_and_links_to_archive`: tres textos.
-- Una nueva: la portada emite tres poemas con sus versos y la fecha de actualización.
-- Siguen: `test_home_members_appear_before_texts` y los techos de `tests/test_performance.py`.
+- Siguen: `tests/test_newsletter*.py` (el formulario no cambia de campos ni de trampa para
+  robots) y las del pie en `tests/test_css_sistema.py`: `test_el_pie_es_de_tinta`,
+  `test_el_pie_usa_el_ancho_para_medir_menos_de_alto` y `test_el_pie_queda_abajo_en_una_pagina_corta`.
+- `tests/test_cabecera.py` fija el mapa del menú: si el mapa cambia, cambia también ahí.
 
 **Cuidados.**
-- **De 4459 a 3300 px es mucho.** El titular creció en el paso 19 (unos 1000 px a 1440, con su
-  línea de respaldo). Mide cuánto pesa cada bloque antes de decidir qué se acorta. Si la meta
-  no cabe sin quitar algo que el dueño aprobó, enséñale el ajuste y que decida él.
-- **El cierre no puede ser de tinta**: el dueño la descartó en el cuerpo de la portada. Tampoco
-  repite la cita ni los aliados, que ya están en el titular. Si dudas, enséñale alternativas
-  con `tools/ux/variantes.js`.
-- **Los versos se cortan por versos, no por letras**, y conservan las sangrías: el filtro
-  `versos` del paso 12 ya sabe partirlos.
-- **Consultas**: quedan 7 hasta el techo en la prueba y 3 en la base de desarrollo. Los poemas,
-  la última actividad y la fecha suman: junta lo que puedas (la última actividad puede salir
-  de la misma consulta que las cifras).
-- **La convocatoria de prueba** sigue en la base de desarrollo, con su sello en el titular.
+- **El mapa es también «Menú» en el teléfono** (paso 18): lo que cambie en el pie cambia en
+  el menú. Míralo a 390 con el menú abierto.
+- **La identidad necesita su área en la rejilla del pie** sin subir los 320 px a 951.
+- **El pie no repite el cierre de la portada**, que ya lleva las puertas a prensa y gestión.
+- **Las redes y el correo** salen de `redes_del_colectivo`, `instagram_del_colectivo` y
+  `site_profile.correo_de_contacto`: sin consultas nuevas.
+- **«Reseñas sobre esta publicación» solo si el modelo ya las relaciona.** No se crean modelos
+  ni migraciones (sección 5): si no existe la relación, se omite y se anota.
+- **Consultas de las fichas**: cada relación nueva es una consulta; tráela con
+  `select_related` o `prefetch_related`.
 
 **Qué enseñarle al dueño al terminar.**
-- La portada entera a 951 px, bloque a bloque.
-- Los poemas, con sus versos.
-- El cierre para programadores y jurados.
+- El pie a 951 px.
+- Una ficha de integrante, una de registro y una de evento, con sus enlaces nuevos.
+- Después, el punto de control D.
 
 ## 3. Los pasos
 
@@ -318,7 +323,8 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   Cierra cuando: hay una imagen en la primera pantalla a 1440, 1920 y 390; el titular mide 112 px
   o más a 1920; un solo botón primario en la primera pantalla; la portada no pasa de 24 consultas;
   el correo del titular es el mismo que el del pie.
-- [ ] **20. `ux-4-3-portada`.** Ticket 4.3: orden de los bloques, poemas en la portada.
+- [x] **20. `ux-4-3-portada`.** Ticket 4.3: orden de los bloques, poemas en la portada. La
+  meta de 3300 px no cabía: el dueño eligió conservar las publicaciones (4415 px a 1440).
   Cierra cuando: la portada mide 3300 px o menos a 1440 con la demo; se leen tres versos o más;
   los integrantes van antes que los textos; no pasa de 24 consultas.
 - [ ] **21. `ux-4-4-pie-y-enlaces`.** Tickets 4.4 y 4.5: pie en tinta, enlaces cruzados.
@@ -588,6 +594,10 @@ Ancla en un texto que no se repita y mira `git diff --stat` después de cada gui
   `::after`): la tinta de fondo, la foto en gris con `screen` y el papel en una capa
   `multiply`. Una sola tinta en todo el sitio, el azul del cartel. Solo en los listados
   (`CON_DUOTONO`), y al señalar o enfocar, el original.
+- **Un `include` hereda todo el contexto de la página.** Una parcial con un parámetro que se
+  llama como una variable de la página (en el paso 20, `cejilla`, que la portada ya tenía
+  como lista) la pinta cuando no se le pasa. Las parciales con parámetros se incluyen con
+  `only`.
 - **Un argumento de filtro que no se resuelve rompe la página entera.** Con `r.event` vacío,
   `{{ r.recorded_on|default:r.event.starts_at }}` lanza un error en vez de quedar en blanco.
   Usa `{% if %}…{% elif %}`. Pasó en los pasos 12 y 15.

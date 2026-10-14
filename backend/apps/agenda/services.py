@@ -12,13 +12,14 @@ from apps.showcase.models import Publication, SiteProfile
 from .models import Event
 
 
-def stats():
+def stats(perfil=None):
     """Números de trayectoria (para /trayectoria/, la portada y el dossier).
 
     Actividades, festivales y ferias salen de una sola consulta (eran dos). `festivals`
     suma festivales y ferias, como los rotulan la trayectoria y el dossier; la portada los
-    nombra por separado, porque «1 festival» no puede ser una feria."""
-    profile = SiteProfile.load()
+    nombra por separado, porque «1 festival» no puede ser una feria. `perfil`: el que la
+    vista ya cargó, para no pedirlo dos veces."""
+    profile = perfil or SiteProfile.load()
     years = None
     if profile.founded_year:
         years = max(timezone.now().year - profile.founded_year, 1)

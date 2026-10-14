@@ -3,6 +3,7 @@
 import re
 
 import pytest
+from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 
@@ -23,9 +24,11 @@ def test_home_caps_articles_and_links_to_archive(client, make_article):
         _pub(make_article, slug=f"t{i}", title=f"Texto {i}")
     resp = client.get(reverse("content:home"))
     assert resp.status_code == 200
-    # Portada curada: como mucho 5 tarjetas de artículo (el resto vive en el archivo).
-    assert resp.content.count(b"article-card") <= 5
-    assert reverse("content:text_archive").encode() in resp.content
+    # Portada curada: los tres últimos textos (ticket 4.3; eran cinco). El resto vive en el
+    # archivo, a un enlace.
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    assert len(sopa.select(".home-obra li.article-card:not(.fila--poema)")) == 3
+    assert sopa.select_one(f'.home-obra a[href="{reverse("content:text_archive")}"]') is not None
 
 
 def test_text_archive_paginates_full_list(client, make_article):
@@ -56,9 +59,13 @@ def test_home_shows_single_featured_recording_over_poem(client, make_poem):
     )
     profile.save()
     resp = client.get(reverse("content:home"))
-    # Con ambos definidos, el registro manda: un solo destacado, sin apilar.
-    assert b"Registro Destacado" in resp.content
-    assert b"Poema Destacado" not in resp.content
+    # Con ambos definidos, el registro manda: un solo destacado, sin apilar. El poema
+    # puede salir en la lista de poemas (ticket 4.3), pero no como un segundo destacado.
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    destacados = sopa.select(".featured")
+    assert len(destacados) == 1
+    assert "Registro Destacado" in destacados[0].get_text()
+    assert "Poema Destacado" not in destacados[0].get_text()
 
 
 def test_home_members_appear_before_texts(client, make_article):

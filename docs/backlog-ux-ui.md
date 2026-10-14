@@ -1217,6 +1217,47 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   actividad y la fecha de actualización. La portada mide 4459 px a 1440 (meta: 3300) y
   hace 17 consultas en la prueba y 21 en la base de desarrollo, sobre un techo de 24. En la
   vista, `publications` ya es una lista: el objeto del titular sale de ella.
+- **Estado:** hecho (paso 20 del plan). La meta de 3300 px a 1440 no cabía sin quitar algo: el
+  titular del paso 19 mide unos 1000 px. El dueño vio dos maneras sobre la portada real
+  (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió conservar el bloque de
+  publicaciones: la portada mide 4415 px a 1440 (eran 4459, sin poemas ni cierre) y 4084 a 951.
+  Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **El orden** es titular, destacado, integrantes, la obra, publicaciones y cierre. Poemas y
+     textos van juntos, lado a lado desde 900 px («la obra»): apilados, cada uno ocupaba una
+     pantalla. Van después de las integrantes, como pide la prueba existente: el tablero los
+     enseñaba antes, y se corrigió al construir.
+  2. **Las superficies** alternan sin tinta: el destacado sobre el papel, las integrantes en la
+     banda clara, la obra sobre el papel, las publicaciones en la banda y el cierre sobre el
+     papel, antes del pie.
+  3. **Las cabezas de sección** (`_cabeza_de_seccion.html`, D13) llevan como cejilla el grupo
+     del pie al que pertenecen («El colectivo», «La obra», «Prensa y gestión») y, bajo el título,
+     el filete de su territorio, la misma regla que las cabeceras de índice. La obra lleva su
+     cejilla una vez, sobre las dos columnas. Se incluyen con `only`: sin él, una sección sin
+     cejilla heredaba la del titular, que es una lista, y la pintaba.
+  4. **Los poemas**: los tres últimos, con sus tres primeros versos (`_poem_card.html` con
+     `versos=3`), sin la sangría ni las líneas en blanco. Los textos pasan de cinco a tres.
+  5. **Las publicaciones** no repiten el libro que ya enseña el titular; si solo hay ese, el
+     bloque no sale. El título va a la izquierda (4/12) y las cubiertas a la derecha, una
+     columna por cubierta y 240 px como mucho.
+  6. **El cierre** reutiliza las salidas al pie de las fichas (`_pie_de_entidad.html`, con
+     nombre propio para los lectores de pantalla): «Dossier», «Prensa», «Aliados» y, si hay
+     correo, «Escríbenos», en una fila desde 900 px y de dos en dos en el teléfono. Debajo, la
+     última actividad realizada y «Actualizado el…», la fecha de la última publicación entre
+     poemas, textos y registros (una consulta con `UNION`; cuenta la publicación, no la edición).
+     No repite la cita ni los aliados del titular.
+  7. **El aire entre bloques** baja de `clamp(56px, 7vw, 112px)` a `clamp(48px, 5vw, 80px)`.
+  8. **Consultas**: la portada hace 20 en la prueba (eran 17) y 19 en la base de desarrollo
+     (eran 21). `SiteProfile.load()` acepta relaciones para `select_related`: el registro y el
+     poema destacados, con el evento y el póster del registro, vienen con el perfil (eran
+     cuatro consultas). `stats()` recibe el perfil que la vista ya tiene, y las publicaciones
+     traen su editorial (era una consulta por publicación).
+  Pruebas: `tests/test_portada.py` (los versos, el orden, las cabezas y su cejilla, las
+  publicaciones sin el libro del titular, el cierre y su fecha), tres reglas nuevas en
+  `tests/test_css_sistema.py` (la obra a dos columnas solo con las dos listas, las puertas sin
+  huecos, el tope de las cubiertas). Cambian a propósito `test_home_caps_articles_and_links_to_archive`
+  (tres textos), `test_home_shows_single_featured_recording_over_poem` (el poema puede estar en
+  la lista, no como segundo destacado), la firma de territorio y `TINTA_PERMITIDA` (un selector
+  más en la misma regla).
 
 #### 4.4 Pie en tinta con identidad y mapa
 - **Hallazgos:** NAV-8, COL-8.
@@ -1258,6 +1299,10 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   **Tras el paso 19:** el correo del pie es `site_profile.correo_de_contacto` (el de gestión
   o, si falta, el general), el mismo que «Escríbenos» en el titular. Si el pie enseña el
   correo en otro sitio (la identidad), que use esa propiedad.
+  **Tras el paso 20:** justo encima del pie está ahora el cierre «Para programadores y
+  jurados», con las puertas al dossier, la prensa, los aliados y el correo, sobre el papel.
+  El pie no tiene que repetirlas en otra forma: su grupo «Prensa y gestión» ya las lleva.
+  El paso vertical de los enlaces del pie ya es de 28 px a 951.
 
 #### 4.5 Enlaces cruzados entre entidades
 - **Hallazgos:** NAV-9 (lo que no cubrió 2.4).

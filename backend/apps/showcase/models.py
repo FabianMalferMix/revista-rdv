@@ -64,8 +64,12 @@ class SiteProfile(models.Model):
         pass  # el singleton no se borra
 
     @classmethod
-    def load(cls):
-        obj, _ = cls.objects.get_or_create(pk=1)
+    def load(cls, *relaciones):
+        """La fila única. `relaciones` son claves de `select_related`: lo que la página va a
+        leer del perfil viene en la misma consulta (la portada: el registro y el poema
+        destacados, con el evento y el póster del registro)."""
+        filas = cls.objects.select_related(*relaciones) if relaciones else cls.objects
+        obj, _ = filas.get_or_create(pk=1)
         return obj
 
     @property
