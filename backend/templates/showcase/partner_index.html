@@ -7,7 +7,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "content/partials/_index_head.html" with titulo="Aliados y financiamiento" territorio="prensa" cuenta=partners|length singular="aliado" plural="aliados" dek="Fondos, instituciones y espacios que apoyan al colectivo." %}
+  {% include "content/partials/_index_head.html" with titulo="Aliados" territorio="prensa" cuenta=partners|length singular="aliado" plural="aliados" dek="Fondos, instituciones y espacios que apoyan al colectivo." %}
   {% comment %}
      Por tipo, en el orden de los tipos: un fondo y una sala no son lo mismo para quien
      programa. El logo va en gris y toma su color al señalarlo, el mismo gesto que las

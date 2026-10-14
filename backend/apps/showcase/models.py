@@ -73,6 +73,20 @@ class SiteProfile(models.Model):
         return obj
 
     @property
+    def presentacion(self):
+        """De dónde es y desde cuándo: «Colectivo de poesía», «Chile», «desde 2023», lo que
+        haya. La usan la cejilla de la portada y el pie, que la unen con puntos medios."""
+        return [
+            parte
+            for parte in (
+                self.tagline,
+                self.location,
+                f"desde {self.founded_year}" if self.founded_year else "",
+            )
+            if parte
+        ]
+
+    @property
     def correo_de_contacto(self):
         """El correo al que se escribe desde el sitio: el de gestión y, si no hay, el
         general. Lo usan el pie y el titular de la portada, que tienen que coincidir."""

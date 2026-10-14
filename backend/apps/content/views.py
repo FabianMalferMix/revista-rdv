@@ -145,16 +145,9 @@ def home(request):
     proximo = Event.upcoming().first()
     # La cejilla del titular: el lema, el lugar, el año y cuántas son. El Instagram lo
     # añade la plantilla, con las redes que ya trae el procesador del perfil.
-    cejilla = [
-        parte
-        for parte in (
-            profile.tagline,
-            profile.location,
-            f"desde {profile.founded_year}" if profile.founded_year else "",
-            f"{integrantes} integrante{'s' if integrantes != 1 else ''}" if integrantes else "",
-        )
-        if parte
-    ]
+    cejilla = profile.presentacion
+    if integrantes:
+        cejilla.append(f"{integrantes} integrante{'s' if integrantes != 1 else ''}")
     objeto = _objeto_del_titular(publicaciones, proximo)
     # El cierre para programadores y jurados: puertas a lo que piden (D9), como las salidas
     # al pie de una ficha. La cita y los aliados ya están en el titular.

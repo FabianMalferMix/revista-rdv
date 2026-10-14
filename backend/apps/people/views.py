@@ -31,6 +31,9 @@ def member_detail(request, slug):
         .order_by("-published_at")
     )
     recordings = member.recordings.filter(published=True)
+    # Las actividades en que participó (ticket 4.5): la ficha enseñaba lo que escribe y lo
+    # que grabó, pero no dónde ha leído. Las doce más recientes; el resto, en la trayectoria.
+    actividades = member.events.filter(published=True).order_by("-starts_at")[:12]
     return render(
         request,
         "people/member_detail.html",
@@ -39,6 +42,7 @@ def member_detail(request, slug):
             "articles": Paginator(articles, 12).get_page(request.GET.get("page")),
             "poems": poems,
             "recordings": recordings,
+            "actividades": actividades,
             "pie": [
                 puerta("Índice", "Todo el colectivo", reverse("people:member_index")),
                 *puertas_vecinas(

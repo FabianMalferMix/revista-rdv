@@ -1051,7 +1051,17 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .dossier-contact{padding:var(--s3); background:var(--paper-2)}
 .dossier-contact > .subhead:first-child{margin-top:0}
 
-/* Pie: newsletter (lista de prensa) y enlaces secundarios */
+/* Pie: la identidad del colectivo, el mapa, el boletín (lista de prensa) y lo legal. */
+/* La identidad abre el pie (ticket 4.4): el sello, de dónde es y desde cuándo, y cómo
+   escribirle. El correo y el Instagram ya no van en el mapa, para no repetirse. */
+.foot-identidad{grid-area:identidad; display:flex; flex-direction:column; align-items:flex-start;
+  gap:var(--s1)}
+/* El sello del pie es el de la cabecera, con el nombre en dos líneas: en su columna no cabe
+   en una. Y en blanco: la regla de los enlaces del pie lo dejaba en el color del papel. */
+.site-foot .brand{padding:5px 12px; color:#fff}
+.site-foot .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
+.foot-presentacion{margin:var(--s1) 0 0; font-size:var(--t-1)}
+.foot-contacto{margin:0; display:flex; flex-direction:column; gap:4px; font-size:var(--t-1)}
 .newsletter{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0}
 .newsletter label{font-size:var(--t0); color:var(--paper)}
 .newsletter input[type=email]{font-family:var(--serif); font-size:var(--t1); padding:0 12px; min-height:44px;
@@ -1060,30 +1070,40 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
 .news-consent{flex-basis:100%; font-size:var(--t-1); color:var(--muted)}
 /* Mapa del sitio en columnas. `auto-fit` + `minmax` reparte los cuatro grupos sin
-   consultas de medios: cuando no caben a 150px, bajan solos a dos columnas y luego a
-   una. El pie es el sitio donde más barato sale dejar que el navegador decida. */
-.foot-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+   consultas de medios: cuando no caben, bajan solos a dos columnas. Con 150 px de mínimo,
+   a 320 de pantalla caían a una y el pie medía más de mil píxeles. */
+.foot-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 120px), 1fr));
   gap:20px 24px; margin:0}
-/* El pie usa el ancho para medir menos de alto: medía 435 px a 951 de ancho. Desde
-   720 px, el formulario y los enlaces legales comparten la primera línea y los cuatro
-   grupos se reparten el carril a la medida de su contenido (el correo de gestión es el
-   enlace más largo y no cabe en una columna de un cuarto). Desde 1100 px, todo en una
-   fila: el formulario a la izquierda, con la línea legal debajo, y los grupos al lado. */
+/* El pie usa el ancho para medir menos de alto: medía 435 px a 951 de ancho. El orden es
+   el del ticket 4.4: la identidad, el mapa, el boletín y lo legal. Desde 720 px, los cuatro
+   grupos van en una fila, a la medida de su contenido, y el boletín y lo legal comparten
+   otra. Desde 900 px la identidad cabe al lado de los grupos (antes, con ellos al lado, se
+   salían de la pantalla). Desde 1100 px, todo en una fila: la identidad, los grupos y, a
+   la derecha, el boletín con la línea legal debajo. */
 .site-foot > .wrap-wide{display:grid; grid-template-columns:minmax(0,1fr);
-  grid-template-areas:"news" "mapa" "legal"; gap:var(--s3); align-items:start}
+  grid-template-areas:"identidad" "mapa" "news" "legal"; gap:var(--s3); align-items:start}
 .newsletter{grid-area:news}
 .foot-groups{grid-area:mapa}
 .foot-legal{grid-area:legal}
 @media (min-width:720px){
-  .site-foot > .wrap-wide{grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"news legal" "mapa mapa"}
+  .site-foot > .wrap-wide{grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"identidad identidad" "mapa mapa" "news legal"}
   .newsletter input[type=email]{flex:0 1 220px}
   .foot-groups{grid-template-columns:repeat(4, max-content); justify-content:space-between}
   .foot-legal{padding-top:12px}
 }
+@media (min-width:900px){
+  .site-foot > .wrap-wide{grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:"identidad mapa mapa" "news news legal"}
+  /* El aire entre la identidad y los grupos, como margen: un hueco de columna estrecharía
+     también el boletín, que va debajo de las dos, y a 951 px partía el botón a otra línea. */
+  .foot-identidad{margin-right:var(--s4)}
+}
 @media (min-width:1100px){
-  .site-foot > .wrap-wide{grid-template-columns:minmax(300px, 360px) minmax(0,1fr); column-gap:var(--s5);
-    grid-template-areas:"news mapa" "legal mapa"}
-  .newsletter input[type=email]{flex:1 1 180px}
+  .site-foot > .wrap-wide{grid-template-columns:auto minmax(0,1fr) minmax(260px, 340px);
+    column-gap:var(--s4); grid-template-areas:"identidad mapa news" "identidad mapa legal"}
+  .foot-identidad{margin-right:0}
+  .newsletter input[type=email]{flex:1 1 160px}
   .foot-legal{padding-top:0; align-self:end}
 }
 .foot-group h2{margin:0 0 8px; font-weight:600; color:var(--muted-on-ink)}
