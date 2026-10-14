@@ -1175,6 +1175,13 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   cabecera, el sello no flota), y cambian a propósito `test_catalog.py` (la portada muestra
   cita y aliado), `test_home_ui.py`, `test_dossier.py` («Escríbenos»), `test_agenda.py` (las
   claves de `stats()`) y `BLANCO_PERMITIDO` (la cubierta del titular es un objeto).
+  **Después del paso 20 (2026-10-14, PR #128)** el dueño quitó de la portada, por ahora, las
+  cifras y «Con el apoyo de»: el colectivo aún es pequeño y no quiere enseñar cuántos son ni
+  cuántos aliados tiene. La cita de prensa se queda. Cada pieza salió en su commit, con su
+  plantilla, su CSS y sus pruebas: para devolverla, se revierte ese commit (las cifras,
+  `30799d0`; los aliados, `28b0de3`). Con las cifras se fue el trazo amarillo, el único uso
+  del amarillo en el sitio; el token sigue en la paleta. `stats()` conserva `festivales` y
+  `ferias`, que ya no usa nadie.
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
