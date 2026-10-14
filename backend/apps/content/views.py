@@ -14,7 +14,6 @@ from django.utils.formats import date_format
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
-from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
@@ -33,6 +32,7 @@ from .models import (
     Tag,
 )
 from .pie import firmas, puerta, puertas_vecinas, vecinos
+from .services import ultima_publicacion
 
 logger = logging.getLogger(__name__)
 
@@ -93,27 +93,6 @@ def _objeto_del_titular(publicaciones, proximo):
             "dato": date_format(timezone.localtime(proximo.starts_at), "j \\d\\e F"),
         }
     return None
-
-
-def _ultima_publicacion():
-    """Cuándo publicó el colectivo por última vez: un poema, un texto o un registro. Es el
-    «Actualizado el…» del cierre de la portada, en una sola consulta. Cuenta la fecha de
-    publicación y no la de edición: corregir una errata no hace más reciente la portada."""
-    fechas = (
-        Article.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
-        .order_by()
-        .values_list("published_at", flat=True)
-        .union(
-            Poem.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
-            .order_by()
-            .values_list("published_at", flat=True),
-            Recording.objects.filter(published=True, published_at__isnull=False)
-            .order_by()
-            .values_list("published_at", flat=True),
-        )
-        .order_by("-published_at")
-    )
-    return next(iter(fechas[:1]), None)
 
 
 def home(request):
@@ -184,7 +163,7 @@ def home(request):
             # El cierre para programadores y jurados: lo último que hicieron y cuándo
             # publicaron por última vez.
             "ultima_actividad": Event.past().first(),
-            "ultima_publicacion": _ultima_publicacion(),
+            "ultima_publicacion": ultima_publicacion(),
         },
     )
 

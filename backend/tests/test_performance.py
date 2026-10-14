@@ -20,6 +20,8 @@ pytestmark = pytest.mark.django_db
 # añadió a la portada su línea de respaldo (+2) y contó las cifras en una consulta (-1), y del
 # 20: poemas y sus firmas, la última actividad y la fecha (+4), y el perfil una vez (-1). Sin
 # las cifras ni los aliados de la portada (#128), tres menos; sin la cita de prensa (#129), otra.
+# El dossier del paso 22 (ticket 5.1) hace dos menos aunque enseña retratos, cubiertas, logos y
+# la fecha de actualización: dejó de precargar participantes que no enseñaba.
 BUDGETS = {
     "content:home": 24,  # medido 16 (el sello de convocatoria pregunta si hay una abierta)
     "content:text_archive": 10,  # 8
@@ -28,7 +30,7 @@ BUDGETS = {
     "agenda:agenda": 8,  # 6
     "showcase:publication_index": 10,  # 7
     "media:recording_index": 10,  # 8
-    "showcase:dossier": 22,  # 17
+    "showcase:dossier": 22,  # 15
 }
 
 

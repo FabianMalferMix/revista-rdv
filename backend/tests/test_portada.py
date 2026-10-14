@@ -18,7 +18,7 @@ from django.utils import timezone
 from PIL import Image
 
 from apps.content.models import EditorialStatus
-from apps.content.views import _ultima_publicacion
+from apps.content.services import ultima_publicacion
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
@@ -159,7 +159,7 @@ def test_sin_correo_el_cierre_lleva_tres_puertas(client):
 
 def test_la_ultima_publicacion_solo_cuenta_lo_publicado(make_poem, make_article):
     """Un borrador o un registro sin publicar no hacen más reciente la portada."""
-    assert _ultima_publicacion() is None
+    assert ultima_publicacion() is None
     ahora = timezone.now()
     make_poem(status=PUBLICADO, published_at=ahora - timedelta(days=10))
     make_article(status=EditorialStatus.DRAFT, published_at=ahora - timedelta(days=1))
@@ -170,4 +170,4 @@ def test_la_ultima_publicacion_solo_cuenta_lo_publicado(make_poem, make_article)
         published=False,
         published_at=ahora,
     )
-    assert _ultima_publicacion() == ahora - timedelta(days=10)
+    assert ultima_publicacion() == ahora - timedelta(days=10)

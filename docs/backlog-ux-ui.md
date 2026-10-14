@@ -1391,6 +1391,52 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   botón «Dossier» de la cabecera lleva a él desde todas las páginas. Si el dossier se reordena,
   el `id` se queda en el bloque de contacto (`tests/test_cabecera.py` lo comprueba). Como la
   cabecera es fija, el salto deja el bloque 16 px por debajo de ella (`scroll-padding-top`).
+- **Estado:** hecho (paso 22 del plan). Lo construido difiere de lo escrito arriba en estos puntos:
+  1. **Sigue en el carril de lectura** (780 px), como lo dejó la auditoría y lo vigila
+     `test_las_paginas_de_lectura_se_quedan_en_su_carril`: mide lo que una hoja A4, y lo que
+     se ve es lo que se imprime. A 951 px no cambia casi nada (el ancho mediría 875).
+  2. **La cabecera**: la cejilla «Dossier · kit de prensa», el nombre como `h1` y el lema. El
+     botón de imprimir va a la derecha del título (después de él en el marcado); en una
+     ventana ancha, con el nombre a 56 px, baja bajo el lema. Llega oculto (`hidden`) y
+     `dossier.js` lo enseña al enlazarlo: sin JavaScript no hacía nada.
+  3. **La ficha** junto a «Quiénes somos»: fundado, **lugar** (el campo dice «Chile», no una
+     ciudad), contacto (`correo_de_contacto`, el mismo del pie y de la portada), Instagram,
+     sitio y «Actualizado el…». Sin el número de integrantes, que ya está en las cifras. La
+     fecha sale de `ultima_publicacion()`, que pasó de la vista de la portada a
+     `apps/content/services.py` para servir a las dos.
+  4. **Las cifras** en Syne (`--t6`, 34–56 px) con el trazo de marcador amarillo que el dueño
+     eligió para las de la portada en el paso 13; años, integrantes, actividades, festivales,
+     ferias y publicaciones, cada una solo si no es cero. El trazo se imprime
+     (`print-color-adjust:exact`). Las pruebas de la cifra grande y del amarillo pasan a
+     admitir solo `.dossier-cifras strong`.
+  5. **Integrantes y publicaciones**, dos por fila en el carril y en la hoja impresa. Los
+     retratos (96 px) van **en su color, sin duotono**: el dossier es un documento, como las
+     fichas. Las cubiertas (120 px) llevan la sombra plana del catálogo, y al lado el tipo, el
+     año, la editorial y la sinopsis. **Las reseñas de cada publicación no entran**: son del
+     propio sitio, y el kit de prensa reúne lo que dicen otros (la ficha de la publicación sí
+     las enseña, #131).
+  6. **La trayectoria** es una sola lista por años, sin `<table>`: el año a la izquierda y cada
+     entrada con su tipo, su título y su lugar. La arma `cronologia()` en
+     `apps/agenda/services.py`, que usa también `/trayectoria/`. Entran todos los hitos y las
+     publicaciones con año, y los ocho últimos eventos. El año de un evento es el de su hora
+     local: un recital del 31 de diciembre a las 22:00 en Santiago iba al año siguiente (UTC),
+     también en el ancla que lleva de su ficha a la trayectoria.
+  7. **Prensa** en dos columnas, y **aliados** con su logo a 160 × 80 y el nombre como pie.
+  8. **Las imágenes no esperan al scroll** (`lazy=False`): una imagen diferida que el
+     navegador aún no ha pedido sale en blanco en el PDF. Son decorativas (`alt=""`): el nombre
+     va escrito al lado.
+  9. **De paso, la hoja de impresión de todo el sitio**: las fotos a una tinta salían en blanco
+     al imprimir (el duotono se pinta sobre un fondo azul, y el navegador no imprime fondos;
+     los doce retratos de `/integrantes/` eran cajas vacías). En papel van tal cual.
+  Medido a 951 px: los años, 2026, 2025, 2024, 2023, 2022 y 2019 (eran 2022, 2019, 2026, 2026,
+  2026, 2025); con la impresión emulada y sin bajar por la página, 12 retratos, 3 cubiertas y 3
+  logos cargados y visibles, y fuera la cabecera, el pie, la barra y «Trayectoria completa»;
+  el PDF A4 ocupa cuatro hojas. Sin scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920.
+  La página mide 4330 px a 951 (eran 2872: ahora lleva imágenes) y hace 15 consultas en frío
+  en la prueba (eran 17). Pruebas: `tests/test_dossier.py` (título, botón, trayectoria, año
+  local, ficha, cifras, imágenes, consultas fijas), `tests/test_agenda.py` (la editorial de
+  cada libro en la trayectoria, sin una consulta por libro) y, en `tests/test_css_sistema.py`,
+  el amarillo y la impresión de las fotos a una tinta.
 
 #### 5.2 Agenda y evento con afiche `[paralelo]`
 - **Hallazgos:** IMG-8, CON-9 (resto), IMG-9 (parte).
@@ -1400,12 +1446,25 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   doble columna y «Ver las N fotos»; registros enlazados; puertas (4.5).
 - **Aceptación:** con un evento sembrado con afiche, aparece en agenda, en «Próxima actividad» y
   en el detalle; el lightbox sigue sin JS (`tests/test_ui_ux.py::test_event_gallery_renders_lightbox`).
+- **Nota de entrada** (tras el paso 22): el afiche ya llega a la agenda, a «Próxima actividad» y
+  a la ficha desde el paso 16 (3.5). Lo que falta, medido a 1440 y 951 en
+  `/evento/recital-nuevas-voces-lanzamiento/`: el afiche mide 320 px (no 420) y no tiene la
+  línea «Afiche · …»; las seis fotos van en una rejilla uniforme de 207 × 129, sin la primera
+  a doble columna, y no hay «Ver las N fotos». Al imprimir, las fotos a una tinta ya salen tal
+  cual (la hoja de impresión neutraliza `.riso-duo`). El año de un evento en la trayectoria y
+  en el ancla de su ficha es el de su hora local (`cronologia()` en `apps/agenda/services.py`).
 
 #### 5.3 Galería como hoja de contactos y aliados con logo `[paralelo]`
 - **Hallazgos:** IMG-9, IMG-12 (lo que no cubrió 3.5).
 - **Pasos:** ~~`.album-grid` a `2fr 1fr` con filas 3:2~~ (hecho en 2.2: `.hoja`); pie con crédito y
   contador; `.partner-list` agrupada por `kind` con logos 160×80; fallback tipográfico cuando no hay logo.
 - **Aceptación:** `/galeria/` y `/aliados/` con ratio ≥ 0,85 a 1440 y sin imágenes deformadas.
+- **Nota de entrada** (tras el paso 22): medido hoy a 1440, `/galeria/` y `/aliados/` dan 0,90 de
+  ratio y ninguna imagen deformada: la aceptación ya se cumple. El crédito, el contador y los
+  grupos por tipo los dejó el paso 16. Falta el **reemplazo tipográfico de un aliado sin logo**
+  en `/aliados/` (en desarrollo los tres tienen logo; la plantilla no enseña nada en su lugar).
+  El dossier enseña los mismos logos (`.partner-logo`) con el nombre como pie
+  (`.dossier-aliados`): si el reemplazo cambia la clase o el tamaño del logo, míralo también ahí.
 
 #### 5.4 Búsqueda con cobertura completa (D2)
 - **Hallazgos:** NAV-4 (resto).
@@ -1442,6 +1501,11 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   antes/después de portada, un índice, un poema y una ficha a 1440 y 390.
 - **Aceptación:** todos los criterios de §10 cumplidos o, si alguno no, explicado con su causa y
   su ticket de seguimiento en deferidos.
+- **Nota de entrada** (tras el paso 22): el dossier a 1440 frente a la línea base: ratio 0,53 →
+  0,89, textos de menos de 12 px 18 → 0, monoespaciada 41 % → 32 %, pero **elementos en
+  mayúsculas 18 → 33** y alto 2735 → 4450 px. No es una regresión: son los rótulos de la ficha,
+  del tipo de cada entrada de la trayectoria y del cargo de cada integrante (la receta de rótulo
+  de D3), y la página ahora lleva retratos, cubiertas y logos. Explícalo en la tabla.
 
 #### 6.3 Documentación y decisiones
 - **Pasos:** `docs/deferidos-y-decisiones.md` §1 con D1-D14 y su porqué (copiar de la sección 1 de

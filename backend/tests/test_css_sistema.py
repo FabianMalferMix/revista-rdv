@@ -490,7 +490,7 @@ def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
 # Reglas que pueden pintar en monoespaciada, cada una por su papel. Decisión D3: la mono
 # queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
 MONO_PERMITIDA = {
-    ".rotulo,.kicker,.dossier-doc.subhead,.foot-grouph2,.reviewedh2,.event-month,.tag,"
+    ".rotulo,.kicker,.foot-grouph2,.reviewedh2,.event-month,.tag,"
     ".cinta-piea,.nav-disclosuresummary,.member-role,.foot-group-titulo": (
         "rótulo, también el cargo de cada integrante y los grupos del menú del teléfono"
     ),
@@ -679,17 +679,43 @@ def test_el_pie_es_de_tinta():
     assert "border-top" not in pie
 
 
-def test_el_amarillo_no_se_usa_y_nunca_es_texto():
+def _impresion():
+    """El cuerpo de la hoja de impresión, sin espacios."""
+    css = _css()
+    abre = css.index("{", css.index("@media print"))
+    nivel, i = 1, abre + 1
+    while nivel:
+        nivel += {"{": 1, "}": -1}.get(css[i], 0)
+        i += 1
+    return re.sub(r"\s+", "", css[abre + 1 : i - 1])
+
+
+def test_al_imprimir_las_fotos_a_una_tinta_no_salen_en_blanco():
+    """El duotono aclara la foto en gris sobre un fondo azul (`screen`), y el navegador no
+    imprime los fondos: sobre el blanco de la hoja, la foto aclarada salía en blanco. Lo
+    medido: los doce retratos de /integrantes/ impresos eran doce cajas vacías."""
+    impresion = _impresion()
+    assert ".riso-duoimg{filter:none;mix-blend-mode:normal}" in impresion
+    assert ".riso-duo::after{content:none}" in impresion
+
+
+def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
     """El amarillo del cartel da 1,03:1 sobre el papel: solo puede entrar como fondo. Fue un
     plano de lado a lado del carril, que el dueño del sitio encontró invasivo, y después un
-    trazo de marcador bajo las cifras de la portada (D5). Las cifras las quitó el dueño
-    (2026-10-14), y con ellas el único amarillo: queda en la paleta, sin uso."""
+    trazo de marcador bajo las cifras de la portada (D5). Las quitó de la portada
+    (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): es su único uso, la
+    mitad baja del número y no un plano."""
     con_amarillo = [
         selector
         for selector, cuerpo in _pantalla()
         if "riso-amarillo" in cuerpo and selector != ":root"
     ]
-    assert con_amarillo == [], f"el amarillo volvió sin las cifras: {con_amarillo}"
+    assert con_amarillo == [".dossier-cifras strong"], (
+        f"el amarillo se salió del trazo: {con_amarillo}"
+    )
+    trazo = _regla(".dossier-cifrasstrong")
+    assert "background:linear-gradient(totop,transparent.06em,var(--riso-amarillo).06em," in trazo
+    assert "print-color-adjust:exact" in trazo, "el trazo tiene que salir también en papel"
     assert not re.search(r"(?<![-\w])color:var\(--riso-amarillo\)", _css())
 
 

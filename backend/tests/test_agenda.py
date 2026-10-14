@@ -1,12 +1,15 @@
 from datetime import timedelta
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.agenda.models import Milestone
 from apps.media.models import Recording
-from tests.factories import make_event, make_photo  # noqa: E402
+from apps.reviews.models import Publisher
+from tests.factories import make_event, make_photo, make_publication  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -213,3 +216,23 @@ def test_la_hoja_de_contactos_no_anade_consultas_por_album(client):
         for i in range(4):
             make_photo(evento, position=i)
     assert consultas() == con_uno, "la galería hace una consulta más por cada álbum"
+
+
+def test_la_trayectoria_nombra_cada_editorial_sin_una_consulta_por_libro(client):
+    """La fila de una publicación nombra su editorial, que viene en la consulta de la lista:
+    con cuatro libros, las mismas consultas que con uno."""
+    url = reverse("agenda:trayectoria")
+
+    def libro(n):
+        editorial = Publisher.objects.create(slug=f"ed{n}", name=f"Editorial {n}")
+        make_publication(slug=f"libro-{n}", title=f"Libro {n}", year=2020 + n, publisher=editorial)
+
+    libro(0)
+    client.get(url)  # en caliente: el perfil ya existe
+    with CaptureQueriesContext(connection) as uno:
+        client.get(url)
+    for n in (1, 2, 3):
+        libro(n)
+    with CaptureQueriesContext(connection) as cuatro:
+        assert "Editorial 3" in client.get(url).content.decode()
+    assert len(cuatro) == len(uno), "una consulta más por libro"
