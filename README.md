@@ -77,6 +77,16 @@ docker compose exec web python manage.py seed_material_generico
 Idempotente y seguro: nunca reemplaza una imagen cuyo crédito no sea de marcador. Qué pedir y
 cómo reemplazar cada pieza: [docs/contenido-visual.md](docs/contenido-visual.md).
 
+Textos y poemas largos, cercanos a los reales, para probar las páginas de lectura (una reseña
+de once minutos, un ensayo de quince, una crítica con todos los casos límite, una letanía de
+más de cien versos, un poema en prosa…). Llevan el prefijo `zz-largo-` y se borran con una
+orden:
+
+```bash
+docker compose exec web python manage.py seed_textos_largos            # siembra o pone al día
+docker compose exec web python manage.py seed_textos_largos --borrar   # los quita
+```
+
 Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale el grupo
 `editor` o `autor` desde el admin.
 

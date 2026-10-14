@@ -22,6 +22,36 @@ def primeros_versos(cuerpo, cuantos=3):
     return versos
 
 
+# Lo que la portada cita de un poema, como mucho: un poema corriente cabe entero en sus tres
+# versos (los de la demostración miden entre 20 y 50 letras).
+LETRAS_DEL_ADELANTO = 160
+
+
+@register.filter
+def adelanto(cuerpo, cuantos=3):
+    """Los versos que la portada cita de un poema: hasta `cuantos`, y no más de
+    LETRAS_DEL_ADELANTO letras entre todos.
+
+    Un poema de versos largos, o en prosa, abre con párrafos: sin tope, sus tres «versos»
+    llenaban la portada (una oda de prueba ocupaba diez líneas, y un poema en prosa habría
+    puesto tres párrafos enteros). El verso que no cabe se corta en una palabra, con puntos
+    suspensivos; si para él quedan menos de cuarenta letras, no se cita.
+    """
+    citados, quedan = [], LETRAS_DEL_ADELANTO
+    for verso in primeros_versos(cuerpo, cuantos):
+        if len(verso) <= quedan:
+            citados.append(verso)
+            quedan -= len(verso)
+            continue
+        if not citados or quedan >= 40:
+            corte = (
+                verso[: quedan + 1].rsplit(" ", 1)[0] if " " in verso[:quedan] else verso[:quedan]
+            )
+            citados.append(corte.rstrip(" ,;:.—") + "…")
+        break
+    return citados
+
+
 @register.filter
 def primer_verso(cuerpo):
     """El primer verso, o cadena vacía si el poema no tiene ninguna línea con texto."""

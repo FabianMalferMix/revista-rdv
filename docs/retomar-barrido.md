@@ -29,16 +29,16 @@ prueba automática podía ver, entre ellos `admin-acciones-por-rol`, `fix-dimens
 `feed-identidad-del-sitio` y el propio `fix-firma-zip`.
 
 **Después, el rediseño UX/UI** (`docs/plan-ejecucion-ux.md`, 25 pasos, del 2026-10-08 al
-2026-10-14) cambió el sitio público. La guía tiene ahora **111 casillas: 100 comprobadas y
-11 por comprobar**, que son las que describen lo que cambió:
+2026-10-14) cambió el sitio público. La guía tiene ahora **112 casillas: 100 comprobadas y
+12 por comprobar**, que son las que describen lo que cambió:
 
 | Bloque | Estado |
 |---|---|
-| §1 Sitio público | 8 por comprobar: la portada, el dossier, la ficha de un evento y las cinco de §1.5 (cabecera, menú, cinta, índices y teclado) |
+| §1 Sitio público | 9 por comprobar: la portada, el dossier, la ficha de un evento y las seis de §1.5 (cabecera, menú, cinta, índices, teclado y textos largos) |
 | §2 Buscador | 3 por comprobar: la búsqueda por grupos |
 | §3 a §11 | completos; el rediseño no los tocó |
 
-**Lo siguiente** es comprobar esas once a mano, en desarrollo y a 951 px de ancho, que es
+**Lo siguiente** es comprobar esas doce a mano, en desarrollo y a 951 px de ancho, que es
 como revisa el dueño del sitio. La verificación medida del rediseño está en
 `docs/auditoria-ux-ui-verificacion.md`.
 

@@ -21,7 +21,7 @@ from apps.content.models import (
     PublishStatus,
     Section,
 )
-from apps.content.templatetags.versos import primer_verso, primeros_versos
+from apps.content.templatetags.versos import adelanto, primer_verso, primeros_versos
 from apps.people.models import Contributor
 from apps.showcase.models import PressMention
 from tests.factories import make_event, make_publication
@@ -91,6 +91,37 @@ def test_un_primer_verso_muy_largo_se_corta(client, make_poem):
     _publicado(make_poem, slug="prosa", body="palabra " * 60)
     verso = _sopa(client, "content:poem_index").select_one("p.fila-verso").get_text()
     assert len(verso) <= 90 and verso.endswith("…")
+
+
+def test_el_adelanto_de_la_portada_cita_tres_versos_corrientes_enteros():
+    assert adelanto("Llueve sobre el patio\ny nadie\nlo escucha\ncuarto") == [
+        "Llueve sobre el patio",
+        "y nadie",
+        "lo escucha",
+    ]
+
+
+def test_el_adelanto_corta_los_versos_larguisimos_y_la_prosa():
+    """Un poema en prosa abre con un párrafo: la portada cita su arranque, cortado en una
+    palabra, y no tres párrafos enteros."""
+    prosa = "En el patio de la casa había un limonero " * 20
+    citado = adelanto(prosa)
+    assert len(citado) == 1 and citado[0].endswith("…")
+    assert len(citado[0]) <= 162 and not citado[0][:-1].endswith(" ")
+    assert prosa.startswith(citado[0][:-1]), "no cortó en una palabra"
+
+
+def test_el_adelanto_no_cita_un_resto_diminuto():
+    """Si tras dos versos quedan menos de cuarenta letras, el tercero no se cita a medias."""
+    cuerpo = "a" * 70 + "\n" + "b" * 60 + "\n" + "c " * 50
+    assert adelanto(cuerpo) == ["a" * 70, "b" * 60]
+
+
+def test_la_portada_no_se_llena_con_un_poema_en_prosa(client, make_poem):
+    _publicado(make_poem, slug="prosa", body=("Un párrafo de prosa muy largo. " * 30 + "\n") * 3)
+    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    citado = sopa.select_one("li.fila--poema .fila-versos").get_text()
+    assert len(citado) <= 162 and citado.endswith("…")
 
 
 def test_un_poema_sin_texto_no_deja_un_parrafo_vacio(client, make_poem):

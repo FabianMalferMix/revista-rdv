@@ -1294,8 +1294,21 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .lectura-sala{grid-template-columns:minmax(220px,4fr) minmax(0,7fr); column-gap:clamp(32px,5vw,96px);
     align-items:start}
 }
+/* El título en la columna ancla, que mide unos 300 px a 951 de ventana: a su tamaño caben
+   diez o doce letras por línea, y una palabra más larga («imposibilidad», «desmemoriadamente»)
+   se partía por la mitad y sin guion. Se divide con guion, en español. Un título de más de
+   noventa letras baja además un paso: el de un poema de 125 ocupaba catorce líneas. */
+.lectura-ancla h1{hyphens:auto}
+.poem .lectura-ancla h1.titulo-largo{font-size:var(--t5)}
+.article .lectura-ancla h1.titulo-largo{font-size:var(--t4)}
 @media (min-width:840px) and (min-height:700px){
-  .lectura-ancla{position:sticky; top:calc(var(--alto-cabecera) + var(--s3))}
+  /* Una ancla más alta que la pantalla —un título de doscientas letras, cuatro firmas y ocho
+     etiquetas— dejaba su parte de abajo fuera de la vista durante toda la lectura: se queda
+     a la altura de la pantalla y se desplaza por dentro. Si cabe, nada cambia. El relleno
+     lateral es para el contorno del foco, que la caja recortaría. */
+  .lectura-ancla{position:sticky; top:calc(var(--alto-cabecera) + var(--s3));
+    max-height:calc(100dvh - var(--alto-cabecera) - 2 * var(--s3)); overflow-y:auto;
+    scrollbar-width:thin; padding-inline:4px; margin-inline:-4px}
 }
 
 /* ── Fichas: integrante, publicación, evento ──
@@ -1350,6 +1363,19 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .article .dek{font-size:var(--t3); line-height:1.4}
 .article .body{margin-top:28px; font-size:var(--t2); line-height:var(--lh-lectura); max-width:var(--medida)}
 .article .body p{margin:0 0 1.2em}
+/* Lo que el autor puede poner en el cuerpo además de párrafos (la lista blanca de
+   `content/sanitize.py`). Un bloque preformateado —una partitura, una tabla hecha con
+   espacios— conserva sus columnas y se desplaza dentro de su caja: con sus líneas enteras
+   empujaba la página hacia los lados, a cualquier ancho (lo destapó un ensayo de prueba
+   con una partitura). Una figura ocupa la columna, con su pie debajo; traía 40 px de margen
+   a cada lado. */
+.article .body pre{max-width:100%; overflow-x:auto; margin:0 0 1.2em; padding:var(--s2);
+  background:var(--paper-2); font-family:var(--mono); font-size:var(--t-1); line-height:var(--lh-ui)}
+.article .body code{font-family:var(--mono); font-size:var(--t1)}
+.article .body pre code{font-size:var(--t-1)}
+.article .body figure{margin:var(--s4) 0}
+.article .body figure img{display:block}
+.article .body figcaption{margin-top:var(--s1); font-size:var(--t0); line-height:var(--lh-ui); color:var(--muted)}
 .reviewed{background:var(--paper-2); padding:14px 18px; margin:22px 0}
 .reviewed h2{margin:0 0 8px}
 /* La obra reseñada como ficha: su cubierta, pequeña, al lado del título. */

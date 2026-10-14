@@ -18,7 +18,8 @@ verde, con 881 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
 **Siguiente: el punto de control final** (sección 2): que el dueño apruebe la tabla de antes y
-después de `docs/auditoria-ux-ui-verificacion.md`. Lee «Lo que espera respuesta del dueño», más
+después de `docs/auditoria-ux-ui-verificacion.md`. Antes quiso probar las páginas de lectura con
+textos largos: están sembrados (`seed_textos_largos`, #136). Lee «Lo que espera respuesta del dueño», más
 abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
@@ -73,6 +74,7 @@ nuevo: mira su descripción y la sección 4.
 | 23 | `ux-5-2-agenda-galeria-aliados` | #133 | Ficha de evento con el afiche a 420 px y su pie, «Participan» y «Registros» a su lado, fotos en mosaico con «Ver las N fotos»; la vista ampliada cubre la pantalla; logo tipográfico para el aliado sin logo |
 | 24 | `ux-5-4-busqueda` | #134 | La búsqueda encuentra personas, registros, publicaciones y actividades además de textos y poemas, por grupos; cinco por grupo en la lupa y diez en la página; una consulta menos |
 | 25 | `ux-6-cierre` | #135 | La verificación de §10 criterio a criterio, con capturas de antes y después (`docs/auditoria-ux-ui-verificacion.md`); la pasada de accesibilidad; los enlaces de la barra a 45 px; D1 a D14 y lo diferido documentados |
+| — | `textos-largos-de-prueba` | #136 | Lo pidió el dueño antes del cierre: `seed_textos_largos` siembra seis textos y cinco poemas largos; arreglados el bloque preformateado que desbordaba la página, la columna ancla más alta que la pantalla, los títulos larguísimos y el adelanto de los poemas en la portada |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -240,16 +242,26 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El punto de control final (#135).** Qué mirar:
+1. **Los textos largos de prueba (#136)**, que pidió antes de aprobar el cierre. Seis textos y
+   cinco poemas con `zz-largo-` en la dirección; los más exigentes:
+   - http://localhost:8000/articulo/zz-largo-repetir-el-verso/ (15 min, una partitura);
+   - http://localhost:8000/articulo/zz-largo-contra-la-lectura-apurada/ (título de 200 letras,
+     cuatro firmas, ocho etiquetas, palabras y enlaces larguísimos);
+   - http://localhost:8000/poema/zz-largo-letania-para-una-casa-que-se-vende/ (106 versos) y
+     http://localhost:8000/poema/zz-largo-inventario-del-patio/ (en prosa).
+   **Pendiente de su decisión**: cómo componer un poema en prosa (hoy, como versos largos con
+   sangría francesa; ver `docs/deferidos-y-decisiones.md` §4). Se borran con
+   `docker compose exec web python manage.py seed_textos_largos --borrar`.
+2. **El punto de control final (#135).** Qué mirar:
    - la tabla de §10 en `docs/auditoria-ux-ui-verificacion.md`, con las capturas de antes y
      después de la portada, un índice, un poema y una ficha;
    - lo que no se cumple y por qué, en su §1 y en `docs/deferidos-y-decisiones.md` §4;
-   - las 11 casillas sin marcar de `docs/guia-pruebas-manuales.md` (§1 y §1.5, la portada, el
-     dossier, la ficha de un evento, la cabecera, el menú, la cinta, los índices y el teclado;
-     §2, la búsqueda por grupos).
+   - las 12 casillas sin marcar de `docs/guia-pruebas-manuales.md` (§1 y §1.5, la portada, el
+     dossier, la ficha de un evento, la cabecera, el menú, la cinta, los índices, el teclado y
+     los textos largos; §2, la búsqueda por grupos).
    Cambió una cosa a la vista, pero no se nota: los enlaces de la barra se pulsan ahora en
    45 px de alto (eran 23), sin moverse de sitio.
-2. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22 a 25 sin
+3. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22 a 25 sin
    comentarla.
    Qué mirar, a 951 px:
    - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
@@ -261,21 +273,23 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
    `docker compose exec web python manage.py shell -c "from apps.content.models import Article; from apps.reviews.models import Work; Article.objects.filter(slug='zz-demo-resena-cuadernos-del-ruido').delete(); Work.objects.filter(slug='zz-demo-cuadernos-del-ruido').delete()"`.
    Sigue abierto si quiere quitar el «12 integrantes» de la cejilla y el «12 voces»: no lo ha
    contestado, y se quedan.
-3. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
+4. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
-4. **La tarjeta para compartir** del paso 17 está en `tools/ux/out/tarjeta-para-compartir.png`:
+5. **La tarjeta para compartir** del paso 17 está en `tools/ux/out/tarjeta-para-compartir.png`:
    él decide si la sube desde el panel (Perfil del sitio → imagen para compartir).
-5. Un dato de la base que se ve raro en el dossier: el hito «Fundación del colectivo» dice
+6. Un dato de la base que se ve raro en el dossier: el hito «Fundación del colectivo» dice
    **2019** y la ficha dice «Fundado 2023»; se corrige en el panel (Agenda → Hitos, o Perfil
    del sitio).
-6. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
+7. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
 ## 2. Qué sigue: el punto de control final
 
 Los 25 pasos están hechos. Queda que el dueño del sitio apruebe el conjunto viendo la tabla de
-antes y después: `docs/auditoria-ux-ui-verificacion.md`. Pídele su visto bueno expreso.
+antes y después: `docs/auditoria-ux-ui-verificacion.md`. Pídele su visto bueno expreso. Antes
+de darlo quiso probar las páginas de lectura con textos largos y realistas: los siembra
+`seed_textos_largos` (#136), que de paso destapó y arregló cuatro fallos (sección 1).
 
 **Qué decirle que no se cumple, y por qué.** Está en el §1 de la verificación. Cuatro cosas las
 decidió él al verlas: el alto de la portada, el control de pausa de la cinta, las cifras en la

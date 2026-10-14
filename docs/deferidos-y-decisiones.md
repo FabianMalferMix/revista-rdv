@@ -195,6 +195,17 @@ Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin 
   la vista previa de producción, que comprime y cachea los estáticos.
 - **Fotos, afiches y cubiertas reales**: el material es genérico hasta que el colectivo aporte el
   suyo (`docs/contenido-visual.md`).
+- **El poema en prosa se compone como versos** (pendiente de decisión del dueño, 2026-10-14).
+  Cada párrafo es una línea del cuerpo, así que la ficha le da la sangría francesa de un verso
+  largo: la primera línea al margen y las siguientes adentro. Lo destapó el poema de prueba
+  «Inventario del patio» (`seed_textos_largos`). La portada y el índice ya citan solo su
+  arranque. Si se quiere componer como prosa, hay dos caminos: tratar como párrafo toda línea
+  de más de unas 300 letras (una heurística: una oda de versos larguísimos tiene versos de 200),
+  o que el poema diga que es en prosa, que pide un campo y una migración.
+- **La división con guion de los títulos** depende del navegador: Safari, macOS, iOS y Android la
+  traen en español; Chrome de escritorio descarga el diccionario la primera vez que lo necesita.
+  Donde no la hay, una palabra muy larga en un título corto se sigue partiendo sin guion. Los
+  títulos de más de noventa letras bajan un paso de tamaño en todos los navegadores.
 - ~~**Páginas 404 y 500 con la identidad del sitio.**~~ **CERRADO** (`fix-paginas-error`,
   2026-09-02). El 404 pasa de 179 a 5117 bytes con cabecera, pie y cuatro salidas.
 
