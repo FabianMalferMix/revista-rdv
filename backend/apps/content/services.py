@@ -1,4 +1,7 @@
-"""Consultas de contenido que usan varias apps (la portada, el dossier)."""
+"""Consultas de contenido que usan varias apps (la portada, el dossier, la búsqueda)."""
+
+from django.db.models import DateTimeField, Exists, F, IntegerField, OuterRef, Q, Value
+from django.db.models.functions import Cast, ExtractYear
 
 from apps.media.models import Recording
 
@@ -25,3 +28,89 @@ def ultima_publicacion():
         .order_by("-published_at")
     )
     return next(iter(fechas[:1]), None)
+
+
+# Las columnas de cada fila de `coincidencias_por_nombre`, en este orden.
+COLUMNAS_DE_COINCIDENCIA = (
+    "tipo",
+    "slug",
+    "titulo",
+    "dato",
+    "lugar",
+    "fecha",
+    "anio",
+    "integrante",
+)
+
+
+def _columnas(filas, tipo, titulo, dato="", lugar="", fecha=None, anio=None, integrante=None):
+    """Las columnas de una parte de la UNION. Todas son anotaciones y van en el mismo orden
+    en las cuatro partes: la UNION empareja las columnas por su posición, no por su nombre.
+    Un hueco es un NULL con su tipo (`Cast`): PostgreSQL resuelve los tipos de la UNION de
+    dos en dos, y dos NULL sin tipo quedaban como texto, que luego no casaba con una fecha."""
+    nombres = [f"r_{c}" for c in COLUMNAS_DE_COINCIDENCIA]
+    valores = (
+        Value(tipo),
+        F("slug"),
+        F(titulo),
+        F(dato) if dato else Value(""),
+        F(lugar) if lugar else Value(""),
+        F(fecha) if fecha else Cast(Value(None), DateTimeField()),
+        anio if anio is not None else Cast(Value(None), IntegerField()),
+        F(integrante) if integrante else Value(False),
+    )
+    return filas.annotate(**dict(zip(nombres, valores, strict=True))).values_list(*nombres)
+
+
+def coincidencias_por_nombre(termino, tope):
+    """Personas, registros, publicaciones y actividades cuyo nombre o título contiene el
+    término, sin distinguir acentos ni mayúsculas: `termino` llega sin acentos y la base
+    quita los de la columna (`unaccent`). Es UNA consulta: las cuatro partes van unidas
+    (UNION ALL), cada una con su orden y su tope. Con una consulta por tipo, la búsqueda
+    pasaba del techo de diez consultas de su prueba de rendimiento.
+
+    Cada fila trae las columnas de COLUMNAS_DE_COINCIDENCIA; `tipo` dice qué es y cómo se
+    enlaza. Las personas son las integrantes, también las históricas, y quien firma algo
+    publicado: una firma sin nada publicado no tiene qué enseñar en su página."""
+    from apps.agenda.models import Event
+    from apps.people.models import Contributor
+    from apps.showcase.models import Publication
+
+    publicado = Q(status=EditorialStatus.PUBLISHED, authors=OuterRef("pk"))
+    personas = _columnas(
+        Contributor.objects.filter(display_name__unaccent__icontains=termino).filter(
+            Q(is_member=True)
+            | Exists(Article.objects.filter(publicado))
+            | Exists(Poem.objects.filter(publicado))
+        ),
+        "persona",
+        "display_name",
+        dato="role",
+        integrante="is_member",
+    ).order_by("-is_member", "display_name")[:tope]
+    registros = _columnas(
+        Recording.objects.filter(published=True, title__unaccent__icontains=termino),
+        "registro",
+        "title",
+        dato="kind",
+        anio=ExtractYear("recorded_on"),
+    ).order_by("-recorded_on", "-created_at")[:tope]
+    publicaciones = _columnas(
+        Publication.objects.filter(published=True, title__unaccent__icontains=termino),
+        "publicacion",
+        "title",
+        dato="kind",
+        anio=F("year"),
+    ).order_by("position", "-year", "title")[:tope]
+    actividades = _columnas(
+        Event.objects.filter(published=True, title__unaccent__icontains=termino),
+        "actividad",
+        "title",
+        dato="type",
+        lugar="city",
+        fecha="starts_at",
+    ).order_by("-starts_at")[:tope]
+    return [
+        dict(zip(COLUMNAS_DE_COINCIDENCIA, fila, strict=True))
+        for fila in personas.union(registros, publicaciones, actividades, all=True)
+    ]

@@ -436,7 +436,12 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink)}
 .search-summary{margin:0 0 14px}
 .search-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; max-width:var(--measure)}
-.search-list li{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+/* Los resultados por tipo (ticket 5.4): cada grupo bajo su cejilla, con aire entre uno y
+   otro, y el dato de cada resultado (cargo, fecha, lugar) debajo del título. A la derecha,
+   «Recital · 10 Sep 2026 · Santiago» se partía en dos líneas en el panel de la lupa. */
+.search-list li{display:flex; flex-direction:column; gap:2px}
+.search-grupo > .rotulo{margin:0 0 var(--s1)}
+.search-grupo + .search-grupo{margin-top:var(--s3)}
 
 /* Encabezados de índice */
 /* Cabecera de página: cejilla, título y una frase. La comparten los índices y las fichas.

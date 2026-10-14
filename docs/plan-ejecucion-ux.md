@@ -8,26 +8,26 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 23.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-14, tras el paso 24.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 23 de 25 pasos.** El último paso fusionado es el 23 (`ux-5-2-agenda-galeria-aliados`, PR
-#133). `main` está en verde, con 869 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 24 de 25 pasos.** El último paso fusionado es el 24 (`ux-5-4-busqueda`, PR #134). `main`
+está en verde, con 880 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el paso 24, `ux-5-4-busqueda`** (sección 2), cuando el dueño haya visto el 23. Lee
-«Lo que espera respuesta del dueño», más abajo.
+**Siguiente: el paso 25, `ux-6-cierre`** (sección 2), el último, cuando el dueño haya visto el 24.
+Lee «Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-5-2-agenda-galeria-aliados … (#133)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-5-4-busqueda … (#134)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 24
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 25
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -70,6 +70,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `publicaciones-y-resenas` | #131 | Cada publicación enseña sus reseñas: una obra reseñada puede ser un libro del colectivo (con migración) |
 | 22 | `ux-5-1-dossier` | #132 | El dossier como kit de prensa: ficha, cifras grandes, retratos, una sola trayectoria por años, cubiertas, prensa, logos; se imprime con sus imágenes |
 | 23 | `ux-5-2-agenda-galeria-aliados` | #133 | Ficha de evento con el afiche a 420 px y su pie, «Participan» y «Registros» a su lado, fotos en mosaico con «Ver las N fotos»; la vista ampliada cubre la pantalla; logo tipográfico para el aliado sin logo |
+| 24 | `ux-5-4-busqueda` | #134 | La búsqueda encuentra personas, registros, publicaciones y actividades además de textos y poemas, por grupos; cinco por grupo en la lupa y diez en la página; una consulta menos |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -125,6 +126,9 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Vista ampliada de una foto | no cubría la pantalla y recortaba la foto a 8:5 | pantalla entera, la foto entera |
 | Aliado sin logo en `/aliados/` y en el dossier | caja vacía o nada | su nombre en la caja del logo |
 | Consultas de la ficha de un evento (prueba, en frío) | 13 | 12 |
+| «Fernanda» y «recital» en el buscador | sin resultados | la integrante; el registro y dos actividades |
+| Tipos que encuentra el buscador | 2: textos y poemas, en una lista | 6, por grupos |
+| Consultas de la búsqueda (prueba, en frío) | 9 | 8 |
 
 ### Lo que todavía se ve a medias, a propósito
 
@@ -132,7 +136,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| La búsqueda no encuentra integrantes, registros, publicaciones ni eventos («Fernanda» y «recital» no devuelven nada) | paso 24 |
 | La vista ampliada de las fotos no tiene «anterior» ni «siguiente» | se mira en el paso 25 (6.1) |
 
 ### Lo que ha decidido el dueño del sitio
@@ -192,6 +195,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Dossier (2026-10-14):** mantiene «En números», «Prensa» y «Con el apoyo de», aunque los
   quitó de la portada («Sí, mantén todo eso en el Dossier»).
 - **Paso 22 (2026-10-14):** pidió empezarlo («Sigue con el paso 22») sin comentar el #131.
+- **Revisión del paso 23 (2026-10-14):** dio paso al 24 («Sigue al paso 24») sin ajustes:
+  quedan aceptados «Participan» y «Registros» junto al afiche.
 - **Revisión del paso 22 (2026-10-14):** dio paso al 23 («Sigue al paso 23») sin ajustes, así
   que quedan aceptadas las decisiones de ese paso: los retratos del dossier en su color, sin
   duotono; el dossier en la columna de lectura; sin las reseñas del propio sitio.
@@ -228,18 +233,16 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 23, la ficha de un evento y los aliados (#133).** Qué mirar, a 951 px:
-   - http://localhost:8000/evento/recital-nuevas-voces-lanzamiento/: el afiche a la izquierda,
-     más grande, con «Afiche · Material genérico provisional (reemplazar por el real)» debajo;
-     a su lado, «PARTICIPAN» y «REGISTROS»; más abajo, «Galería» en mosaico, con la primera
-     foto a doble tamaño;
-   - al pulsar una foto, la vista ampliada cubre la pantalla y la foto se ve entera;
-   - «Ver las N fotos» y el logo tipográfico de un aliado sin logo no se ven con los datos de
-     desarrollo (ningún evento tiene más de seis fotos y todos los aliados tienen logo): se
-     midieron con datos temporales, ya borrados.
-   Una decisión que puede cambiar: «Participan» y «Registros» subieron junto al afiche, como
-   en la ficha de una publicación.
-2. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22 y 23 sin
+1. **El paso 24, la búsqueda (#134).** Qué mirar, a 951 px:
+   - la lupa de la cabecera, en cualquier página: con «Fernanda», el grupo PERSONAS con
+     «Fernanda Soto» y «Fundadora · edición» debajo; con «recital», REGISTROS y ACTIVIDADES,
+     cada actividad con su fecha y su ciudad;
+   - http://localhost:8000/buscar/?q=umbral: la página, con POEMAS, REGISTROS y PUBLICACIONES;
+   - las tres casillas sin marcar de `docs/guia-pruebas-manuales.md` §2, que son esto mismo.
+   Dos decisiones que puede cambiar: el orden de los grupos (personas primero; después la
+   obra en el orden de la barra, y las actividades) y el tope (cinco por grupo en la lupa,
+   diez en la página).
+2. **La relación entre publicaciones y reseñas (#131)**: siguió a los pasos 22, 23 y 24 sin
    comentarla.
    Qué mirar, a 951 px:
    - http://localhost:8000/publicacion/cuadernos-del-ruido/: al final, la sección «Reseñas»;
@@ -262,53 +265,70 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 6. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el paso 24, `ux-5-4-busqueda`
+## 2. Qué sigue: el paso 25, `ux-6-cierre`
 
-**Antes**, el dueño tiene que haber visto el paso 23 (sección 1, «Lo que espera respuesta del
+**Antes**, el dueño tiene que haber visto el paso 24 (sección 1, «Lo que espera respuesta del
 dueño»). Si pide ajustes, van primero, en su propia rama.
 
-**El paso 24: ticket 5.4 (D2).** Lee su nota de entrada tras el paso 23.
+**El paso 25: tickets 6.1, 6.2 y 6.3.** Es el cierre: no rediseña nada, lo mide y lo documenta.
+Lee las notas de entrada de los tres.
 
 **Qué se hace.**
-- La búsqueda encuentra también integrantes (por nombre), registros, publicaciones y eventos
-  (por título), sin distinguir acentos.
-- Los resultados van agrupados por tipo, cada grupo con su cejilla y su tope.
-- Se conservan la limitación de tasa (60 por minuto), el escape y el tope de 120 letras.
+- **6.1, accesibilidad**: recorrer con teclado las rutas (el salto al contenido, el orden y
+  el foco visible, la lupa y «Menú», la vista ampliada de las fotos, «Ver las N fotos»);
+  objetivos de 44 px en la barra, el pie, la paginación y los botones; `aria-current`;
+  títulos de pestaña; `prefers-reduced-motion`.
+- **6.2, métricas**: recapturar las 21 páginas en `tools/ux/out/final/`, compararlas con
+  `tools/ux/linea-base/` (`metrics.py comparar`) y volcar en
+  `docs/auditoria-ux-ui-verificacion.md` la tabla de §10 de la auditoría, con cada criterio
+  cumplido o explicado, y capturas de antes y después.
+- **6.3, documentación**: D1 a D14 en `docs/deferidos-y-decisiones.md` §1;
+  `docs/guia-pruebas-manuales.md` y `docs/retomar-barrido.md` al día; `tools/ux/` en el
+  README (ya lo nombra: compruébalo); la nota de superado en `docs/plan-ui.md`; cada ticket
+  del backlog con su estado y su PR.
 
-**Qué hace falta.** Nada del dueño.
+**Qué hace falta.** Nada del dueño para hacerlo. Al final, su visto bueno: es el punto de
+control final.
 
-**Se da por cerrado cuando**, medido en desarrollo y en las pruebas:
+**Lo que §10 pedía y no se cumple por decisión del dueño**: se explica en la tabla, no se
+«arregla».
+- La portada mide 4092 px a 1440 y la meta era 3300: eligió conservar las publicaciones
+  (paso 20).
+- 2.2.2 pedía en la portada un control de pausa para la cinta: lo retiró dos veces (D1).
+- Las cifras de la portada, enlazadas a su prueba: las quitó, porque el colectivo aún es
+  pequeño (#128). Están en el dossier.
+- Las fotos reales (retratos, afiches, carátulas): el material es genérico hasta que el
+  colectivo aporte el suyo (`docs/contenido-visual.md`).
+
+**Se da por cerrado cuando**:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| «Fernanda» | sin resultados | la integrante Fernanda Soto |
-| «recital» | sin resultados | el registro «Recital «Nuevas voces» (registro)» |
-| «casa» | dos textos y un poema | lo mismo, en sus grupos |
-| Resultados agrupados por tipo | no: una sola lista | sí, con cejilla y tope por grupo |
-| Consultas de la búsqueda (`test_search_query_budget`) | 9 | 10 o menos |
-| `tests/test_search.py` y `tests/test_search_hardening.py` | en verde | en verde |
-| Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
+| La tabla de §10 en `docs/auditoria-ux-ui-verificacion.md` | no existe | cada criterio, cumplido o explicado |
+| D1 a D14 en `docs/deferidos-y-decisiones.md` | no están | con su porqué y su fecha |
+| `docs/retomar-barrido.md` | «Estado a 2026-08-24», «91 de 104 casillas» | al día |
+| Casillas sin marcar en la guía de pruebas manuales | 3 (§2, la búsqueda por grupos) | las que el dueño no haya comprobado, dichas en el cierre |
+| Tickets del backlog con su estado | 36 de 39 | 39 de 39 |
+| Incumplimientos A o AA verificables sin herramientas externas | sin medir en conjunto | ninguno |
 
-**Pruebas que cambian a propósito.** Las de `tests/test_search.py` que esperen una sola lista
-de resultados, si las hay: míralas antes de tocar `_search_results.html`.
+**Pruebas que cambian a propósito.** Ninguna prevista: si la pasada de accesibilidad
+encuentra un fallo pequeño, se corrige con su prueba en el mismo PR; si no es pequeño, se
+anota en `docs/deferidos-y-decisiones.md`.
 
 **Cuidados.**
 - **Si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes** de
-  construir: lo que aprueba viendo un tablero manda.
-- **Sin migración**: la extensión `unaccent` ya está instalada (`content.0011_unaccent_search`)
-  y `django.contrib.postgres` está en `INSTALLED_APPS`, así que `__unaccent__icontains`
-  funciona. `_strip_accents()` despoja el término; la tabla, `unaccent` en la base.
-- **El techo de 10 consultas**: hoy son 9, y una consulta por tipo nuevo serían cuatro más.
-  Lo que pide el ticket si no cabe: juntar los tipos nuevos en una sola consulta (`union` de
-  `values()` con el tipo como columna) y anotar la medición.
-- El buscador vive en el panel de la lupa de la cabecera (htmx) y en `/buscar/` sin
-  JavaScript: los dos usan `_search_results.html`.
-- La reseña de prueba del #131 (`zz-demo-resena-cuadernos-del-ruido`) sigue en la base de
-  desarrollo: sale al buscar «Cuadernos».
+  construir.
+- **Las notas de entrada de 6.2**: en el dossier, los elementos en mayúsculas pasan de 18 a
+  33, y la ficha de un evento crece de 1768 a 2330 px a 1440. No son regresiones: explícalo.
+- **La reseña de prueba del #131** sigue en la base de desarrollo: si mides con ella, dilo,
+  o bórrala antes si el dueño ya la vio (la orden está en la sección 1).
+- **Mide en tandas**: con `CONN_MAX_AGE=0` en desarrollo (#124) ya no se agotan las
+  conexiones, pero 21 páginas en tres anchos son muchas peticiones seguidas.
 
 **Qué enseñarle al dueño al terminar.**
-- La lupa de la cabecera con «Fernanda» y con «recital», a 951 px.
-- http://localhost:8000/buscar/?q=casa, con los grupos.
+- La tabla de antes y después de `docs/auditoria-ux-ui-verificacion.md`: es el punto de
+  control final.
+- Lo que quedó fuera y por qué, en `docs/deferidos-y-decisiones.md`.
 
 ## 3. Los pasos
 
@@ -394,8 +414,9 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
   subieron junto al afiche; de paso, la vista ampliada de las fotos cubre la pantalla.
   Cierra cuando: un evento con afiche lo enseña en la agenda, en «Próxima actividad» y en su
   ficha; la ampliación de fotos sigue funcionando sin JavaScript; `/aliados/` usa el ancho.
-- [ ] **24. `ux-5-4-busqueda`.** Ticket 5.4: la búsqueda cubre integrantes, registros,
-  publicaciones y eventos.
+- [x] **24. `ux-5-4-busqueda`.** Ticket 5.4: la búsqueda cubre integrantes, registros,
+  publicaciones y eventos. Las personas incluyen a quien firma algo publicado; los cuatro
+  tipos nuevos son una sola consulta.
   Cierra cuando: «Fernanda» devuelve a la integrante y «recital» al registro; la búsqueda no pasa
   de 10 consultas.
 - [ ] **25. `ux-6-cierre`.** Tickets 6.1, 6.2 y 6.3: accesibilidad, métricas finales contra

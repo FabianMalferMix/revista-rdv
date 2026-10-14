@@ -58,5 +58,7 @@ def test_article_detail_query_budget(make_article, django_assert_max_num_queries
 
 
 def test_search_query_budget(_seed_volume, django_assert_max_num_queries):
-    with django_assert_max_num_queries(10):  # medido 9
+    # Medido 8 tras el ticket 5.4: textos y poemas sin precargar sus autores (-2) y los
+    # cuatro tipos por nombre en una sola consulta (+1). Eran 9 con solo textos y poemas.
+    with django_assert_max_num_queries(10):  # medido 8
         assert Client().get(reverse("content:search") + "?q=Perf").status_code == 200

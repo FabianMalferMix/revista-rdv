@@ -14,6 +14,7 @@ from django.utils.formats import date_format
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
+from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
@@ -32,7 +33,7 @@ from .models import (
     Tag,
 )
 from .pie import firmas, puerta, puertas_vecinas, vecinos
-from .services import ultima_publicacion
+from .services import coincidencias_por_nombre, ultima_publicacion
 
 logger = logging.getLogger(__name__)
 
@@ -305,16 +306,52 @@ def _strip_accents(text):
     return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
 
-# Tope de resultados mostrados y de candidatos que se traen de cada tabla.
+# Tope de resultados de cada grupo, y de candidatos que se traen de cada tabla: diez en la
+# página de búsqueda y cinco en el panel de la lupa, que es un adelanto (lleva a la página).
 SEARCH_RESULTS = 10
+SEARCH_RESULTS_PANEL = 5
 # Longitud máxima de la consulta: por encima de esto no aporta precisión y solo
 # encarece el `to_tsquery`.
 SEARCH_MAX_QUERY = 120
+# Los grupos de resultados (ticket 5.4), en el orden en que se enseñan: quien busca un
+# nombre lo encuentra arriba; después, la obra en el orden de la barra, y las actividades.
+GRUPOS_DE_BUSQUEDA = (
+    ("persona", "Personas"),
+    ("poema", "Poemas"),
+    ("texto", "Textos"),
+    ("registro", "Registros"),
+    ("publicacion", "Publicaciones"),
+    ("actividad", "Actividades"),
+)
+
+
+def _dato(*partes):
+    """«Video · 2026», «Recital · 28 Abr 2026 · Santiago»: lo que haya, con puntos medios."""
+    return " · ".join(str(parte) for parte in partes if parte)
+
+
+def _resultado_por_nombre(fila):
+    """Una fila de `coincidencias_por_nombre`: adónde lleva y qué la acompaña."""
+    tipo, slug, dato = fila["tipo"], fila["slug"], fila["dato"]
+    if tipo == "persona":
+        if fila["integrante"]:
+            return reverse("people:member_detail", args=[slug]), dato or "Integrante"
+        return reverse("content:contributor_detail", args=[slug]), "Colaborador"
+    if tipo == "registro":
+        clase = dict(Recording.Kind.choices).get(dato, dato)
+        return reverse("media:recording_detail", args=[slug]), _dato(clase, fila["anio"])
+    if tipo == "publicacion":
+        clase = dict(Publication.Kind.choices).get(dato, dato)
+        return reverse("showcase:publication_detail", args=[slug]), _dato(clase, fila["anio"])
+    clase = dict(Event.Type.choices).get(dato, dato)
+    cuando = date_format(timezone.localtime(fila["fecha"]), "j M Y")
+    return reverse("agenda:event_detail", args=[slug]), _dato(clase, cuando, fila["lugar"])
 
 
 @ratelimit(key="ip", rate="60/m", method="GET", block=False)
 def search(request):
-    """Buscador en vivo (htmx): busca en artículos y poemas publicados (FTS).
+    """Buscador en vivo (htmx) y página de búsqueda: textos y poemas publicados (FTS) y,
+    por nombre o título, personas, registros, publicaciones y actividades (ticket 5.4).
 
     Endurecido tras el hallazgo S-04: era el endpoint público más caro del sitio y el
     único sin ningún control anti-abuso. Además, el recorte a 10 se hacía en Python
@@ -323,61 +360,70 @@ def search(request):
 
     El rate (60/m) deja holgura al buscador en vivo, que dispara una petición por
     pulsación con 300 ms de rebote, y acota el abuso sostenido.
+
+    Los resultados van por grupos, cada uno con su tope. Son tres consultas, sea cual sea
+    el tamaño del archivo: textos, poemas y una que une los otros cuatro tipos. Los textos
+    y los poemas ya no precargan sus autores, que los resultados no enseñan: eran dos
+    consultas más por búsqueda.
     """
     # El byte NUL no lo admite un campo de texto de PostgreSQL: llegaba hasta el driver
     # y producía un DataError no capturado, es decir un 500 público con `?q=%00`.
     q = request.GET.get("q", "").replace("\x00", "")[:SEARCH_MAX_QUERY].strip()
-    results = []
+    # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
+    # recibe la página completa con layout, para que la búsqueda degrade con gracia.
+    panel = bool(request.headers.get("HX-Request"))
+    tope = SEARCH_RESULTS_PANEL if panel else SEARCH_RESULTS
+    grupos = []
     limited = bool(getattr(request, "limited", False))
     if q and not limited:
-        query = SearchQuery(_strip_accents(q), config="spanish")
-        # `[:SEARCH_RESULTS]` en cada queryset hace que el LIMIT viaje al SQL, y
-        # `defer("body")` evita traer el texto completo de cada pieza para nada.
+        termino = _strip_accents(q)
+        query = SearchQuery(termino, config="spanish")
+        # `[:tope]` en cada queryset hace que el LIMIT viaje al SQL, y `only()` evita
+        # traer el texto completo de cada pieza para nada.
         articles = (
-            _published()
-            .filter(search_vector=query)
+            Article.objects.filter(status=EditorialStatus.PUBLISHED, search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
-            .defer("body")
-            .order_by("-rank")[:SEARCH_RESULTS]
+            .only("slug", "title", "type")
+            .order_by("-rank")[:tope]
         )
         poems = (
-            _published_poems()
-            .filter(search_vector=query)
+            Poem.objects.filter(status=EditorialStatus.PUBLISHED, search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
-            .defer("body")
-            .order_by("-rank")[:SEARCH_RESULTS]
+            .only("slug", "title")
+            .order_by("-rank")[:tope]
         )
+        por_tipo = {tipo: [] for tipo, _ in GRUPOS_DE_BUSQUEDA}
         try:
-            items = [
+            por_tipo["texto"] = [
                 {
                     "url": reverse("content:article_detail", args=[a.slug]),
                     "title": a.title,
-                    "kind": a.get_type_display(),
-                    "rank": a.rank,
+                    "dato": a.get_type_display(),
                 }
                 for a in articles
-            ] + [
-                {
-                    "url": p.get_absolute_url(),
-                    "title": p.title,
-                    "kind": "Poema",
-                    "rank": p.rank,
-                }
-                for p in poems
             ]
+            por_tipo["poema"] = [
+                {"url": p.get_absolute_url(), "title": p.title, "dato": ""} for p in poems
+            ]
+            # Una letra sola casa con casi todos los nombres: no dice nada.
+            if len(termino) >= 2:
+                for fila in coincidencias_por_nombre(termino, tope):
+                    url, dato = _resultado_por_nombre(fila)
+                    por_tipo[fila["tipo"]].append(
+                        {"url": url, "title": fila["titulo"], "dato": dato}
+                    )
         except DatabaseError:
             # Red de seguridad: cualquier término que el motor de FTS rechace devuelve
             # «sin resultados» en vez de un 500 público.
             logger.warning("Consulta de búsqueda rechazada por la BD", exc_info=True)
-            items = []
-        results = sorted(items, key=lambda r: r["rank"], reverse=True)[:SEARCH_RESULTS]
-    # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
-    # recibe la página completa con layout, para que la búsqueda degrade con gracia.
-    panel = bool(request.headers.get("HX-Request"))
+            por_tipo = {}
+        grupos = [
+            {"titulo": titulo, "resultados": por_tipo[tipo]}
+            for tipo, titulo in GRUPOS_DE_BUSQUEDA
+            if por_tipo.get(tipo)
+        ]
     template = "content/partials/_search_results.html" if panel else "content/search.html"
-    return render(
-        request, template, {"results": results, "q": q, "limited": limited, "panel": panel}
-    )
+    return render(request, template, {"grupos": grupos, "q": q, "limited": limited, "panel": panel})
 
 
 def healthz(request):

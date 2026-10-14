@@ -91,7 +91,7 @@
       <details class="busqueda">
         <summary aria-label="Buscar"><svg class="lupa" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5"/><path d="M15 15 21 21"/></svg></summary>
         <form class="search" role="search" action="{% url 'content:search' %}">
-          <input type="search" name="q" placeholder="Buscar textos…" minlength="2"
+          <input type="search" name="q" placeholder="Buscar en el sitio…" minlength="2"
                  hx-get="{% url 'content:search' %}"
                  hx-trigger="input changed delay:300ms, search"
                  hx-target="#search-results"
