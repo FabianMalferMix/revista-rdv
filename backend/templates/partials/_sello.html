@@ -1,0 +1,10 @@
+{% comment %}
+   El sello del colectivo: el monograma RV y el nombre sobre el magenta (ticket 3.7, con
+   lo que eligió el dueño del sitio). Va en la cabecera y, desde el ticket 4.4, abre el pie.
+   Lleva a la portada; el monograma es un dibujo y no se anuncia.
+{% endcomment %}
+<a class="brand" href="{% url 'content:home' %}">
+  <svg class="brand-mono" viewBox="0 0 46 40" width="30" height="26" aria-hidden="true" focusable="false"><text class="brand-mono-r" x="0" y="32" font-size="38">R</text><text class="brand-mono-v" x="19" y="34" font-size="38">V</text></svg>
+  <span class="brand-sep" aria-hidden="true"></span>
+  <span class="brand-nombre">{{ site_profile.name|default:"Reseñas" }}</span>
+</a>

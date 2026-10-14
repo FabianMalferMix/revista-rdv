@@ -739,15 +739,25 @@ def test_el_pie_queda_abajo_en_una_pagina_corta():
 
 
 def test_el_pie_usa_el_ancho_para_medir_menos_de_alto():
-    """Medía 435 px a 951 de ancho. Desde 720 px, formulario y línea legal comparten la
-    primera línea; desde 1100, todo va en una fila."""
+    """Medía 435 px a 951 de ancho. El orden es el del ticket 4.4 (la identidad, el mapa, el
+    boletín y lo legal) sin volver a subir el alto: desde 900 px la identidad va al lado de
+    los grupos y el boletín comparte línea con lo legal; desde 1100, todo en una fila. Entre
+    720 y 899 la identidad va sola en su línea: al lado de los grupos, se salían."""
     rejillas = " ".join(_todas(".site-foot>.wrap-wide"))
-    assert 'grid-template-areas:"newslegal""mapamapa"' in rejillas
-    assert 'grid-template-areas:"newsmapa""legalmapa"' in rejillas
+    assert 'grid-template-areas:"identidad""mapa""news""legal"' in rejillas
+    assert 'grid-template-areas:"identidadidentidad""mapamapa""newslegal"' in rejillas
+    assert 'grid-template-areas:"identidadmapamapa""newsnewslegal"' in rejillas
+    assert 'grid-template-areas:"identidadmapanews""identidadmapalegal"' in rejillas
     grupos = " ".join(_todas(".foot-groups"))
     assert "grid-template-columns:repeat(4,max-content)" in grupos, (
-        "el correo de gestión no cabe en una columna de un cuarto"
+        "los cuatro grupos, a la medida de su contenido"
     )
+
+
+def test_el_sello_del_pie_va_en_blanco_como_el_de_la_cabecera():
+    """La regla de los enlaces del pie pinta los enlaces en el color del papel: el sello es
+    un enlace y quedaba en ese azul claro sobre el magenta."""
+    assert "color:#fff" in _regla(".site-foot.brand")
 
 
 def test_el_destacado_va_a_dos_columnas_sobre_el_papel():

@@ -1315,6 +1315,31 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   jurados», con las puertas al dossier, la prensa, los aliados y el correo, sobre el papel.
   El pie no tiene que repetirlas en otra forma: su grupo «Prensa y gestión» ya las lleva.
   El paso vertical de los enlaces del pie ya es de 28 px a 951.
+- **Estado:** hecho (paso 21 del plan). Lo construido difiere de lo escrito arriba en estos
+  puntos:
+  1. **La identidad** abre el pie: el sello de la cabecera (ahora una parcial,
+     `partials/_sello.html`, con el nombre siempre en dos líneas y en blanco), «Colectivo de
+     poesía · Chile · desde 2023» (`SiteProfile.presentacion`, que usa también la cejilla de la
+     portada), el correo (`correo_de_contacto`) y «Instagram @…». El correo y el Instagram
+     salen del mapa del pie (`_mapa.html` con `sin_contacto`), para no repetirse; el menú del
+     teléfono los conserva.
+  2. **El orden** es el del ticket, también en el marcado: la identidad, el mapa, el boletín y
+     lo legal. Antes el boletín iba delante del mapa en el marcado y la rejilla los
+     reordenaba: el tabulador no seguía el orden que se veía.
+  3. **El alto no sube donde lo mira el dueño**: 320 px a 951 y 236 desde 1100, como antes.
+     Desde 900 px la identidad va al lado de los grupos, con su aire como margen para no
+     estrechar el boletín; entre 720 y 899 va sola en su línea (al lado, los grupos se salían
+     de la pantalla), y el pie mide unos 535 px. En el teléfono, 729 px a 390 (eran 595): los
+     grupos van de dos en dos también a 320, donde caían a una columna.
+  4. **Los rótulos del mapa ya eran los títulos de destino**, salvo «Aliados»: la página se
+     titulaba «Aliados y financiamiento» y ahora «Aliados», como la llaman la barra, el pie y
+     el cierre de la portada (la bajada ya habla de los fondos). «Dossier» lleva a una página
+     cuyo `h1` es el nombre del colectivo: lo resuelve el ticket 5.1.
+  5. **El boletín** ya iba en una línea con el consentimiento debajo (paso 13). **El verso de
+     cierre** no se hizo: dependía de que el manifiesto tuviera una frase para ello.
+  Pruebas: `tests/test_pie.py` (la identidad y su orden, el mapa del pie sin el correo ni el
+  Instagram y el del menú con ellos, el título de Aliados) y, en `tests/test_css_sistema.py`,
+  la rejilla del pie en sus cuatro anchos y el sello del pie en blanco.
 
 #### 4.5 Enlaces cruzados entre entidades
 - **Hallazgos:** NAV-9 (lo que no cubrió 2.4).
@@ -1324,6 +1349,14 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   por la FK inversa de `Poem.recording`, «Ver el evento»), `event_detail.html` (puertas
   «← Trayectoria {año}» y «Agenda»).
 - **Aceptación:** cada detalle con ≥ 4 enlaces internos en `<main>`; presupuestos de consultas intactos.
+- **Estado:** hecho (paso 21 del plan). Casi todo lo había dejado el paso 12 con las salidas al
+  pie de cada ficha: el registro lleva al poema registrado y al evento, y el evento, a la
+  trayectoria de su año (o a la agenda, si aún no ha sido). Faltaban las actividades de cada
+  integrante: su ficha enseña ahora «Actividades», las doce más recientes en que participó
+  (`Event.participants`), con su tipo, fecha y ciudad. **«Reseñas sobre esta publicación» no
+  se hizo**: la obra reseñada (`reviews.Work`) no está relacionada con las publicaciones del
+  colectivo, y crear esa relación pediría una migración. Medido a 951: integrante 13 enlaces
+  internos (eran 10), evento 10, artículo 7, registro 6, publicación 5, poema 5.
 
 ### Épica 5 — Dossier, agenda, galería, aliados y búsqueda
 
@@ -1344,6 +1377,14 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
 - **Nota de entrada** (tras el paso 19): `stats()` devuelve también `festivales` y `ferias`
   por separado (`festivals` sigue sumando los dos). El dossier puede nombrarlos como la
   portada, sin el «festivales/ferias».
+- **Nota de entrada** (tras los pasos 20 y 21): **el dueño quitó de la portada las cifras,
+  «Con el apoyo de» y la cita de prensa**, porque el colectivo aún es pequeño. Este ticket
+  pide agrandar las cifras del dossier y darle cita y aliados con logo: **pregúntale antes
+  de construir** si las quiere en el dossier, que es el kit de prensa y donde suelen ir. Hoy
+  la trayectoria del dossier no va en orden (2022, 2019, 2026, 2026, 2026, 2025) y su `h1` es
+  el nombre del colectivo, mientras el pie, la barra y el botón de la cabecera lo llaman
+  «Dossier». `SiteProfile.presentacion` da «Colectivo de poesía · Chile · desde 2023» para la
+  ficha.
 - **Nota de entrada** (tras el paso 18): el bloque de contacto ya tiene `id="contacto"`, y el
   botón «Dossier» de la cabecera lleva a él desde todas las páginas. Si el dossier se reordena,
   el `id` se queda en el bloque de contacto (`tests/test_cabecera.py` lo comprueba). Como la

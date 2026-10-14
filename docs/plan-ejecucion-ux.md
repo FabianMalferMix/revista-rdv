@@ -8,28 +8,27 @@
 > en `docs/auditoria-ux-ui.md`, el material que debe aportar el colectivo en
 > `docs/contenido-visual.md`.
 >
-> **Actualizado el 2026-10-14, tras el paso 20.** Quien cierre un paso actualiza la
+> **Actualizado el 2026-10-14, tras el paso 21.** Quien cierre un paso actualiza la
 > sección 1 y, si hace falta, la 2 (ver sección 8).
 
 ## 1. Dónde estamos
 
-**Hechos 20 de 25 pasos.** El último paso fusionado es el 20 (`ux-4-3-portada`, PR #126);
-después entraron tres ajustes que pidió el dueño: el orden de la portada (#127), la portada sin
-cifras ni aliados (#128) y sin la cita de prensa (#129). `main` está en verde, con 833 pruebas. No hay ninguna rama de paso abierta.
+**Hechos 21 de 25 pasos.** El último fusionado es el paso 21 (`ux-4-4-pie-y-enlaces`, PR #130).
+`main` está en verde, con 839 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
-**Siguiente: el paso 21, `ux-4-4-pie-y-enlaces`** (sección 2), cuando el dueño haya visto el
-20; después, el punto de control D. Antes de empezarlo, lee «Lo que espera respuesta del
-dueño», más abajo.
+**Siguiente: el punto de control D** (la portada completa) **y luego el paso 22,
+`ux-5-1-dossier`** (sección 2), que necesita una respuesta del dueño antes de construir. Lee
+«Lo que espera respuesta del dueño», más abajo.
 
 Para comprobar que el repositorio está donde dice este documento:
 
 ```bash
 git fetch origin && git status -sb               # en main, al día con origin/main
-git log --oneline --merges -3                    # debe aparecer «Merge ux-4-3-portada … (#126)»
+git log --oneline --merges -3                    # debe aparecer «Merge ux-4-4-pie-y-enlaces … (#130)»
 gh pr list --state open --author "@me"           # ninguno: los de Dependabot no cuentan
 gh run list --branch main --limit 1              # completed · success
-grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 21
+grep -n '^- \[ \]' docs/plan-ejecucion-ux.md | head -1   # el primer paso sin marcar: el 22
 ```
 
 Si algo no coincide (una rama de paso a medias, un PR abierto), termina eso antes de abrir nada
@@ -68,6 +67,7 @@ nuevo: mira su descripción y la sección 4.
 | — | `portada-obra-antes` | #127 | La obra antes que las integrantes, como en el tablero: lo pidió el dueño |
 | — | `portada-sin-cifras-ni-aliados` | #128 | Fuera de la portada, por ahora, las cifras y «Con el apoyo de»: lo pidió el dueño |
 | — | `portada-sin-cita` | #129 | Fuera de la portada la cita de prensa: lo pidió el dueño |
+| 21 | `ux-4-4-pie-y-enlaces` | #130 | El pie abre con la identidad del colectivo; actividades en la ficha de cada integrante; «Aliados» se titula así |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -111,6 +111,8 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Alto de la portada a 1440 | 4459 px tras el paso 19 | 4092 px, con poemas y el cierre y sin cifras, aliados ni cita; la meta de 3300 no cabía (decisión del dueño, paso 20) |
 | Versos que se leen en la portada | 0 | 6: tres por poema |
 | Consultas de la portada (prueba, en frío; desarrollo) | 17; 21 | 16; 15, con un techo de 24 |
+| Identidad del colectivo en el pie | no | sí, sin subir el alto: 320 px a 951 y 236 desde 1100 |
+| Enlaces internos en la ficha de una integrante | 10 | 13: con sus actividades |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -119,7 +121,6 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 | Lo que se ve hoy | Lo resuelve |
 |---|---|
-| Pie en tinta y compacto, pero sin la identidad del colectivo ni el orden del ticket 4.4 | paso 21 |
 | Títulos de sección del dossier todavía como rótulo de 12 px | paso 22 |
 
 ### Lo que ha decidido el dueño del sitio
@@ -170,6 +171,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **D9 no necesitó aviso (2026-10-13):** no avisó al colectivo porque «todas las decisiones
   fueron delegadas a mí». Las decisiones de diseño las toma él; no hace falta preguntar si el
   colectivo está avisado.
+- **Revisión del paso 20 (2026-10-14):** tras los tres ajustes de la portada (#127 a #129), dio
+  paso al 21 («Adelante, sigue al paso 21»).
 - **Cifras y aliados (2026-10-14, después del paso 20):** los quitó de la portada por ahora,
   «siendo que aún somos un grupo pequeño». Salieron las cifras del titular («12 integrantes ·
   4 actividades · 1 festival · 3 publicaciones») y «Con el apoyo de»; la cita de prensa se
@@ -201,18 +204,16 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 
 ### Lo que espera respuesta del dueño
 
-1. **El paso 20 está fusionado y aún no lo ha visto construido.** Qué mirar en la portada,
-   http://localhost:8000/, a 951 px, bajando desde el registro destacado:
-   - «La obra»: a la izquierda «Poemas», con «Umbral» y «Oficio de la lluvia» y sus tres
-     primeros versos; a la derecha «Textos», con los tres últimos;
-   - «El colectivo» y «12 voces» con su filete azul, sobre la cinta;
-   - «Publicaciones», con «Correspondencias» y «Umbral y otras salidas»: el libro del titular
-     no se repite;
-   - «Para programadores y jurados»: «Dossier», «Prensa», «Aliados» y «Escríbenos», y debajo
-     «Última actividad: Recital de invierno, 10 Sep 2026 · Actualizado el 26 de julio de 2026».
-   El orden es el del tablero, con la obra antes que las integrantes, como pidió (#127). Y,
-   como pidió después (#128 y #129), el titular ya no lleva cifras, ni «Con el apoyo de», ni
-   la cita de prensa: termina en la cubierta y el sello, y debajo asoma el registro destacado.
+1. **El paso 21 está fusionado y aún no lo ha visto construido.** Qué mirar, a 951 px:
+   - el pie de cualquier página: a la izquierda el sello, «Colectivo de poesía · Chile · desde
+     2023», el correo y «Instagram @repitentesdelverso»; al lado, los cuatro grupos del mapa
+     (ya sin el correo ni el Instagram); debajo, el boletín en una línea y lo legal;
+   - http://localhost:8000/integrante/fernanda-soto/: la sección «Actividades», con «Recital de
+     invierno» y «Recital «Nuevas voces»»;
+   - http://localhost:8000/aliados/: el título dice ahora «Aliados».
+   Después, **el punto de control D**: su aprobación expresa de la portada completa (pasos 18 a
+   21). Sigue abierto si quiere quitar también el «12 integrantes» de la cejilla y el «12
+   voces» de la sección de integrantes.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.
@@ -221,55 +222,57 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 4. Lo que solo él puede aportar: fotos, afiches, cubiertas y logos reales, la ciudad, un correo
    de gestión que exista, un manifiesto propio. Nada de eso bloquea ningún paso.
 
-## 2. Qué sigue: el paso 21, `ux-4-4-pie-y-enlaces`
+## 2. Qué sigue: el punto de control D y el paso 22, `ux-5-1-dossier`
 
-Tickets 4.4 y 4.5 del backlog. Lee el 4.4 con sus **notas de entrada** (tras los pasos 13, 18,
-19 y 20): el pie ya es de tinta, compacto y siempre abajo; el mapa es una parcial que comparte
-con «Menú»; el correo sale de una propiedad del perfil; y justo encima está el cierre de la
-portada. Después del 21 viene el **punto de control D**: la portada completa a 1440, 1920 y 390.
+**Primero, el punto de control D**: la portada completa (pasos 18 a 21: cabecera, titular,
+bloques y pie), vista a 1440, 1920 y 390. Pide al dueño su aprobación expresa del conjunto.
+Mucho ya lo decidió por el camino: el titular, conservar las publicaciones, la obra antes que
+las integrantes, y sin cifras, aliados ni cita en la portada.
 
-**Qué se hace.**
-- El pie (4.4): primero la identidad del colectivo (el sello, el nombre, «Chile · desde
-  2023», el correo como enlace y el Instagram); después los cuatro grupos del mapa; el
-  boletín, en una línea; y lo legal. Sin volver a subir su alto.
-- Los enlaces cruzados (4.5): en la ficha de una integrante, sus actividades; en la de un
-  registro, el poema registrado y el evento; en la de un evento, la trayectoria de su año y
-  la agenda; en la de una publicación, las reseñas sobre ella, si el modelo las relaciona.
+**El paso 22: ticket 5.1 (D11).** Lee su nota de entrada tras los pasos 20 y 21.
 
-**Qué hace falta.** Nada de fuera del repositorio.
+**Qué se hace.** El dossier pasa a ser un kit de prensa:
+- una cejilla «Dossier · kit de prensa» sobre el título;
+- una ficha: fundado, ciudad, integrantes, contacto, Instagram y «Actualizado el…»;
+- una sola trayectoria en orden descendente, con hitos, eventos y publicaciones juntos;
+- las integrantes con su retrato y las publicaciones con su cubierta;
+- el bloque de contacto;
+- y la impresión desde el navegador con sus imágenes.
+
+**Qué hace falta.** Una respuesta del dueño **antes de construir**. Quitó de la portada las
+cifras, «Con el apoyo de» y la cita de prensa porque el colectivo aún es pequeño, y el ticket
+pide agrandar las cifras del dossier y darle una cita y los aliados con logo. Pregúntale si
+los quiere en el dossier, que es el kit de prensa y donde suelen ir, o si salen también de
+ahí.
 
 **Se da por cerrado cuando**, medido con `tools/ux`:
 
 | Criterio | Hoy | Meta |
 |---|---|---|
-| Paso vertical de los enlaces del pie | 28 px a 951 | 28 px o más |
-| Textos del pie por debajo de 4,5:1 (`superficies.js`) | 0 | 0 |
-| Enlaces internos en `<main>` de cada ficha | integrante 10, evento 10, artículo 7, registro 6, publicación 5, poema 5 | 4 o más, con las relaciones del ticket |
-| Alto del pie a 951 y desde 1100 | 320 y 236 px | no sube |
+| Años de la trayectoria del dossier | 2022, 2019, 2026, 2026, 2026, 2025 | en orden descendente estricto |
+| Retratos y cubiertas al imprimir desde el navegador | ninguno: el dossier no tiene imágenes | sí |
+| `/dossier/#contacto` lleva al bloque de contacto | sí, desde el paso 18 | sí |
+| El título dice que es el dossier | no: el `h1` es el nombre del colectivo | sí |
 | Scroll horizontal a 320, 390, 768, 951, 1024, 1440 y 1920 | no hay | no hay |
 
 **Pruebas que cambian a propósito.**
-- Siguen: `tests/test_newsletter*.py` (el formulario no cambia de campos ni de trampa para
-  robots) y las del pie en `tests/test_css_sistema.py`: `test_el_pie_es_de_tinta`,
-  `test_el_pie_usa_el_ancho_para_medir_menos_de_alto` y `test_el_pie_queda_abajo_en_una_pagina_corta`.
-- `tests/test_cabecera.py` fija el mapa del menú: si el mapa cambia, cambia también ahí.
+- `tests/test_dossier.py` sigue en verde, con lo que cambie de su estructura.
+- `tests/test_ui_identity.py`: la cifra grande podrá estar en `.dossier-doc`, si el dueño
+  quiere cifras ahí; hoy la prueba solo la admite en `.hero-stats`, que ya no existe.
 
 **Cuidados.**
-- **El mapa es también «Menú» en el teléfono** (paso 18): lo que cambie en el pie cambia en
-  el menú. Míralo a 390 con el menú abierto.
-- **La identidad necesita su área en la rejilla del pie** sin subir los 320 px a 951.
-- **El pie no repite el cierre de la portada**, que ya lleva las puertas a prensa y gestión.
-- **Las redes y el correo** salen de `redes_del_colectivo`, `instagram_del_colectivo` y
-  `site_profile.correo_de_contacto`: sin consultas nuevas.
-- **«Reseñas sobre esta publicación» solo si el modelo ya las relaciona.** No se crean modelos
-  ni migraciones (sección 5): si no existe la relación, se omite y se anota.
-- **Consultas de las fichas**: cada relación nueva es una consulta; tráela con
-  `select_related` o `prefetch_related`.
+- **Lo que decida el dueño sobre cifras, prensa y aliados manda** sobre lo que dice el
+  ticket: si lo que le enseñes choca con una prueba o un acuerdo anterior, díselo antes.
+- **Las imágenes del dossier** salen del modelo: `Contributor.photo` y `Publication.cover`.
+  Tráelas con `select_related` y mira los techos de `tests/test_performance.py` (el dossier
+  tiene 22; hace 17 en la prueba).
+- **La hoja de impresión** oculta hoy la cabecera, el pie y `.no-print`; comprueba que no
+  oculte las imágenes, con `emulateMedia({media: 'print'})` de Playwright.
+- `SiteProfile.presentacion` da «Colectivo de poesía · Chile · desde 2023» para la ficha.
 
 **Qué enseñarle al dueño al terminar.**
-- El pie a 951 px.
-- Una ficha de integrante, una de registro y una de evento, con sus enlaces nuevos.
-- Después, el punto de control D.
+- El dossier a 951 px.
+- La vista previa de impresión, con los retratos y las cubiertas.
 
 ## 3. Los pasos
 
@@ -338,8 +341,10 @@ control: además de enseñar el paso, ahí se pide una aprobación expresa de la
 - [x] **20. `ux-4-3-portada`.** Ticket 4.3: orden de los bloques, poemas en la portada. La
   meta de 3300 px no cabía: el dueño eligió conservar las publicaciones (4415 px a 1440).
   Cierra cuando: la portada mide 3300 px o menos a 1440 con la demo; se leen tres versos o más;
-  los integrantes van antes que los textos; no pasa de 24 consultas.
-- [ ] **21. `ux-4-4-pie-y-enlaces`.** Tickets 4.4 y 4.5: pie en tinta, enlaces cruzados.
+  los integrantes van antes que los textos; no pasa de 24 consultas. (El dueño decidió otra
+  cosa en dos de ellos: conservar las publicaciones, con 4415 px, y la obra antes que las
+  integrantes.)
+- [x] **21. `ux-4-4-pie-y-enlaces`.** Tickets 4.4 y 4.5: pie en tinta, enlaces cruzados.
   Cierra cuando: los enlaces del pie tienen 28 px o más de paso vertical; todo el texto del pie da
   4,5:1 o más; cada ficha tiene cuatro enlaces internos o más.
 - ◆ **Punto de control D.** Portada completa a 1440, 1920 y 390.

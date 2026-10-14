@@ -72,11 +72,7 @@
          pisan como dos tintas) y el nombre, dentro del bloque magenta. El monograma es un
          dibujo: el enlace se llama como el colectivo.
       {% endcomment %}
-      <a class="brand" href="{% url 'content:home' %}">
-        <svg class="brand-mono" viewBox="0 0 46 40" width="30" height="26" aria-hidden="true" focusable="false"><text class="brand-mono-r" x="0" y="32" font-size="38">R</text><text class="brand-mono-v" x="19" y="34" font-size="38">V</text></svg>
-        <span class="brand-sep" aria-hidden="true"></span>
-        <span class="brand-nombre">{{ site_profile.name|default:"Reseñas" }}</span>
-      </a>
+      {% include "partials/_sello.html" %}
       {% comment %}
          La barra: en escritorio, en línea; en el teléfono se pliega en «Menú», que enseña
          el mapa del sitio entero. La página o el territorio actual llevan `aria-current`
@@ -132,6 +128,26 @@
 
   <footer class="site-foot">
     <div class="wrap-wide">
+      {% comment %}
+         La identidad del colectivo abre el pie (ticket 4.4): el sello, de dónde es y desde
+         cuándo, y cómo escribirle. El pie era solo enlaces y un formulario: al llegar al
+         final de una página no decía de quién era.
+      {% endcomment %}
+      <div class="foot-identidad">
+        {% include "partials/_sello.html" %}
+        {% if site_profile.presentacion %}<p class="foot-presentacion">{{ site_profile.presentacion|join:" · " }}</p>{% endif %}
+        {% if site_profile.correo_de_contacto or instagram_del_colectivo.usuario %}
+          <p class="foot-contacto">
+            {% if site_profile.correo_de_contacto %}<a href="mailto:{{ site_profile.correo_de_contacto }}">{{ site_profile.correo_de_contacto }}</a>{% endif %}
+            {% if instagram_del_colectivo.usuario %}<a href="{{ instagram_del_colectivo.url }}" rel="me noopener" target="_blank">Instagram {{ instagram_del_colectivo.usuario }}</a>{% endif %}
+          </p>
+        {% endif %}
+      </div>
+      {% comment %}
+         Se repiten aquí los cinco de la barra: quien llega al final de una página larga no
+         debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
+      {% endcomment %}
+      {% include "partials/_mapa.html" with sin_contacto=True %}
       <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">
@@ -142,11 +158,6 @@
         <span class="news-consent">Confirmamos por correo (doble opt-in). Al suscribirte aceptas la
           <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.</span>
       </form>
-      {% comment %}
-         Se repiten aquí los cinco de la barra: quien llega al final de una página larga no
-         debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
-      {% endcomment %}
-      {% include "partials/_mapa.html" %}
       <p class="foot-legal">
         <a href="{% url 'content:page_detail' 'privacidad' %}">Privacidad</a> ·
         <a href="{% url 'content:page_detail' 'cookies' %}">Cookies</a> ·

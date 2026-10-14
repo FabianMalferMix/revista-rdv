@@ -75,6 +75,19 @@
       </section>
     {% endif %}
 
+    {% if actividades %}
+      <section>
+        <h2 class="subhead">Actividades</h2>
+        <ul class="work-list">
+          {% for e in actividades %}
+            <li>
+              <a href="{{ e.get_absolute_url }}">{{ e.title }}</a>
+              <span class="muted">{{ e.get_type_display }} · {{ e.starts_at|date:"j M Y" }}{% if e.city %} · {{ e.city }}{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
     {% if articles %}
       <section>
         <h2 class="subhead">Textos</h2>
