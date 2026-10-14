@@ -1,3 +1,5 @@
+from urllib.parse import urlsplit
+
 from django.db import models
 
 from apps.media.validators import validate_pdf_extension
@@ -66,6 +68,12 @@ class SiteProfile(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
+    @property
+    def correo_de_contacto(self):
+        """El correo al que se escribe desde el sitio: el de gestión y, si no hay, el
+        general. Lo usan el pie y el titular de la portada, que tienen que coincidir."""
+        return self.booking_email or self.general_email
+
 
 class SiteSocialLink(models.Model):
     """Red social del colectivo (Instagram, YouTube, Bandcamp…)."""
@@ -82,6 +90,14 @@ class SiteSocialLink(models.Model):
 
     def __str__(self):
         return self.platform
+
+    @property
+    def usuario(self):
+        """El nombre de usuario a partir de la URL del perfil: «@repitentesdelverso» para
+        https://www.instagram.com/repitentesdelverso/ y también para …/repitentesdelverso/reels/.
+        Es el primer tramo de la ruta. Vacío si la URL no tiene ruta."""
+        ruta = urlsplit(self.url).path.strip("/")
+        return f"@{ruta.split('/', 1)[0]}" if ruta else ""
 
 
 class Publication(models.Model):

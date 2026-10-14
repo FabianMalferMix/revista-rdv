@@ -4,48 +4,90 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    {% if convocatoria %}
-      {% comment %}
-         Sello de convocatoria: un timbre impreso, girado y quieto, que solo aparece
-         mientras hay una convocatoria abierta. Lleva al formulario de envío.
-      {% endcomment %}
-      <a class="sello-convocatoria" href="{% url 'submissions:submit' %}">
-        <span class="rotulo">Convocatoria abierta</span>
-        <span class="sello-convocatoria-fecha">hasta el {{ convocatoria.closes_at|date:"j \d\e F" }}</span>
-      </a>
+  {% comment %}
+     Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular, y
+     el lema baja a la cejilla. A su lado, un objeto real: la primera cubierta del
+     catálogo o el afiche de la próxima actividad. Debajo, las cifras, cada una con su
+     página, y una línea de respaldo con una cita de prensa y los aliados. El dueño del
+     sitio eligió esta disposición entre tres, vistas sobre la portada real.
+  {% endcomment %}
+  <section class="hero{% if objeto_titular %} hero--con-objeto{% endif %}">
+    {% if cejilla or instagram_del_colectivo.usuario %}
+      <p class="kicker hero-cejilla">{{ cejilla|join:" · " }}{% if instagram_del_colectivo.usuario %}{% if cejilla %} · {% endif %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}</p>
     {% endif %}
-    {% comment %}
-       h1 de la portada (una por página): el nombre del colectivo. Oculto a la vista
-       para conservar el hero poético; visible para SEO y lectores de pantalla.
-    {% endcomment %}
-    <h1 class="sr-only">{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}</h1>
-    {% if site_profile.tagline %}<p class="hero-tagline">{{ site_profile.tagline }}</p>{% endif %}
-    {% if site_profile.manifesto %}
-      <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
-        <a href="{% url 'people:member_index' %}">Conócenos →</a></p>
-    {% endif %}
-    <p class="hero-ctas">
+    <h1 class="hero-nombre">{{ site_profile.name|default:"Reseñas" }}</h1>
+    <div class="hero-texto">
+      {% if site_profile.manifesto %}
+        <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
+          <a href="{% url 'people:member_index' %}">Conócenos →</a></p>
+      {% endif %}
+      <p class="hero-ctas">
+        {% comment %}
+           El dossier es el único botón principal de la primera pantalla. Desde 900 px lo
+           lleva la cabecera, y aquí se oculta; en el teléfono la cabecera no lo enseña y
+           va aquí. El rótulo dice lo que pasa al pulsar: con PDF se descarga un archivo.
+        {% endcomment %}
+        {% if site_profile.dossier_pdf %}
+          <a class="btn btn--primary hero-dossier" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
+        {% else %}
+          <a class="btn btn--primary hero-dossier" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
+        {% endif %}
+        {% if site_profile.correo_de_contacto %}
+          <a class="btn" href="mailto:{{ site_profile.correo_de_contacto }}">Escríbenos</a>
+        {% endif %}
+      </p>
+      {% if convocatoria %}
+        {% comment %}
+           Sello de convocatoria: un timbre impreso, girado y quieto, que solo aparece
+           mientras hay una convocatoria abierta. Lleva al formulario de envío. Va bajo los
+           botones: sobre el objeto o junto al nombre los taparía.
+        {% endcomment %}
+        <a class="sello-convocatoria" href="{% url 'submissions:submit' %}">
+          <span class="rotulo">Convocatoria abierta</span>
+          <span class="sello-convocatoria-fecha">hasta el {{ convocatoria.closes_at|date:"j \d\e F" }}</span>
+        </a>
+      {% endif %}
+    </div>
+    {% if objeto_titular %}
       {% comment %}
-         El rótulo dice lo que pasa al pulsar: con PDF se descarga un archivo; sin PDF
-         se abre la página del dossier. Antes decía «Descargar» en los dos casos.
+         Un objeto apoyado sobre el papel: girado y con una sombra plana. La imagen y el
+         pie llevan al mismo sitio; el enlace de la imagen no se anuncia ni recibe el foco,
+         para no repetirlo.
       {% endcomment %}
-      {% if site_profile.dossier_pdf %}
-        <a class="btn btn--primary" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
-      {% else %}
-        <a class="btn btn--primary" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
-      {% endif %}
-      {% if site_profile.booking_email %}
-        <a class="btn" href="mailto:{{ site_profile.booking_email }}">Contacto de gestión</a>
-      {% endif %}
-    </p>
-    {% if stats.events or stats.years %}
+      <figure class="hero-objeto">
+        <a class="hero-cubierta" href="{{ objeto_titular.url }}" tabindex="-1" aria-hidden="true">{% responsive_img objeto_titular.imagen sizes="380px" lazy=False decorativa=True %}</a>
+        <figcaption class="meta">{{ objeto_titular.rotulo }} · <a href="{{ objeto_titular.url }}">{{ objeto_titular.titulo }}</a>{% if objeto_titular.dato %}, {{ objeto_titular.dato }}{% endif %}</figcaption>
+      </figure>
+    {% endif %}
+    {% if integrantes or stats.events or stats.publications %}
       <ul class="stats-strip hero-stats">
-        {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
-        {% if stats.events %}<li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>{% endif %}
-        {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</li>{% endif %}
-        <li><a href="{% url 'agenda:trayectoria' %}">Ver trayectoria →</a></li>
+        {% if integrantes %}<li><a href="{% url 'people:member_index' %}"><strong>{{ integrantes }}</strong> integrante{{ integrantes|pluralize }}</a></li>{% endif %}
+        {% if stats.events %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.events }}</strong> actividad{{ stats.events|pluralize:"es" }}</a></li>{% endif %}
+        {% if stats.festivales %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.festivales }}</strong> festival{{ stats.festivales|pluralize:"es" }}</a></li>{% endif %}
+        {% if stats.ferias %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.ferias }}</strong> feria{{ stats.ferias|pluralize }}</a></li>{% endif %}
+        {% if stats.publications %}<li><a href="{% url 'showcase:publication_index' %}"><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</a></li>{% endif %}
       </ul>
+    {% endif %}
+    {% if cita_de_prensa or aliados %}
+      {% comment %} La línea de respaldo (D9): prensa y aliados tienen su página; aquí, una línea. {% endcomment %}
+      <div class="hero-respaldo">
+        {% if cita_de_prensa %}
+          <figure class="hero-cita">
+            <blockquote><p>«{{ cita_de_prensa.quote }}»</p></blockquote>
+            <figcaption class="meta"><cite><a href="{% url 'showcase:press_index' %}">{{ cita_de_prensa.outlet }}</a></cite>{% if cita_de_prensa.published_on %}, {{ cita_de_prensa.published_on|date:"Y" }}{% endif %}</figcaption>
+          </figure>
+        {% endif %}
+        {% if aliados %}
+          <div class="hero-apoyo">
+            <a class="rotulo" href="{% url 'showcase:partner_index' %}">Con el apoyo de</a>
+            <ul>
+              {% for a in aliados %}
+                <li>{% if a.logo %}{% responsive_img a.logo sizes="104px" css_class="partner-logo" alt=a.name %}{% else %}<span class="hero-aliado">{{ a.name }}</span>{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
     {% endif %}
   </section>
 

@@ -69,15 +69,21 @@ def test_home_members_appear_before_texts(client, make_article):
 
 
 def test_home_hero_has_manifesto_and_stats(client):
+    """El manifiesto, las cifras y el nombre como titular (ticket 4.2). Los años de trabajo
+    ya no son una cifra: «desde 2019» va en la cejilla, con el lema."""
     profile = SiteProfile.load()
+    profile.name = "Colectivo Norte"
     profile.tagline = "Poesía en voz alta."
     profile.manifesto = "Somos un colectivo que difunde la obra de sus integrantes."
     profile.founded_year = 2019
     profile.save()
+    Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     resp = client.get(reverse("content:home"))
     assert b"hero-manifesto" in resp.content
     assert b"hero-stats" in resp.content
     assert b"Poes\xc3\xada en voz alta." in resp.content
+    assert b"desde 2019" in resp.content
+    assert b'<h1 class="hero-nombre">Colectivo Norte</h1>' in resp.content
 
 
 # ── Sello de convocatoria (backlog UX, ticket 3.2) ────────────────────────

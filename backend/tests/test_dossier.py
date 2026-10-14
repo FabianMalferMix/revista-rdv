@@ -64,7 +64,8 @@ def test_home_cta_links_to_dossier_page_without_pdf(client, profile):
     assert b"Ver el dossier" in resp.content
     assert b"Descargar dossier" not in resp.content, "promete una descarga que no ocurre"
     assert reverse("showcase:dossier").encode() in resp.content
-    assert b"Contacto de gesti\xc3\xb3n" in resp.content
+    # «Escríbenos» (ticket 4.2), con el correo de gestión: el mismo que el pie.
+    assert b'href="mailto:gestion@example.com">Escr\xc3\xadbenos' in resp.content
 
 
 def test_home_cta_descarga_el_pdf_cuando_existe(client, profile):

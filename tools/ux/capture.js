@@ -123,7 +123,11 @@ const METRICAS = () => {
     .map((e) => {
       const r = e.getBoundingClientRect();
       const s = cs(e);
-      const caja = r.width / r.height;
+      // La caja propia, no el rectángulo que la envuelve: una imagen girada (la cubierta del
+      // titular) daría por deformada una imagen intacta.
+      const ancho = parseFloat(s.width) || r.width;
+      const alto = parseFloat(s.height) || r.height;
+      const caja = ancho / alto;
       const natural = e.naturalWidth && e.naturalHeight ? e.naturalWidth / e.naturalHeight : null;
       const m = /^(\d*\.?\d+)\s*\/\s*(\d*\.?\d+)$/.exec(s.aspectRatio.trim());
       const pedida = m ? parseFloat(m[1]) / parseFloat(m[2]) : null;
@@ -132,8 +136,8 @@ const METRICAS = () => {
       else if (natural && s.objectFit === 'fill') desvio = Math.abs(caja / natural - 1) > 0.02;
       return {
         clase: (e.className || '').toString().split(/\s+/)[0] || e.parentElement.className || 'img',
-        ancho: Math.round(r.width),
-        alto: Math.round(r.height),
+        ancho: Math.round(ancho),
+        alto: Math.round(alto),
         natural: e.naturalWidth + 'x' + e.naturalHeight,
         ajuste: s.objectFit,
         arriba: Math.round(r.top + scrollY),
