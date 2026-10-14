@@ -195,7 +195,8 @@ Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin 
   la vista previa de producción, que comprime y cachea los estáticos.
 - **Fotos, afiches y cubiertas reales**: el material es genérico hasta que el colectivo aporte el
   suyo (`docs/contenido-visual.md`).
-- **El poema en prosa se compone como versos** (pendiente de decisión del dueño, 2026-10-14).
+- **El poema en prosa se compone como versos.** El dueño aprobó el cierre sin pedir otra cosa
+  (2026-10-14): se queda así mientras no lo pida.
   Cada párrafo es una línea del cuerpo, así que la ficha le da la sangría francesa de un verso
   largo: la primera línea al margen y las siguientes adentro. Lo destapó el poema de prueba
   «Inventario del patio» (`seed_textos_largos`). La portada y el índice ya citan solo su
