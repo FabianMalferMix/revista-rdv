@@ -1,0 +1,15 @@
+{% comment %}
+   Cabeza de una sección de la portada (D13): una cejilla que dice a qué parte del sitio
+   pertenece y el título. Era un título suelto, sin contexto. Con `territorio`, el filete
+   de color bajo el título, el mismo de las cabeceras de índice.
+     cejilla     «La obra», «El colectivo», «Prensa y gestión»: los grupos del pie. Sin
+                 ella, solo el título (la obra la lleva una vez sobre sus dos columnas).
+     titulo      el título de la sección.
+     territorio  «obra», «colectivo» o «prensa».
+   Se incluye con `only`: sin él, una sección sin cejilla heredaba la `cejilla` del titular
+   (una lista) y la pintaba.
+{% endcomment %}
+<header class="seccion-cabeza"{% if territorio %} data-territorio="{{ territorio }}"{% endif %}>
+  {% if cejilla %}<p class="rotulo">{{ cejilla }}</p>{% endif %}
+  <h2 class="subhead">{{ titulo }}</h2>
+</header>

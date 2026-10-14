@@ -144,8 +144,9 @@
   {% endif %}
 
   {% if members %}
-    <section class="home-block band">
-      <div class="band-in"><h2 class="subhead">Integrantes</h2></div>
+    {% comment %} En la banda clara, a sangre: la cinta llega a los bordes de la ventana. {% endcomment %}
+    <section class="home-block band home-integrantes">
+      <div class="band-in">{% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo=titulo_integrantes territorio="colectivo" only %}</div>
       {% comment %}
          La cinta solo se monta por encima de UMBRAL_CINTA integrantes. Por debajo
          la rejilla los enseña a todos de golpe y una cinta enseñaría MENOS: haría
@@ -189,26 +190,61 @@
     </section>
   {% endif %}
 
-  {% if articles %}
-    <section class="home-block">
-      <h2 class="subhead">Textos recientes</h2>
-      {% include "content/partials/_article_list.html" %}
-      <p><a href="{% url 'content:text_archive' %}">Ver todos los textos →</a></p>
+  {% if poemas or articles %}
+    {% comment %}
+       La obra (ticket 4.3): los últimos poemas, con sus tres primeros versos, y los
+       últimos textos. Con sitio van lado a lado; apilados, la portada crecía una pantalla.
+       Va después de las integrantes: son lo primero que buscan los programadores (las
+       subió la reorganización de la portada de julio, y el ticket lo mantiene).
+    {% endcomment %}
+    <section class="home-block home-obra">
+      <p class="rotulo home-obra-cejilla">La obra</p>
+      <div class="home-obra-columnas">
+        {% if poemas %}
+          <div class="home-obra-columna">
+            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Poemas" territorio="obra" only %}
+            <ul class="filas">
+              {% for p in poemas %}{% include "content/partials/_poem_card.html" with sin_cejilla=True versos=3 %}{% endfor %}
+            </ul>
+            <p class="home-mas"><a href="{% url 'content:poem_index' %}">Todos los poemas →</a></p>
+          </div>
+        {% endif %}
+        {% if articles %}
+          <div class="home-obra-columna">
+            {% include "content/partials/_cabeza_de_seccion.html" with titulo="Textos" territorio="obra" only %}
+            {% include "content/partials/_article_list.html" %}
+            <p class="home-mas"><a href="{% url 'content:text_archive' %}">Todos los textos →</a></p>
+          </div>
+        {% endif %}
+      </div>
     </section>
   {% endif %}
 
   {% if publications %}
-    <section class="home-block band">
+    <section class="home-block band home-publicaciones">
       <div class="band-in">
-        <h2 class="subhead">Publicaciones</h2>
+        {% include "content/partials/_cabeza_de_seccion.html" with cejilla="La obra" titulo="Publicaciones" territorio="obra" only %}
         <ul class="pub-grid">
           {% for pub in publications %}
             {% include "showcase/partials/_publication_card.html" %}
           {% endfor %}
         </ul>
-        <p><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+        <p class="home-mas"><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
       </div>
     </section>
   {% endif %}
+
+  {% comment %}
+     Para programadores y jurados (ticket 4.3): las puertas a lo que piden, lo último que
+     hizo el colectivo y cuándo publicó por última vez. Sobre el papel: el dueño del sitio
+     descartó la tinta en el cuerpo de la portada.
+  {% endcomment %}
+  <section class="home-block home-cierre">
+    {% include "content/partials/_cabeza_de_seccion.html" with cejilla="Prensa y gestión" titulo="Para programadores y jurados" territorio="prensa" only %}
+    {% include "content/partials/_pie_de_entidad.html" with pie=puertas etiqueta="Para programadores y jurados" %}
+    {% if ultima_actividad or ultima_publicacion %}
+      <p class="meta home-cierre-datos">{% if ultima_actividad %}Última actividad: <a href="{{ ultima_actividad.get_absolute_url }}">{{ ultima_actividad.title }}</a>, {{ ultima_actividad.starts_at|date:"j M Y" }}{% endif %}{% if ultima_actividad and ultima_publicacion %} · {% endif %}{% if ultima_publicacion %}Actualizado el {{ ultima_publicacion|date:"j \d\e F \d\e Y" }}{% endif %}</p>
+    {% endif %}
+  </section>
 
 {% endblock %}

@@ -15,6 +15,7 @@ from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
 from apps.agenda.services import stats as trajectory_stats
+from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
@@ -77,6 +78,7 @@ def _objeto_del_titular(publicaciones, proximo):
     for pub in publicaciones:
         if pub.cover:
             return {
+                "publicacion": pub,
                 "imagen": pub.cover,
                 "url": pub.get_absolute_url(),
                 "rotulo": pub.get_kind_display(),
@@ -94,8 +96,33 @@ def _objeto_del_titular(publicaciones, proximo):
     return None
 
 
+def _ultima_publicacion():
+    """Cuándo publicó el colectivo por última vez: un poema, un texto o un registro. Es el
+    «Actualizado el…» del cierre de la portada, en una sola consulta. Cuenta la fecha de
+    publicación y no la de edición: corregir una errata no hace más reciente la portada."""
+    fechas = (
+        Article.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
+        .order_by()
+        .values_list("published_at", flat=True)
+        .union(
+            Poem.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
+            .order_by()
+            .values_list("published_at", flat=True),
+            Recording.objects.filter(published=True, published_at__isnull=False)
+            .order_by()
+            .values_list("published_at", flat=True),
+        )
+        .order_by("-published_at")
+    )
+    return next(iter(fechas[:1]), None)
+
+
 def home(request):
-    profile = SiteProfile.load()  # garantiza la fila singleton (nunca None)
+    # Con el registro y el poema destacados, y el evento y el póster del registro, en la
+    # misma consulta: eran cuatro consultas sueltas.
+    profile = SiteProfile.load(
+        "featured_recording__event", "featured_recording__poster", "featured_poem"
+    )
     featured_poem = profile.featured_poem
     if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
         featured_poem = None  # el destacado solo se muestra si está publicado
@@ -112,7 +139,10 @@ def home(request):
     _members = list(Contributor.members()[:TOPE_CINTA])
     # Cuántas integrantes hay: la cinta ya las trajo, salvo que lleguen a su tope.
     integrantes = len(_members) if len(_members) < TOPE_CINTA else Contributor.members().count()
-    publicaciones = list(Publication.objects.filter(published=True).select_related("cover")[:4])
+    # Con su editorial: la tarjeta la nombra, y sin esto era una consulta por publicación.
+    publicaciones = list(
+        Publication.objects.filter(published=True).select_related("cover", "publisher")[:4]
+    )
     proximo = Event.upcoming().first()
     # La cejilla del titular: el lema, el lugar, el año y cuántas son. El Instagram lo
     # añade la plantilla, con las redes que ya trae el procesador del perfil.
@@ -126,22 +156,40 @@ def home(request):
         )
         if parte
     ]
+    objeto = _objeto_del_titular(publicaciones, proximo)
+    # El cierre para programadores y jurados: puertas a lo que piden (D9), como las salidas
+    # al pie de una ficha. La cita y los aliados ya están en el titular.
+    puertas = [
+        puerta("Kit de prensa", "Dossier", reverse("showcase:dossier")),
+        puerta("Notas y entrevistas", "Prensa", reverse("showcase:press_index")),
+        puerta("Quiénes nos apoyan", "Aliados", reverse("showcase:partner_index")),
+    ]
+    if profile.correo_de_contacto:
+        puertas.append(puerta("Contacto", "Escríbenos", f"mailto:{profile.correo_de_contacto}"))
     return render(
         request,
         "content/home.html",
         {
-            "articles": _published()[:5],  # portada curada; el archivo vive en /textos/
+            # La obra (ticket 4.3): los tres últimos poemas, con sus primeros versos, y los
+            # tres últimos textos. El archivo de cada uno vive en su índice.
+            "poemas": list(_published_poems()[:3]),
+            "articles": _published()[:3],
             "members": _members,
             "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
             "next_event": proximo,
-            "stats": trajectory_stats(),
-            "publications": publicaciones,
+            "stats": trajectory_stats(profile),
+            # El bloque de publicaciones no repite el libro que ya enseña el titular.
+            "publications": [
+                p for p in publicaciones if p is not (objeto or {}).get("publicacion")
+            ],
             # El sello del titular: solo mientras haya una convocatoria abierta.
             "convocatoria": Call.open_now().first(),
             "integrantes": integrantes,
+            "titulo_integrantes": f"{integrantes} {'voz' if integrantes == 1 else 'voces'}",
+            "puertas": puertas,
             "cejilla": cejilla,
-            "objeto_titular": _objeto_del_titular(publicaciones, proximo),
+            "objeto_titular": objeto,
             # La línea de respaldo (D9): una cita de prensa, la destacada si la hay, y los
             # aliados. Prensa y aliados tienen su página; aquí van en una línea.
             "cita_de_prensa": PressMention.objects.filter(published=True)
@@ -149,6 +197,10 @@ def home(request):
             .order_by("-featured", "position", "-published_on")
             .first(),
             "aliados": list(Partner.objects.filter(active=True).select_related("logo")[:6]),
+            # El cierre para programadores y jurados: lo último que hicieron y cuándo
+            # publicaron por última vez.
+            "ultima_actividad": Event.past().first(),
+            "ultima_publicacion": _ultima_publicacion(),
         },
     )
 

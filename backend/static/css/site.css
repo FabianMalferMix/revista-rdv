@@ -454,10 +454,12 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    está, con el mismo reparto que los grupos del pie. Magenta para la obra, el azul de la
    carátula para el colectivo y tinta para prensa y gestión. Va pegado al título y no al
    borde de la cabecera, que es el filete que comparte con la primera fila de la lista. */
-.index-head[data-territorio] h1::after{content:""; display:block; width:var(--s5); height:3px;
-  margin-top:var(--s2); background-color:var(--ink)}
-.index-head[data-territorio="obra"] h1::after{background-color:var(--accent)}
-.index-head[data-territorio="colectivo"] h1::after{background-color:var(--caratula)}
+.index-head[data-territorio] h1::after, .seccion-cabeza[data-territorio] h2::after{content:"";
+  display:block; width:var(--s5); height:3px; margin-top:var(--s2); background-color:var(--ink)}
+.index-head[data-territorio="obra"] h1::after,
+.seccion-cabeza[data-territorio="obra"] h2::after{background-color:var(--accent)}
+.index-head[data-territorio="colectivo"] h1::after,
+.seccion-cabeza[data-territorio="colectivo"] h2::after{background-color:var(--caratula)}
 .index-head .meta{margin:12px 0 0}
 .index-head > .btn, .index-head > p > .btn{margin-top:16px}
 /* Título de sección: un encabezado no puede medir menos que el texto que encabeza. Era
@@ -988,8 +990,53 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin
    provocar scroll horizontal (no usan 100vw ni overflow-x:hidden). */
-.home-block{padding-block:clamp(56px, 7vw, 112px)}
+/* El aire entre bloques: era de hasta 112 px arriba y abajo, y con seis bloques sumaba más
+   de una pantalla de papel vacío a 1440. */
+.home-block{padding-block:clamp(48px, 5vw, 80px)}
 .home-block > .subhead:first-child, .band-in > .subhead:first-child{margin-top:0}
+/* Cabeza de sección (D13): la cejilla dice a qué parte del sitio pertenece —los grupos del
+   pie— y el título lleva el filete de su territorio, como las cabeceras de índice. */
+.seccion-cabeza{margin:0 0 var(--s4)}
+.home-obra-cejilla{margin:0 0 var(--s1)}
+.seccion-cabeza .rotulo{margin:0 0 var(--s1)}
+.seccion-cabeza .subhead{margin:0}
+.home-mas{margin:var(--s3) 0 0}
+/* La obra: poemas y textos, lado a lado desde 900 px. Apilados, cada uno ocupaba su
+   pantalla. Con una sola de las dos listas, va a todo el ancho. */
+.home-obra-columna + .home-obra-columna{margin-top:var(--s5)}
+@media (min-width:900px){
+  .home-obra-columnas:has(> :nth-child(2)){display:grid; grid-template-columns:repeat(2, minmax(0,1fr));
+    column-gap:clamp(32px, 5vw, 96px); align-items:start}
+  .home-obra-columnas:has(> :nth-child(2)) > .home-obra-columna + .home-obra-columna{margin-top:0}
+}
+/* Las publicaciones: el título a la izquierda y las cubiertas a la derecha, una columna por
+   cubierta y 240 px como mucho. En una rejilla de cuatro, tres cubiertas dejaban un hueco,
+   y a todo el carril cada una medía 315 px de ancho. La cabeza ocupa 4/12: en 3/12,
+   «Publicaciones» se partía a 951 px. */
+@media (min-width:900px){
+  .home-publicaciones .band-in{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr);
+    column-gap:clamp(32px, 5vw, 96px); align-items:start}
+  .home-publicaciones .seccion-cabeza{grid-column:1; grid-row:1}
+  .home-publicaciones .home-mas{grid-column:1; grid-row:2; margin:0}
+  .home-publicaciones .pub-grid{grid-column:2; grid-row:1 / span 2; grid-template-columns:none;
+    grid-auto-flow:column; grid-auto-columns:minmax(0,240px)}
+  /* Un paso menos que en el catálogo: a 951 px «Correspondencias» se partía por la mitad. */
+  .home-publicaciones .pub-title{font-size:var(--t1)}
+}
+/* Tres versos, uno por línea: se lee el poema sin abrirlo. */
+.fila-versos span{display:block}
+/* El cierre: las puertas, sin el aire ni el filete grueso que llevan al pie de una ficha
+   (bajo el título ya va el de su territorio). De dos en dos en el teléfono, donde de una
+   en una medían 400 px, y desde 900 px todas en una fila: en la rejilla de tres,
+   «Escríbenos» quedaba sola en la segunda. Sin correo son tres, y la fila no deja hueco.
+   Es el último bloque: abajo, el aire lo pone el lienzo. */
+.home-cierre{padding-bottom:0}
+.home-cierre .pie-entidad{margin-top:0; border-top:1px solid var(--line)}
+.home-cierre .pie-entidad ul{grid-template-columns:repeat(2, minmax(0,1fr))}
+@media (min-width:900px){
+  .home-cierre .pie-entidad ul{grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr)}
+}
+.home-cierre-datos{margin:var(--s3) 0 0}
 /* La banda ocupa el carril a sangre del lienzo. Antes vivía dentro de la caja de 820 px
    y pintaba su fondo hacia fuera con una sombra de 100vmax recortada con clip-path.
    Es la hoja clara. Las bandas eran blancas, el mismo blanco de los campos y las
