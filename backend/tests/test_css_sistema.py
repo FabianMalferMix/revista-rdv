@@ -679,21 +679,17 @@ def test_el_pie_es_de_tinta():
     assert "border-top" not in pie
 
 
-def test_el_amarillo_es_un_trazo_bajo_las_cifras_y_nunca_texto():
-    """El amarillo del cartel da 1,03:1 sobre el papel: solo entra como fondo. Fue un plano
-    de lado a lado del carril y el dueño del sitio lo encontró invasivo; ahora es un trazo
-    de marcador detrás de la mitad baja de cada cifra de la portada (D5)."""
+def test_el_amarillo_no_se_usa_y_nunca_es_texto():
+    """El amarillo del cartel da 1,03:1 sobre el papel: solo puede entrar como fondo. Fue un
+    plano de lado a lado del carril, que el dueño del sitio encontró invasivo, y después un
+    trazo de marcador bajo las cifras de la portada (D5). Las cifras las quitó el dueño
+    (2026-10-14), y con ellas el único amarillo: queda en la paleta, sin uso."""
     con_amarillo = [
-        (selector, cuerpo)
+        selector
         for selector, cuerpo in _pantalla()
         if "riso-amarillo" in cuerpo and selector != ":root"
     ]
-    assert [s for s, _ in con_amarillo] == [".hero-stats strong"], (
-        f"el amarillo está fuera de las cifras: {[s for s, _ in con_amarillo]}"
-    )
-    trazo = con_amarillo[0][1]
-    assert "background:linear-gradient(" in trazo and "width:fit-content" in trazo
-    assert "background" not in _regla(".hero-stats"), "las cifras volvieron a un plano"
+    assert con_amarillo == [], f"el amarillo volvió sin las cifras: {con_amarillo}"
     assert not re.search(r"(?<![-\w])color:var\(--riso-amarillo\)", _css())
 
 

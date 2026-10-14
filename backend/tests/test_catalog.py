@@ -59,12 +59,10 @@ def test_partner_index_lists_active_only(client):
     assert b"Fondo Inactivo" not in resp.content
 
 
-def test_home_shows_catalog_and_a_backing_line_of_press_and_partners(client):
-    """La portada mantiene el catálogo y, desde el ticket 4.2, una línea de respaldo: una
-    cita de prensa y los aliados.
-
-    Las dos franjas se habían retirado de la portada. La decisión D9 las devolvió como una
-    sola línea compacta bajo el titular, no como franjas; sus páginas siguen existiendo.
+def test_home_shows_catalog_and_a_press_quote_but_not_partners(client):
+    """La portada mantiene el catálogo y, desde el ticket 4.2, una cita de prensa bajo el
+    titular. Los aliados también iban en esa línea («Con el apoyo de»): el dueño del sitio
+    los quitó de la portada por ahora (2026-10-14). Siguen en /aliados/.
     """
     make_publication(slug="en-home", title="Plaquette En Portada", featured=True)
     PressMention.objects.create(title="n", outlet="Radio Cita", quote="Imprescindibles.")
@@ -74,7 +72,7 @@ def test_home_shows_catalog_and_a_backing_line_of_press_and_partners(client):
     assert b"Plaquette En Portada" in resp.content
     assert "«Imprescindibles.»".encode() in resp.content
     assert b"Radio Cita" in resp.content
-    assert b"Aliado En Portada" in resp.content
+    assert b"Aliado En Portada" not in resp.content
     assert b"Aliado Retirado" not in resp.content
 
 

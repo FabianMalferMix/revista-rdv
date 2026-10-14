@@ -277,7 +277,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 
 /* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
-.brand, .hero-nombre, .hero-aliado,
+.brand, .hero-nombre,
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
@@ -889,9 +889,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular: era
    el lema, en el tamaño más grande, con el nombre oculto. El dueño del sitio eligió la
    disposición entre tres, vistas sobre la portada real: el nombre en dos líneas y, a su
-   lado, un objeto real; debajo, las cifras y la línea de respaldo. En el teléfono va todo
-   en una columna, en el orden del marcado: nombre, manifiesto, botones, sello, objeto,
-   cifras y respaldo. */
+   lado, un objeto real; debajo, la línea de respaldo. En el teléfono va todo en una
+   columna, en el orden del marcado: nombre, manifiesto, botones, sello, objeto y respaldo.
+   Las cifras, con su trazo de marcador amarillo, las quitó el dueño (2026-10-14): el
+   colectivo aún es pequeño. Si vuelven, están en el historial del repositorio. */
 .hero{display:grid; grid-template-columns:minmax(0,1fr); column-gap:clamp(32px,6vw,96px);
   padding:clamp(28px,4vw,56px) 0 var(--s4); border-bottom:2px solid var(--ink)}
 .hero-cejilla{margin:0 0 var(--s2)}
@@ -939,41 +940,18 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    sello) no descoloque a las otras. Sin objeto, el titular sigue en una columna. */
 @media (min-width:720px){
   .hero--con-objeto{grid-template-columns:minmax(0,7fr) minmax(0,5fr);
-    grid-template-rows:auto auto 1fr auto auto}
+    grid-template-rows:auto auto 1fr auto}
   .hero--con-objeto > *{grid-column:1 / -1}
   .hero--con-objeto > .hero-cejilla{grid-row:1}
   .hero--con-objeto > .hero-nombre{grid-row:2; grid-column:1}
   .hero--con-objeto > .hero-texto{grid-row:3; grid-column:1}
-  .hero--con-objeto > .hero-stats{grid-row:4}
-  .hero--con-objeto > .hero-respaldo{grid-row:5}
+  .hero--con-objeto > .hero-respaldo{grid-row:4}
   /* Al borde derecho del carril, metido los 12 px que mide su sombra. */
   .hero--con-objeto > .hero-objeto{grid-row:2 / span 2; grid-column:2; width:min(100%, 380px);
     justify-self:end; align-self:start; margin:0 12px 0 0}
 }
-/* Las cifras se leen como dato de revista: número grande, etiqueta debajo, bajo un
-   filete de tinta. El amarillo del cartel pasa por detrás de la mitad baja de cada
-   número, como un trazo de marcador sobre papel impreso. Fue un plano amarillo de lado a
-   lado del carril, y al dueño del sitio le pareció invasivo: un bloque sólido, cuadrado,
-   que se leía como una pieza incrustada. El trazo se queda en los números. Nada lleva
-   texto amarillo (1,03:1 sobre el papel).
-   Acotado a .hero-stats A PROPÓSITO: .stats-strip se reutiliza tal cual en
-   /dossier/ y /trayectoria/, donde un número a 42px no tiene sentido. */
-.hero-stats{margin:var(--s5) 0 0; padding:var(--s3) 0 0; border-top:2px solid var(--ink); border-bottom:0;
-  gap:var(--s3) var(--s6); align-items:end}
-/* Cada cifra lleva a su prueba: integrantes, trayectoria, publicaciones. */
-.hero-stats a{display:block; color:inherit; text-decoration:none}
-.hero-stats a:hover{color:var(--ink)}
-/* En el teléfono, de dos en dos y en columna: en fila, la segunda de cada línea quedaba a
-   una altura distinta según lo largo de la primera. */
-@media (max-width:719px){
-  .hero-stats{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
-}
-.hero-stats strong{display:block; width:fit-content; font-family:var(--display); font-size:var(--t6);
-  line-height:1; margin:0 0 6px -.12em; padding:0 .12em;
-  background:linear-gradient(to top, transparent .06em, var(--riso-amarillo) .06em,
-    var(--riso-amarillo) .48em, transparent .48em)}
-/* La línea de respaldo (D9): una cita de prensa y los aliados, bajo un filete fino. Prensa
-   y aliados tienen su página; aquí van en una línea, que en el teléfono se apila. */
+/* La línea de respaldo (D9): una cita de prensa, bajo un filete fino. Llevaba también los
+   aliados, «Con el apoyo de»; el dueño los quitó de la portada por ahora (2026-10-14). */
 .hero-respaldo{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
   gap:var(--s3) var(--s5); margin:var(--s4) 0 0; padding:var(--s3) 0 0; border-top:1px solid var(--line)}
 .hero-cita{margin:0; max-width:44ch}
@@ -981,11 +959,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .hero-cita p{margin:0; font-style:italic; font-size:var(--t2); line-height:var(--lh-ui)}
 .hero-cita figcaption{margin:6px 0 0}
 .hero-cita cite{font-style:normal}
-.hero-apoyo{display:flex; flex-direction:column; gap:var(--s2)}
-.hero-apoyo ul{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s3); margin:0; padding:0;
-  list-style:none}
-.hero-apoyo .partner-logo{width:104px; height:52px}
-.hero-aliado{font-size:var(--t0)}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin

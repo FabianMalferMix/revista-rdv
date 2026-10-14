@@ -2,8 +2,8 @@
 
 El titular era el lema, «Colectivo de poesía», con el nombre escondido en un h1 para
 lectores de pantalla. Ahora el nombre es el titular y el lema baja a la cejilla. A su lado
-va un objeto real; debajo, las cifras con su página y una línea de respaldo con una cita de
-prensa y los aliados. El dueño del sitio eligió la disposición entre tres.
+va un objeto real y, debajo, una línea de respaldo con una cita de prensa y los aliados. El
+dueño del sitio eligió la disposición entre tres; después quitó las cifras.
 """
 
 from datetime import date, timedelta
@@ -139,27 +139,16 @@ def test_un_solo_boton_principal_y_el_mismo_correo_que_el_pie(client):
     assert sopa.select_one('footer.site-foot a[href="mailto:hola@example.com"]') is not None
 
 
-def test_cada_cifra_lleva_a_su_pagina_y_festivales_y_ferias_van_aparte(client):
+def test_la_portada_no_lleva_cifras(client):
+    """El dueño del sitio quitó las cifras (2026-10-14): el colectivo aún es pequeño y
+    prefiere no enseñar cuántos son, cuántas actividades y cuántas publicaciones."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    hace_un_mes = timezone.now() - timedelta(days=30)
-    for tipo in (Event.Type.RECITAL, Event.Type.FESTIVAL, Event.Type.FERIA):
-        make_event(slug=f"pasado-{tipo}", type=tipo, starts_at=hace_un_mes)
+    make_event(
+        slug="pasado", type=Event.Type.FESTIVAL, starts_at=timezone.now() - timedelta(days=30)
+    )
     make_publication(slug="p", title="P")
-    cifras = {_texto(li): li.a["href"] for li in _portada(client).select(".hero-stats li")}
-    trayectoria = reverse("agenda:trayectoria")
-    assert cifras == {
-        "1 integrante": reverse("people:member_index"),
-        "3 actividades": trayectoria,
-        "1 festival": trayectoria,
-        "1 feria": trayectoria,
-        "1 publicación": reverse("showcase:publication_index"),
-    }
-
-
-def test_una_cifra_en_cero_no_se_ensena(client):
-    Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    cifras = [_texto(li) for li in _portada(client).select(".hero-stats li")]
-    assert cifras == ["1 integrante"]
+    titular = _portada(client).select_one("section.hero")
+    assert titular.select_one(".stats-strip, .hero-stats") is None
 
 
 def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
@@ -176,7 +165,8 @@ def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
     assert piezas.index("sello-convocatoria") > piezas.index("hero-ctas")
 
 
-def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_los_aliados(client):
+def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_no_los_aliados(client):
+    """Los aliados («Con el apoyo de») los quitó el dueño de la portada por ahora."""
     PressMention.objects.create(
         title="a", outlet="Diario Uno", quote="Reciente.", published_on=date(2026, 5, 1)
     )
@@ -197,8 +187,9 @@ def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_los_aliados(client):
     pie_de_cita = respaldo.select_one(".hero-cita figcaption")
     assert _texto(pie_de_cita) == "Radio Dos, 2025"
     assert pie_de_cita.a["href"] == reverse("showcase:press_index")
-    assert "Casa del Libro" in respaldo.select_one(".hero-apoyo").get_text()
+    assert "Casa del Libro" not in respaldo.get_text()
 
 
-def test_sin_prensa_ni_aliados_no_hay_linea_de_respaldo(client):
+def test_sin_cita_no_hay_linea_de_respaldo_aunque_haya_aliados(client):
+    Partner.objects.create(name="Casa del Libro")
     assert _portada(client).select_one(".hero-respaldo") is None

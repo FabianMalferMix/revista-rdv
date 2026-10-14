@@ -78,9 +78,9 @@ def test_home_texts_appear_before_members(client, make_article):
     assert content.index(b"Texto Portada") < content.index(b"Integrante Uno")
 
 
-def test_home_hero_has_manifesto_and_stats(client):
-    """El manifiesto, las cifras y el nombre como titular (ticket 4.2). Los años de trabajo
-    ya no son una cifra: «desde 2019» va en la cejilla, con el lema."""
+def test_home_hero_has_manifesto_and_name(client):
+    """El manifiesto y el nombre como titular (ticket 4.2). «Desde 2019» va en la cejilla,
+    con el lema. Las cifras las quitó el dueño (ver `test_titular.py`)."""
     profile = SiteProfile.load()
     profile.name = "Colectivo Norte"
     profile.tagline = "Poesía en voz alta."
@@ -90,7 +90,6 @@ def test_home_hero_has_manifesto_and_stats(client):
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     resp = client.get(reverse("content:home"))
     assert b"hero-manifesto" in resp.content
-    assert b"hero-stats" in resp.content
     assert b"Poes\xc3\xada en voz alta." in resp.content
     assert b"desde 2019" in resp.content
     assert b'<h1 class="hero-nombre">Colectivo Norte</h1>' in resp.content
