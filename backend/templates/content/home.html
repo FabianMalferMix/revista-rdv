@@ -7,9 +7,10 @@
   {% comment %}
      Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular, y
      el lema baja a la cejilla. A su lado, un objeto real: la primera cubierta del
-     catálogo o el afiche de la próxima actividad. Debajo, las cifras, cada una con su
-     página, y una línea de respaldo con una cita de prensa y los aliados. El dueño del
-     sitio eligió esta disposición entre tres, vistas sobre la portada real.
+     catálogo o el afiche de la próxima actividad. Debajo, una línea de respaldo con una
+     cita de prensa y los aliados. El dueño del sitio eligió esta disposición entre tres,
+     vistas sobre la portada real. Las cifras (integrantes, actividades, publicaciones) las
+     quitó después: el colectivo aún es pequeño y prefiere no enseñarlas por ahora.
   {% endcomment %}
   <section class="hero{% if objeto_titular %} hero--con-objeto{% endif %}">
     {% if cejilla or instagram_del_colectivo.usuario %}
@@ -58,15 +59,6 @@
         <a class="hero-cubierta" href="{{ objeto_titular.url }}" tabindex="-1" aria-hidden="true">{% responsive_img objeto_titular.imagen sizes="380px" lazy=False decorativa=True %}</a>
         <figcaption class="meta">{{ objeto_titular.rotulo }} · <a href="{{ objeto_titular.url }}">{{ objeto_titular.titulo }}</a>{% if objeto_titular.dato %}, {{ objeto_titular.dato }}{% endif %}</figcaption>
       </figure>
-    {% endif %}
-    {% if integrantes or stats.events or stats.publications %}
-      <ul class="stats-strip hero-stats">
-        {% if integrantes %}<li><a href="{% url 'people:member_index' %}"><strong>{{ integrantes }}</strong> integrante{{ integrantes|pluralize }}</a></li>{% endif %}
-        {% if stats.events %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.events }}</strong> actividad{{ stats.events|pluralize:"es" }}</a></li>{% endif %}
-        {% if stats.festivales %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.festivales }}</strong> festival{{ stats.festivales|pluralize:"es" }}</a></li>{% endif %}
-        {% if stats.ferias %}<li><a href="{% url 'agenda:trayectoria' %}"><strong>{{ stats.ferias }}</strong> feria{{ stats.ferias|pluralize }}</a></li>{% endif %}
-        {% if stats.publications %}<li><a href="{% url 'showcase:publication_index' %}"><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</a></li>{% endif %}
-      </ul>
     {% endif %}
     {% if cita_de_prensa or aliados %}
       {% comment %} La línea de respaldo (D9): prensa y aliados tienen su página; aquí, una línea. {% endcomment %}

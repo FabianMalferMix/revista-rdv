@@ -2,8 +2,8 @@
 
 El titular era el lema, «Colectivo de poesía», con el nombre escondido en un h1 para
 lectores de pantalla. Ahora el nombre es el titular y el lema baja a la cejilla. A su lado
-va un objeto real; debajo, las cifras con su página y una línea de respaldo con una cita de
-prensa y los aliados. El dueño del sitio eligió la disposición entre tres.
+va un objeto real y, debajo, una línea de respaldo con una cita de prensa y los aliados. El
+dueño del sitio eligió la disposición entre tres; después quitó las cifras.
 """
 
 from datetime import date, timedelta
@@ -139,27 +139,16 @@ def test_un_solo_boton_principal_y_el_mismo_correo_que_el_pie(client):
     assert sopa.select_one('footer.site-foot a[href="mailto:hola@example.com"]') is not None
 
 
-def test_cada_cifra_lleva_a_su_pagina_y_festivales_y_ferias_van_aparte(client):
+def test_la_portada_no_lleva_cifras(client):
+    """El dueño del sitio quitó las cifras (2026-10-14): el colectivo aún es pequeño y
+    prefiere no enseñar cuántos son, cuántas actividades y cuántas publicaciones."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    hace_un_mes = timezone.now() - timedelta(days=30)
-    for tipo in (Event.Type.RECITAL, Event.Type.FESTIVAL, Event.Type.FERIA):
-        make_event(slug=f"pasado-{tipo}", type=tipo, starts_at=hace_un_mes)
+    make_event(
+        slug="pasado", type=Event.Type.FESTIVAL, starts_at=timezone.now() - timedelta(days=30)
+    )
     make_publication(slug="p", title="P")
-    cifras = {_texto(li): li.a["href"] for li in _portada(client).select(".hero-stats li")}
-    trayectoria = reverse("agenda:trayectoria")
-    assert cifras == {
-        "1 integrante": reverse("people:member_index"),
-        "3 actividades": trayectoria,
-        "1 festival": trayectoria,
-        "1 feria": trayectoria,
-        "1 publicación": reverse("showcase:publication_index"),
-    }
-
-
-def test_una_cifra_en_cero_no_se_ensena(client):
-    Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    cifras = [_texto(li) for li in _portada(client).select(".hero-stats li")]
-    assert cifras == ["1 integrante"]
+    titular = _portada(client).select_one("section.hero")
+    assert titular.select_one(".stats-strip, .hero-stats") is None
 
 
 def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):

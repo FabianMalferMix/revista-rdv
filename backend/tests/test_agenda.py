@@ -78,13 +78,11 @@ def test_gallery_lists_only_events_with_photos(client):
     assert b"Evento Sin Fotos" not in resp.content
 
 
-def test_home_shows_next_event_and_stats(client):
+def test_home_shows_next_event(client):
     make_event(slug="siguiente", title="Actividad Siguiente")
     make_event(slug="hecho", title="Hecho", starts_at=timezone.now() - timedelta(days=5))
     resp = client.get(reverse("content:home"))
     assert b"Actividad Siguiente" in resp.content
-    # La tira de cifras del titular (ticket 4.2): «1 actividad», enlazada a la trayectoria.
-    assert b"</strong> actividad</a>" in resp.content
 
 
 def test_event_absolute_url(client):

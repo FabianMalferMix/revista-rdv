@@ -14,7 +14,6 @@ from django.utils.formats import date_format
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event
-from apps.agenda.services import stats as trajectory_stats
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
@@ -178,7 +177,6 @@ def home(request):
             "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
             "next_event": proximo,
-            "stats": trajectory_stats(profile),
             # El bloque de publicaciones no repite el libro que ya enseña el titular.
             "publications": [
                 p for p in publicaciones if p is not (objeto or {}).get("publicacion")
