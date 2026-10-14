@@ -17,7 +17,7 @@ from apps.agenda.models import Event
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
-from apps.showcase.models import PressMention, Publication, SiteProfile
+from apps.showcase.models import Publication, SiteProfile
 from apps.submissions.models import Call
 
 from .models import (
@@ -188,12 +188,6 @@ def home(request):
             "puertas": puertas,
             "cejilla": cejilla,
             "objeto_titular": objeto,
-            # La línea de respaldo (D9): una cita de prensa, la destacada si la hay. Los
-            # aliados también iban en ella; el dueño los quitó de la portada por ahora.
-            "cita_de_prensa": PressMention.objects.filter(published=True)
-            .exclude(quote="")
-            .order_by("-featured", "position", "-published_on")
-            .first(),
             # El cierre para programadores y jurados: lo último que hicieron y cuándo
             # publicaron por última vez.
             "ultima_actividad": Event.past().first(),

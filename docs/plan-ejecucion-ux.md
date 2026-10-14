@@ -14,8 +14,8 @@
 ## 1. Dónde estamos
 
 **Hechos 20 de 25 pasos.** El último paso fusionado es el 20 (`ux-4-3-portada`, PR #126);
-después entraron dos ajustes que pidió el dueño: el orden de la portada (#127) y la portada sin
-cifras ni aliados (#128). `main` está en verde, con 834 pruebas. No hay ninguna rama de paso abierta.
+después entraron tres ajustes que pidió el dueño: el orden de la portada (#127), la portada sin
+cifras ni aliados (#128) y sin la cita de prensa (#129). `main` está en verde, con 833 pruebas. No hay ninguna rama de paso abierta.
 Los PR abiertos de Dependabot (#107 a #113, actualizaciones de dependencias) no son del plan.
 
 **Siguiente: el paso 21, `ux-4-4-pie-y-enlaces`** (sección 2), cuando el dueño haya visto el
@@ -67,6 +67,7 @@ nuevo: mira su descripción y la sección 4.
 | 20 | `ux-4-3-portada` | #126 | La portada completa: integrantes, poemas con sus versos junto a los textos, publicaciones y un cierre para programadores y jurados |
 | — | `portada-obra-antes` | #127 | La obra antes que las integrantes, como en el tablero: lo pidió el dueño |
 | — | `portada-sin-cifras-ni-aliados` | #128 | Fuera de la portada, por ahora, las cifras y «Con el apoyo de»: lo pidió el dueño |
+| — | `portada-sin-cita` | #129 | Fuera de la portada la cita de prensa: lo pidió el dueño |
 
 El PR #99 se cerró sin fusionar (mensaje de commit equivocado) y se reabrió como #100. Cada
 ticket cerrado lleva en el backlog una nota **Estado** con lo que de verdad se construyó.
@@ -107,9 +108,9 @@ Con `tools/ux` a 1440 px, sobre la base de desarrollo original. «Antes» es
 | Titular de la portada | el lema, con el nombre oculto | el nombre: 124 px a 1440 y 125 a 1920 |
 | Imágenes en la primera pantalla de la portada (1440, 1920 y 390) | 1, 1 y 0 | 1, 1 y 1 |
 | Botones principales en la primera pantalla de la portada | 2 desde 900 px | 1 |
-| Alto de la portada a 1440 | 4459 px tras el paso 19 | 4234 px, con poemas y el cierre y sin cifras ni aliados; la meta de 3300 no cabía (decisión del dueño, paso 20) |
+| Alto de la portada a 1440 | 4459 px tras el paso 19 | 4092 px, con poemas y el cierre y sin cifras, aliados ni cita; la meta de 3300 no cabía (decisión del dueño, paso 20) |
 | Versos que se leen en la portada | 0 | 6: tres por poema |
-| Consultas de la portada (prueba, en frío; desarrollo) | 17; 21 | 17; 16, con un techo de 24 |
+| Consultas de la portada (prueba, en frío; desarrollo) | 17; 21 | 16; 15, con un techo de 24 |
 | Textos por debajo de AA contra su fondo real (21 páginas, 5 anchos) | sin medir | 0 |
 
 ### Lo que todavía se ve a medias, a propósito
@@ -172,9 +173,10 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
 - **Cifras y aliados (2026-10-14, después del paso 20):** los quitó de la portada por ahora,
   «siendo que aún somos un grupo pequeño». Salieron las cifras del titular («12 integrantes ·
   4 actividades · 1 festival · 3 publicaciones») y «Con el apoyo de»; la cita de prensa se
-  queda (#128). Para devolver cada pieza se revierte su commit: `30799d0` (cifras) y
-  `28b0de3` (aliados). Sigue abierto si quiere quitar también el «12 integrantes» de la
-  cejilla y el «12 voces» de la sección de integrantes.
+  queda (#128). Al verlo, pidió quitar también la cita (#129). Para devolver cada pieza se
+  revierte su commit: `30799d0` (cifras), `28b0de3` (aliados) y `7ee4e14` (cita). Sigue
+  abierto si quiere quitar también el «12 integrantes» de la cejilla y el «12 voces» de la
+  sección de integrantes: se le preguntó y aún no contesta.
 - **Portada completa (2026-10-14, paso 20):** la meta de 3300 px a 1440 no cabía sin quitar
   algo. Vio dos maneras sobre la portada real
   (https://claude.ai/artifact/JtujcEMzZ1dEqgb46Nd62p) y eligió la A: conservar el bloque de
@@ -209,8 +211,8 @@ Cada cosa de esta lista tiene su paso. No son defectos por arreglar fuera de ord
    - «Para programadores y jurados»: «Dossier», «Prensa», «Aliados» y «Escríbenos», y debajo
      «Última actividad: Recital de invierno, 10 Sep 2026 · Actualizado el 26 de julio de 2026».
    El orden es el del tablero, con la obra antes que las integrantes, como pidió (#127). Y,
-   como pidió después (#128), el titular ya no lleva cifras ni «Con el apoyo de»: tras la
-   cubierta viene solo la cita de El Mercurio de Valparaíso.
+   como pidió después (#128 y #129), el titular ya no lleva cifras, ni «Con el apoyo de», ni
+   la cita de prensa: termina en la cubierta y el sello, y debajo asoma el registro destacado.
 2. **La convocatoria de prueba se queda**, porque lo pidió él: `convocatoria-primavera-2026`,
    abierta hasta el 30 de noviembre de 2026. Cuando quiera quitarla:
    `docker compose exec web python manage.py shell -c "from apps.submissions.models import Call; Call.objects.filter(slug='convocatoria-primavera-2026').delete()"`.

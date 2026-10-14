@@ -889,10 +889,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular: era
    el lema, en el tamaño más grande, con el nombre oculto. El dueño del sitio eligió la
    disposición entre tres, vistas sobre la portada real: el nombre en dos líneas y, a su
-   lado, un objeto real; debajo, la línea de respaldo. En el teléfono va todo en una
-   columna, en el orden del marcado: nombre, manifiesto, botones, sello, objeto y respaldo.
-   Las cifras, con su trazo de marcador amarillo, las quitó el dueño (2026-10-14): el
-   colectivo aún es pequeño. Si vuelven, están en el historial del repositorio. */
+   lado, un objeto real. En el teléfono va todo en una columna, en el orden del marcado:
+   nombre, manifiesto, botones, sello y objeto. Debajo iban las cifras, con su trazo de
+   marcador amarillo, y una línea con los aliados y una cita de prensa: el dueño las quitó
+   (2026-10-14), porque el colectivo aún es pequeño. Si vuelven, están en el historial. */
 .hero{display:grid; grid-template-columns:minmax(0,1fr); column-gap:clamp(32px,6vw,96px);
   padding:clamp(28px,4vw,56px) 0 var(--s4); border-bottom:2px solid var(--ink)}
 .hero-cejilla{margin:0 0 var(--s2)}
@@ -940,25 +940,15 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    sello) no descoloque a las otras. Sin objeto, el titular sigue en una columna. */
 @media (min-width:720px){
   .hero--con-objeto{grid-template-columns:minmax(0,7fr) minmax(0,5fr);
-    grid-template-rows:auto auto 1fr auto}
+    grid-template-rows:auto auto 1fr}
   .hero--con-objeto > *{grid-column:1 / -1}
   .hero--con-objeto > .hero-cejilla{grid-row:1}
   .hero--con-objeto > .hero-nombre{grid-row:2; grid-column:1}
   .hero--con-objeto > .hero-texto{grid-row:3; grid-column:1}
-  .hero--con-objeto > .hero-respaldo{grid-row:4}
   /* Al borde derecho del carril, metido los 12 px que mide su sombra. */
   .hero--con-objeto > .hero-objeto{grid-row:2 / span 2; grid-column:2; width:min(100%, 380px);
     justify-self:end; align-self:start; margin:0 12px 0 0}
 }
-/* La línea de respaldo (D9): una cita de prensa, bajo un filete fino. Llevaba también los
-   aliados, «Con el apoyo de»; el dueño los quitó de la portada por ahora (2026-10-14). */
-.hero-respaldo{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
-  gap:var(--s3) var(--s5); margin:var(--s4) 0 0; padding:var(--s3) 0 0; border-top:1px solid var(--line)}
-.hero-cita{margin:0; max-width:44ch}
-.hero-cita blockquote{margin:0}
-.hero-cita p{margin:0; font-style:italic; font-size:var(--t2); line-height:var(--lh-ui)}
-.hero-cita figcaption{margin:6px 0 0}
-.hero-cita cite{font-style:normal}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin

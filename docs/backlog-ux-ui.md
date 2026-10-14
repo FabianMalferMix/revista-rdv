@@ -1181,7 +1181,10 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   plantilla, su CSS y sus pruebas: para devolverla, se revierte ese commit (las cifras,
   `30799d0`; los aliados, `28b0de3`). Con las cifras se fue el trazo amarillo, el único uso
   del amarillo en el sitio; el token sigue en la paleta. `stats()` conserva `festivales` y
-  `ferias`, que ya no usa nadie.
+  `ferias`, que ya no usa nadie. Después quitó también la cita de prensa (PR #129, commit
+  `7ee4e14`): de la línea de respaldo de D9 no queda nada en la portada, y las pruebas
+  vigilan otra vez que no lleve prensa ni aliados. El titular termina en la cubierta y el
+  sello.
 
 #### 4.3 Orden y bloques de la portada
 - **Hallazgos:** POR-3, POR-6, POR-10, POR-11, POR-13, NAV-11, ESP-10, COL-8.
