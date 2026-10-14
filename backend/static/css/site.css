@@ -277,7 +277,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
 
 /* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
-.brand, .hero-nombre, .hero-aliado,
+.brand, .hero-nombre,
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .article-card h3, .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
@@ -950,8 +950,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .hero--con-objeto > .hero-objeto{grid-row:2 / span 2; grid-column:2; width:min(100%, 380px);
     justify-self:end; align-self:start; margin:0 12px 0 0}
 }
-/* La línea de respaldo (D9): una cita de prensa y los aliados, bajo un filete fino. Prensa
-   y aliados tienen su página; aquí van en una línea, que en el teléfono se apila. */
+/* La línea de respaldo (D9): una cita de prensa, bajo un filete fino. Llevaba también los
+   aliados, «Con el apoyo de»; el dueño los quitó de la portada por ahora (2026-10-14). */
 .hero-respaldo{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
   gap:var(--s3) var(--s5); margin:var(--s4) 0 0; padding:var(--s3) 0 0; border-top:1px solid var(--line)}
 .hero-cita{margin:0; max-width:44ch}
@@ -959,11 +959,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .hero-cita p{margin:0; font-style:italic; font-size:var(--t2); line-height:var(--lh-ui)}
 .hero-cita figcaption{margin:6px 0 0}
 .hero-cita cite{font-style:normal}
-.hero-apoyo{display:flex; flex-direction:column; gap:var(--s2)}
-.hero-apoyo ul{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s3); margin:0; padding:0;
-  list-style:none}
-.hero-apoyo .partner-logo{width:104px; height:52px}
-.hero-aliado{font-size:var(--t0)}
 
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin

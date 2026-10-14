@@ -165,7 +165,8 @@ def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
     assert piezas.index("sello-convocatoria") > piezas.index("hero-ctas")
 
 
-def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_los_aliados(client):
+def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_no_los_aliados(client):
+    """Los aliados («Con el apoyo de») los quitó el dueño de la portada por ahora."""
     PressMention.objects.create(
         title="a", outlet="Diario Uno", quote="Reciente.", published_on=date(2026, 5, 1)
     )
@@ -186,8 +187,9 @@ def test_la_linea_de_respaldo_lleva_la_cita_destacada_y_los_aliados(client):
     pie_de_cita = respaldo.select_one(".hero-cita figcaption")
     assert _texto(pie_de_cita) == "Radio Dos, 2025"
     assert pie_de_cita.a["href"] == reverse("showcase:press_index")
-    assert "Casa del Libro" in respaldo.select_one(".hero-apoyo").get_text()
+    assert "Casa del Libro" not in respaldo.get_text()
 
 
-def test_sin_prensa_ni_aliados_no_hay_linea_de_respaldo(client):
+def test_sin_cita_no_hay_linea_de_respaldo_aunque_haya_aliados(client):
+    Partner.objects.create(name="Casa del Libro")
     assert _portada(client).select_one(".hero-respaldo") is None
