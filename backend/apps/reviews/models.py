@@ -70,6 +70,19 @@ class Work(models.Model):
     )
     description = models.TextField(blank=True)
     authors = models.ManyToManyField(BookAuthor, blank=True, related_name="works")
+    # Cuando la obra reseñada es una publicación del colectivo: su ficha enseña entonces
+    # las reseñas que tiene, y la obra lleva a ella. Una publicación es una sola obra (todas
+    # sus reseñas apuntan a la misma); la mayoría de las obras no tienen ninguna.
+    publicacion = models.OneToOneField(
+        "showcase.Publication",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="obra_resenada",
+        verbose_name="publicación del colectivo",
+        help_text="Si la obra reseñada es una publicación del colectivo, cuál: su ficha enseñará "
+        "las reseñas.",
+    )
 
     class Meta:
         ordering = ["title"]

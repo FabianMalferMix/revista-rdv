@@ -1353,9 +1353,11 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   pie de cada ficha: el registro lleva al poema registrado y al evento, y el evento, a la
   trayectoria de su año (o a la agenda, si aún no ha sido). Faltaban las actividades de cada
   integrante: su ficha enseña ahora «Actividades», las doce más recientes en que participó
-  (`Event.participants`), con su tipo, fecha y ciudad. **«Reseñas sobre esta publicación» no
-  se hizo**: la obra reseñada (`reviews.Work`) no está relacionada con las publicaciones del
-  colectivo, y crear esa relación pediría una migración. Medido a 951: integrante 13 enlaces
+  (`Event.participants`), con su tipo, fecha y ciudad. **«Reseñas sobre esta publicación»**
+  no cabía en el paso, porque el modelo no las relacionaba y la regla del plan prohibía
+  migraciones; el dueño lo pidió igual, y entró después (PR #131): la obra reseñada puede
+  señalar su publicación del colectivo (`reviews.Work.publicacion`, uno a uno), la ficha de la
+  publicación enseña «Reseñas» y la de la obra lleva a la publicación. Medido a 951: integrante 13 enlaces
   internos (eran 10), evento 10, artículo 7, registro 6, publicación 5, poema 5.
 
 ### Épica 5 — Dossier, agenda, galería, aliados y búsqueda
@@ -1379,8 +1381,8 @@ Secuencial. Es el lote que resuelve «no usa el espacio».
   portada, sin el «festivales/ferias».
 - **Nota de entrada** (tras los pasos 20 y 21): **el dueño quitó de la portada las cifras,
   «Con el apoyo de» y la cita de prensa**, porque el colectivo aún es pequeño. Este ticket
-  pide agrandar las cifras del dossier y darle cita y aliados con logo: **pregúntale antes
-  de construir** si las quiere en el dossier, que es el kit de prensa y donde suelen ir. Hoy
+  pide agrandar las cifras del dossier y darle cita y aliados con logo, y **el dueño contestó
+  que sí, que los quiere en el dossier** (2026-10-14). Hoy
   la trayectoria del dossier no va en orden (2022, 2019, 2026, 2026, 2026, 2025) y su `h1` es
   el nombre del colectivo, mientras el pie, la barra y el botón de la cabecera lo llaman
   «Dossier». `SiteProfile.presentacion` da «Colectivo de poesía · Chile · desde 2023» para la

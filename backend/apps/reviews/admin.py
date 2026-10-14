@@ -19,9 +19,9 @@ class BookAuthorAdmin(admin.ModelAdmin):
 
 @admin.register(Work)
 class WorkAdmin(admin.ModelAdmin):
-    list_display = ["title", "kind", "publisher", "publication_year"]
+    list_display = ["title", "kind", "publisher", "publication_year", "publicacion"]
     list_filter = ["kind"]
     search_fields = ["title", "isbn"]
     prepopulated_fields = {"slug": ("title",)}
-    autocomplete_fields = ["publisher", "cover_image"]
+    autocomplete_fields = ["publisher", "cover_image", "publicacion"]
     filter_horizontal = ["authors"]

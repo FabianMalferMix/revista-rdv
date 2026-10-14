@@ -7,13 +7,19 @@
   <header class="index-head" data-territorio="obra">
     <span class="kicker">{{ work.get_kind_display }}</span>
     <h1>{{ work.title }}</h1>
-    <p class="meta">
-      {% for ba in work.authors.all %}<a href="{% url 'reviews:bookauthor_detail' ba.slug %}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-      {% if work.publisher %} · <a href="{% url 'reviews:publisher_detail' work.publisher.slug %}">{{ work.publisher.name }}</a>{% endif %}
-      {% if work.publication_year %} · {{ work.publication_year }}{% endif %}
-      {% if work.isbn %} · ISBN {{ work.isbn }}{% endif %}
-    </p>
+    {% comment %} Los separadores solo entre piezas: sin autores, la línea empezaba con «·». {% endcomment %}
+    {% with autores=work.authors.all %}
+      <p class="meta">
+        {% for ba in autores %}<a href="{% url 'reviews:bookauthor_detail' ba.slug %}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% if work.publisher %}{% if autores %} · {% endif %}<a href="{% url 'reviews:publisher_detail' work.publisher.slug %}">{{ work.publisher.name }}</a>{% endif %}
+        {% if work.publication_year %}{% if autores or work.publisher %} · {% endif %}{{ work.publication_year }}{% endif %}
+        {% if work.isbn %}{% if autores or work.publisher or work.publication_year %} · {% endif %}ISBN {{ work.isbn }}{% endif %}
+      </p>
+    {% endwith %}
     {% if work.description %}<p class="dek">{{ work.description }}</p>{% endif %}
+    {% if work.publicacion and work.publicacion.published %}
+      <p class="meta">Publicación del colectivo: <a href="{{ work.publicacion.get_absolute_url }}">{{ work.publicacion.title }}</a></p>
+    {% endif %}
   </header>
   <h2 class="subhead">Reseñas de esta obra</h2>
   {% include "content/partials/_article_list.html" %}

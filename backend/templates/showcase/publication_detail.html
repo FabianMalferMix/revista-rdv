@@ -54,6 +54,15 @@
         {% endwith %}
       </header>
     </div>
+    {% if resenas %}
+      {% comment %} Los textos del sitio que reseñan esta publicación. {% endcomment %}
+      <section class="publicacion-resenas">
+        <h2 class="subhead">Reseñas</h2>
+        <ul class="filas">
+          {% for a in resenas %}{% include "content/partials/_article_card.html" %}{% endfor %}
+        </ul>
+      </section>
+    {% endif %}
     {% include "content/partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}
