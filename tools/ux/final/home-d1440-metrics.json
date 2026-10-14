@@ -1,0 +1,369 @@
+{
+ "titulo": "Repitentes del Verso — Colectivo de poesía",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 4092,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Repitentes del Verso",
+  "familia": "Syne",
+  "px": 123.84,
+  "peso": "700",
+  "interlinea": "113.933px",
+  "mayus": false,
+  "ancho": 720
+ },
+ "h2": {
+  "texto": "Recital «Nuevas voces» (registro)",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "46px",
+  "mayus": false,
+  "ancho": 526
+ },
+ "h3": {
+  "texto": "Umbral",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "25.3px",
+  "mayus": false,
+  "ancho": 624
+ },
+ "parrafo": {
+  "texto": "COLECTIVO DE POESÍA · CHILE · DESDE 2023 · 12 INTEGRANTES · @REPITENTE",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1418,
+  "razon": 0.98,
+  "elementos": 131,
+  "porTipo": {
+   "mono": 50,
+   "display": 39,
+   "lectura": 42
+  },
+  "mayusculas": 26,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 55,
+  "manifiesto": 60
+ },
+ "imagenes": {
+  "total": 31,
+  "enPrimerViewport": 2,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "hero-cubierta",
+    "ancho": 380,
+    "alto": 531,
+    "natural": "380x532",
+    "ajuste": "fill",
+    "arriba": 148,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 736,
+    "alto": 414,
+    "natural": "779x438",
+    "ajuste": "cover",
+    "arriba": 844,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 56,
+    "alto": 75,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 1549,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 56,
+    "alto": 75,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 1744,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 56,
+    "alto": 75,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 1911,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "230x287",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 230,
+    "alto": 288,
+    "natural": "0x0",
+    "ajuste": "cover",
+    "arriba": 2376,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 240,
+    "alto": 336,
+    "natural": "240x336",
+    "ajuste": "cover",
+    "arriba": 2934,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 70,
+  "bajo24": 34,
+  "bajo44": 56
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/",
+ "estado": 200
+}

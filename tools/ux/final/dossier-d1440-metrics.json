@@ -1,0 +1,261 @@
+{
+ "titulo": "Dossier — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 4450,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Repitentes del Verso",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 610
+ },
+ "h2": {
+  "texto": "Quiénes somos",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "44px",
+  "mayus": false,
+  "ancho": 410
+ },
+ "h3": {
+  "texto": "Fernanda Soto",
+  "familia": "Syne",
+  "px": 19,
+  "peso": "700",
+  "interlinea": "22.8px",
+  "mayus": false,
+  "ancho": 258
+ },
+ "parrafo": {
+  "texto": "DOSSIER · KIT DE PRENSA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 610
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1287,
+  "razon": 0.89,
+  "elementos": 164,
+  "porTipo": {
+   "mono": 52,
+   "display": 59,
+   "lectura": 53
+  },
+  "mayusculas": 33,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 18,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1238,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1238,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1398,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1398,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1558,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1558,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1718,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1718,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1878,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 1878,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2038,
+    "desvio": false
+   },
+   {
+    "clase": "retrato",
+    "ancho": 96,
+    "alto": 120,
+    "natural": "96x120",
+    "ajuste": "cover",
+    "arriba": 2038,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 2944,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 2944,
+    "desvio": false
+   },
+   {
+    "clase": "dossier-cubierta",
+    "ancho": 120,
+    "alto": 168,
+    "natural": "120x168",
+    "ajuste": "cover",
+    "arriba": 3152,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 3671,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 3671,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 3671,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 64,
+  "bajo24": 50,
+  "bajo44": 58
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/dossier/",
+ "estado": 200
+}

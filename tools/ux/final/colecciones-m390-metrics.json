@@ -1,0 +1,91 @@
+{
+ "titulo": "Colecciones — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1212,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Colecciones",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "Nuevas voces",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "24.2px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "1 COLECCIÓN",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "RdV Serif",
+  "px": 15,
+  "peso": "400",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 77
+ },
+ "boton": {
+  "texto": "Suscribirme",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 129
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 64,
+  "porTipo": {
+   "mono": 10,
+   "display": 9,
+   "lectura": 45
+  },
+  "mayusculas": 10,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 40,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 49,
+  "bajo24": 23,
+  "bajo44": 26
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/colecciones/",
+ "estado": 200,
+ "desborde320": false
+}

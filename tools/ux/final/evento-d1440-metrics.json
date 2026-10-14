@@ -1,0 +1,154 @@
+{
+ "titulo": "Recital «Nuevas voces» — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 2330,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Recital «Nuevas voces»",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "61.6px",
+  "mayus": false,
+  "ancho": 828
+ },
+ "h2": {
+  "texto": "PARTICIPAN",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 828
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "martes 28 Abr 2026 · 13:36 hrs · Casa del Libro · Santiago",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "400",
+  "interlinea": "20.15px",
+  "mayus": false,
+  "ancho": 828
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 70,
+  "porTipo": {
+   "mono": 21,
+   "display": 20,
+   "lectura": 29
+  },
+  "mayusculas": 12,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 7,
+  "enPrimerViewport": 3,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "ficha-afiche",
+    "ancho": 420,
+    "alto": 559,
+    "natural": "419x559",
+    "ajuste": "fill",
+    "arriba": 104,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 878,
+    "alto": 587,
+    "natural": "879x550",
+    "ajuste": "cover",
+    "arriba": 852,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 436,
+    "alto": 291,
+    "natural": "439x275",
+    "ajuste": "cover",
+    "arriba": 852,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 436,
+    "alto": 291,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 1148,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 436,
+    "alto": 291,
+    "natural": "439x275",
+    "ajuste": "cover",
+    "arriba": 1445,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 436,
+    "alto": 291,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 1445,
+    "desvio": false
+   },
+   {
+    "clase": "img",
+    "ancho": 436,
+    "alto": 291,
+    "natural": "439x293",
+    "ajuste": "cover",
+    "arriba": 1445,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 52,
+  "bajo24": 31,
+  "bajo44": 39
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/evento/recital-nuevas-voces-lanzamiento/",
+ "estado": 200
+}

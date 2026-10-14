@@ -1,0 +1,91 @@
+{
+ "titulo": "Buscar: casa — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 1386,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Búsqueda",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "POEMAS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Textos, poemas, personas, registros, publicaciones y actividades del c",
+  "familia": "RdV Serif",
+  "px": 19,
+  "peso": "400",
+  "interlinea": "27.55px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "RdV Serif",
+  "px": 15,
+  "peso": "400",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 77
+ },
+ "boton": {
+  "texto": "Buscar",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 91
+ },
+ "texto": {
+  "ancho": 347,
+  "razon": 0.89,
+  "elementos": 70,
+  "porTipo": {
+   "mono": 14,
+   "display": 9,
+   "lectura": 47
+  },
+  "mayusculas": 11,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 42,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 51,
+  "bajo24": 23,
+  "bajo44": 27
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/buscar/?q=casa",
+ "estado": 200,
+ "desborde320": false
+}

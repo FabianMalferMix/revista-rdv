@@ -1025,6 +1025,14 @@ def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
             )
 
 
+def test_los_enlaces_de_la_barra_se_pulsan_en_44_px():
+    """La auditoría pide 44 px de alto en los enlaces de la barra (ticket 6.1). Medían 23:
+    el alto de su texto (15 px por 1,55). Con 11 px arriba y abajo, 45, sin mover nada: la
+    fila mide 64 y la marca de la página actual es un subrayado, que va con el texto."""
+    for selector in (".nava", ".subnava"):
+        assert "padding-block:11px" in _regla(selector), f"«{selector}» vuelve a medir 23 px"
+
+
 def test_el_subrayado_de_la_pagina_actual_no_alcanza_al_separador():
     actual = _regla(".nava[aria-current],.subnava[aria-current]")
     assert "text-decoration-thickness:2px" in actual

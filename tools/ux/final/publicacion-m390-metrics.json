@@ -1,0 +1,109 @@
+{
+ "titulo": "Cuadernos del ruido — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 2645,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Cuadernos del ruido",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "37.4px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "PARTICIPAN",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 350
+ },
+ "h3": {
+  "texto": "Reseña de prueba: Cuadernos del ruido",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "25.3px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "parrafo": {
+  "texto": "2024 · Overol",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "400",
+  "interlinea": "20.15px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Todas las publicaciones",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "25.3px",
+  "mayus": false,
+  "ancho": 281
+ },
+ "boton": {
+  "texto": "Editorial Overol ↗",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 167
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 84,
+  "porTipo": {
+   "mono": 23,
+   "display": 16,
+   "lectura": 45
+  },
+  "mayusculas": 18,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 45,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 1,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "ficha-cubierta",
+    "ancho": 260,
+    "alto": 364,
+    "natural": "233x327",
+    "ajuste": "cover",
+    "arriba": 96,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 57,
+  "bajo24": 25,
+  "bajo44": 32
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/publicacion/cuadernos-del-ruido/",
+ "estado": 200,
+ "desborde320": false
+}

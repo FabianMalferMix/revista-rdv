@@ -1,0 +1,83 @@
+{
+ "titulo": "Enviar una propuesta — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 2124,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "Enviar una propuesta",
+  "familia": "Syne",
+  "px": 34,
+  "peso": "700",
+  "interlinea": "35.7px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": null,
+ "h3": null,
+ "parrafo": {
+  "texto": "Convocatoria abierta: Convocatoria de primavera. Cierra el 30 Nov 2026",
+  "familia": "RdV Serif",
+  "px": 19,
+  "peso": "400",
+  "interlinea": "27.55px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Integrantes",
+  "familia": "RdV Serif",
+  "px": 15,
+  "peso": "400",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 77
+ },
+ "boton": {
+  "texto": "Enviar propuesta",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 168
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 80,
+  "porTipo": {
+   "mono": 10,
+   "display": 20,
+   "lectura": 50
+  },
+  "mayusculas": 10,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 62,
+  "bajo24": 30,
+  "bajo44": 35
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/enviar/",
+ "estado": 200,
+ "desborde320": false
+}

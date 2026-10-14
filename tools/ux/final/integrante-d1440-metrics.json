@@ -1,0 +1,126 @@
+{
+ "titulo": "Fernanda Soto — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 2217,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Fernanda Soto",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "61.6px",
+  "mayus": false,
+  "ancho": 928
+ },
+ "h2": {
+  "texto": "Trayectoria",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "44px",
+  "mayus": false,
+  "ancho": 510
+ },
+ "h3": {
+  "texto": "Umbral",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 386
+ },
+ "parrafo": {
+  "texto": "Fundadora · edición · en el colectivo desde 2019",
+  "familia": "ui-monospace",
+  "px": 13,
+  "peso": "400",
+  "interlinea": "20.15px",
+  "mayus": false,
+  "ancho": 928
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1320,
+  "razon": 0.92,
+  "elementos": 86,
+  "porTipo": {
+   "mono": 23,
+   "display": 26,
+   "lectura": 37
+  },
+  "mayusculas": 11,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 55,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "ficha-retrato",
+    "ancho": 320,
+    "alto": 400,
+    "natural": "320x400",
+    "ajuste": "cover",
+    "arriba": 104,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 1432,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 1575,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 50,
+  "bajo24": 28,
+  "bajo44": 45
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/integrante/fernanda-soto/",
+ "estado": 200
+}

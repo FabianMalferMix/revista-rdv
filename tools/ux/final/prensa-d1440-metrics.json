@@ -1,0 +1,90 @@
+{
+ "titulo": "Prensa — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 904,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Prensa",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": {
+  "texto": "Entrevista al colectivo tras su plaquette",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 1052
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "2 MENCIONES",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1320,
+  "razon": 0.92,
+  "elementos": 61,
+  "porTipo": {
+   "mono": 10,
+   "display": 22,
+   "lectura": 29
+  },
+  "mayusculas": 7,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 0,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": []
+ },
+ "objetivos": {
+  "total": 42,
+  "bajo24": 28,
+  "bajo44": 37
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/prensa/",
+ "estado": 200
+}

@@ -1,0 +1,110 @@
+{
+ "titulo": "La casa vacía: el regreso como forma del duelo — Repitentes del Verso",
+ "viewport": [
+  390,
+  844
+ ],
+ "altoPagina": 2636,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 16,
+ "h1": {
+  "texto": "La casa vacía: el regreso como forma del duelo",
+  "familia": "Syne",
+  "px": 28,
+  "peso": "700",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "h2": {
+  "texto": "OBRA RESEÑADA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 314
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Vergara vuelve a la casa de la infancia: el duelo como arqueología dom",
+  "familia": "RdV Serif",
+  "px": 22,
+  "peso": "400",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 350
+ },
+ "nav": {
+  "texto": "Todos los textos",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "25.3px",
+  "mayus": false,
+  "ancho": 189
+ },
+ "boton": {
+  "texto": "Suscribirme",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 129
+ },
+ "texto": {
+  "ancho": 350,
+  "razon": 0.9,
+  "elementos": 81,
+  "porTipo": {
+   "mono": 21,
+   "display": 13,
+   "lectura": 47
+  },
+  "mayusculas": 16,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": 40,
+  "bajada": 31,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 2,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "obra-cubierta",
+    "ancho": 64,
+    "alto": 89,
+    "natural": "96x134",
+    "ajuste": "fill",
+    "arriba": 467,
+    "desvio": false
+   },
+   {
+    "clase": "lectura-imagen",
+    "ancho": 350,
+    "alto": 233,
+    "natural": "358x239",
+    "ajuste": "cover",
+    "arriba": 715,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 57,
+  "bajo24": 27,
+  "bajo44": 33
+ },
+ "cabecera": {
+  "alto": 56,
+  "posicion": "sticky"
+ },
+ "ruta": "/articulo/resena-la-casa-vacia/",
+ "estado": 200,
+ "desborde320": false
+}

@@ -1,0 +1,109 @@
+{
+ "titulo": "La casa vacía: el regreso como forma del duelo — Repitentes del Verso",
+ "viewport": [
+  1920,
+  1080
+ ],
+ "altoPagina": 1478,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 18.8,
+ "h1": {
+  "texto": "La casa vacía: el regreso como forma del duelo",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "44px",
+  "mayus": false,
+  "ancho": 489
+ },
+ "h2": {
+  "texto": "OBRA RESEÑADA",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 453
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "Vergara vuelve a la casa de la infancia: el duelo como arqueología dom",
+  "familia": "RdV Serif",
+  "px": 22,
+  "peso": "400",
+  "interlinea": "30.8px",
+  "mayus": false,
+  "ancho": 489
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1421,
+  "razon": 0.74,
+  "elementos": 65,
+  "porTipo": {
+   "mono": 16,
+   "display": 19,
+   "lectura": 30
+  },
+  "mayusculas": 11,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": 62,
+  "bajada": 50,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 2,
+  "enPrimerViewport": 1,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "obra-cubierta",
+    "ancho": 64,
+    "alto": 89,
+    "natural": "96x134",
+    "ajuste": "fill",
+    "arriba": 492,
+    "desvio": false
+   },
+   {
+    "clase": "lectura-imagen",
+    "ancho": 855,
+    "alto": 570,
+    "natural": "760x506",
+    "ajuste": "cover",
+    "arriba": 84,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 45,
+  "bajo24": 31,
+  "bajo44": 38
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/articulo/resena-la-casa-vacia/",
+ "estado": 200
+}

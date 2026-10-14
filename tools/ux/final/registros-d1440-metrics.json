@@ -1,0 +1,109 @@
+{
+ "titulo": "Registros — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 1126,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Registros",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": {
+  "texto": "Recital «Nuevas voces» (registro)",
+  "familia": "Syne",
+  "px": 22,
+  "peso": "700",
+  "interlinea": "24.2px",
+  "mayus": false,
+  "ancho": 646
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "2 REGISTROS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 54,
+  "porTipo": {
+   "mono": 11,
+   "display": 16,
+   "lectura": 27
+  },
+  "mayusculas": 5,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 2,
+  "enPrimerViewport": 2,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "riso-duo",
+    "ancho": 646,
+    "alto": 363,
+    "natural": "660x371",
+    "ajuste": "cover",
+    "arriba": 369,
+    "desvio": false
+   },
+   {
+    "clase": "riso-duo",
+    "ancho": 646,
+    "alto": 363,
+    "natural": "660x371",
+    "ajuste": "cover",
+    "arriba": 369,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 41,
+  "bajo24": 29,
+  "bajo44": 36
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/registros/",
+ "estado": 200
+}

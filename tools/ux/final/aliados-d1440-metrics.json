@@ -1,0 +1,118 @@
+{
+ "titulo": "Aliados — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 1239,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Aliados",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": {
+  "texto": "FINANCIAMIENTO",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "700",
+  "interlinea": "13.2px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "h3": null,
+ "parrafo": {
+  "texto": "3 ALIADOS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1301,
+  "razon": 0.9,
+  "elementos": 58,
+  "porTipo": {
+   "mono": 8,
+   "display": 20,
+   "lectura": 30
+  },
+  "mayusculas": 8,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 3,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 401,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 583,
+    "desvio": false
+   },
+   {
+    "clase": "partner-logo",
+    "ancho": 160,
+    "alto": 80,
+    "natural": "160x80",
+    "ajuste": "contain",
+    "arriba": 764,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 42,
+  "bajo24": 28,
+  "bajo44": 37
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/aliados/",
+ "estado": 200
+}

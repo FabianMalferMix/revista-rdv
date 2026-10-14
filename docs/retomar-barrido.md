@@ -1,6 +1,6 @@
 # Cómo retomar el barrido manual (traspaso entre equipos)
 
-Estado a **2026-08-24**. Este documento existe para poder continuar el barrido de
+Estado a **2026-10-14**. Este documento existe para poder continuar el barrido de
 `guia-pruebas-manuales.md` en otra máquina sin releer el historial.
 
 ---
@@ -22,26 +22,25 @@ Comprueba después que **CI sale verde** en la pestaña Actions (cinco jobs). Si
 
 ## 1. Dónde vamos
 
-**91 de 104 casillas.** Completos §1, §2, §4, §5, §6, §7, §8 y §9.
+**El barrido se completó el 2026-09-02: 104 de 104 casillas.** La última era un límite
+conocido del §4 (un ZIP renombrado a `.docx` pasaba como manuscrito), y la cerró
+`fix-firma-zip`. El barrido produjo además varios lotes de código por fallos que ninguna
+prueba automática podía ver, entre ellos `admin-acciones-por-rol`, `fix-dimensiones-nulas`,
+`feed-identidad-del-sitio` y el propio `fix-firma-zip`.
+
+**Después, el rediseño UX/UI** (`docs/plan-ejecucion-ux.md`, 25 pasos, del 2026-10-08 al
+2026-10-14) cambió el sitio público. La guía tiene ahora **111 casillas: 100 comprobadas y
+11 por comprobar**, que son las que describen lo que cambió:
 
 | Bloque | Estado |
 |---|---|
-| §1 Sitio público | completo (22) |
-| §2 Buscador | completo (8) |
-| §3 Boletín | 7 de 10 — faltan honeypot, rate limit y correo de 260 caracteres |
-| §4 Envío de propuestas | 8 de 9 — la que falta es un límite documentado, no una prueba |
-| §5 Panel editorial | 16 de 17 — falta el ciclo de devolución completo |
-| §6 Medios | 10 de 11 — falta «grabación inédita» |
-| §7 Sindicación y SEO | completo (6) |
-| §8 Controles de seguridad | completo (10) |
-| §9 Comandos y tareas | completo (4) |
-| **§10 Respaldos** | **0 de 4 — es lo siguiente** |
-| §11 Desarrollo y CI | 0 de 3 |
+| §1 Sitio público | 8 por comprobar: la portada, el dossier, la ficha de un evento y las cinco de §1.5 (cabecera, menú, cinta, índices y teclado) |
+| §2 Buscador | 3 por comprobar: la búsqueda por grupos |
+| §3 a §11 | completos; el rediseño no los tocó |
 
-El barrido ha producido **seis lotes de código**, todos por fallos que ninguna prueba
-automática podía ver: `admin-acciones-por-rol`, `test-aislar-media-privado`,
-`fix-dimensiones-nulas`, `feed-identidad-del-sitio`, `log-redaccion-campos-extra` y el
-arreglo de la barra de navegación. La suite pasó de 452 a **472 pruebas**.
+**Lo siguiente** es comprobar esas once a mano, en desarrollo y a 951 px de ancho, que es
+como revisa el dueño del sitio. La verificación medida del rediseño está en
+`docs/auditoria-ux-ui-verificacion.md`.
 
 ---
 
@@ -159,9 +158,10 @@ Ambas pilas **conviven**: desarrollo en `:8000`, vista previa en `:8090`.
 
 ---
 
-## 4. Lo siguiente: §10, respaldos
+## 4. Cómo se probaron los respaldos (§10)
 
-Es la parte más delicada del barrido y hay una **decisión tomada y su porqué**.
+Hecho el 2026-08-26. Se deja escrito porque es la parte más delicada del barrido y hay una
+**decisión tomada y su porqué**, que sirve si hay que repetirla.
 
 ### La decisión
 
@@ -200,9 +200,9 @@ root y con el directorio en modo escritura.
 
 ---
 
-## 5. Después: §11, desarrollo y CI
+## 5. Cómo se comprobó §11, desarrollo y CI
 
-Tres casillas. Las dos primeras se corren solas:
+Hecho el 2026-09-02. Tres casillas. Las dos primeras se corren solas:
 
 ```bash
 docker compose exec web pytest                       # el orden se aleatoriza cada vez
@@ -216,15 +216,16 @@ La tercera necesita mirar **Actions** en GitHub: cinco jobs (`test`, `build-prod
 
 ## 6. Cabos sueltos, por si se cierran de camino
 
-- **Cuatro mejoras pendientes** en `deferidos-y-decisiones.md`: el 404 en modo DEBUG, los
-  rótulos a medias en inglés (incluido el «Account locked» de la pantalla de acceso),
-  `Article` sin `get_absolute_url` —que deja al panel sin botón «Ver en el sitio»— y el
-  ZIP que pasa por `.docx`.
-- **Nueve ramas de Dependabot** acumuladas en el remoto, algunas ya solapadas entre sí
-  (`redis-8.0.1` y `redis-8.1.0`). Conviene cerrarlas por tandas antes de que choquen.
-- **Decisiones que siguen siendo tuyas**: la licencia de TinyMCE, configurar la identidad
-  del sitio en el panel, y el `chown` del directorio de respaldos para que el sidecar no
-  corra como root.
+- **Las cuatro mejoras que quedaban** en `deferidos-y-decisiones.md` (el 404 en modo DEBUG,
+  los rótulos a medias en inglés, `Article` sin `get_absolute_url` y el ZIP que pasaba por
+  `.docx`) **están cerradas**; lo que queda abierto está en sus §2 a §4.
+- **Siete PR de Dependabot abiertos** (#107 a #113), algunos de imágenes de Docker. Conviene
+  revisarlos por tandas.
+- **Decisiones que siguen siendo del dueño**: la licencia de TinyMCE, la identidad del sitio
+  en la base de producción (en desarrollo ya está) y el `chown` del directorio de respaldos
+  para que el sidecar no corra como root.
 - **Resembrar pisa el estado editorial.** `seed_demo` usa `update_or_create` y reescribe
   el campo `status` directamente, sin pasar por el flujo: si resiembras, pierdes el
-  recorrido de la bitácora y aparecen transiciones duplicadas.
+  recorrido de la bitácora y aparecen transiciones duplicadas. Y **no se corre sobre una
+  base con la identidad aplicada**: el entorno de diseño se reconstruye con
+  `tools/ux/preparar-entorno.sh`.

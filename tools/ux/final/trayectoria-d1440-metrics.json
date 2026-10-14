@@ -1,0 +1,135 @@
+{
+ "titulo": "Trayectoria — Repitentes del Verso",
+ "viewport": [
+  1440,
+  900
+ ],
+ "altoPagina": 2018,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 17.6,
+ "h1": {
+  "texto": "Trayectoria",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1320
+ },
+ "h2": {
+  "texto": "2026",
+  "familia": "Syne",
+  "px": 40,
+  "peso": "700",
+  "interlinea": "40px",
+  "mayus": false,
+  "ancho": 324
+ },
+ "h3": {
+  "texto": "Recital de invierno",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 568
+ },
+ "parrafo": {
+  "texto": "4 ACTIVIDADES REALIZADAS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1320
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1320,
+  "razon": 0.92,
+  "elementos": 94,
+  "porTipo": {
+   "mono": 25,
+   "display": 39,
+   "lectura": 30
+  },
+  "mayusculas": 5,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": null,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 4,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x128",
+    "ajuste": "cover",
+    "arriba": 514,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x128",
+    "ajuste": "cover",
+    "arriba": 639,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x128",
+    "ajuste": "cover",
+    "arriba": 764,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x128",
+    "ajuste": "cover",
+    "arriba": 954,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 49,
+  "bajo24": 28,
+  "bajo44": 44
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/trayectoria/",
+ "estado": 200
+}

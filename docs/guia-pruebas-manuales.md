@@ -84,8 +84,12 @@ no una plantilla vacía.
 
 ### 1.1 Portada y archivo
 
-- [x] **`/`** — Portada. Debe traer: un destacado grande (registro o poema), artículos
-      recientes, integrantes, publicaciones, prensa y aliados.
+- [ ] **`/`** — Portada. De arriba abajo: el nombre del colectivo como titular, con la
+      cubierta de una publicación al lado; el registro destacado; la obra (poemas con sus
+      tres primeros versos, y textos); las integrantes, en una cinta; las publicaciones; y un
+      cierre «Para programadores y jurados» con la última actividad y «Actualizado el …».
+      **Sin cifras, sin prensa y sin aliados**: los quitó el dueño del sitio y están en el
+      dossier. (Cambió con el rediseño UX, pasos 19 y 20.)
 - [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2` y `?page=999`
       (este último **no debe reventar**).
 - [x] **`/poemas/`** — Índice de poemas. Cada fila cita el **primer verso** del poema y se
@@ -116,8 +120,11 @@ no una plantilla vacía.
       enlaces llevan a puntos de venta externos.
 - [x] **`/prensa/`** — Menciones de prensa.
 - [x] **`/aliados/`** — Aliados y espacios.
-- [x] **`/dossier/`** — Kit de prensa. **Pulsa «Imprimir»** o `Ctrl+P`: la vista de
-      impresión debe quedar limpia (sin nav ni pie).
+- [ ] **`/dossier/`** — Kit de prensa: «DOSSIER · KIT DE PRENSA» sobre el nombre, la ficha
+      junto a «Quiénes somos», las cifras con su trazo amarillo, las integrantes con su
+      retrato, la trayectoria por años y las publicaciones con su cubierta. **Pulsa
+      «Imprimir / guardar como PDF»** o `Ctrl+P`: la vista de impresión debe quedar limpia
+      (sin cabecera ni pie) y **con los retratos, las cubiertas y los logos**. (Paso 22.)
 
 ### 1.4 Agenda y registros
 
@@ -127,13 +134,36 @@ no una plantilla vacía.
       la de un **hito** no lleva a ninguna parte y no reacciona al puntero.
 - [x] **`/galeria/`** — Un álbum por evento, con hasta tres de sus fotos. Pulsa un álbum para
       ir a la ficha del evento.
-- [x] **`/evento/<slug>/`** — Ficha con fotos y registros del evento. **Pulsa una foto**: se
-      amplía sin JavaScript (CSS `:target`). Pulsa fuera para cerrar.
+- [ ] **`/evento/<slug>/`** — El afiche a la izquierda, con su pie («Afiche · …»); a su lado,
+      «Participan» y «Registros». Las fotos, en mosaico, con la primera a doble tamaño; si
+      hay más de seis, «Ver las N fotos» enseña las demás. **Pulsa una foto**: se amplía sin
+      JavaScript (CSS `:target`), a pantalla completa y entera. Pulsa fuera o la × para
+      cerrar. (Paso 23.)
 - [x] **`/registros/`** — Una miniatura por registro; **aquí no hay reproductores**. Toda la
       tarjeta lleva a la ficha, salvo el nombre del evento, que es su propio enlace.
 - [x] **`/registro/<slug>/`** — Ver §6.3 para el reproductor.
 
-### 1.5 Catálogo bibliográfico
+### 1.5 Cabecera, menú, cinta e índices
+
+> Llegaron con el rediseño UX (octubre de 2026, `docs/plan-ejecucion-ux.md`).
+
+- [ ] **Cabecera, en escritorio.** Una fila: el sello, «Poemas · Textos · Registros ·
+      Publicaciones · Colectivo», la lupa y el botón «Dossier». La página actual va
+      subrayada en magenta; en una ficha, su sección (en un poema, «Poemas»). Se queda fija
+      al bajar.
+- [ ] **Cabecera, en el teléfono** (menos de 900 px de ancho): el sello, la lupa y «Menú».
+      «Menú» abre el mapa del sitio, con el correo y el Instagram.
+- [ ] **La cinta de integrantes**, en la portada: se mueve sola y **se detiene** al pasar el
+      ratón por encima y al llegar con el tabulador a «Conoce al colectivo». **No hay botón de
+      pausa**, a propósito (decisión D1). Con «reducir movimiento» activado en el sistema, no
+      se mueve. En un teléfono es una fila que se desliza con el dedo.
+- [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
+      título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
+      Trayectoria · Agenda · Galería · Prensa · Aliados».
+- [ ] **Teclado.** El primer Tab de cualquier página enseña «Saltar al contenido», y todo lo
+      que se puede pulsar lleva un contorno magenta al recibir el foco.
+
+### 1.6 Catálogo bibliográfico
 
 - [x] **`/obra/<slug>/`** — Libro reseñado, con sus reseñas publicadas.
 - [x] **`/editorial/<slug>/`** y **`/autor/<slug>/`**

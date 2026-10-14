@@ -1,0 +1,145 @@
+{
+ "titulo": "Textos — Repitentes del Verso",
+ "viewport": [
+  1920,
+  1080
+ ],
+ "altoPagina": 1523,
+ "desbordeHorizontal": false,
+ "cuerpoPx": 18.8,
+ "h1": {
+  "texto": "Textos",
+  "familia": "Syne",
+  "px": 56,
+  "peso": "700",
+  "interlinea": "58.8px",
+  "mayus": false,
+  "ancho": 1440
+ },
+ "h2": null,
+ "h3": {
+  "texto": "La casa vacía: el regreso como forma del duelo",
+  "familia": "Syne",
+  "px": 26,
+  "peso": "700",
+  "interlinea": "29.9px",
+  "mayus": false,
+  "ancho": 1004
+ },
+ "parrafo": {
+  "texto": "7 TEXTOS",
+  "familia": "ui-monospace",
+  "px": 12,
+  "peso": "400",
+  "interlinea": "18.6px",
+  "mayus": true,
+  "ancho": 1440
+ },
+ "nav": {
+  "texto": "Poemas",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "500",
+  "interlinea": "23.25px",
+  "mayus": false,
+  "ancho": 80
+ },
+ "boton": {
+  "texto": "Dossier",
+  "familia": "Syne",
+  "px": 15,
+  "peso": "600",
+  "interlinea": "18px",
+  "mayus": false,
+  "ancho": 94
+ },
+ "texto": {
+  "ancho": 1440,
+  "razon": 0.75,
+  "elementos": 87,
+  "porTipo": {
+   "mono": 32,
+   "display": 21,
+   "lectura": 34
+  },
+  "mayusculas": 12,
+  "bajo12": 0
+ },
+ "cpl": {
+  "articulo": null,
+  "bajada": 55,
+  "manifiesto": null
+ },
+ "imagenes": {
+  "total": 6,
+  "enPrimerViewport": 0,
+  "desviadas": 0,
+  "muestra": [
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 287,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 434,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 559,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 684,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 809,
+    "desvio": false
+   },
+   {
+    "clase": "fila-miniatura riso-duo",
+    "ancho": 72,
+    "alto": 96,
+    "natural": "96x64",
+    "ajuste": "cover",
+    "arriba": 934,
+    "desvio": false
+   }
+  ]
+ },
+ "objetivos": {
+  "total": 55,
+  "bajo24": 28,
+  "bajo44": 49
+ },
+ "cabecera": {
+  "alto": 64,
+  "posicion": "sticky"
+ },
+ "ruta": "/textos/",
+ "estado": 200
+}
