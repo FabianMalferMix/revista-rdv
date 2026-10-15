@@ -188,8 +188,10 @@ no una plantilla vacía.
 > proponía antes esta guía —«poesia»— devuelve **cero resultados**, así que la prueba de
 > acentos no demostraba nada: dos búsquedas vacías también «encuentran lo mismo».
 
-- [ ] **Con JavaScript:** pulsa la lupa de la cabecera y escribe `oficio`. Los resultados
-      aparecen **en vivo** en un panel, sin recargar (htmx, 300 ms de rebote), **agrupados
+- [ ] **Con JavaScript:** pulsa la lupa de la cabecera y escribe `oficio`. El campo se abre
+      **dentro de la barra**, donde estaban los enlaces (en la cápsula, la cápsula se vuelve
+      el buscador), y la página no se mueve. Los resultados aparecen **en vivo** en una
+      tarjeta debajo, sin recargar (htmx, 300 ms de rebote), **agrupados
       por tipo**: «Oficio de la lluvia» bajo POEMAS y «Sobre el oficio de la crítica» bajo
       TEXTOS, con «Ensayo» debajo del título. (Cambió en el paso 24 del plan UX: era una
       sola lista.)

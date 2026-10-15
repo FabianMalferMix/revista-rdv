@@ -418,7 +418,9 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    solo pone y quita data-barra="pildora" en <html>. Sin JavaScript no aplica nada de esto y
    queda la cabecera fija de siempre. La franja mide siempre --alto-cabecera: lo fijo de la
    página (la columna ancla, los años) y los saltos a anclas no se mueven. */
-:root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px}
+/* --capsula-ancho: lo que mide la cápsula con sus cinco enlaces. Mientras se busca, los
+   enlaces se esconden y la cápsula conserva ese ancho. */
+:root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px; --capsula-ancho:630px}
 @media (max-width:899px){
   :root{--capsula-alto:44px; --capsula-relleno:0px; --capsula-arriba:6px}
 }
@@ -493,6 +495,34 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 /* La cabecera está siempre a la vista: enfocar uno de sus controles a mitad de página no
    debe desplazar la página. Con el scroll-padding de arriba, saltaba unos 450 px. */
 .masthead :is(a, summary, input){scroll-margin-top:calc(-1 * (var(--alto-cabecera) + var(--s2)))}
+/* El buscador en la barra (estilo 4, elegido por el dueño el 2026-10-15). La lupa abre el
+   campo dentro de la misma fila, en el lugar de los cinco enlaces, que vuelven al cerrar
+   (con la lupa o con Escape). En la cápsula pasa lo mismo: la cápsula se vuelve el
+   buscador. Los resultados cuelgan debajo como una tarjeta con el acabado de la cápsula.
+   Todo cuelga de :has(): donde no lo hay, queda el panel de antes. Solo la cabecera: la
+   página /buscar/ no cambia. */
+.masthead-fila:has(.busqueda[open]) .nav-disclosure{display:none}
+.masthead-fila:has(.busqueda[open]) .busqueda{flex:1; position:relative; min-width:0; height:44px}
+.masthead-fila:has(.busqueda[open]) .busqueda summary{position:absolute; right:0; top:0}
+.masthead-fila:has(.busqueda[open]) .busqueda .search{position:absolute; left:0; right:52px; top:50%; translate:0 -50%; width:auto;
+  padding:0; background:none; border:0; border-radius:0; box-shadow:none}
+.masthead-fila:has(.busqueda[open]) .busqueda .search input{padding:9px 14px}
+.masthead-fila:has(.busqueda[open]) .busqueda #search-results{top:calc(100% + 14px)}
+.masthead-fila:has(.busqueda[open]) .busqueda #search-results:not(:empty){background:var(--paper-2); border:1px solid var(--line);
+  border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line); padding:var(--s2)}
+.masthead-fila:has(.busqueda[open]) .search-list a{font-family:var(--display); letter-spacing:var(--tr-titulo); font-weight:600; text-decoration:none}
+.masthead-fila:has(.busqueda[open]) .search-list a:hover{color:var(--accent)}
+html[data-barra="pildora"] .masthead-fila:has(.busqueda[open]){width:min(var(--capsula-ancho), 100% - 24px)}
+/* Mientras se busca, sin el margen de arriba: el campo está dentro de la cabecera fija y el
+   navegador lo creía tapado por ese margen, así que al escribir desplazaba la página para
+   «mostrarlo». */
+html:has(.busqueda[open]){scroll-padding-top:0}
+/* En el teléfono, mientras se busca, el campo ocupa la fila entera (también el sitio del
+   sello) y los resultados, su ancho. */
+@media (max-width:899px){
+  .masthead-fila:has(.busqueda[open]) .brand{display:none}
+  .masthead-fila:has(.busqueda[open]) .busqueda #search-results{left:0; right:-52px}
+}
 .foot-group-titulo{margin:0 0 4px}
 
 /* Accesibilidad: salto al contenido y foco visible global. */
