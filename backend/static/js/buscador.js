@@ -12,7 +12,8 @@
       var panel = evento.target;
       if (!panel.matches || !panel.matches(".busqueda") || !panel.open) return;
       var campo = panel.querySelector('input[type="search"]');
-      if (campo) campo.focus();
+      // Sin desplazar: el campo está en la cabecera fija, siempre a la vista.
+      if (campo) campo.focus({ preventScroll: true });
     },
     true
   );
