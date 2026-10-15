@@ -22,5 +22,9 @@ from ipware import get_client_ip
 
 
 def client_ip(request):
-    ip, _ = get_client_ip(request, proxy_order="right-most")
+    # El algoritmo «legacy» de django-ipware 8 (el de la 7): el «modern», que es el nuevo por
+    # defecto, salta las direcciones que no considera públicas, y entonces devolvía una
+    # entrada de más a la izquierda, la que puede inventar el cliente. Lo prueba
+    # test_client_ip_uses_rightmost_forwarded_for_and_is_spoof_safe.
+    ip, _ = get_client_ip(request, proxy_order="right-most", algorithm="legacy")
     return ip or request.META.get("REMOTE_ADDR", "")
