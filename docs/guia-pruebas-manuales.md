@@ -147,12 +147,18 @@ no una plantilla vacía.
 
 > Llegaron con el rediseño UX (octubre de 2026, `docs/plan-ejecucion-ux.md`).
 
-- [ ] **Cabecera, en escritorio.** Una fila: el sello, «Poemas · Textos · Registros ·
-      Publicaciones · Colectivo», la lupa y el botón «Dossier». La página actual va
-      subrayada en magenta; en una ficha, su sección (en un poema, «Poemas»). Se queda fija
-      al bajar.
-- [ ] **Cabecera, en el teléfono** (menos de 900 px de ancho): el sello, la lupa y «Menú».
-      «Menú» abre el mapa del sitio, con el correo y el Instagram.
+- [ ] **Cabecera, en escritorio.** Una fila sin línea debajo: el sello, «Poemas · Textos ·
+      Registros · Publicaciones · Colectivo», la lupa y el botón «Dossier». La página actual va
+      subrayada en magenta; en una ficha, su sección (en un poema, «Poemas»). Al bajar un
+      poco, la fila da paso a una cápsula centrada con el monograma, los cinco enlaces, la
+      lupa y «Dossier»; al volver arriba, vuelve la fila.
+- [ ] **Cabecera, en la portada.** Al abrir no hay nada arriba: el nombre grande hace de
+      cabecera, y «Ver el dossier» está en el titular. Al bajar un poco aparece la cápsula;
+      al volver arriba, se va. Con el teclado, el primer Tab tras «Saltar al contenido» la
+      hace aparecer.
+- [ ] **Cabecera, en el teléfono** (menos de 900 px de ancho): el sello, la lupa y «Menú»
+      (en la portada, nada hasta bajar). «Menú» abre el mapa del sitio, con el correo y el
+      Instagram; en la cápsula, cuelga de ella.
 - [ ] **La cinta de integrantes**, en la portada: se mueve sola y **se detiene** al pasar el
       ratón por encima y al llegar con el tabulador a «Conoce al colectivo». **No hay botón de
       pausa**, a propósito (decisión D1). Con «reducir movimiento» activado en el sistema, no
