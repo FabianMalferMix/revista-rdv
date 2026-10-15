@@ -100,6 +100,7 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 | D12 | La cinta, desde 12 integrantes | La cinta no era el problema; sus tarjetas sí | Retratos 4:5 a una tinta; fila con scroll en táctil (paso 14) |
 | D13 | Títulos de sección en Syne con cejilla | Un título no puede medir menos que su texto | En todo el sitio; en el dossier desde el paso 22 |
 | D14 | Estados por color, radios y filetes en tokens | Acabado consistente; WCAG 1.4.11 | `--r-1`, `--line` y `--edge` (paso 6) |
+| D15 | La cabecera al bajar: opción C (2026-10-15) | Una primera vista limpia de la portada, camino a una portada más estética | Arriba, la cabecera sin filete; en la portada, nada. Al bajar 64 px (56 en el teléfono), una cápsula «Objeto» con el velo (menos en la portada). Cambia, solo para la cabecera, «nada de revelado al scroll» y la navegación a la vista arriba de la portada; el «Ver el dossier» vuelve al titular. Sin JavaScript, la cabecera fija de siempre |
 
 ---
 

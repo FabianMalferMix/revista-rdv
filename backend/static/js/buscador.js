@@ -23,6 +23,8 @@
     if (!abierto) return;
     abierto.open = false;
     var boton = abierto.querySelector("summary");
-    if (boton) boton.focus();
+    // Sin desplazar la página: la cabecera está a la vista, y enfocar la lupa a mitad de
+    // página la hacía saltar unos 450 px.
+    if (boton) boton.focus({ preventScroll: true });
   });
 })();
