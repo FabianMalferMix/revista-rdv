@@ -1,22 +1,45 @@
 {% extends "base.html" %}
 {% load images %}
 
+{% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
   {% comment %}
-     Titular de la portada (ticket 4.2; D8, D9). El nombre del colectivo es el titular, y
-     el lema baja a la cejilla. A su lado, un objeto real: la primera cubierta del
-     catálogo o el afiche de la próxima actividad. El dueño del sitio eligió esta
-     disposición entre tres, vistas sobre la portada real. Después quitó lo que iba debajo:
-     las cifras (integrantes, actividades, publicaciones), los aliados y la cita de prensa.
-     El colectivo aún es pequeño y prefiere no enseñarlos por ahora.
+     La portada como obra (D18). En el tablero de la portada (2026-10-20) el dueño del sitio
+     eligió la «mancheta de afiche» con telón: la primera vista es una obra a sangre y, al
+     pie, el logo de lado a lado, sobreimpreso en tinta como una plancha más de riso. Lo que
+     era el titular (la cejilla, el manifiesto, los botones y el sello de la convocatoria)
+     pasa a la hoja que sigue, y su primera línea asoma: así se ve que hay más. La cubierta
+     que acompañaba al nombre ya no va; el catálogo sigue más abajo. La obra la elige el
+     colectivo en el perfil del sitio; sin ella, va la lámina del estreno.
   {% endcomment %}
-  <section class="hero{% if objeto_titular %} hero--con-objeto{% endif %}">
+  <section class="portada-arte" aria-labelledby="portada-nombre">
+    {% portada_img portada_imagen portada_telefono %}
+    <div class="portada-mancheta">
+      {% comment %}
+         El nombre sigue siendo el único h1 y lleva la clase .hero-nombre: de ella cuelgan la
+         cápsula de la cabecera (site.css) y cabecera.js. Se ve el logo, y los lectores de
+         pantalla y los buscadores leen el nombre.
+      {% endcomment %}
+      <h1 class="hero-nombre portada-logo" id="portada-nombre"><span class="sr-only">{{ site_profile.name|default:"Reseñas" }}</span>{% include "partials/_logo_horizontal.html" %}{% include "partials/_logo_apilado.html" %}</h1>
+    </div>
+  </section>
+
+  {% comment %}
+     El telón: la hoja y todo lo que sigue suben sobre la obra, que se queda quieta (con
+     menos movimiento, sube con la página, como siempre). Repite los carriles del lienzo.
+  {% endcomment %}
+  <div class="portada-telon">
+  {% comment %}
+     La hoja: lo que era el titular (ticket 4.2; D8, D9). «Saltar al contenido» lleva aquí.
+     Bajo el titular iban las cifras, los aliados y la cita de prensa: el dueño del sitio
+     los quitó (2026-10-14), porque el colectivo aún es pequeño.
+  {% endcomment %}
+  <section class="hero" id="contenido">
     {% if cejilla or instagram_del_colectivo.usuario %}
       <p class="kicker hero-cejilla">{{ cejilla|join:" · " }}{% if instagram_del_colectivo.usuario %}{% if cejilla %} · {% endif %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}</p>
     {% endif %}
-    <h1 class="hero-nombre">{{ site_profile.name|default:"Reseñas" }}</h1>
     <div class="hero-texto">
       {% if site_profile.manifesto %}
         <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
@@ -24,9 +47,10 @@
       {% endif %}
       <p class="hero-ctas">
         {% comment %}
-           El dossier es el único botón principal de la primera pantalla. Desde 900 px lo
-           lleva la cabecera, y aquí se oculta; en el teléfono la cabecera no lo enseña y
-           va aquí. El rótulo dice lo que pasa al pulsar: con PDF se descarga un archivo.
+           El dossier es el único botón principal de la hoja. Sin JavaScript, desde 900 px
+           lo lleva la cabecera fija, y aquí se oculta; con JavaScript la portada abre sin
+           cabecera y va aquí, y en el teléfono la cabecera no lo enseña. El rótulo dice lo
+           que pasa al pulsar: con PDF se descarga un archivo.
         {% endcomment %}
         {% if site_profile.dossier_pdf %}
           <a class="btn btn--primary hero-dossier" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
@@ -41,7 +65,7 @@
         {% comment %}
            Sello de convocatoria: un timbre impreso, girado y quieto, que solo aparece
            mientras hay una convocatoria abierta. Lleva al formulario de envío. Va bajo los
-           botones: sobre el objeto o junto al nombre los taparía.
+           botones.
         {% endcomment %}
         <a class="sello-convocatoria" href="{% url 'submissions:submit' %}">
           <span class="rotulo">Convocatoria abierta</span>
@@ -49,17 +73,6 @@
         </a>
       {% endif %}
     </div>
-    {% if objeto_titular %}
-      {% comment %}
-         Un objeto apoyado sobre el papel: girado y con una sombra plana. La imagen y el
-         pie llevan al mismo sitio; el enlace de la imagen no se anuncia ni recibe el foco,
-         para no repetirlo.
-      {% endcomment %}
-      <figure class="hero-objeto">
-        <a class="hero-cubierta" href="{{ objeto_titular.url }}" tabindex="-1" aria-hidden="true">{% responsive_img objeto_titular.imagen sizes="380px" lazy=False decorativa=True %}</a>
-        <figcaption class="meta">{{ objeto_titular.rotulo }} · <a href="{{ objeto_titular.url }}">{{ objeto_titular.titulo }}</a>{% if objeto_titular.dato %}, {{ objeto_titular.dato }}{% endif %}</figcaption>
-      </figure>
-    {% endif %}
   </section>
 
   {% if featured %}
@@ -85,7 +98,7 @@
         </p>
         {% if featured.object.description %}<p class="rec-sumario">{{ featured.object.description }}</p>{% endif %}
       </div>
-      {% include "media/partials/_player.html" with r=featured.object %}
+      {% include "media/partials/_player.html" with r=featured.object diferida=True %}
       <p class="meta featured-enlace"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
     {% else %}
       <span class="kicker">Poema destacado</span>
@@ -217,4 +230,5 @@
     {% endif %}
   </section>
 
+  </div>
 {% endblock %}

@@ -15,6 +15,12 @@ class MediaAsset(models.Model):
 
     # Anchos de los derivados para `srcset` (solo se generan los menores al original).
     SRCSET_WIDTHS = (480, 960, 1440)
+    # La obra de la portada va a sangre (D18): pide copias más anchas y en formatos
+    # modernos. Se hacen solo para la imagen elegida como portada (ver
+    # apps.showcase.apps), no para cada imagen que se sube. Las calidades dejan la lámina
+    # del estreno bajo 300 KB en escritorio y 150 KB en el teléfono.
+    PORTADA_WIDTHS = (640, 960, 1080, 1440, 1920, 2560)
+    PORTADA_FORMATS = (("avif", "AVIF", {"quality": 50}), ("webp", "WEBP", {"quality": 70}))
 
     file = models.ImageField(
         upload_to="assets/%Y/%m/",
@@ -64,7 +70,88 @@ class MediaAsset(models.Model):
         al borrar el recurso no queden derivados huérfanos en el almacenamiento."""
         if not self.file or not self.file.name:
             return []
-        return [self._derivative_name(w) for w in self.SRCSET_WIDTHS]
+        # Las de portada, en todos los anchos posibles: borrar una que no existe no falla.
+        anchos_portada = {*self.PORTADA_WIDTHS, *([self.width] if self.width else [])}
+        return [self._derivative_name(w) for w in self.SRCSET_WIDTHS] + [
+            self._portada_name(w, ext)
+            for w in sorted(anchos_portada)
+            for ext, _, _ in self.PORTADA_FORMATS
+        ]
+
+    # ── La obra de la portada (D18) ───────────────────────────
+    def _portada_name(self, width, ext):
+        # Con la extensión del original en el nombre: «obra.jpg» y «obra.png» de la misma
+        # carpeta no comparten copias (ni las borra una al borrar la otra).
+        p = PurePosixPath(self.file.name)
+        return str(p.with_name(f"{p.stem}__portada-{p.suffix.lstrip('.')}-{width}w.{ext}"))
+
+    def _anchos_portada(self, ancho):
+        anchos = [w for w in self.PORTADA_WIDTHS if w < ancho]
+        if ancho <= self.PORTADA_WIDTHS[-1]:
+            anchos.append(ancho)
+        return anchos
+
+    def portada_widths(self):
+        """Los anchos de las copias de portada: los menores que el original y, si el original
+        no pasa del mayor, una copia a su propio ancho. Así la portada nunca sirve el
+        archivo subido, que puede pesar varios megas."""
+        return self._anchos_portada(self.width) if self.width else []
+
+    def ensure_portada_derivatives(self):
+        """Genera, si faltan, las copias de portada en AVIF y WebP. Idempotente y tolerante a
+        fallos, como `ensure_derivatives`: sin ellas, la portada cae al `srcset` de siempre."""
+        if not self.file or not self.file.name:
+            return
+        existe = self.file.storage.exists
+        if self.width and all(
+            existe(self._portada_name(w, ext))
+            for w in self.portada_widths()
+            for ext, _, _ in self.PORTADA_FORMATS
+        ):
+            return
+        try:
+            with self.file.open("rb") as fh:
+                img = Image.open(fh)
+                img.load()
+        except Exception:
+            return
+        # Derecha y con su ancho real. Una foto de cámara puede venir girada por su etiqueta
+        # EXIF, y estas copias pueden hacerse antes de que strip_metadata la enderece y
+        # corrija `width` (la señal post_save de apps.showcase llega dentro del save()): los
+        # anchos salen de la imagen enderezada, no de la columna.
+        img = ImageOps.exif_transpose(img)
+        # La transparencia se conserva (AVIF y WebP la admiten): pasada a RGB sin más, lo
+        # transparente salía negro y el logo en tinta desaparecía encima.
+        transparente = img.mode in ("RGBA", "LA", "PA") or (
+            img.mode == "P" and "transparency" in img.info
+        )
+        img = img.convert("RGBA" if transparente else "RGB")
+        for w in self._anchos_portada(img.width):
+            for ext, fmt, opciones in self.PORTADA_FORMATS:
+                nombre = self._portada_name(w, ext)
+                if existe(nombre):
+                    continue
+                copia = img
+                if w != img.width:
+                    copia = img.resize(
+                        (w, max(1, round(img.height * w / img.width))), Image.Resampling.LANCZOS
+                    )
+                buf = BytesIO()
+                try:
+                    copia.save(buf, format=fmt, **opciones)
+                except Exception:  # noqa: BLE001 - un Pillow sin AVIF deja al menos el WebP
+                    continue
+                self.file.storage.save(nombre, ContentFile(buf.getvalue()))
+
+    def portada_srcset(self, ext):
+        """`srcset` de las copias de portada en un formato: solo las que existen."""
+        if not self.file or not self.file.name:
+            return ""
+        return ", ".join(
+            f"{self.file.storage.url(self._portada_name(w, ext))} {w}w"
+            for w in self.portada_widths()
+            if self.file.storage.exists(self._portada_name(w, ext))
+        )
 
     def strip_metadata(self):
         """Reescribe el original sin metadatos EXIF (hallazgo S-14).

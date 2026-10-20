@@ -69,38 +69,15 @@ UMBRAL_CINTA = 12
 TOPE_CINTA = 16
 
 
-def _objeto_del_titular(publicaciones, proximo):
-    """El objeto real que acompaña al nombre en el titular de la portada (ticket 4.2): la
-    primera cubierta del catálogo o, si no hay, el afiche de la próxima actividad. No el
-    póster del registro destacado, que se ve justo debajo, ni la imagen para compartir,
-    que lleva el nombre escrito y lo repetiría. Sin objeto, el titular va a todo el ancho.
-    Sale de lo que la portada ya trae: no añade consultas."""
-    for pub in publicaciones:
-        if pub.cover:
-            return {
-                "publicacion": pub,
-                "imagen": pub.cover,
-                "url": pub.get_absolute_url(),
-                "rotulo": pub.get_kind_display(),
-                "titulo": pub.title,
-                "dato": pub.year or "",
-            }
-    if proximo and proximo.poster:
-        return {
-            "imagen": proximo.poster,
-            "url": proximo.get_absolute_url(),
-            "rotulo": "Próxima actividad",
-            "titulo": proximo.title,
-            "dato": date_format(timezone.localtime(proximo.starts_at), "j \\d\\e F"),
-        }
-    return None
-
-
 def home(request):
-    # Con el registro y el poema destacados, y el evento y el póster del registro, en la
-    # misma consulta: eran cuatro consultas sueltas.
+    # Con el registro y el poema destacados, el evento y el póster del registro y la obra
+    # de la portada, en la misma consulta: eran cuatro consultas sueltas.
     profile = SiteProfile.load(
-        "featured_recording__event", "featured_recording__poster", "featured_poem"
+        "featured_recording__event",
+        "featured_recording__poster",
+        "featured_poem",
+        "hero_image",
+        "hero_image_phone",
     )
     featured_poem = profile.featured_poem
     if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
@@ -128,7 +105,6 @@ def home(request):
     cejilla = profile.presentacion
     if integrantes:
         cejilla.append(f"{integrantes} integrante{'s' if integrantes != 1 else ''}")
-    objeto = _objeto_del_titular(publicaciones, proximo)
     # El cierre para programadores y jurados: puertas a lo que piden (D9), como las salidas
     # al pie de una ficha. La cita y los aliados ya están en el titular.
     puertas = [
@@ -150,17 +126,16 @@ def home(request):
             "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
             "next_event": proximo,
-            # El bloque de publicaciones no repite el libro que ya enseña el titular.
-            "publications": [
-                p for p in publicaciones if p is not (objeto or {}).get("publicacion")
-            ],
+            "publications": publicaciones,
             # El sello del titular: solo mientras haya una convocatoria abierta.
             "convocatoria": Call.open_now().first(),
             "integrantes": integrantes,
             "titulo_integrantes": f"{integrantes} {'voz' if integrantes == 1 else 'voces'}",
             "puertas": puertas,
             "cejilla": cejilla,
-            "objeto_titular": objeto,
+            # La obra de la primera vista (D18). Sin ella, la plantilla pone la lámina.
+            "portada_imagen": profile.hero_image,
+            "portada_telefono": profile.hero_image_phone,
             # El cierre para programadores y jurados: lo último que hicieron y cuándo
             # publicaron por última vez.
             "ultima_actividad": Event.past().first(),

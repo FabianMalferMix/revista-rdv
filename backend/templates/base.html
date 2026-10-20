@@ -60,7 +60,8 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body>
-  <a class="skip" href="#main">Saltar al contenido</a>
+  {# La portada lo lleva a la hoja, bajo la obra (bloque `salto` de content/home.html). #}
+  <a class="skip" href="#{% block salto %}main{% endblock %}">Saltar al contenido</a>
   {% comment %}
      Cabecera de una fila (D2, D9): el sello, los cinco enlaces de la barra, la lupa que
      abre el buscador y el botón «Dossier». Fija arriba al bajar. Medía 111 px en
@@ -111,7 +112,8 @@
   </header>
 
   {% if messages %}
-    <div class="wrap-wide">
+    {# `mensajes`: con un aviso, la obra de la portada empieza debajo de él (site.css). #}
+    <div class="wrap-wide mensajes">
       {% for message in messages %}
         <p class="flash flash-{{ message.tags }}">{{ message }}</p>
       {% endfor %}
