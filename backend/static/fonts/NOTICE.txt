@@ -1,12 +1,19 @@
-syne.woff2 — Syne (subset latino, eje variable wght 400-800).
+bricolage-grotesque.woff2 — Bricolage Grotesque, la fuente de titulares desde el
+2026-10-20 (antes, Syne).
 
-Copyright The Syne Project Authors — Bonjour Monde / Lucas Descroix
-https://gitlab.com/bonjour-monde/fonderie/syne-typeface
+Copyright 2022 The Bricolage Grotesque Project Authors
+(https://github.com/ateliertriay/bricolage). Diseño de Mathieu Triay.
 
-Licencia: SIL Open Font License 1.1 — https://openfontlicense.org
-Se puede empaquetar y servir libremente. Archivo obtenido desde Google Fonts
-(fonts.gstatic.com), subset latino: 223 glifos, verificado con fontTools que
-cubre tildes, eñes, signos de apertura, comillas latinas y raya.
+Licencia: SIL Open Font License 1.1. Texto completo en OFL-bricolage-grotesque.txt, junto
+a estos archivos. Archivo obtenido desde Google Fonts (fonts.gstatic.com, versión v9),
+subset latino, variable en tamaño óptico (12-96) y peso: 268 glifos, verificado con
+fontTools que cubre tildes, eñes, signos de apertura, comillas latinas, raya y puntos
+suspensivos (no trae la flecha →, que toma la reserva).
+
+Qué se modificó, con fontTools 4.66.1 (fuera del repositorio): el eje de peso se recortó a
+400-700, lo que usa el sitio (fontTools.varLib.instancer, wght=400:700); el de tamaño
+óptico queda entero. 71 KB, frente a 75 KB del archivo original. La OFL de Bricolage no
+reserva nombres, así que la familia conserva el suyo.
 
 Se autoaloja por obligación, no por gusto: la CSP del sitio declara
 font-src 'self', así que un CDN de fuentes quedaría bloqueado.
