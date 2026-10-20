@@ -30,7 +30,7 @@ def test_nav_links_intact_in_disclosure(client):
         assert reverse(name).encode() in content
 
 
-FUENTES = ["syne.woff2", "rdv-serif.woff2", "rdv-serif-italic.woff2"]
+FUENTES = ["bricolage-grotesque.woff2", "rdv-serif.woff2", "rdv-serif-italic.woff2"]
 
 
 @pytest.mark.parametrize("archivo", FUENTES)
@@ -68,14 +68,14 @@ def test_la_licencia_de_la_serif_viaja_con_ella():
 def test_css_declares_self_hosted_display_font():
     css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
     assert "@font-face" in css
-    assert "syne.woff2" in css  # url() relativa (la reescribe WhiteNoise)
+    assert "bricolage-grotesque.woff2" in css  # url() relativa (la reescribe WhiteNoise)
     assert "rdv-serif.woff2" in css and "rdv-serif-italic.woff2" in css
     assert "--display" in css
     assert "font-display:swap" in css
 
 
 def test_las_fuentes_de_la_primera_pantalla_se_precargan(client):
-    """Syne y la redonda de la serif se piden sin esperar a que el navegador lea el CSS y
+    """La fuente de titulares y la redonda de la serif se piden sin esperar a que el navegador lea el CSS y
     descubra que las necesita. La cursiva no: rara vez está en la primera pantalla, y una
     precarga que no se usa compite con lo que sí.
 
@@ -89,8 +89,8 @@ def test_las_fuentes_de_la_primera_pantalla_se_precargan(client):
     assert len(precargas) == 2, f"se esperaban dos precargas, hay {len(precargas)}"
     archivos = sorted(re.search(r'href="[^"?]*fonts/([^"?/]+)"', p).group(1) for p in precargas)
     assert [re.sub(r"\.[0-9a-f]{12}\.", ".", a) for a in archivos] == [
+        "bricolage-grotesque.woff2",
         "rdv-serif.woff2",
-        "syne.woff2",
     ]
     for etiqueta in precargas:
         assert 'as="font"' in etiqueta and 'type="font/woff2"' in etiqueta

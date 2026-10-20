@@ -243,13 +243,15 @@ def test_el_panel_de_busqueda_se_cierra_al_dejar_de_usarlo():
 # ── Fuente de titulares ───────────────────────────────────────────────────
 
 
-def test_syne_tiene_reserva_metrica_y_no_cae_a_la_serif():
-    """La reserva era la serif de lectura, un 24 % más estrecha: al cargar Syne el nombre
-    del sitio pasaba de 231 a 292 px y todo lo de alrededor saltaba."""
+def test_la_fuente_de_titulares_tiene_reserva_metrica_y_no_cae_a_la_serif():
+    """La reserva era la serif de lectura, un 24 % más estrecha: al cargar la fuente de
+    titulares (entonces Syne) el nombre del sitio pasaba de 231 a 292 px y todo lo de
+    alrededor saltaba. Hoy es Bricolage Grotesque, con su reserva medida."""
     css = _css()
     pila = re.search(r"--display:([^;]+);", css).group(1)
-    assert '"Syne Fallback"' in pila and "var(--serif)" not in pila
-    reservas = re.findall(r'@font-face\{[^}]*"Syne Fallback"[^}]*\}', css)
+    assert pila.startswith('"Bricolage Grotesque","Bricolage Fallback"')
+    assert "var(--serif)" not in pila
+    reservas = re.findall(r'@font-face\{[^}]*"Bricolage Fallback"[^}]*\}', css)
     assert len(reservas) >= 2, "la reserva necesita al menos una cara normal y una negrita"
     for cara in reservas:
         assert "size-adjust:" in cara and "local(" in cara

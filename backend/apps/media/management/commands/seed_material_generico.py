@@ -59,13 +59,14 @@ PIES_DE_FOTO = (
 
 
 def _fuente(tamano, peso=500):
-    """La Syne del sitio (autoalojada, variable 400–800): tiene tildes y eñes, que a la
-    fuente empaquetada de Pillow le faltan. Si no se puede leer, cae a la de Pillow."""
-    ruta = settings.BASE_DIR / "static" / "fonts" / "syne.woff2"
+    """La fuente de titulares del sitio, Bricolage Grotesque (autoalojada, variable): tiene
+    tildes y eñes, que a la fuente empaquetada de Pillow le faltan. Sus ejes van en este
+    orden: tamaño óptico (12–96) y peso (400–700). Si no se puede leer, cae a la de Pillow."""
+    ruta = settings.BASE_DIR / "static" / "fonts" / "bricolage-grotesque.woff2"
     try:
         fuente = ImageFont.truetype(str(ruta), tamano)
         try:
-            fuente.set_variation_by_axes([peso])
+            fuente.set_variation_by_axes([min(96, max(12, tamano)), min(700, max(400, peso))])
         except (OSError, AttributeError):
             pass
         return fuente

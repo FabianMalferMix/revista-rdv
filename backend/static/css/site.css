@@ -48,7 +48,7 @@
      la pila de sistema daba Palatino en un Mac, Times en Linux y Georgia en Windows: el
      sitio tenía tres voces según quién lo abriera. Ver fonts/NOTICE.txt. */
   --serif:"RdV Serif","RdV Serif Fallback",Georgia,"Times New Roman",serif;
-  --display:"Syne","Syne Fallback",sans-serif;
+  --display:"Bricolage Grotesque","Bricolage Fallback",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   /* Medida de lectura: el largo de línea, en anchos del «0» de la fuente en uso.
      Medido en la página: 58ch dan unas 74 letras por línea en una serif estrecha
@@ -124,7 +124,9 @@
 @supports (color:color-mix(in srgb, #000 50%, transparent)){
   :root{--line:color-mix(in srgb, var(--ink) 22%, transparent)}
 }
-/* El nombre de la portada tiene que caber: «Repitentes» mide 5,61 veces su cuerpo. En el
+/* El nombre de la portada tiene que caber: «Repitentes» medía 5,61 veces su cuerpo en Syne,
+   con la que se calculó esta escala; en Bricolage mide 4,71, así que sobra aire y los
+   tamaños se quedaron como los aprobó el dueño. En el
    teléfono va a todo el carril (15vw); desde 720 px, en la columna de 7/12 junto al
    objeto (8,6vw). Los dos tramos se tocan en 62 px, y arriba se queda en 125: a 1920 el
    nombre mide 112 px o más, como pide el ticket. */
@@ -178,41 +180,41 @@
   size-adjust:101.2%; ascent-override:102.4%; descent-override:33.1%; line-gap-override:0%;
 }
 
-/* Display auto-hospedada (Syne variable, eje wght 400-800, OFL) para marca y
-   títulos. Autoalojada por obligación: la CSP declara font-src 'self', así que
-   un CDN de fuentes quedaría bloqueado.
+/* Display auto-hospedada: Bricolage Grotesque (OFL), elegida por el dueño el 2026-10-20 en
+   lugar de Syne. Variable en dos ejes: peso (recortado a 400-700, lo que usa el sitio) y
+   tamaño óptico (12-96), que el navegador ajusta solo: en el nombre grande de la portada
+   se compacta y gana fuerza; en la barra y los botones se abre. Autoalojada por
+   obligación: la CSP declara font-src 'self', así que un CDN de fuentes quedaría bloqueado.
    La url() es RELATIVA: CompressedManifestStaticFilesStorage la reescribe con
    hash en collectstatic (no usar {% static %}: el CSS no es plantilla). */
 @font-face{
-  font-family:"Syne";
-  src:url("../fonts/syne.woff2") format("woff2");
-  font-weight:400 800;
+  font-family:"Bricolage Grotesque";
+  src:url("../fonts/bricolage-grotesque.woff2") format("woff2");
+  font-weight:400 700;
   font-style:normal;
   font-display:swap;
 }
-/* Reserva de Syne mientras llega el archivo (y si no llega). La reserva era la serif
-   de lectura, un 24 % más estrecha: al cargar Syne el nombre del sitio pasaba de 231 a
-   292 px y el titular de la portada de 676 a 780; todo lo de alrededor saltaba.
-   Ahora es Arial —o su equivalente métrico, Liberation Sans— escalada hasta ocupar lo
-   mismo. Los porcentajes están MEDIDOS en el navegador sobre diez títulos del sitio:
-   Syne mide el 102 % de Arial en peso normal, el 103 % en seminegra y el 114,1 % en
-   negrita. Con el archivo bloqueado, marca, titular y títulos varían menos de un 2 %. ascent/descent trasladan la línea de base de Syne (93 % y 28 % del cuerpo).
-   OJO: el peso 800 de Syne es un corte EXTENDIDO, un 44 % más ancho que el 700. No
-   tiene reserva razonable y no se usa. */
+/* Reserva mientras llega el archivo (y si no llega): Arial —o su equivalente métrico,
+   Liberation Sans— escalada hasta ocupar lo mismo, para que nada salte al cargar. Los
+   porcentajes están MEDIDOS en el navegador sobre diez títulos del sitio, a 28 px (el
+   tamaño típico de un título; el tamaño óptico angosta la letra al crecer: a 60 px mide
+   un 4 % menos): Bricolage mide el 102,5 % de Arial en peso normal, el 97,9 % de Arial
+   Bold en seminegra y el 99,2 % en negrita. ascent/descent trasladan su línea de base
+   (93 % y 27 % del cuerpo). */
 @font-face{
-  font-family:"Syne Fallback"; font-weight:400 500;
+  font-family:"Bricolage Fallback"; font-weight:400 500;
   src:local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Roboto");
-  size-adjust:102%; ascent-override:91.2%; descent-override:27.5%; line-gap-override:0%;
+  size-adjust:102.5%; ascent-override:90.7%; descent-override:26.3%; line-gap-override:0%;
 }
 @font-face{
-  font-family:"Syne Fallback"; font-weight:600;
+  font-family:"Bricolage Fallback"; font-weight:600;
   src:local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Roboto Bold");
-  size-adjust:103%; ascent-override:90.3%; descent-override:27.2%; line-gap-override:0%;
+  size-adjust:97.9%; ascent-override:95%; descent-override:27.6%; line-gap-override:0%;
 }
 @font-face{
-  font-family:"Syne Fallback"; font-weight:700 800;
+  font-family:"Bricolage Fallback"; font-weight:700;
   src:local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Roboto Bold");
-  size-adjust:114.1%; ascent-override:81.5%; descent-override:24.5%; line-gap-override:0%;
+  size-adjust:99.2%; ascent-override:93.8%; descent-override:27.2%; line-gap-override:0%;
 }
 
 *{box-sizing:border-box}
@@ -303,8 +305,8 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   padding:6px 14px 8px; border-radius:2px}
 /* Dentro del sello, el monograma del colectivo: la R en blanco y la V en celeste, que se
    pisan como dos tintas, y un filete antes del nombre. Es el dibujo de la tarjeta para
-   compartir; el icono de la pestaña lleva «RdV» sobre el mismo magenta. Hereda la Syne
-   del sello. */
+   compartir; el icono de la pestaña lleva «RdV» sobre el mismo magenta. Hereda la fuente de
+   titulares del sello. */
 .brand-mono{display:block; flex:none; width:30px; height:26px; overflow:visible}
 .brand-mono-r{fill:#fff}
 .brand-mono-v{fill:var(--celeste)}
@@ -420,7 +422,7 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    página (la columna ancla, los años) y los saltos a anclas no se mueven. */
 /* --capsula-ancho: lo que mide la cápsula con sus cinco enlaces. Mientras se busca, los
    enlaces se esconden y la cápsula conserva ese ancho. */
-:root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px; --capsula-ancho:630px}
+:root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px; --capsula-ancho:625px}
 @media (max-width:899px){
   :root{--capsula-alto:44px; --capsula-relleno:0px; --capsula-arriba:6px}
 }
@@ -1049,8 +1051,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   padding:clamp(28px,4vw,56px) 0 var(--s4); border-bottom:2px solid var(--ink)}
 .hero-cejilla{margin:0 0 var(--s2)}
 .hero-cejilla a{color:inherit}
-/* «Repitentes» mide 5,61 veces el cuerpo de letra: --t7 está calculado para que quepa en
-   su columna a cualquier ancho (ver la escala, arriba). */
+/* «Repitentes» mide 4,71 veces el cuerpo de letra (5,61 en Syne): --t7 está calculado para
+   que quepa en su columna a cualquier ancho (ver la escala, arriba). */
 .hero-nombre{font-size:var(--t7); font-weight:700; line-height:var(--lh-titular);
   letter-spacing:-.035em; margin:0 0 var(--s4); text-wrap:balance}
 .hero-texto{display:flex; flex-direction:column; align-items:flex-start; min-width:0}
