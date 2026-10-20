@@ -1,9 +1,10 @@
-"""El titular de la portada (backlog UX, ticket 4.2; decisiones D8 y D9).
+"""El titular de la portada (backlog UX, ticket 4.2; decisiones D8, D9 y D18).
 
 El titular era el lema, «Colectivo de poesía», con el nombre escondido en un h1 para
-lectores de pantalla. Ahora el nombre es el titular y el lema baja a la cejilla. A su lado
-va un objeto real. El dueño del sitio eligió la disposición entre tres; después quitó lo que
-iba debajo: las cifras, los aliados y la cita de prensa.
+lectores de pantalla. Después el nombre fue el titular, con el lema en la cejilla y un objeto
+real al lado; el dueño del sitio quitó lo que iba debajo: las cifras, los aliados y la cita
+de prensa. Con la portada como obra (D18, 2026-10-20) el nombre es el logo, al pie de la
+obra, y lo demás pasa a la hoja que sigue, sin el objeto: ver test_portada_obra.py.
 """
 
 from datetime import date, timedelta
@@ -42,7 +43,7 @@ def _texto(nodo):
     return " ".join(nodo.get_text().split())
 
 
-def test_el_nombre_es_el_titular_y_el_lema_baja_a_la_cejilla(client):
+def test_el_nombre_es_el_logo_y_el_lema_baja_a_la_cejilla(client):
     perfil = SiteProfile.load()
     perfil.name = "Repitentes del Verso"
     perfil.tagline = "Colectivo de poesía"
@@ -55,8 +56,14 @@ def test_el_nombre_es_el_titular_y_el_lema_baja_a_la_cejilla(client):
     for i in range(2):
         Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
     sopa = _portada(client)
-    assert [h1.get_text() for h1 in sopa.select("h1")] == ["Repitentes del Verso"]
-    assert "sr-only" not in sopa.h1.get("class", []), "el nombre se ve: ya no es solo para lectores"
+    assert [_texto(h1) for h1 in sopa.select("h1")] == ["Repitentes del Verso"]
+    # De .hero-nombre cuelgan la cápsula de la cabecera y cabecera.js.
+    assert "hero-nombre" in sopa.h1["class"]
+    # Se ve el logo, un dibujo; el nombre va en texto para lectores y buscadores.
+    assert sopa.h1.select_one(".sr-only").get_text() == "Repitentes del Verso"
+    logos = sopa.h1.select("svg")
+    assert [svg["class"] for svg in logos] == [["logo-horizontal"], ["logo-apilado"]]
+    assert all(svg["aria-hidden"] == "true" for svg in logos)
     cejilla = sopa.select_one(".hero-cejilla")
     assert cejilla.get_text() == (
         "Colectivo de poesía · Chile · desde 2023 · 2 integrantes · @repitentesdelverso"
@@ -83,45 +90,16 @@ def test_la_cejilla_cuenta_a_todas_aunque_la_cinta_tenga_tope(client):
     assert "17 integrantes" in _portada(client).select_one(".hero-cejilla").get_text()
 
 
-def test_el_objeto_es_la_primera_cubierta_del_catalogo(client):
-    make_publication(slug="sin-cubierta", title="Sin cubierta", position=0)
-    primera = make_publication(
-        slug="primera",
-        title="Cuadernos del ruido",
-        kind="libro",
-        year=2024,
-        position=1,
-        cover=_imagen("cubierta-1"),
-    )
-    make_publication(slug="segunda", title="Otra", position=2, cover=_imagen("cubierta-2"))
-    titular = _portada(client).select_one("section.hero")
-    assert "hero--con-objeto" in titular["class"]
-    objeto = titular.select_one(".hero-objeto")
-    assert objeto.select_one("a.hero-cubierta")["href"] == primera.get_absolute_url()
-    imagen = objeto.select_one("img")
-    assert "cubierta-1" in imagen["src"]
-    assert not imagen.has_attr("loading"), "la imagen grande de la primera pantalla no espera"
-    assert imagen.has_attr("width") and imagen.has_attr("height")
-    assert _texto(objeto.figcaption) == "Libro · Cuadernos del ruido, 2024"
-
-
-def test_sin_cubiertas_el_objeto_es_el_afiche_de_la_proxima_actividad(client):
-    make_publication(slug="sin-cubierta", title="Sin cubierta")
-    evento = make_event(slug="otono", title="Recital de otoño", poster=_imagen("afiche", (40, 50)))
-    objeto = _portada(client).select_one(".hero-objeto")
-    assert objeto.select_one("a.hero-cubierta")["href"] == evento.get_absolute_url()
-    assert _texto(objeto.figcaption).startswith("Próxima actividad · Recital de otoño, ")
-
-
-def test_sin_objeto_el_titular_va_en_una_columna(client):
-    """La imagen para compartir no sirve de objeto: lleva el nombre escrito y lo repetiría."""
-    perfil = SiteProfile.load()
-    perfil.og_image = _imagen("tarjeta", (120, 63))
-    perfil.save()
-    make_publication(slug="sin-cubierta", title="Sin cubierta")
-    titular = _portada(client).select_one("section.hero")
-    assert titular.select_one(".hero-objeto") is None
-    assert "hero--con-objeto" not in titular["class"]
+def test_la_hoja_ya_no_lleva_la_cubierta(client):
+    """La cubierta acompañaba al nombre; con la obra a sangre arriba ya no va (D18). El libro
+    sigue en el bloque de publicaciones."""
+    make_publication(slug="primera", title="Cuadernos del ruido", cover=_imagen("cubierta-1"))
+    sopa = _portada(client)
+    assert sopa.select_one(".hero-objeto, .hero-cubierta") is None
+    assert "hero--con-objeto" not in sopa.select_one("section.hero")["class"]
+    assert [t.get_text() for t in sopa.select(".home-publicaciones .pub-title")] == [
+        "Cuadernos del ruido"
+    ]
 
 
 def test_un_solo_boton_principal_y_el_mismo_correo_que_el_pie(client):
@@ -152,7 +130,7 @@ def test_la_portada_no_lleva_cifras(client):
 
 
 def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
-    """Flotaba a la derecha del lema; ahí va el objeto, y el ticket pide no taparlo."""
+    """Flotaba a la derecha del lema, donde fue después el objeto, y el ticket pedía no taparlo."""
     ahora = timezone.now()
     Call.objects.create(
         slug="abierta",

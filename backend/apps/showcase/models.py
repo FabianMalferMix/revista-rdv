@@ -47,6 +47,33 @@ class SiteProfile(models.Model):
         related_name="+",
         help_text="Imagen social por defecto (og:image) y logo en los datos estructurados.",
     )
+    # La primera vista de la portada es una obra a sangre con el logo al pie (D18). Sin
+    # imagen elegida, la portada lleva la lámina del colectivo (static/img/portada/).
+    hero_image = models.ForeignKey(
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="imagen de portada",
+        help_text=(
+            "La obra a sangre de la primera vista de la portada: horizontal, de 2400 px de "
+            "ancho o más, con una zona clara y tranquila abajo, donde va el logo en tinta. "
+            "Sin ella, la portada lleva la lámina del colectivo."
+        ),
+    )
+    hero_image_phone = models.ForeignKey(
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="imagen de portada para el teléfono",
+        help_text=(
+            "Opcional: un recorte vertical de la misma obra, de 1080 px de ancho o más. Sin "
+            "él, el teléfono recorta la horizontal por el centro."
+        ),
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -59,6 +86,11 @@ class SiteProfile(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
+        # Las copias de la obra de la portada (AVIF y WebP) se hacen al elegirla, no al
+        # pedir la portada. Las que ya existen no se rehacen.
+        for imagen in (self.hero_image, self.hero_image_phone):
+            if imagen is not None:
+                imagen.ensure_portada_derivatives()
 
     def delete(self, *args, **kwargs):
         pass  # el singleton no se borra

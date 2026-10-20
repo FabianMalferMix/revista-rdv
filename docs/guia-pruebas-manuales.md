@@ -84,12 +84,21 @@ no una plantilla vacía.
 
 ### 1.1 Portada y archivo
 
-- [ ] **`/`** — Portada. De arriba abajo: el nombre del colectivo como titular, con la
-      cubierta de una publicación al lado; el registro destacado; la obra (poemas con sus
-      tres primeros versos, y textos); las integrantes, en una cinta; las publicaciones; y un
-      cierre «Para programadores y jurados» con la última actividad y «Actualizado el …».
-      **Sin cifras, sin prensa y sin aliados**: los quitó el dueño del sitio y están en el
-      dossier. (Cambió con el rediseño UX, pasos 19 y 20.)
+- [ ] **`/`** — Portada. De arriba abajo: una obra a sangre con el logo «Repitentes del
+      Verso» en tinta al pie, de lado a lado (en el teléfono, en dos líneas); debajo asoma la
+      hoja, con la cejilla «Colectivo de poesía · Chile · …» y la primera línea del
+      manifiesto. Al bajar, la obra se queda quieta y la hoja sube encima; con «reducir
+      movimiento» activado en el sistema, la obra sube con la página. En la hoja, «Conócenos
+      →», «Ver el dossier», «Escríbenos» y, si hay convocatoria, el sello «Convocatoria
+      abierta». Después, el registro destacado; la obra (poemas con sus tres primeros versos,
+      y textos); las integrantes, en una cinta; las publicaciones; y un cierre «Para
+      programadores y jurados» con la última actividad y «Actualizado el …». **Sin cifras,
+      sin prensa y sin aliados**: los quitó el dueño del sitio y están en el dossier.
+      (Cambió con el rediseño UX, pasos 19 y 20, y con la portada como obra, D18.)
+- [ ] **La obra de la portada, desde el panel.** En «Perfil del sitio», elige una imagen en
+      «Imagen de portada» y guarda: la portada la muestra en lugar de la lámina de círculos.
+      Una imagen en «Imagen de portada para el teléfono» se ve solo en un teléfono. Vacía
+      los dos campos y guarda: vuelve la lámina.
 - [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2` y `?page=999`
       (este último **no debe reventar**).
 - [x] **`/poemas/`** — Índice de poemas. Cada fila cita el **primer verso** del poema y se
@@ -152,10 +161,10 @@ no una plantilla vacía.
       subrayada en magenta; en una ficha, su sección (en un poema, «Poemas»). Al bajar un
       poco, la fila da paso a una cápsula centrada con el monograma, los cinco enlaces, la
       lupa y «Dossier»; al volver arriba, vuelve la fila.
-- [ ] **Cabecera, en la portada.** Al abrir no hay nada arriba: el nombre grande hace de
-      cabecera, y «Ver el dossier» está en el titular. Al bajar un poco aparece la cápsula;
-      al volver arriba, se va. Con el teclado, el primer Tab tras «Saltar al contenido» la
-      hace aparecer.
+- [ ] **Cabecera, en la portada.** Al abrir no hay nada arriba: la obra llega hasta lo
+      alto, y «Ver el dossier» está en la hoja, bajo la obra. Al bajar un poco aparece la
+      cápsula; al volver arriba, se va. Con el teclado, el primer Tab tras «Saltar al
+      contenido» la hace aparecer; «Saltar al contenido», con Intro, lleva a la hoja.
 - [ ] **Cabecera, en el teléfono** (menos de 900 px de ancho): el sello, la lupa y «Menú»
       (en la portada, nada hasta bajar). «Menú» abre el mapa del sitio, con el correo y el
       Instagram; en la cápsula, cuelga de ella.

@@ -106,7 +106,8 @@ def test_la_escala_es_la_unica_fuente_de_tamanos():
     """Había 25 tamaños escritos a mano: 17, 18, 19 y 20 px convivían sin que ninguno
     significara nada. Ahora cada `font-size` es un paso de la escala. Quedan fuera el
     cuerpo base de `html`, que crece con el monitor y del que cuelgan los `rem`, y la hoja
-    de impresión, que mide en puntos."""
+    de impresión, que mide en puntos. Son nueve pasos: el décimo, --t7, era el nombre de la
+    portada, que con la portada como obra (D18) es el logo."""
     sueltos = [
         (selector, tam)
         for selector, cuerpo in _reglas()
@@ -118,7 +119,7 @@ def test_la_escala_es_la_unica_fuente_de_tamanos():
     escala = {
         nombre: valor for nombre, valor in _tokens().items() if re.fullmatch(r"--t-?\d", nombre)
     }
-    assert len(escala) == 10, f"la escala tiene {len(escala)} pasos: {sorted(escala)}"
+    assert len(escala) == 9, f"la escala tiene {len(escala)} pasos: {sorted(escala)}"
     minimos = [_px(f"var({nombre})")[0] for nombre in sorted(escala, key=lambda n: int(n[3:]))]
     assert minimos == sorted(minimos), f"la escala no crece de paso en paso: {minimos}"
 
@@ -622,8 +623,6 @@ BLANCO_PERMITIDO = {
     ".form input, .form textarea, .form select",
     "#search-results:not(:empty)",
     ".pub-card img, .pub-cover-fallback",
-    # El objeto del titular de la portada: una cubierta, como las del catálogo.
-    ".hero-cubierta img",
     ".embed-play",
     ".embed-play:hover::after",
     ".rec-miniatura::before",
@@ -1045,7 +1044,11 @@ def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
     fijos = [(sel, cuerpo) for sel, cuerpo in _reglas() if "position:sticky" in cuerpo]
     assert {sel for sel, _ in fijos} >= {".masthead", ".lectura-ancla", ".year-mark"}
     for selector, cuerpo in fijos:
-        if selector != ".masthead":
+        if selector == ".portada-arte":
+            # La obra de la portada (D18) va bajo la franja a propósito: arriba de la portada
+            # la franja está vacía. Lo que no debe quedar tapado es la hoja, que no es fija.
+            assert "top:0" in cuerpo
+        elif selector != ".masthead":
             assert "top:calc(var(--alto-cabecera)" in cuerpo, (
                 f"«{selector}» quedaría tapado por la cabecera fija"
             )
@@ -1107,22 +1110,61 @@ def test_el_campo_del_buscador_ocupa_su_panel():
 # ── Titular de la portada (ticket 4.2, la opción A del dueño) ─────────────
 
 
-def test_el_nombre_de_la_portada_cabe_en_su_columna_y_llega_a_112_px():
-    """«Repitentes» mide 5,61 veces su cuerpo de letra. Desde 720 px va en la columna de
-    7/12 del carril (el carril es el 92 % de la ventana, y el hueco entre columnas, el 6 %);
-    en el teléfono, en el carril entero, que a 320 px es el 87,5 %. Si alguien agranda el
-    nombre, se sale de su columna en algún ancho."""
-    desde = re.search(
-        r"@media \(min-width:720px\)\{\n  :root\{--t7:clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)\}",
-        _css(),
+def test_la_obra_de_la_portada_llega_a_lo_alto_y_deja_asomar_la_hoja():
+    """La portada como obra (D18): la obra sube bajo la franja vacía de la cabecera y se
+    detiene antes del borde, donde asoma la hoja. Alto mínimo y no fijo: con el zoom al
+    400 % nada se recorta. svh, con vh para quien no lo conoce."""
+    obra = _regla(".portada-arte")
+    assert "margin-top:calc(-1*var(--alto-cabecera))" in obra
+    assert (
+        "min-height:max(460px,100vh-var(--asomo));min-height:max(460px,100svh-var(--asomo))" in obra
     )
-    minimo, vw, tope = int(desde[1]), float(desde[2]), int(desde[3])
-    assert min(max(minimo, vw * 19.2), tope) >= 112, "a 1920 el nombre mide menos de 112 px"
-    assert vw * 5.61 <= 7 / 12 * (92 - 6), "el nombre no cabe en su columna desde 720 px"
-    assert tope * 5.61 <= 7 / 12 * (1320 - 96), "el nombre no cabe con el carril en 1320 px"
-    telefono = re.fullmatch(r"clamp\((\d+)px,([\d.]+)vw,(\d+)px\)", _tokens()["--t7"])
-    assert float(telefono[2]) * 5.61 <= 87.5, "en un teléfono de 320 px el nombre no cabe"
-    assert abs(int(telefono[3]) - vw * 7.2) < 1, "los dos tramos no se tocan en 720 px"
+    assert not re.search(r"(?<![-\w])height:", obra), "un alto fijo recortaría la obra"
+    assert "overflow" not in obra
+    assert "background:var(--paper)" in obra, "sin la imagen, el papel"
+    assert "--asomo:112px" in _tokens_de(":root")
+    assert ":root{--asomo:96px}" in _bloque("@media (max-width:719px){\n  :root{--asomo")
+    assert "object-fit:cover" in _regla(".portada-imagenimg")
+    # Con un aviso entre la cabecera y <main>, la obra empieza debajo y no lo tapa.
+    assert "margin-top:0" in _regla(".mensajes+.lienzo>.portada-arte")
+
+
+def _tokens_de(selector):
+    return " ".join(_todas(selector))
+
+
+def test_el_logo_de_la_portada_va_en_tinta_sobreimpreso():
+    """El logo cruza la obra al pie, de lado a lado, multiplicado como una plancha de riso. En
+    el teléfono pasa a la versión en dos líneas."""
+    mancheta = _regla(".portada-mancheta")
+    for declaracion in ("left:var(--gutter)", "right:var(--gutter)", "mix-blend-mode:multiply"):
+        assert declaracion in mancheta
+    assert "color:var(--ink)" in _regla(".portada-logo")
+    assert "width:100%" in _regla(".portada-logosvg")
+    telefono = _bloque("@media (max-width:719px){\n  .portada-logo")
+    assert ".portada-logo.logo-horizontal{display:none}" in telefono
+    assert ".portada-logo.logo-apilado{display:block}" in telefono
+    forzados = _bloque("@media (forced-colors: active){\n  .portada-mancheta")
+    assert "background:Canvas" in forzados
+
+
+def test_el_telon_solo_con_movimiento_y_si_la_obra_cabe():
+    """La obra se queda quieta y la hoja sube encima, solo para quien no pide menos
+    movimiento y en una ventana donde la obra cabe entera: más alta que la ventana, quieta
+    arriba, su pie no se vería nunca."""
+    telon = _bloque("@media (prefers-reduced-motion:no-preference) and (min-height:460px){")
+    assert ".portada-arte{position:sticky;top:0}" in telon
+    assert ".portada-arte:focus-within{z-index:2}" in telon
+    fuera = [sel for sel, cuerpo in _reglas() if sel == ".portada-arte" and "sticky" in cuerpo]
+    assert len(fuera) == 1, "la obra solo es fija dentro de su bloque"
+    hoja = _regla(".portada-telon")
+    for declaracion in (
+        "position:relative",
+        "z-index:1",
+        "background:var(--paper)",
+        "grid-template-columns:var(--carriles)",
+    ):
+        assert declaracion in hoja
 
 
 def test_el_boton_del_titular_se_oculta_donde_aparece_el_de_la_cabecera():
@@ -1134,7 +1176,7 @@ def test_el_boton_del_titular_se_oculta_donde_aparece_el_de_la_cabecera():
 
 
 def test_el_sello_de_la_convocatoria_ya_no_flota():
-    """Flotaba a la derecha del lema, donde ahora va el objeto: no debe taparlo."""
+    """Flotaba a la derecha del lema, donde fue después el objeto: no debía taparlo."""
     flotantes = [
         sel for sel, cuerpo in _reglas() if "sello-convocatoria" in sel and "float:" in cuerpo
     ]

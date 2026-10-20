@@ -2,8 +2,7 @@
 
 Después del titular, la portada ordena sus bloques: el destacado, la obra (los últimos
 poemas con sus tres primeros versos, junto a los últimos textos), las integrantes («12
-voces»), las publicaciones que el titular no enseña ya y un cierre para programadores y
-jurados. Cada sección lleva encima su parte del sitio y, bajo el título, el filete de su
+voces»), las publicaciones y un cierre para programadores y jurados. Cada sección lleva encima su parte del sitio y, bajo el título, el filete de su
 territorio. El dueño del sitio eligió conservar el bloque de publicaciones.
 """
 
@@ -71,7 +70,7 @@ def test_el_orden_de_los_bloques(client, make_poem, make_article):
     make_publication(slug="dos", title="Dos")
     secciones = [
         clase
-        for seccion in _portada(client).select("main > section")
+        for seccion in _portada(client).select("main section")
         for clase in seccion["class"]
         if clase.startswith("home-") and clase != "home-block"
     ]
@@ -103,23 +102,19 @@ def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client, make_poem, make_a
     assert not [r for r in sopa.select("main .rotulo") if r.get_text().startswith("[")]
 
 
-def test_las_publicaciones_no_repiten_el_libro_del_titular(client):
+def test_las_publicaciones_las_ensena_todas(client):
+    """El titular se quedaba con el primer libro con cubierta y el bloque no lo repetía. Con
+    la portada como obra (D18) ya no hay libro arriba: el bloque los enseña todos."""
     make_publication(slug="primera", title="Primera", position=0, cover=_cubierta("c1"))
     make_publication(slug="segunda", title="Segunda", position=1, cover=_cubierta("c2"))
     make_publication(slug="tercera", title="Tercera", position=2)
-    sopa = _portada(client)
-    assert sopa.select_one(".hero-objeto a")["href"] == reverse(
-        "showcase:publication_detail", args=["primera"]
-    )
-    titulos = [t.get_text() for t in sopa.select(".home-publicaciones .pub-title")]
-    assert titulos == ["Segunda", "Tercera"]
+    titulos = [t.get_text() for t in _portada(client).select(".home-publicaciones .pub-title")]
+    assert titulos == ["Primera", "Segunda", "Tercera"]
 
 
-def test_si_solo_hay_el_libro_del_titular_no_hay_bloque_de_publicaciones(client):
+def test_con_un_solo_libro_hay_bloque_de_publicaciones(client):
     make_publication(slug="unica", title="Única", cover=_cubierta("c1"))
-    sopa = _portada(client)
-    assert sopa.select_one(".hero-objeto") is not None
-    assert sopa.select_one(".home-publicaciones") is None
+    assert _portada(client).select_one(".home-publicaciones") is not None
 
 
 def test_el_cierre_lleva_sus_puertas_la_ultima_actividad_y_la_fecha(client, make_article):

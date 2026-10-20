@@ -1,0 +1,10 @@
+{% comment %}
+   La obra de la portada (ver la etiqueta portada_img). Va absoluta en su sección, que toma el
+   alto de la hoja de estilos: el ancho y el alto de cada fuente solo dan la proporción, y
+   `sizes` dice lo que mide pintada (ver la etiqueta).
+   Sin `loading`: es la imagen de la primera vista y no debe esperar.
+{% endcomment %}
+<picture class="portada-imagen">{% for f in fuentes %}
+  <source{% if f.media %} media="{{ f.media }}"{% endif %} type="{{ f.type }}" srcset="{{ f.srcset }}" sizes="{{ f.sizes }}" width="{{ f.width }}" height="{{ f.height }}">{% endfor %}
+  <img src="{{ src }}"{% if srcset %} srcset="{{ srcset }}" sizes="{{ sizes }}"{% endif %}{% if width %} width="{{ width }}" height="{{ height }}"{% endif %} alt="{{ alt }}" fetchpriority="high">
+</picture>
