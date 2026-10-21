@@ -43,7 +43,7 @@ def test_text_archive_paginates_full_list(client, make_article):
     assert len(page2.object_list) == 3
 
 
-def test_home_shows_single_featured_recording_over_poem(client, make_poem):
+def test_con_un_registro_destacado_no_sale_el_poema_destacado(client, make_poem):
     profile = SiteProfile.load()
     profile.featured_poem = make_poem(
         slug="p-dest",
@@ -59,13 +59,26 @@ def test_home_shows_single_featured_recording_over_poem(client, make_poem):
     )
     profile.save()
     resp = client.get(reverse("content:home"))
-    # Con ambos definidos, el registro manda: un solo destacado, sin apilar. El poema
-    # puede salir en la lista de poemas (ticket 4.3), pero no como un segundo destacado.
+    # Con los dos, el registro manda: va en la tirada (D19; el del perfil es el respaldo
+    # cuando no hay ninguno marcado) y el poema no sale como un segundo destacado.
     sopa = BeautifulSoup(resp.content, "html.parser")
-    destacados = sopa.select(".featured")
-    assert len(destacados) == 1
-    assert "Registro Destacado" in destacados[0].get_text()
-    assert "Poema Destacado" not in destacados[0].get_text()
+    assert sopa.select_one(".featured") is None
+    assert [p["data-titulo"] for p in sopa.select(".tirada .pliego")] == ["Registro Destacado"]
+    assert "Poema Destacado" not in sopa.select_one(".tirada").get_text()
+
+
+def test_sin_registros_destacados_vuelve_el_poema_destacado(client, make_poem):
+    profile = SiteProfile.load()
+    profile.featured_poem = make_poem(
+        slug="p-dest",
+        title="Poema Destacado",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+    )
+    profile.save()
+    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    assert sopa.select_one(".tirada") is None
+    assert sopa.select_one(".featured h2").get_text() == "Poema Destacado"
 
 
 def test_home_texts_appear_before_members(client, make_article):
@@ -129,24 +142,3 @@ def test_sin_convocatoria_abierta_no_hay_sello(client):
     _convocatoria(timedelta(days=-40), timedelta(days=-5), slug="cerrada")
     _convocatoria(timedelta(days=5), timedelta(days=40), slug="futura")
     assert b"sello-convocatoria" not in client.get(reverse("content:home")).content
-
-
-def test_el_destacado_va_sobre_el_papel_con_la_ficha_antes_del_reproductor(client):
-    """El dueño del sitio descartó la banda de tinta del destacado. La ficha va antes que el
-    reproductor en el HTML: se lee el título antes que el botón de reproducir."""
-    profile = SiteProfile.load()
-    profile.featured_recording = Recording.objects.create(
-        slug="r-papel",
-        title="Registro en papel",
-        embed_url="https://youtu.be/xyz123ab",
-        published=True,
-    )
-    profile.save()
-    html = client.get(reverse("content:home")).content.decode()
-    destacado = re.search(r'<section class="home-block featured">(.*?)</section>', html, re.S)
-    assert destacado, "el destacado volvió a una banda"
-    bloque = destacado.group(1)
-    assert "band-in" not in bloque
-    ficha, placa = bloque.index('class="featured-ficha"'), bloque.index("player-frame")
-    enlace = bloque.index('class="meta featured-enlace"')
-    assert ficha < placa < enlace, "orden: ficha, reproductor y enlace al índice"

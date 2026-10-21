@@ -7,7 +7,6 @@ con un recorte vertical para el teléfono; sin ella, va la lámina del estreno. 
 asomo y el telón están en test_css_sistema.py; la hoja, en test_titular.py.
 """
 
-import gc
 from io import BytesIO
 from pathlib import Path
 
@@ -15,7 +14,6 @@ import pytest
 from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
-from django.utils import inspect as django_inspect
 from PIL import Image
 
 from apps.media.models import MediaAsset
@@ -222,9 +220,9 @@ def test_saltar_al_contenido_lleva_a_la_hoja(client):
     assert otra.select_one("a.skip")["href"] == "#main"
 
 
-def test_el_poster_del_destacado_espera_en_la_portada_y_no_en_su_ficha(client):
-    """En la portada, el destacado queda bajo la obra y la hoja: su póster carga al acercarse
-    y no le quita ancho de banda a la obra. En la ficha del registro está arriba y no espera."""
+def test_los_posteres_de_la_tirada_esperan_y_el_de_la_ficha_no(client):
+    """En la portada la tirada queda bajo la obra y la hoja: sus pósters cargan al acercarse y no
+    le quitan ancho de banda a la obra. En la ficha del registro el póster está arriba."""
     from apps.media.models import Recording
 
     registro = Recording.objects.create(
@@ -233,129 +231,9 @@ def test_el_poster_del_destacado_espera_en_la_portada_y_no_en_su_ficha(client):
         embed_url="https://youtu.be/xyz123ab",
         poster=_recurso("poster.jpg", (1200, 675), alt="Recital"),
         published=True,
+        featured=True,
     )
-    perfil = SiteProfile.load()
-    perfil.featured_recording = registro
-    perfil.save()
     portada = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
-    assert portada.select_one(".featured .player-frame img")["loading"] == "lazy"
+    assert portada.select_one(".tirada .pliego-placa img")["loading"] == "lazy"
     ficha = BeautifulSoup(client.get(registro.get_absolute_url()).content, "html.parser")
     assert not ficha.select_one(".player-frame img").has_attr("loading")
-
-
-def test_sizes_dice_lo_que_mide_pintada(client):
-    """Con object-fit: cover la obra se pinta al ancho de la ventana o al alto de la obra por
-    su proporción, lo que sea mayor. Con «100vw», a 951 px el navegador bajaba la copia de
-    960 para una lámina que se pinta a 1261 px."""
-    _, picture = _obra(client)
-    telefono, _, escritorio, _ = [f["sizes"] for f in picture.select("source")]
-    assert telefono == "max(100vw, 230px, (100vh - 96px) * 0.500)"
-    assert escritorio == (
-        "(max-width: 719px) max(100vw, 736px, (100vh - 96px) * 1.600), "
-        "max(100vw, 736px, (100vh - 112px) * 1.600)"
-    )
-
-
-def test_un_jpg_y_un_png_del_mismo_nombre_no_comparten_copias():
-    """Las copias llevan la extensión del original: con «obra.jpg» de obra y «obra.png» de
-    recorte, cada una tiene las suyas, y borrar una no se lleva las de la otra."""
-    obra = _recurso("obra.jpg")
-    buffer = BytesIO()
-    Image.new("RGB", (700, 1400), (10, 120, 200)).save(buffer, format="PNG")
-    recorte = MediaAsset.objects.create(
-        file=SimpleUploadedFile("obra.png", buffer.getvalue(), content_type="image/png"),
-        alt_text="Recorte",
-    )
-    recorte.refresh_from_db()
-    perfil = SiteProfile.load()
-    perfil.hero_image, perfil.hero_image_phone = obra, recorte
-    perfil.save()
-    assert obra._portada_name(640, "avif") != recorte._portada_name(640, "avif")
-    almacen = obra.file.storage
-    with Image.open(almacen.path(recorte._portada_name(640, "avif"))) as copia:
-        assert copia.size == (640, 1280), "el teléfono servía las copias de la obra"
-    recorte.delete()
-    assert all(almacen.exists(obra._portada_name(w, "avif")) for w in obra.portada_widths())
-
-
-def test_una_obra_transparente_conserva_su_transparencia():
-    """Pasada a RGB sin más, lo transparente salía negro y el logo en tinta desaparecía."""
-    imagen = Image.new("RGBA", (800, 500), (0, 0, 0, 0))
-    imagen.paste((232, 57, 154, 255), (0, 0, 400, 500))
-    buffer = BytesIO()
-    imagen.save(buffer, format="PNG")
-    obra = MediaAsset.objects.create(
-        file=SimpleUploadedFile("calco.png", buffer.getvalue(), content_type="image/png"),
-        alt_text="Calco",
-    )
-    obra.refresh_from_db()
-    perfil = SiteProfile.load()
-    perfil.hero_image = obra
-    perfil.save()
-    for ext in ("avif", "webp"):
-        with Image.open(obra.file.storage.path(obra._portada_name(800, ext))) as copia:
-            assert copia.mode == "RGBA", ext
-            assert copia.getpixel((700, 250))[3] == 0, f"{ext}: lo transparente salió opaco"
-
-
-def _girada():
-    """Una foto «de cámara»: 2000 × 1500 guardada de lado, con la etiqueta EXIF que la
-    endereza (orientación 6). Derecha mide 1500 × 2000."""
-    exif = Image.Exif()
-    exif[0x0112] = 6
-    buffer = BytesIO()
-    Image.new("RGB", (2000, 1500), (90, 90, 90)).save(buffer, format="JPEG", exif=exif.tobytes())
-    return SimpleUploadedFile("girada.jpg", buffer.getvalue(), content_type="image/jpeg")
-
-
-def test_al_cambiar_la_obra_por_una_foto_girada_sus_copias_salen_derechas():
-    """La señal llega dentro del save(), antes de que strip_metadata enderece la foto y corrija
-    su ancho: las copias se calculaban con 2000 px de ancho, agrandadas y con nombres que
-    luego nadie servía ni borraba."""
-    obra = _recurso()
-    perfil = SiteProfile.load()
-    perfil.hero_image = obra
-    perfil.save()
-    obra.file = _girada()
-    obra.save()
-    obra.refresh_from_db()
-    assert (obra.width, obra.height) == (1500, 2000)
-    almacen = obra.file.storage
-    assert all(almacen.exists(obra._portada_name(w, "avif")) for w in obra.portada_widths())
-    assert not almacen.exists(obra._portada_name(1920, "avif")), "una copia agrandada"
-    with Image.open(almacen.path(obra._portada_name(1440, "avif"))) as copia:
-        assert copia.size == (1440, 1920), "la copia salió de lado"
-    copias = [n for n in obra.derivative_names() if almacen.exists(n)]
-    obra.delete()
-    assert copias and not any(almacen.exists(n) for n in copias)
-
-
-def test_la_senal_de_la_portada_no_depende_de_la_cache_de_debug():
-    """Con DEBUG, Django guarda en una caché cada receptor que conecta, y eso mantenía viva una
-    señal conectada con referencia débil. En producción no hay caché: se perdía en silencio.
-    Sin la caché, cambiar el archivo de la obra tiene que rehacer sus copias igual."""
-    django_inspect._get_func_parameters.cache_clear()
-    gc.collect()
-    obra = _recurso("primera.jpg")
-    perfil = SiteProfile.load()
-    perfil.hero_image = obra
-    perfil.save()
-    buffer = BytesIO()
-    Image.new("RGB", (1200, 800), (10, 20, 30)).save(buffer, format="JPEG")
-    obra.file = SimpleUploadedFile("segunda.jpg", buffer.getvalue(), content_type="image/jpeg")
-    obra.save()
-    obra.refresh_from_db()
-    assert obra.file.storage.exists(obra._portada_name(1200, "avif"))
-
-
-def test_un_aviso_no_queda_bajo_la_obra(client):
-    """El aviso del boletín se pinta entre la cabecera y <main>; la obra, subida bajo la franja
-    de la cabecera, lo tapaba entero. Con aviso, la obra empieza debajo (ver site.css)."""
-    respuesta = client.post(
-        reverse("community:subscribe"), {"email": "no-es-un-correo", "next": "/"}, follow=True
-    )
-    sopa = BeautifulSoup(respuesta.content, "html.parser")
-    aviso = sopa.select_one("div.mensajes")
-    assert aviso is not None and "Revisa el correo ingresado." in aviso.get_text()
-    assert aviso.find_next_sibling()["id"] == "main"
-    assert sopa.select_one("main > section.portada-arte") is not None

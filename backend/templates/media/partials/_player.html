@@ -13,12 +13,7 @@
     {% endcomment %}
     <div class="player-frame player-consent" data-embed-src="{{ src }}" data-embed-title="{{ r.title }}">
       {% if r.poster %}
-        {% comment %}
-           En la ficha del registro el póster está arriba y no espera. En la portada queda
-           bajo la obra y la hoja (D18): con `diferida`, carga al acercarse y no le quita
-           ancho de banda a la obra de la primera vista.
-        {% endcomment %}
-        <span class="riso-duo">{% if diferida %}{% responsive_img r.poster sizes="(max-width: 840px) 92vw, 780px" decorativa=True %}{% else %}{% responsive_img r.poster sizes="(max-width: 840px) 92vw, 780px" lazy=False decorativa=True %}{% endif %}</span>
+        <span class="riso-duo">{% responsive_img r.poster sizes="(max-width: 840px) 92vw, 780px" lazy=False decorativa=True %}</span>
       {% else %}
         {% include "media/partials/_caratula.html" %}
       {% endif %}

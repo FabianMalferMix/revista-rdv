@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 from django_ratelimit.decorators import ratelimit
 
-from apps.agenda.models import Event
+from apps.agenda.models import Event, EventPhoto
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
@@ -34,6 +34,7 @@ from .models import (
 )
 from .pie import firmas, puerta, puertas_vecinas, vecinos
 from .services import coincidencias_por_nombre, ultima_publicacion
+from .templatetags.versos import primeros_versos
 
 logger = logging.getLogger(__name__)
 
@@ -69,28 +70,86 @@ UMBRAL_CINTA = 12
 TOPE_CINTA = 16
 
 
-def home(request):
-    # Con el registro y el poema destacados, el evento y el póster del registro y la obra
-    # de la portada, en la misma consulta: eran cuatro consultas sueltas.
-    profile = SiteProfile.load(
-        "featured_recording__event",
-        "featured_recording__poster",
-        "featured_poem",
-        "hero_image",
-        "hero_image_phone",
+# La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de
+# carruseles piden de 2 a 5, para llegar al último en pocos pasos.
+TOPE_TIRADA = 5
+NUMERALES = {2: "dos", 3: "tres", 4: "cuatro", 5: "cinco"}
+# Un título más largo se compone un paso más chico, para que no pase de dos líneas.
+TITULO_LARGO = 34
+
+
+def _registros_destacados(profile):
+    """Los pliegos de la tirada de la portada (D19): los registros publicados que el colectivo
+    marcó como destacados, en su orden. Sin ninguno marcado, hace de respaldo el registro
+    destacado del perfil del sitio, que era lo que se elegía antes. Cada pliego lleva su
+    imagen (el póster o, si no tiene, la primera foto del evento: nunca nada con el título
+    impreso, que ya va en grande), el primer verso del poema que se lee, quién lee, dónde
+    y cuándo."""
+    consulta = (
+        Recording.objects.filter(published=True)
+        .select_related("poster", "event")
+        .prefetch_related(
+            "participants",
+            Prefetch("event__photos", queryset=EventPhoto.objects.select_related("asset")),
+        )
     )
+    registros = list(consulta.filter(featured=True)[:TOPE_TIRADA])
+    if not registros and profile.featured_recording_id:
+        registros = list(consulta.filter(pk=profile.featured_recording_id))
+    if not registros:
+        return []
+    # El poema que se lee en cada registro: el último publicado que lo enlaza.
+    poemas = {}
+    for poema in (
+        Poem.objects.filter(recording__in=registros, status=EditorialStatus.PUBLISHED)
+        .prefetch_related("authors")
+        .order_by("-published_at")
+    ):
+        poemas.setdefault(poema.recording_id, poema)
+    pliegos = []
+    for registro in registros:
+        evento = registro.event
+        fotos = list(evento.photos.all()) if evento else []
+        poema = poemas.get(registro.pk)
+        autores = ", ".join(c.display_name for c in poema.authors.all()) if poema else ""
+        if evento and evento.starts_at:
+            cuando = registro.recorded_on or timezone.localtime(evento.starts_at).date()
+        else:
+            cuando = registro.recorded_on
+        pliegos.append(
+            {
+                "titulo": registro.title,
+                "url": registro.get_absolute_url(),
+                "tipo": registro.get_kind_display(),
+                "audio": registro.kind == Recording.Kind.AUDIO,
+                "imagen": registro.poster or (fotos[0].asset if fotos else None),
+                "verso": (primeros_versos(poema.body, 1) or [""])[0] if poema else "",
+                "firma": ", ".join(p for p in (autores, f"«{poema.title}»") if p) if poema else "",
+                "voces": [c.display_name for c in registro.participants.all()],
+                "lugar": ", ".join(p for p in (evento.venue_name, evento.city) if p)
+                if evento
+                else "",
+                "ciudad": evento.city if evento else "",
+                "fecha": cuando,
+                "largo": len(registro.title) > TITULO_LARGO,
+            }
+        )
+    return pliegos
+
+
+def home(request):
+    # Con el poema destacado y la obra de la portada en la misma consulta. Los registros de
+    # la tirada se piden aparte, con lo que cada pliego enseña.
+    profile = SiteProfile.load("featured_poem", "hero_image", "hero_image_phone")
     featured_poem = profile.featured_poem
     if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
         featured_poem = None  # el destacado solo se muestra si está publicado
-    featured_recording = profile.featured_recording
-    if featured_recording and not featured_recording.published:
-        featured_recording = None
-    # Un solo destacado grande (evita apilar dos): el registro manda sobre el poema.
-    featured = None
-    if featured_recording:
-        featured = {"kind": "recording", "object": featured_recording}
-    elif featured_poem:
-        featured = {"kind": "poem", "object": featured_poem}
+    # La tirada de registros (D19). Sin ningún registro, el poema destacado, como antes:
+    # nunca los dos a la vez.
+    registros = _registros_destacados(profile)
+    featured = (
+        {"kind": "poem", "object": featured_poem} if featured_poem and not registros else None
+    )
     # Se materializa para poder contar sin una segunda consulta.
     _members = list(Contributor.members()[:TOPE_CINTA])
     # Cuántas integrantes hay: la cinta ya las trajo, salvo que lleguen a su tope.
@@ -125,6 +184,8 @@ def home(request):
             "members": _members,
             "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
             "featured": featured,
+            "registros": registros,
+            "registros_cuantos": NUMERALES.get(len(registros), str(len(registros))),
             "next_event": proximo,
             "publications": publicaciones,
             # El sello del titular: solo mientras haya una convocatoria abierta.

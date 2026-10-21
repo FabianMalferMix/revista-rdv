@@ -1,0 +1,72 @@
+{% load images %}
+{% comment %}
+   La tirada (D19, elegida por el dueño en el tablero de los registros destacados, 2026-10-21).
+   Cada registro que el colectivo marca como destacado es un pliego de una tirada numerada,
+   apoyado junto a los demás en un carril que sangra por la derecha. Cada pliego lleva a su
+   ficha, donde se reproduce: en la portada no hay reproductor. El título es el único enlace
+   y su capa cubre el pliego entero. Sin JavaScript es una fila con imán y todos los pliegos
+   a dos tintas; static/js/registros.js pone uno al frente (aria-current), enseña las flechas
+   y la hoja de contactos, y deja a los demás como pruebas en trama. Nada avanza solo.
+{% endcomment %}
+<section class="home-block sangre tirada" aria-labelledby="tirada-titulo" data-tirada>
+  <div class="tirada-cabeza">
+    <h2 class="tirada-h" id="tirada-titulo">Registros</h2>
+    <p class="meta tirada-todos"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
+    {% if registros|length > 1 %}
+      <div class="tirada-mandos" hidden>
+        <button class="btn tirada-flecha" type="button" data-anterior disabled aria-controls="tirada-pista" aria-label="Anterior"><span aria-hidden="true">←</span></button>
+        <button class="btn tirada-flecha" type="button" data-siguiente aria-controls="tirada-pista" aria-label="Siguiente: «{{ registros.1.titulo }}»"><span aria-hidden="true">→</span></button>
+      </div>
+    {% endif %}
+  </div>
+  <div class="tirada-carril">
+    <ol class="tirada-pista" id="tirada-pista">
+      {% for r in registros %}
+        <li class="pliego{% if r.largo %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
+          <h3 class="pliego-titulo"><a href="{{ r.url }}">{{ r.titulo }}</a></h3>
+          <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}</span></p>
+          {% if r.fecha %}
+            <p class="pliego-fechador">{% if r.ciudad %}<span class="rotulo">{{ r.ciudad }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
+          {% endif %}
+          {% comment %}
+             El póster a una tinta, también al señalarlo: en la portada no se enseña el original
+             (decisión 3 del tablero; a color se ve en la ficha). Sin imagen, una plancha en trama.
+          {% endcomment %}
+          {% if r.imagen %}
+            <span class="pliego-placa riso-duo">{% responsive_img r.imagen sizes="(max-width: 719px) 92vw, 440px" decorativa=True %}</span>
+          {% else %}
+            <span class="pliego-placa pliego-placa--vacia" aria-hidden="true"></span>
+          {% endif %}
+          <div class="pliego-pie">
+            {% if r.verso %}
+              <p class="pliego-verso">«{{ r.verso }}»</p>
+              {% if r.firma %}<p class="meta pliego-firma">{{ r.firma }}</p>{% endif %}
+            {% endif %}
+            {% if r.voces or r.lugar %}
+              <p class="meta pliego-datos">{% if r.voces %}{% if r.voces|length == 1 %}Lee{% else %}Leen{% endif %} {{ r.voces|join:", " }}{% endif %}{% if r.lugar %}<span>{{ r.lugar }}</span>{% endif %}</p>
+            {% endif %}
+            <p class="pliego-invita" aria-hidden="true"><span>{% if r.audio %}Escuchar en su ficha →{% else %}Ver el registro →{% endif %}</span></p>
+          </div>
+          <p class="rotulo pliego-folio">Nº {{ forloop.counter|stringformat:"02d" }}</p>
+        </li>
+      {% endfor %}
+      {% if registros|length > 1 %}
+        <li class="tirada-colofon" role="none">
+          <p class="rotulo">Colofón</p>
+          <p class="tirada-colofon-texto">Aquí termina la tirada: {{ registros_cuantos }} registros elegidos por el colectivo.</p>
+          <p class="meta">Los demás esperan en el archivo.</p>
+        </li>
+      {% endif %}
+    </ol>
+  </div>
+  {% if registros|length > 1 %}
+    <div class="tirada-pie">
+      <ul class="tirada-contactos" aria-label="Ir a un registro" hidden>
+        {% for r in registros %}
+          <li><button type="button" class="tirada-contacto" data-marcador="{{ forloop.counter0 }}" aria-controls="tirada-pista">{% if r.imagen %}<span class="riso-duo">{% responsive_img r.imagen sizes="96px" decorativa=True %}</span>{% else %}<span class="tirada-contacto-vacia" aria-hidden="true"></span>{% endif %}<span class="meta tirada-contacto-titulo">{{ r.titulo }}</span></button></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  <p class="sr-only" aria-live="polite" data-anuncio></p>
+</section>

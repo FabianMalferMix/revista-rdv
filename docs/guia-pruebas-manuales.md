@@ -90,11 +90,19 @@ no una plantilla vacía.
       manifiesto. Al bajar, la obra se queda quieta y la hoja sube encima; con «reducir
       movimiento» activado en el sistema, la obra sube con la página. En la hoja, «Conócenos
       →», «Ver el dossier», «Escríbenos» y, si hay convocatoria, el sello «Convocatoria
-      abierta». Después, el registro destacado; la obra (poemas con sus tres primeros versos,
+      abierta». Después, la tirada de registros («Registros»); la obra (poemas con sus tres primeros versos,
       y textos); las integrantes, en una cinta; las publicaciones; y un cierre «Para
       programadores y jurados» con la última actividad y «Actualizado el …». **Sin cifras,
       sin prensa y sin aliados**: los quitó el dueño del sitio y están en el dossier.
       (Cambió con el rediseño UX, pasos 19 y 20, y con la portada como obra, D18.)
+- [ ] **La tirada de registros**, en la portada. Bajo la hoja, «Registros» y «Todos los
+      registros →». Cada registro con la casilla «Featured» marcada en el panel es un pliego,
+      en el orden de su «Position» (hasta cinco): el del frente con el título grande, y el siguiente
+      asoma a la derecha en trama. «→» pasa al siguiente y se apaga en el último; la hoja de
+      contactos de abajo lleva a cada uno por su título. Pulsar el título abre la ficha, donde
+      se reproduce: en la portada no hay reproductor. Nada avanza solo. Con un solo registro
+      no hay flechas ni hoja de contactos; sin ninguno marcado sale el que está elegido en
+      «Perfil del sitio» → «Featured recording».
 - [ ] **La obra de la portada, desde el panel.** En «Perfil del sitio», elige una imagen en
       «Imagen de portada» y guarda: la portada la muestra en lugar de la lámina de círculos.
       Una imagen en «Imagen de portada para el teléfono» se ve solo en un teléfono. Vacía
