@@ -106,8 +106,8 @@ def test_la_escala_es_la_unica_fuente_de_tamanos():
     """Había 25 tamaños escritos a mano: 17, 18, 19 y 20 px convivían sin que ninguno
     significara nada. Ahora cada `font-size` es un paso de la escala. Quedan fuera el
     cuerpo base de `html`, que crece con el monitor y del que cuelgan los `rem`, y la hoja
-    de impresión, que mide en puntos. Son nueve pasos: el décimo, --t7, era el nombre de la
-    portada, que con la portada como obra (D18) es el logo."""
+    de impresión, que mide en puntos. Son diez pasos: --t7, que era el nombre de la portada
+    hasta que pasó a ser el logo (D18), volvió como el título de los pliegos de la tirada (D19)."""
     sueltos = [
         (selector, tam)
         for selector, cuerpo in _reglas()
@@ -119,7 +119,7 @@ def test_la_escala_es_la_unica_fuente_de_tamanos():
     escala = {
         nombre: valor for nombre, valor in _tokens().items() if re.fullmatch(r"--t-?\d", nombre)
     }
-    assert len(escala) == 9, f"la escala tiene {len(escala)} pasos: {sorted(escala)}"
+    assert len(escala) == 10, f"la escala tiene {len(escala)} pasos: {sorted(escala)}"
     minimos = [_px(f"var({nombre})")[0] for nombre in sorted(escala, key=lambda n: int(n[3:]))]
     assert minimos == sorted(minimos), f"la escala no crece de paso en paso: {minimos}"
 
@@ -145,7 +145,7 @@ def test_el_cuerpo_de_lectura_tiene_medida():
     medida = re.search(r"--medida:\s*(\d+)ch", _css())
     assert medida, "falta el token --medida"
     assert 45 <= int(medida.group(1)) <= 66, "la medida en ch quedó fuera del rango de lectura"
-    for selector in (".article.body", ".dek", ".member-about", ".rec-sumario"):
+    for selector in (".article.body", ".dek", ".member-about"):
         assert "max-width:var(--medida)" in _regla(selector), f"«{selector}» perdió la medida"
 
 
@@ -811,17 +811,42 @@ def test_el_sello_del_pie_va_en_blanco_como_el_de_la_cabecera():
     assert "color:#fff" in _regla(".site-foot.brand")
 
 
-def test_el_destacado_va_a_dos_columnas_sobre_el_papel():
-    """Con reproductor, la placa a la izquierda y la ficha a la derecha. La regla va después
-    del tope de ancho de la placa, o el tope le gana."""
-    reglas = [re.sub(r"\s+", "", sel) for sel, _ in _reglas()]
-    dos_columnas = ".featured:has(>.player-frame,>video)"
-    cuerpo = _todas(dos_columnas)
-    assert cuerpo and 'grid-template-areas:"placaficha""placaenlace"' in cuerpo[0]
-    assert reglas.index(".featured>.player-frame,.featured>video") > reglas.index(
-        ".featured.player-frame"
+def test_la_tirada_se_desliza_con_iman_y_cambia_solo_de_tinta():
+    """La tirada (D19): un carril nativo con imán y la barra a la vista, que funciona sin
+    JavaScript. Al pasar un pliego al frente solo cambian colores (las tintas registradas con
+    @property), y solo para quien no pidió menos movimiento. El magenta es un estado: lo
+    lleva el pliego al frente, nunca uno en reposo."""
+    carril = _regla(".tirada-carril")
+    for declaracion in ("overflow-x:auto", "scroll-snap-type:xmandatory", "scrollbar-width:thin"):
+        assert declaracion in carril
+    for tinta in ("--tinta", "--sobre", "--trama", "--marca", "--sello"):
+        assert f"@property {tinta}" in _css(), f"la tinta {tinta} no está registrada"
+    movimiento = _bloque(
+        "@media (prefers-reduced-motion:no-preference){\n  .tirada.con-js .pliego{"
     )
-    assert "max-width:none" in _regla(".featured>.player-frame,.featured>video")
+    transiciones = re.findall(r"transition:([^;}]+)", movimiento)
+    propiedades = {
+        t.split("var(")[0] for parte in transiciones for t in parte.split(",") if t.strip()
+    }
+    assert propiedades <= {
+        "--tinta",
+        "--trama",
+        "--marca",
+        "--sello",
+        "--sobre",
+        "border-color",
+        "outline-color",
+    }
+    sobre = [sel for sel, cuerpo in _reglas() if "--sobre:var(--accent)" in cuerpo]
+    assert sobre == [".tirada.con-js .pliego[aria-current]"]
+    assert "font-size:var(--t7)" in _regla(".pliego-titulo")
+
+
+def test_en_la_portada_el_poster_de_la_tirada_se_queda_a_una_tinta():
+    """Decisión 3 del tablero de los registros: al señalar o enfocar un pliego, el póster no
+    pasa al original a color (eso queda para la ficha)."""
+    senalan = [sel for sel, cuerpo in _reglas() if ".riso-duo" in sel and "filter:none" in cuerpo]
+    assert senalan and not any("pliego" in sel or "tirada" in sel for sel in senalan)
 
 
 # ── Duotono y retratos (tickets 3.3 y 3.6) ────────────────────────────────
@@ -885,6 +910,8 @@ CON_DUOTONO = {
     "_event_card.html",
     "trayectoria.html",
     "home.html",
+    # La placa y la hoja de contactos de la tirada de registros (D19).
+    "_tirada.html",
 }
 
 

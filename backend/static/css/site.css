@@ -101,7 +101,7 @@
   /* Espacio: una escala, para que el aire entre secciones sea una decisión y no la
      suma de los márgenes que casualmente se tocan. */
   --s1:8px; --s2:16px; --s3:24px; --s4:40px; --s5:64px; --s6:96px; --s7:144px;
-  /* TIPOGRAFÍA. Una escala de nueve pasos, donde había 25 tamaños escritos a mano. Cada
+  /* TIPOGRAFÍA. Una escala de diez pasos, donde había 25 tamaños escritos a mano. Cada
      paso tiene un papel:
        --t-2 12   rótulo (mayúsculas espaciadas)
        --t-1 13   dato: fecha, firma, lugar
@@ -113,10 +113,12 @@
        --t4  26   título de fila; día de la agenda
        --t5  28-40   título de sección, año, cifra
        --t6  34-56   título de página
-     El nombre del colectivo en la portada ya no es un tamaño: es el logo (D18).
+       --t7  34-72   el título de un pliego de la tirada de registros (D19). En cqi: crece con
+                     el pliego, no con la ventana. El nombre del colectivo ya no es un tamaño: es
+                     el logo (D18).
      El cuerpo base no es un paso: crece con el monitor (ver `html`). */
   --t-2:12px; --t-1:13px; --t0:15px; --t1:16px; --t2:19px; --t3:22px; --t4:26px;
-  --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px);
+  --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px); --t7:clamp(34px, 9cqi, 72px);
   /* Interlíneas por papel y espaciado de letra: abierto en los rótulos, cerrado en los títulos. */
   --lh-titulo:1.1; --lh-ui:1.35; --lh-lectura:1.55; --lh-verso:1.5;
   --tr-rotulo:.1em; --tr-meta:.02em; --tr-titulo:-.015em;
@@ -1182,30 +1184,209 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .band .fila:has(.fila-titulo a):hover::before,
 .band .fila:focus-within::before{background-color:var(--paper)}
 
-/* Destacado único, con más peso visual que las franjas secundarias. Va sobre el papel, a
-   continuación del titular y separado por su filete. Con un reproductor, desde 840 px va
-   a dos columnas: la placa a la izquierda y la ficha a la derecha, con el enlace al
-   índice debajo de la ficha. La placa azul es el único bloque de color, y la ficha va
-   primero en el HTML: se lee el título antes que el botón de reproducir. */
-.featured-ficha > .kicker{display:block}
+/* El poema destacado: sale solo cuando no hay registros destacados (la tirada, D19). Va
+   sobre el papel, a continuación de la hoja. */
 .featured h2{margin:8px 0 14px; font-size:var(--t5); line-height:1.15}
 .featured h2 a{text-decoration:none; color:var(--ink)}
 .featured .poem-excerpt{font-size:var(--t2); max-width:var(--medida)}
-/* A todo el carril ancho la placa mediría 742 px de alto. */
-.featured .player-frame{max-width:var(--measure)}
-/* Va después del tope de la placa: a dos columnas la mide su columna. */
-@media (min-width:840px){
-  .featured:has(> .player-frame, > video){display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr);
-    grid-template-rows:auto 1fr; grid-template-areas:"placa ficha" "placa enlace";
-    column-gap:clamp(24px, 4vw, 64px); align-items:start}
-  .featured > .player-frame, .featured > video{grid-area:placa; max-width:none; margin:0}
-  .featured-ficha{grid-area:ficha}
-  .featured-enlace{grid-area:enlace}
+
+/* La tirada de registros (D19). En el tablero de los registros destacados (2026-10-21) el dueño
+   del sitio eligió «La tirada»: cada registro que el colectivo marca como destacado se imprime
+   como un pliego de una tirada numerada. Los pliegos se apoyan uno junto a otro sobre el papel,
+   en un carril que sangra por la derecha. El del frente va a dos tintas (la placa azul y el
+   título en tinta con su corrimiento magenta, marcas de corte y fechador de goma); los demás
+   esperan como pruebas a una tinta, en trama, y el siguiente asoma. Nada avanza solo: se pasa
+   con las flechas, la hoja de contactos, el teclado o deslizando (static/js/registros.js). Cada
+   pliego lleva a la ficha del registro, donde se reproduce.
+   Las tintas del pliego van registradas para que el navegador pueda pasar de una a otra (el
+   entintado): sin @property, una variable cambia de golpe. Solo colores. */
+@property --tinta{syntax:'<color>'; inherits:true; initial-value:transparent}
+@property --sobre{syntax:'<color>'; inherits:true; initial-value:transparent}
+@property --trama{syntax:'<color>'; inherits:true; initial-value:transparent}
+@property --marca{syntax:'<color>'; inherits:true; initial-value:transparent}
+@property --sello{syntax:'<color>'; inherits:true; initial-value:transparent}
+/* --borde: donde empieza el carril ancho; el primer pliego cae en la vertical de la portada.
+   --hueco: entre pliego y pliego, más que el borde y las marcas de corte juntos, para que el
+   pliego anterior no asome por la izquierda. */
+.tirada{--borde:max(var(--gutter), (100cqi - var(--wide)) / 2); --corte:14px;
+  --hueco:calc(var(--borde) + var(--corte) + 2px); --pliego:min(670px, (100cqi - 2 * var(--borde)) * .77);
+  --margen:clamp(176px, 31%, 212px); container:tirada / inline-size}
+.home-block.tirada{padding-block:var(--s3)}
+@media (max-width:719px){
+  .tirada{--corte:10px; --pliego:calc(100cqi - var(--borde) - var(--hueco) - 26px)}
 }
-/* Ficha del registro destacado: los datos que el modelo ya tenía. */
-.rec-ficha{margin:0 0 10px}
-.rec-ficha a{text-decoration:none; border-bottom:1px solid var(--border)}
-.rec-sumario{margin:0 0 16px; font-size:var(--t1); color:var(--ink); max-width:var(--medida)}
+.tirada-cabeza, .tirada-pie{width:min(var(--wide), 100% - 2 * var(--gutter)); margin-inline:auto}
+.tirada-cabeza{display:grid; grid-template-columns:auto minmax(0, 1fr) auto;
+  grid-template-areas:"h todos mandos"; align-items:center; column-gap:var(--s3); min-height:44px}
+.tirada-h{grid-area:h; margin:0; font-family:var(--display); font-weight:700; font-size:var(--t5);
+  line-height:var(--lh-titulo); letter-spacing:var(--tr-titulo); color:var(--ink)}
+.tirada-todos{grid-area:todos; margin:0}
+.tirada-mandos{grid-area:mandos; display:flex; gap:var(--s1)}
+.tirada-mandos[hidden], .tirada-contactos[hidden]{display:none}
+@media (max-width:719px){
+  .tirada-cabeza{grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"h mandos" "todos mandos"; row-gap:2px}
+  .tirada-todos{justify-self:start}
+}
+/* Las flechas: botones secundarios de la casa, cuadrados de 44 px. Su nombre dice adónde
+   llevan; en los extremos se apagan. Sin JavaScript no se enseñan. */
+.tirada-flecha{width:44px; padding:0; font-size:var(--t3); font-family:var(--display)}
+.tirada-flecha:disabled, .tirada-flecha:disabled:hover{border-color:var(--line); color:var(--muted);
+  background:transparent; cursor:default}
+
+/* El carril: nativo, con imán y una barra fina a la vista. */
+.tirada-carril{overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory; scroll-padding-inline:var(--borde);
+  scrollbar-width:thin; scrollbar-color:var(--edge) transparent}
+@media (prefers-reduced-motion:no-preference){
+  .tirada-carril{scroll-behavior:smooth}
+}
+.tirada-pista{display:flex; align-items:stretch; gap:var(--hueco); list-style:none; margin:0;
+  padding:calc(var(--corte) + 10px) var(--borde) calc(var(--corte) + 12px); width:max-content}
+
+/* El pliego. */
+.pliego{position:relative; flex:0 0 var(--pliego); width:var(--pliego); container:pliego / inline-size;
+  scroll-snap-align:start; scroll-snap-stop:always;
+  display:grid; grid-template-columns:minmax(0, 1fr) var(--margen); grid-template-rows:auto auto 1fr;
+  grid-template-areas:"tipo tipo" "titulo titulo" "placa pie";
+  column-gap:var(--s3); padding:var(--s3); background:var(--paper-2); color:var(--ink);
+  --tinta:var(--ink); --sobre:transparent; --trama:transparent; --marca:var(--ink); --sello:var(--ink)}
+/* Marcas de corte: ocho trazos de tinta fuera de las esquinas, como en un pliego sin refilar. */
+.pliego::before{content:""; position:absolute; inset:calc(-1 * var(--corte)); pointer-events:none;
+  --l:calc(var(--corte) - 4px);
+  background:
+    linear-gradient(var(--marca) 0 0) left 0 top var(--corte) / var(--l) 1px no-repeat,
+    linear-gradient(var(--marca) 0 0) left var(--corte) top 0 / 1px var(--l) no-repeat,
+    linear-gradient(var(--marca) 0 0) right 0 top var(--corte) / var(--l) 1px no-repeat,
+    linear-gradient(var(--marca) 0 0) right var(--corte) top 0 / 1px var(--l) no-repeat,
+    linear-gradient(var(--marca) 0 0) left 0 bottom var(--corte) / var(--l) 1px no-repeat,
+    linear-gradient(var(--marca) 0 0) left var(--corte) bottom 0 / 1px var(--l) no-repeat,
+    linear-gradient(var(--marca) 0 0) right 0 bottom var(--corte) / var(--l) 1px no-repeat,
+    linear-gradient(var(--marca) 0 0) right var(--corte) bottom 0 / 1px var(--l) no-repeat}
+/* El folio: el número del pliego en la tirada, fuera del corte, donde la imprenta lo anota.
+   Uno solo y sin total. */
+.pliego-folio{position:absolute; left:var(--s3); top:calc(100% + 5px); margin:0; color:var(--ink);
+  font-variant-numeric:tabular-nums; line-height:1}
+/* El sello de tipo: un filete de tinta, sin relleno. */
+.pliego-tipo{grid-area:tipo; justify-self:start; margin:0 0 var(--s2); padding:3px 8px 2px;
+  border:1px solid var(--sello); color:var(--sello)}
+.pliego-tipo .rotulo{color:inherit}
+/* El fechador de goma: montado sobre el borde de arriba de la hoja, girado como cae un sello a
+   mano (quieto). Tinta y filete doble, sin relleno: se ve el papel debajo. El sello magenta
+   girado sigue siendo solo el de la convocatoria. */
+.pliego-fechador{position:absolute; z-index:2; top:calc(-1 * var(--s2)); right:var(--s3); margin:0;
+  display:grid; justify-items:center; gap:2px; padding:7px 12px 8px;
+  border:2px solid var(--sello); outline:1px solid var(--sello); outline-offset:-6px;
+  color:var(--sello); rotate:-4deg; pointer-events:none}
+.pliego-fechador .rotulo{color:inherit; line-height:1}
+.pliego-fechador b{font-family:var(--display); font-weight:700; font-size:var(--t2); line-height:1;
+  letter-spacing:var(--tr-titulo); white-space:nowrap}
+/* El título: enorme, en tinta. Reserva dos líneas y se apoya abajo, sobre la placa: la placa
+   empieza a la misma altura en todos los pliegos. El corrimiento magenta es un estado: solo lo
+   lleva el pliego al frente. */
+.pliego-titulo{grid-area:titulo; display:grid; align-content:end; min-height:calc(2 * .94 * var(--t7));
+  margin:0 0 var(--s2); max-width:15ch; font-family:var(--display); font-weight:700; font-size:var(--t7);
+  line-height:.94; letter-spacing:-.03em; color:var(--tinta); text-wrap:balance;
+  text-shadow:.045em .035em 0 var(--sobre)}
+.pliego-titulo a{color:inherit; text-decoration:none}
+/* El único enlace del pliego: su capa cubre la hoja entera. */
+.pliego-titulo a::after{content:""; position:absolute; z-index:1; inset:0}
+.pliego--largo .pliego-titulo{font-size:var(--t6); min-height:calc(2 * .94 * var(--t6))}
+.pliego:hover .pliego-titulo a, .pliego-titulo a:hover{text-decoration:underline; text-decoration-color:var(--accent);
+  text-decoration-thickness:3px; text-underline-offset:.12em; text-decoration-skip-ink:none}
+/* El foco se ve en la hoja entera, que es lo que el enlace abre. */
+.pliego:has(.pliego-titulo a:focus-visible){outline:2px solid var(--accent); outline-offset:6px}
+.pliego:has(.pliego-titulo a:focus-visible) .pliego-titulo a{outline:none}
+/* La placa: el póster a una tinta, en el azul de la casa (.riso-duo), también al señalarlo:
+   en la portada no se enseña el original (decisión 3 del tablero). La trama es una retícula de
+   puntos del color de la hoja: transparente, la placa queda llena. Sin imagen, una plancha
+   en trama azul sobre la hoja. */
+.pliego-placa{grid-area:placa; display:block; align-self:start; aspect-ratio:3 / 2; overflow:hidden}
+.pliego-placa img{display:block; width:100%; height:100%; object-fit:cover}
+.pliego-placa::before{content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background-image:radial-gradient(circle at center, transparent 0 1.7px, var(--trama) 2.1px);
+  background-size:5px 5px}
+.pliego-placa--vacia{position:relative;
+  background:radial-gradient(circle at center, var(--caratula) 0 1.4px, transparent 1.8px) 0 0 / 6px 6px, var(--paper)}
+/* El margen: el verso que se lee, quién lee y dónde; al pie, qué pasa al pulsar. */
+.pliego-pie{grid-area:pie; display:flex; flex-direction:column; min-width:0}
+.pliego-verso{margin:0; font-family:var(--serif); font-style:italic; font-size:var(--t1); line-height:1.35;
+  color:var(--ink); text-wrap:balance}
+.pliego-firma{margin:6px 0 0}
+.pliego-datos{margin:var(--s2) 0 0; color:var(--ink)}
+.pliego-datos span{display:block; color:var(--muted)}
+.pliego-invita{margin:auto 0 0; padding-top:var(--s2); font-family:var(--display); font-weight:600;
+  font-size:var(--t0); line-height:1.2; color:var(--ink)}
+.pliego-invita span{text-decoration:underline; text-decoration-color:transparent; text-decoration-thickness:2px;
+  text-underline-offset:4px; transition:text-decoration-color var(--dur-fast) var(--ease)}
+.pliego:hover .pliego-invita span{text-decoration-color:var(--accent)}
+
+/* Con JavaScript: el pliego al frente y las pruebas. El frente lleva aria-current; los demás
+   son pruebas a una tinta: el título en el azul de la placa, la placa en trama, sin marcas de
+   corte y el fechador apagado. Pulsar una prueba la trae al frente; su título sigue llevando a
+   la ficha. */
+.tirada.con-js .pliego:not([aria-current]){--tinta:var(--caratula); --trama:var(--paper-2);
+  --marca:transparent; --sello:var(--muted); cursor:pointer}
+.tirada.con-js .pliego:not([aria-current]) .pliego-titulo a::after{content:none}
+.tirada.con-js .pliego:not([aria-current]) .pliego-invita{visibility:hidden}
+.tirada.con-js .pliego:not([aria-current]) :is(.pliego-fechador, .pliego-tipo){border-color:var(--line); outline-color:var(--line)}
+.tirada.con-js .pliego:not([aria-current]):hover{--marca:var(--edge)}
+.tirada.con-js .pliego:not([aria-current]):hover .pliego-titulo a:not(:hover){text-decoration:none}
+.tirada.con-js .pliego[aria-current]{--sobre:var(--accent)}
+/* La reimpresión: la tinta sube del papel en --dur-base y el magenta llega después, cuando la
+   tinta ya casi está. Solo color. Con menos movimiento, de golpe. */
+@media (prefers-reduced-motion:no-preference){
+  .tirada.con-js .pliego{transition:--tinta var(--dur-base) var(--ease), --trama var(--dur-base) var(--ease),
+    --marca var(--dur-base) var(--ease), --sello var(--dur-base) var(--ease),
+    --sobre var(--dur-base) var(--ease) calc(var(--dur-base) - var(--dur-fast))}
+  .tirada.con-js :is(.pliego-fechador, .pliego-tipo){
+    transition:border-color var(--dur-base) var(--ease), outline-color var(--dur-base) var(--ease)}
+}
+
+/* El colofón: el final de la tirada. */
+.tirada-colofon{flex:0 0 max(176px, 100cqi - 2 * var(--borde) - var(--pliego) - var(--hueco));
+  display:flex; flex-direction:column; justify-content:flex-end; gap:var(--s1);
+  padding:var(--s3) 0 var(--s3) var(--s3); border-left:1px dashed var(--line); scroll-snap-align:end}
+.tirada-colofon p{margin:0; max-width:26ch}
+.tirada-colofon-texto{font-family:var(--serif); font-style:italic; font-size:var(--t1); line-height:1.4; color:var(--ink)}
+
+/* La hoja de contactos: el índice, cada registro con su título. El elegido se marca como en
+   una hoja de contactos: un recuadro de lápiz graso magenta. */
+.tirada-pie{margin-top:var(--s1)}
+.tirada-contactos{display:flex; gap:var(--s1); list-style:none; margin:0 0 0 -6px; padding:0}
+.tirada-contactos li{flex:0 0 auto}
+.tirada-contacto{display:grid; justify-items:start; gap:6px; width:162px; margin:0; padding:4px;
+  border:2px solid transparent; border-radius:0; background:transparent; color:var(--ink);
+  text-align:left; cursor:pointer; font:inherit}
+.tirada-contacto .riso-duo, .tirada-contacto-vacia{display:block; width:96px; aspect-ratio:16 / 9; overflow:hidden}
+.tirada-contacto-vacia{background:radial-gradient(circle at center, var(--caratula) 0 1px, transparent 1.4px) 0 0 / 5px 5px, var(--paper)}
+.tirada-contacto img{display:block; width:100%; height:100%; object-fit:cover}
+.tirada-contacto-titulo{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+  color:var(--ink); text-wrap:balance}
+.tirada-contacto:hover{border-color:var(--line)}
+.tirada-contacto[aria-current], .tirada-contacto[aria-current]:hover{border-color:var(--accent)}
+.tirada-contacto:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* El teléfono: el pliego casi a todo el ancho (el siguiente asoma por la derecha), la placa a
+   sangre de la hoja y el margen debajo. La hoja de contactos se desliza de lado. */
+@media (max-width:719px){
+  .pliego{grid-template-columns:minmax(0, 1fr); grid-template-rows:auto auto auto 1fr;
+    grid-template-areas:"tipo" "titulo" "placa" "pie"; padding:var(--s2)}
+  .pliego-tipo{margin-bottom:var(--s1)}
+  .pliego-titulo{max-width:none; min-height:0; margin-bottom:var(--s2)}
+  .pliego-placa{margin-inline:calc(-1 * var(--s2)); aspect-ratio:16 / 9}
+  .pliego-pie{margin-top:var(--s2)}
+  .pliego-datos{margin-top:var(--s1)}
+  .pliego-fechador{right:var(--s2); padding:5px 10px 6px}
+  .pliego-fechador b{font-size:var(--t1)}
+  .pliego-folio{left:var(--s2)}
+  .tirada-colofon{flex-basis:180px}
+  .tirada-contactos{overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:thin;
+    scrollbar-color:var(--edge) transparent; margin-inline:calc(-1 * var(--gutter)); padding-inline:calc(var(--gutter) - 6px);
+    scroll-padding-inline:calc(var(--gutter) - 6px); gap:4px}
+  .tirada-contactos li{scroll-snap-align:start}
+  .tirada-contacto{width:150px}
+  .tirada-contacto .riso-duo, .tirada-contacto-vacia{width:64px}
+}
 
 /* Dossier / kit de prensa (ticket 5.1; D11), en pantalla y en papel. Se lee en el carril
    de lectura, que mide lo que una hoja: lo que se ve es lo que se imprime. Arriba, la

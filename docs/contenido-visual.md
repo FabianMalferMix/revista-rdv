@@ -25,7 +25,8 @@ elegirla en el perfil del sitio.
 | Seis fotos por lectura | 3:2, ≥ 2400 px de ancho, con nombre de quien fotografió | galería y ficha del evento | Evento → Fotos (pie y crédito) |
 | Afiche de cada evento | PDF o PNG a 300 dpi, el original de imprenta | agenda, próxima actividad, ficha, portada | Evento → Afiche |
 | Cubierta de cada publicación y una foto del libro en mano | 1000×1400 px (5:7); foto 3:2 | catálogo, ficha, portada, dossier | Publicación → Cubierta |
-| Fotograma de cada registro | 1920×1080 px, un plano nítido de la lectura | placa del reproductor, listado, destacado | Registro → Póster |
+| Fotograma de cada registro | 1920×1080 px, un plano nítido de la lectura, sin texto encima (el título va aparte, en grande) | placa del reproductor, listado y la tirada de la portada; sin él, la tirada usa la primera foto del evento | Registro → Póster |
+| Qué registros salen en la portada | casilla y número | la tirada de la portada, hasta cinco, en ese orden | Registro → Featured y Position |
 | Logo de cada aliado y medio | SVG o PNG ≥ 600 px, sobre fondo transparente o blanco | aliados y dossier | Aliado → Logo; Prensa → Logo |
 | Obra de la portada | horizontal, ≥ 2400 px de ancho, con una zona clara y tranquila abajo, donde va el logo en tinta | la primera vista de la portada, a sangre; sin ella va la lámina del colectivo | Perfil del sitio → Imagen de portada |
 | Recorte de la obra para el teléfono (opcional) | vertical, ≥ 1080 px de ancho (1:2) | la portada en el teléfono; sin él, se recorta la horizontal por el centro | Perfil del sitio → Imagen de portada para el teléfono |

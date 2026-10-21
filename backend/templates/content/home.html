@@ -1,8 +1,12 @@
 {% extends "base.html" %}
-{% load images %}
+{% load images static %}
 
 {% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
+{% block head_extra %}
+  {# Las flechas y la hoja de contactos de la tirada: solo hacen falta con dos registros o más. #}
+  {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}" defer></script>{% endif %}
+{% endblock %}
 
 {% block content %}
   {% comment %}
@@ -75,32 +79,15 @@
     </div>
   </section>
 
-  {% if featured %}
+  {% if registros %}
+    {% include "content/partials/_tirada.html" %}
+  {% elif featured %}
     {% comment %}
-       Sobre el papel, a continuación del titular: el dueño del sitio descartó la banda de
-       tinta porque rompía la portada. Con reproductor va a dos columnas (ver site.css).
-       La ficha va primero: se lee el título antes que el botón de reproducir.
+       Sin registros destacados, el poema destacado del perfil, como antes de la tirada (D19).
+       Sobre el papel, a continuación de la hoja: el dueño del sitio descartó la banda de tinta
+       porque rompía la portada.
     {% endcomment %}
     <section class="home-block featured">
-    {% if featured.kind == "recording" %}
-      <div class="featured-ficha">
-        <span class="kicker">Registro destacado</span>
-        <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
-        {% comment %}
-           El modelo ya guardaba evento, fecha, ciudad, participantes y descripción
-           —la ficha del registro los muestra— y la portada enseñaba solo el título.
-        {% endcomment %}
-        <p class="meta rec-ficha">
-          {% if featured.object.event %}<a href="{{ featured.object.event.get_absolute_url }}">{{ featured.object.event.title }}</a>{% endif %}
-          {% if featured.object.event.starts_at %} · {{ featured.object.event.starts_at|date:"j M Y" }}{% endif %}
-          {% if featured.object.event.city %} · {{ featured.object.event.city }}{% endif %}
-          {% with gente=featured.object.participants.all %}{% if gente %} · {% for c in gente %}{{ c.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}
-        </p>
-        {% if featured.object.description %}<p class="rec-sumario">{{ featured.object.description }}</p>{% endif %}
-      </div>
-      {% include "media/partials/_player.html" with r=featured.object diferida=True %}
-      <p class="meta featured-enlace"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
-    {% else %}
       <span class="kicker">Poema destacado</span>
       <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
       <div class="poem-body poem-excerpt">{{ featured.object.body|truncatechars:280 }}</div>
@@ -108,7 +95,6 @@
         {% for c in featured.object.authors.all %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
         · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>
       </p>
-    {% endif %}
     </section>
   {% endif %}
 

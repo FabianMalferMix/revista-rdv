@@ -73,7 +73,8 @@ def test_sin_javascript_queda_un_enlace_al_proveedor():
 
 
 def test_la_portada_no_contacta_con_terceros(client, make_article):
-    """La portada es la página más visitada: era la peor exposición."""
+    """La portada es la página más visitada: era la peor exposición. Desde la tirada (D19) no
+    reproduce: presenta el registro y lleva a su ficha, donde está el click-to-play."""
     from apps.showcase.models import SiteProfile
 
     rec = _recording(featured=True)
@@ -84,7 +85,8 @@ def test_la_portada_no_contacta_con_terceros(client, make_article):
     resp = client.get(reverse("content:home"))
     assert resp.status_code == 200
     assert _iframes(resp.content) == [], "la portada incrusta un tercero sin permiso"
-    assert b"embed-play" in resp.content
+    assert b"embed-play" not in resp.content and b"data-embed-src" not in resp.content
+    assert rec.get_absolute_url().encode() in resp.content
 
 
 def test_la_ficha_del_registro_tampoco(client):
