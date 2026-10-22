@@ -59,9 +59,9 @@ def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
     assert catalogo["href"] == reverse("showcase:publication_index")
     assert catalogo.get_text(strip=True) == "Ver todo el catálogo→"
     assert estante.select_one(".estante-cabeza a") is None
-    assert (
-        ".estante{display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 15rem);" in SITE_CSS
-    )
+    # La tabla mide lo que sus libros, sin tramos vacíos, y la ficha ocupa el resto (D26).
+    assert ".estante{display:grid; grid-template-columns:auto minmax(0, 1fr);" in SITE_CSS
+    assert "width:fit-content; max-width:100%; border-bottom:5px solid var(--ink)" in SITE_CSS
 
 
 def test_sin_guion_el_lomo_lleva_a_la_ficha_y_la_tapa_no_repite_el_enlace(client):

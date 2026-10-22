@@ -194,8 +194,8 @@ no una plantilla vacía.
       una publicación de frente (la marcada «Featured» en el panel o, si no hay, la primera
       según «Position») y hasta siete de lomo, de pie sobre una línea negra, con el título de
       abajo hacia arriba y el año. Bajo el extremo derecho de la línea, el botón negro «Ver
-      todo el catálogo →». Al lado, en una columna angosta, el tipo, el año y la editorial en
-      magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
+      todo el catálogo →». La línea termina con el último libro. Al lado, el tipo, el año y la
+      editorial en magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
       el ratón por un lomo, asoma; al pulsarlo, ese libro sale al frente y su ficha aparece al
       lado. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
