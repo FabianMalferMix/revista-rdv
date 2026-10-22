@@ -811,11 +811,13 @@ def test_el_sello_del_pie_va_en_blanco_como_el_de_la_cabecera():
     assert "color:#fff" in _regla(".site-foot.brand")
 
 
-def test_la_tirada_se_desliza_con_iman_y_cambia_solo_de_tinta():
-    """La tirada (D19): un carril nativo con imán y la barra a la vista, que funciona sin
-    JavaScript. Al pasar un pliego al frente solo cambian colores (las tintas registradas con
-    @property), y solo para quien no pidió menos movimiento. El magenta es un estado: lo
-    lleva el pliego al frente, nunca uno en reposo."""
+def test_la_tirada_sin_js_es_una_fila_y_con_js_una_pila_que_se_mueve_si_se_puede():
+    """La tirada (D19): sin JavaScript, un carril nativo con imán y la barra a la vista. Con
+    JavaScript, la pila (D20): todos los pliegos en la misma celda, corridos desde el de
+    arriba, y el gesto horizontal para el guion. Al cambiar de registro cambian las tintas
+    (registradas con @property) y los pliegos se corren a su lugar (la excepción a «solo
+    color» que se aprobó con la pila), solo para quien no pidió menos movimiento. El magenta es
+    un estado: lo lleva el pliego de arriba, nunca uno en reposo."""
     carril = _regla(".tirada-carril")
     for declaracion in ("overflow-x:auto", "scroll-snap-type:xmandatory", "scrollbar-width:thin"):
         assert declaracion in carril
@@ -826,7 +828,7 @@ def test_la_tirada_se_desliza_con_iman_y_cambia_solo_de_tinta():
     )
     transiciones = re.findall(r"transition:([^;}]+)", movimiento)
     propiedades = {
-        t.split("var(")[0] for parte in transiciones for t in parte.split(",") if t.strip()
+        re.split(r"var\(|calc\(|\d", t)[0] for p in transiciones for t in p.split(",") if t
     }
     assert propiedades <= {
         "--tinta",
@@ -836,7 +838,19 @@ def test_la_tirada_se_desliza_con_iman_y_cambia_solo_de_tinta():
         "--sobre",
         "border-color",
         "outline-color",
+        "translate",
+        "rotate",
     }
+    pila = _regla(".tirada.con-js.pliego")
+    assert "grid-area:1/1" in pila and "translate:calc(66px+var(--x))var(--y)" in pila
+    assert "touch-action:pan-ypinch-zoom" in _regla(".tirada.con-js.tirada-pista")
+    assert "grid-area" not in _regla(".pliego"), "sin JavaScript, la tirada sigue siendo una fila"
+    animadas = [
+        s for s, c in _pantalla() if "pliego" in s and re.search(r"transition:[^;]*translate", c)
+    ]
+    assert animadas == [".tirada.con-js .pliego"], (
+        "el acomodo solo se anima con movimiento permitido"
+    )
     sobre = [sel for sel, cuerpo in _reglas() if "--sobre:var(--accent)" in cuerpo]
     assert sobre == [".tirada.con-js .pliego[aria-current]"]
     assert "font-size:var(--t7)" in _regla(".pliego-titulo")

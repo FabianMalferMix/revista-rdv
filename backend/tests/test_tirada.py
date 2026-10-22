@@ -175,3 +175,15 @@ def test_el_guion_no_avanza_solo_ni_escribe_estilos():
     for prohibido in (".style", "cssText", 'setAttribute("style"', "location.hash", "history."):
         assert prohibido not in REGISTROS_JS
     assert "prefers-reduced-motion: reduce" in REGISTROS_JS
+
+
+def test_la_pila_se_reparte_solo_si_se_puede_mover_y_responde_al_dedo():
+    """El reparto (D20) se anima solo para quien no pidió menos movimiento. En el teléfono,
+    deslizar sobre la pila pasa de registro (a la izquierda, el siguiente), solo con el dedo o
+    el lápiz, y un deslizamiento no abre la ficha que quedó debajo."""
+    assert "!quieto.matches" in REGISTROS_JS and ".animate(" in REGISTROS_JS
+    for evento in ("pointerdown", "pointerup", "pointercancel"):
+        assert f"'{evento}'" in REGISTROS_JS
+    assert "e.pointerType === 'mouse'" in REGISTROS_JS
+    assert "ir(actual + (dx < 0 ? 1 : -1))" in REGISTROS_JS
+    assert "e.stopPropagation()" in REGISTROS_JS
