@@ -26,11 +26,12 @@ elegirla en el perfil del sitio.
 | Afiche de cada evento | PDF o PNG a 300 dpi, el original de imprenta | agenda, próxima actividad, ficha, portada | Evento → Afiche |
 | Cubierta de cada publicación y una foto del libro en mano | 1000×1400 px (5:7); foto 3:2 | catálogo, ficha, portada, dossier | Publicación → Cubierta |
 | Fotograma de cada registro | 1920×1080 px, un plano nítido de la lectura, sin texto encima (el título va aparte, en grande) | placa del reproductor, listado y la tirada de la portada; sin él, la tirada usa la primera foto del evento | Registro → Póster |
-| Qué registros salen en la portada | casilla y número | la tirada de la portada, hasta cinco, en ese orden | Registro → Featured y Position |
+| Qué registros salen en la portada | casilla y número | la tirada de la portada, hasta cinco, en ese orden | Registro → Destacado y Posición |
+| Duración de cada registro | minutos | el sello del registro en la portada, el índice y la ficha («Video · 42 min») | Registro → Duración (minutos) |
 | Logo de cada aliado y medio | SVG o PNG ≥ 600 px, sobre fondo transparente o blanco | aliados y dossier | Aliado → Logo; Prensa → Logo |
 | Obra de la portada | horizontal, ≥ 2400 px de ancho, con una zona clara y tranquila abajo, donde va el logo en tinta | la primera vista de la portada, a sangre; sin ella va la lámina del colectivo | Perfil del sitio → Imagen de portada |
 | Recorte de la obra para el teléfono (opcional) | vertical, ≥ 1080 px de ancho (1:2) | la portada en el teléfono; sin él, se recorta la horizontal por el centro | Perfil del sitio → Imagen de portada para el teléfono |
-| Foto de grupo | 2400×1260 px, horizontal | la imagen al compartir en redes y el logo de los datos estructurados (la portada no la usa: lleva el nombre escrito y lo repetiría) | Perfil del sitio → og_image |
+| Foto de grupo | 2400×1260 px, horizontal | la imagen al compartir en redes y el logo de los datos estructurados (la portada no la usa: lleva el nombre escrito y lo repetiría) | Perfil del sitio → Imagen para compartir |
 | Ciudad o comuna | texto | cejilla de la portada, ficha, dossier | Perfil → Ubicación |
 | Correo de gestión | texto, solo si existe de verdad | portada, pie, dossier | Perfil → Correo de gestión |
 | Manifiesto propio | 60 a 120 palabras | portada (recortado) y dossier (entero) | Perfil → Manifiesto |

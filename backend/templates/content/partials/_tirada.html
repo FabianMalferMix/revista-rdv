@@ -24,7 +24,7 @@
       {% for r in registros %}
         <li class="pliego{% if r.largo %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
           <h3 class="pliego-titulo"><a href="{{ r.url }}">{{ r.titulo }}</a></h3>
-          <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}</span></p>
+          <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}{% if r.duracion %} · {{ r.duracion }}{% endif %}</span></p>
           {% if r.fecha %}
             <p class="pliego-fechador">{% if r.ciudad %}<span class="rotulo">{{ r.ciudad }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
           {% endif %}
