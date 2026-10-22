@@ -67,6 +67,32 @@ terminar** (se muestra una sola vez; apúntala).
 Como crea cuentas de staff, el comando **se niega a correr con `DEBUG=0`** salvo que se
 le pase `--force` de forma explícita: nunca debe ejecutarse contra producción.
 
+### Ver en otro equipo lo mismo que en el de desarrollo
+
+El repositorio trae una copia del contenido de desarrollo (`backend/datos_de_desarrollo/`):
+la identidad del colectivo, integrantes, poemas, textos, registros, eventos, publicaciones
+con sus tapas, fotos y PDF. Después de `docker compose up --build`, en una base recién
+creada:
+
+```bash
+docker compose exec web python manage.py datos_de_desarrollo cargar
+docker compose exec web python manage.py createsuperuser
+```
+
+`cargar` copia los archivos, carga los datos y rehace las copias de las imágenes a otros
+tamaños. Se niega a correr sobre una base que ya tiene contenido (para empezar de cero:
+`docker compose down -v` y volver a levantar) y fuera de desarrollo (`DEBUG=0`). En lugar
+de `seed_demo`, no además.
+
+Solo viaja contenido público: **no** viajan las cuentas de usuario, las sesiones, los
+registros de acceso y del panel, los suscriptores del boletín, los envíos a convocatorias
+ni el historial editorial (por eso hay que crear la cuenta del panel). Para actualizar la
+copia con lo que haya hoy en desarrollo:
+
+```bash
+docker compose exec web python manage.py datos_de_desarrollo exportar
+```
+
 Material visual genérico (marcadores con proporciones reales, dibujados con Pillow) para
 diseñar antes de que llegue el material del colectivo:
 
