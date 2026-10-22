@@ -6,6 +6,7 @@
 {% block head_extra %}
   {# Las flechas y la hoja de contactos de la tirada: solo hacen falta con dos registros o más. #}
   {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}" defer></script>{% endif %}
+  {% if integrantes_resto %}<script src="{% static 'js/integrantes.js' %}" defer></script>{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -143,49 +144,33 @@
   {% endif %}
 
   {% if members %}
-    {% comment %} A sangre y sobre el papel: la cinta llega a los bordes de la ventana. {% endcomment %}
-    <section class="home-block sangre home-integrantes">
-      <div class="band-in">{% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo=titulo_integrantes territorio="colectivo" only %}</div>
-      {% comment %}
-         La cinta solo se monta por encima de UMBRAL_CINTA integrantes. Por debajo
-         la rejilla los enseña a todos de golpe y una cinta enseñaría MENOS: haría
-         esperar para ver lo que ya se veía.
-      {% endcomment %}
-      {% if cinta_integrantes %}
-        <div class="cinta-caja">
-          <div class="cinta">
-            {% comment %}
-               cinta-n<N>: la duración se escala con el número de integrantes para que
-               la VELOCIDAD no cambie al crecer el colectivo. No puede ir en un
-               style= inline: la CSP del sitio público no admite estilos en línea.
-            {% endcomment %}
-            <ul class="member-grid cinta-pista cinta-n{{ members|length }}">
-              {% for m in members %}{% include "people/partials/_member_card_cinta.html" %}{% endfor %}
-              {% comment %}
-                 Copia para que el bucle no tenga costura. aria-hidden: quien use
-                 lector de pantalla no debe oír a cada integrante dos veces.
-              {% endcomment %}
-              {% for m in members %}{% include "people/partials/_member_card_cinta.html" with copia=True %}{% endfor %}
-            </ul>
-          </div>
-          {% comment %}
-             El enlace es REAL y tiene texto real; la capa de .cinta-pie a::after
-             extiende su zona pulsable a todo el componente mientras la cinta se mueve
-             sola. Envolver todo en <a> habría dado al enlace un nombre accesible
-             compuesto por todos los nombres de la cinta.
-          {% endcomment %}
-          <p class="cinta-pie"><a href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
+    {% comment %}
+       «El colectivo» (D22, la opción A del tablero «El colectivo en portada»): la cabeza a la
+       izquierda, con el botón; a la derecha, seis retratos con el nombre impreso encima y la
+       columna del medio más abajo. Cada retrato lleva a su ficha. Con más de seis, las demás
+       vienen escondidas y «Otras seis» las reparte (static/js/integrantes.js); sin
+       JavaScript se ven las seis primeras y el botón.
+    {% endcomment %}
+    <section class="home-block sangre home-integrantes" data-integrantes>
+      <div class="band-in integrantes-plana">
+        <div class="integrantes-cabeza">
+          {% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo="Las voces" territorio="colectivo" only %}
+          <p class="integrantes-lead">Quiénes integran el colectivo: poetas, trayectorias y obra.</p>
+          <p class="integrantes-cta"><a class="btn" href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
+          {% if integrantes_resto %}
+            {% comment %} Los mandos solo sirven con el guion: él los destapa. {% endcomment %}
+            <div class="integrantes-mandos" hidden>
+              <button type="button" class="btn" data-anteriores aria-label="Seis anteriores"><span aria-hidden="true">←</span></button>
+              <button type="button" class="btn" data-siguientes>Otras seis <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="sr-only" aria-live="polite" data-anuncio></p>
+          {% endif %}
         </div>
-      {% else %}
-        <div class="band-in">
-          <ul class="member-grid">
-            {% for m in members %}
-              {% include "people/partials/_member_card.html" %}
-            {% endfor %}
-          </ul>
-          <p><a href="{% url 'people:member_index' %}">Conoce al colectivo →</a></p>
-        </div>
-      {% endif %}
+        <ul class="integrantes-pliego">
+          {% for m in integrantes_vista %}{% include "people/partials/_member_card_plana.html" %}{% endfor %}
+          {% for m in integrantes_resto %}{% include "people/partials/_member_card_plana.html" with escondida=True %}{% endfor %}
+        </ul>
+      </div>
     </section>
   {% endif %}
 

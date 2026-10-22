@@ -89,7 +89,7 @@ const METRICAS = () => {
     const r = rango.getBoundingClientRect();
     if (r.width <= 1 || r.height <= 1) continue;
     // Recorte: lo que un ancestro con overflow oculto deja fuera tampoco se ve
-    // (las tarjetas de la cinta que aún no han entrado, por ejemplo).
+    // (los retratos de una rejilla larga que aún no han entrado, por ejemplo).
     let izq = r.left;
     let der = r.right;
     for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {

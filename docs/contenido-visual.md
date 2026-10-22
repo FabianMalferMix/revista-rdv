@@ -21,7 +21,7 @@ elegirla en el perfil del sitio.
 
 | Pieza | Formato mínimo | Dónde se usa | Campo del panel |
 |---|---|---|---|
-| Retrato de cada integrante | 1200×1500 px (4:5), color, fondo neutro, mirando a cámara | rejilla y cinta de integrantes, ficha, dossier | Integrante → Foto |
+| Retrato de cada integrante | 1200×1500 px (4:5), color, fondo neutro, mirando a cámara | rejilla de integrantes, «Las voces» en la portada, ficha, dossier | Integrante → Foto |
 | Seis fotos por lectura | 3:2, ≥ 2400 px de ancho, con nombre de quien fotografió | galería y ficha del evento | Evento → Fotos (pie y crédito) |
 | Afiche de cada evento | PDF o PNG a 300 dpi, el original de imprenta | agenda, próxima actividad, ficha, portada | Evento → Afiche |
 | Cubierta de cada publicación y una foto del libro en mano | 1000×1400 px (5:7); foto 3:2 | catálogo, ficha, portada, dossier | Publicación → Cubierta |

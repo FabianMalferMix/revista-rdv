@@ -91,7 +91,8 @@ def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client, make_poem, make_a
         for cabeza in sopa.select(".seccion-cabeza")
     }
     assert cabezas == {
-        "3 voces": ("colectivo", "El colectivo"),
+        # Sin cifra desde D22: «3 voces» decía el tamaño del colectivo.
+        "Las voces": ("colectivo", "El colectivo"),
         "Poemas": ("obra", None),
         "Textos": ("obra", None),
         "Para programadores y jurados": ("prensa", "Prensa y gestión"),

@@ -83,8 +83,8 @@ def test_el_usuario_de_una_red_sale_de_su_url(url, usuario):
     assert SiteSocialLink(platform="Instagram", url=url).usuario == usuario
 
 
-def test_la_cejilla_cuenta_a_todas_aunque_la_cinta_tenga_tope(client):
-    """La cinta trae 16 integrantes como mucho: con más, la cejilla las cuenta aparte."""
+def test_la_cejilla_cuenta_a_todas(client):
+    """Las cuenta todas, también las que esperan su pliego en «El colectivo» (D22)."""
     for i in range(17):
         Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
     assert "17 integrantes" in _portada(client).select_one(".hero-cejilla").get_text()

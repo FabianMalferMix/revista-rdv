@@ -62,12 +62,9 @@ def _paginate(request, queryset, per_page=12):
     return Paginator(queryset, per_page).get_page(request.GET.get("page"))
 
 
-# Por debajo de este número, la rejilla ya enseña a todo el mundo a la vez y una
-# cinta enseñaría MENOS, no más. Por encima no caben y la cinta gana.
-UMBRAL_CINTA = 12
-# Tope de la cinta: con 16 la vuelta completa dura 96s; a partir de ahí el enlace
-# «Conoce al colectivo» se hace cargo del resto.
-TOPE_CINTA = 16
+# «El colectivo» en la portada (D22): seis retratos a la vez, dos filas de tres. Con más
+# integrantes, las demás vienen en la página, escondidas, y «Otras seis» las reparte.
+PLIEGO_INTEGRANTES = 6
 
 
 # La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de
@@ -151,10 +148,10 @@ def home(request):
     featured = (
         {"kind": "poem", "object": featured_poem} if featured_poem and not registros else None
     )
-    # Se materializa para poder contar sin una segunda consulta.
-    _members = list(Contributor.members()[:TOPE_CINTA])
-    # Cuántas integrantes hay: la cinta ya las trajo, salvo que lleguen a su tope.
-    integrantes = len(_members) if len(_members) < TOPE_CINTA else Contributor.members().count()
+    # Todas, sin tope: a cada una se llega por los pliegos. Las escondidas solo cuestan su
+    # marcado; sus retratos se piden cuando llega su pliego. Se materializa para contarlas.
+    _members = list(Contributor.members())
+    integrantes = len(_members)
     # Con su editorial: la tarjeta la nombra, y sin esto era una consulta por publicación.
     publicaciones = list(
         Publication.objects.filter(published=True).select_related("cover", "publisher")[:4]
@@ -183,7 +180,8 @@ def home(request):
             "poemas": list(_published_poems()[:3]),
             "articles": _published()[:3],
             "members": _members,
-            "cinta_integrantes": len(_members) >= UMBRAL_CINTA,
+            "integrantes_vista": _members[:PLIEGO_INTEGRANTES],
+            "integrantes_resto": _members[PLIEGO_INTEGRANTES:],
             "featured": featured,
             "registros": registros,
             "registros_cuantos": NUMERALES.get(len(registros), str(len(registros))),
@@ -192,7 +190,6 @@ def home(request):
             # El sello del titular: solo mientras haya una convocatoria abierta.
             "convocatoria": Call.open_now().first(),
             "integrantes": integrantes,
-            "titulo_integrantes": f"{integrantes} {'voz' if integrantes == 1 else 'voces'}",
             "puertas": puertas,
             "cejilla": cejilla,
             # La obra de la primera vista (D18). Sin ella, la plantilla pone la lámina.
