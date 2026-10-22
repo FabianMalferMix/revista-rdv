@@ -187,3 +187,49 @@ def test_la_pila_se_reparte_solo_si_se_puede_mover_y_responde_al_dedo():
     assert "e.pointerType === 'mouse'" in REGISTROS_JS
     assert "ir(actual + (dx < 0 ? 1 : -1))" in REGISTROS_JS
     assert "e.stopPropagation()" in REGISTROS_JS
+
+
+@pytest.mark.parametrize(
+    ("minutos", "texto"), [(None, ""), (6, "6 min"), (42, "42 min"), (65, "1 h 05 min")]
+)
+def test_la_duracion_se_lee_en_minutos_y_horas(minutos, texto):
+    assert Recording(duration_minutes=minutos).duracion == texto
+
+
+def test_el_sello_dice_el_tipo_y_la_duracion(client):
+    """D21: con la duración cargada, el sello dice «Video · 42 min»; sin ella, solo el tipo. La
+    ficha y el índice la enseñan también."""
+    con = _registro("con", title="Con duración", duration_minutes=42)
+    _registro("sin", title="Sin duración", kind=Recording.Kind.AUDIO, position=1)
+    _, tirada = _tirada(client)
+    sellos = [s.get_text(strip=True) for s in tirada.select(".pliego-tipo")]
+    assert sellos == ["Video · 42 min", "Audio"]
+    ficha = BeautifulSoup(client.get(con.get_absolute_url()).content, "html.parser")
+    assert ficha.select_one(".kicker").get_text() == "Registro · Video · 42 min"
+    indice = client.get(reverse("media:recording_index")).content.decode()
+    assert "Video · 42 min" in indice
+
+
+def test_el_panel_nombra_los_campos_en_castellano(client, django_user_model):
+    """D21: los rótulos del registro y del perfil del sitio estaban en inglés («Featured»,
+    «Position», «Featured recording»)."""
+    registro = _registro("rotulos")
+    client.force_login(django_user_model.objects.create_superuser("admin", "a@example.com", "x"))
+    paginas = {
+        reverse("admin:media_recording_change", args=[registro.pk]): {
+            "id_featured": "Destacado",
+            "id_position": "Posición",
+            "id_duration_minutes": "Duración (minutos)",
+            "id_poster": "Póster",
+        },
+        reverse("admin:showcase_siteprofile_change", args=[SiteProfile.load().pk]): {
+            "id_featured_recording": "Registro destacado (respaldo)",
+            "id_featured_poem": "Poema destacado",
+            "id_location": "Ubicación",
+            "id_booking_email": "Correo de gestión",
+        },
+    }
+    for url, rotulos in paginas.items():
+        sopa = BeautifulSoup(client.get(url).content, "html.parser")
+        for campo, rotulo in rotulos.items():
+            assert sopa.select_one(f"label[for={campo}]").get_text(strip=True).rstrip(":") == rotulo

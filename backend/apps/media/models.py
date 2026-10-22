@@ -292,38 +292,68 @@ class Recording(models.Model):
         AUDIO = "audio", "Audio"
         VIDEO = "video", "Video"
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.VIDEO)
+    # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    kind = models.CharField(
+        max_length=10, choices=Kind.choices, default=Kind.VIDEO, verbose_name="tipo"
+    )
     file = models.FileField(
         upload_to="recordings/%Y/%m/",
         blank=True,
         validators=[validate_audio_video_extension],
+        verbose_name="archivo",
     )
     embed_url = models.URLField(
-        blank=True, help_text="URL de YouTube/Vimeo/SoundCloud/Bandcamp (alternativa al archivo)."
+        blank=True,
+        verbose_name="enlace para incrustar",
+        help_text="URL de YouTube/Vimeo/SoundCloud/Bandcamp (alternativa al archivo).",
     )
     poster = models.ForeignKey(
-        MediaAsset, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        MediaAsset,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="póster",
+        help_text=(
+            "Un fotograma de la lectura, sin texto encima: en la portada el título va aparte, "
+            "en grande. Sin póster, la portada usa la primera foto del evento."
+        ),
     )
-    description = models.TextField(blank=True)
-    recorded_on = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True, verbose_name="descripción")
+    recorded_on = models.DateField(null=True, blank=True, verbose_name="grabado el")
+    duration_minutes = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="duración (minutos)",
+        help_text="Cuántos minutos dura. Sale en el sello del registro en la portada («Video · 42 min»).",
+    )
     event = models.ForeignKey(
         "agenda.Event",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="recordings",
+        verbose_name="evento",
         help_text="Evento del que proviene el registro (opcional).",
     )
     participants = models.ManyToManyField(
-        "people.Contributor", blank=True, related_name="recordings"
+        "people.Contributor", blank=True, related_name="recordings", verbose_name="participantes"
     )
-    featured = models.BooleanField(default=False)
-    published = models.BooleanField(default=False)
-    published_at = models.DateTimeField(null=True, blank=True)
-    position = models.PositiveSmallIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    featured = models.BooleanField(
+        default=False,
+        verbose_name="destacado",
+        help_text="Sale en la tirada de la portada (hasta cinco), en el orden de «Posición».",
+    )
+    published = models.BooleanField(default=False, verbose_name="publicado")
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name="publicado el")
+    position = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="posición",
+        help_text="Orden en la tirada de la portada y en el índice: primero el número más bajo.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="creado el")
 
     class Meta:
         ordering = ["position", "-recorded_on", "-created_at"]
@@ -345,6 +375,14 @@ class Recording(models.Model):
         from django.urls import reverse
 
         return reverse("media:recording_detail", args=[self.slug])
+
+    @property
+    def duracion(self):
+        """La duración como se lee en el sello: «42 min» o «1 h 05 min». Vacía si no se sabe."""
+        if not self.duration_minutes:
+            return ""
+        horas, minutos = divmod(self.duration_minutes, 60)
+        return f"{horas} h {minutos:02d} min" if horas else f"{minutos} min"
 
     def clean(self):
         if not self.file and not self.embed_url:

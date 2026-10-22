@@ -12,18 +12,35 @@ class SiteProfile(models.Model):
     de modo que exista a lo más una fila (patrón singleton, sin dependencias extra).
     """
 
-    name = models.CharField(max_length=255, default="Colectivo")
-    tagline = models.CharField(max_length=255, blank=True, help_text="Poética corta / lema.")
-    manifesto = models.TextField(blank=True, help_text="Manifiesto o poética del colectivo.")
-    founded_year = models.PositiveSmallIntegerField(null=True, blank=True)
-    location = models.CharField(max_length=255, blank=True, help_text="Ciudad / comuna.")
-    general_email = models.EmailField(blank=True)
-    booking_email = models.EmailField(
-        blank=True, help_text="Contacto de gestión / contrataciones (prensa, programación)."
+    # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
+    name = models.CharField(max_length=255, default="Colectivo", verbose_name="nombre")
+    tagline = models.CharField(
+        max_length=255, blank=True, verbose_name="lema", help_text="Poética corta / lema."
     )
-    phone = models.CharField(max_length=50, blank=True)
+    manifesto = models.TextField(
+        blank=True, verbose_name="manifiesto", help_text="Manifiesto o poética del colectivo."
+    )
+    founded_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="año de fundación"
+    )
+    location = models.CharField(
+        max_length=255, blank=True, verbose_name="ubicación", help_text="Ciudad / comuna."
+    )
+    general_email = models.EmailField(blank=True, verbose_name="correo general")
+    booking_email = models.EmailField(
+        blank=True,
+        verbose_name="correo de gestión",
+        help_text="Contacto de gestión / contrataciones (prensa, programación).",
+    )
+    phone = models.CharField(max_length=50, blank=True, verbose_name="teléfono")
     featured_recording = models.ForeignKey(
-        "media.Recording", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.Recording",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="registro destacado (respaldo)",
+        help_text="Sale en la portada solo si ningún registro está marcado como «Destacado».",
     )
     featured_poem = models.ForeignKey(
         "content.Poem",
@@ -31,12 +48,14 @@ class SiteProfile(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        help_text="Poema destacado en la portada.",
+        verbose_name="poema destacado",
+        help_text="Sale en la portada solo si no hay registros destacados.",
     )
     dossier_pdf = models.FileField(
         upload_to="dossier/",
         blank=True,
         validators=[validate_pdf_extension],
+        verbose_name="dossier en PDF",
         help_text="PDF del kit de prensa (override manual opcional del dossier generado).",
     )
     og_image = models.ForeignKey(
@@ -45,6 +64,7 @@ class SiteProfile(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
+        verbose_name="imagen para compartir",
         help_text="Imagen social por defecto (og:image) y logo en los datos estructurados.",
     )
     # La primera vista de la portada es una obra a sangre con el logo al pie (D18). Sin
@@ -74,7 +94,7 @@ class SiteProfile(models.Model):
             "él, el teléfono recorta la horizontal por el centro."
         ),
     )
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="actualizado el")
 
     class Meta:
         verbose_name = "perfil del sitio"
@@ -128,10 +148,12 @@ class SiteProfile(models.Model):
 class SiteSocialLink(models.Model):
     """Red social del colectivo (Instagram, YouTube, Bandcamp…)."""
 
-    profile = models.ForeignKey(SiteProfile, on_delete=models.CASCADE, related_name="social_links")
-    platform = models.CharField(max_length=50)
-    url = models.URLField()
-    position = models.PositiveSmallIntegerField(default=0)
+    profile = models.ForeignKey(
+        SiteProfile, on_delete=models.CASCADE, related_name="social_links", verbose_name="perfil"
+    )
+    platform = models.CharField(max_length=50, verbose_name="plataforma")
+    url = models.URLField(verbose_name="dirección")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         verbose_name = "red social del sitio"

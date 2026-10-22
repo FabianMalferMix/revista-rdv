@@ -121,6 +121,7 @@ def _registros_destacados(profile):
                 "titulo": registro.title,
                 "url": registro.get_absolute_url(),
                 "tipo": registro.get_kind_display(),
+                "duracion": registro.duracion,
                 "audio": registro.kind == Recording.Kind.AUDIO,
                 "imagen": registro.poster or (fotos[0].asset if fotos else None),
                 "verso": (primeros_versos(poema.body, 1) or [""])[0] if poema else "",

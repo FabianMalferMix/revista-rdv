@@ -14,7 +14,7 @@
 {% block content %}
   <article>
     <header class="index-head" data-territorio="obra">
-      <span class="kicker">Registro · {{ recording.get_kind_display }}</span>
+      <span class="kicker">Registro · {{ recording.get_kind_display }}{% if recording.duracion %} · {{ recording.duracion }}{% endif %}</span>
       <h1>{{ recording.title }}</h1>
       <p class="meta">
         {% if recording.recorded_on %}{{ recording.recorded_on|date:"j M Y" }}{% endif %}
