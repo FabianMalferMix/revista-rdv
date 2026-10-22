@@ -97,7 +97,7 @@ def test_la_hoja_ya_no_lleva_la_cubierta(client):
     sopa = _portada(client)
     assert sopa.select_one(".hero-objeto, .hero-cubierta") is None
     assert "hero--con-objeto" not in sopa.select_one("section.hero")["class"]
-    assert [t.get_text() for t in sopa.select(".home-publicaciones .pub-title")] == [
+    assert [t.get_text() for t in sopa.select(".home-publicaciones .estante-titulo")] == [
         "Cuadernos del ruido"
     ]
 

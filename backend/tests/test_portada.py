@@ -109,7 +109,7 @@ def test_las_publicaciones_las_ensena_todas(client):
     make_publication(slug="primera", title="Primera", position=0, cover=_cubierta("c1"))
     make_publication(slug="segunda", title="Segunda", position=1, cover=_cubierta("c2"))
     make_publication(slug="tercera", title="Tercera", position=2)
-    titulos = [t.get_text() for t in _portada(client).select(".home-publicaciones .pub-title")]
+    titulos = [t.get_text() for t in _portada(client).select(".home-publicaciones .estante-titulo")]
     assert titulos == ["Primera", "Segunda", "Tercera"]
 
 

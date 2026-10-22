@@ -498,6 +498,7 @@ MONO_PERMITIDA = {
         "rótulo, también el cargo de cada integrante y los grupos del menú del teléfono"
     ),
     ".meta,.muted": "dato: firma, fecha, lugar",
+    ".ejemplar-lomo-anio": "dato: el año en el lomo de una publicación del estante",
     ".stats-strip": "etiquetas de las cifras",
     ".pagination-pagesa,.pagination-pagesspan": "números de página",
     ".lightboxfigcaption": "pie de foto",
@@ -627,6 +628,8 @@ BLANCO_PERMITIDO = {
     ".embed-play:hover::after",
     ".rec-miniatura::before",
     ".recording-card:hover .rec-miniatura::after, .recording-card:focus-within .rec-miniatura::after",
+    # Un objeto: el lomo blanco de un libro del estante de la portada (D24).
+    ".estante-tabla > li:nth-child(4n+4) .ejemplar-lomo",
 }
 
 
@@ -728,16 +731,18 @@ def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
     """El amarillo del cartel da 1,03:1 sobre el papel: solo puede entrar como fondo. Fue un
     plano de lado a lado del carril, que el dueño del sitio encontró invasivo, y después un
     trazo de marcador bajo las cifras de la portada (D5). Las quitó de la portada
-    (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): es su único uso, la
-    mitad baja del número y no un plano."""
-    con_amarillo = [
+    (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): la mitad baja del
+    número y no un plano. El 2026-10-22 aprobó además el lomo amarillo del estante de la
+    portada (D24): un objeto angosto, no un plano. Son sus dos únicos usos."""
+    con_amarillo = {
         selector
         for selector, cuerpo in _pantalla()
         if "riso-amarillo" in cuerpo and selector != ":root"
-    ]
-    assert con_amarillo == [".dossier-cifras strong"], (
-        f"el amarillo se salió del trazo: {con_amarillo}"
-    )
+    }
+    assert con_amarillo == {
+        ".dossier-cifras strong",
+        ".estante-tabla > li:nth-child(4n+3) .ejemplar-lomo",
+    }, f"el amarillo se salió del trazo y del lomo: {con_amarillo}"
     trazo = _regla(".dossier-cifrasstrong")
     assert "background:linear-gradient(totop,transparent.06em,var(--riso-amarillo).06em," in trazo
     assert "print-color-adjust:exact" in trazo, "el trazo tiene que salir también en papel"
@@ -1241,9 +1246,3 @@ def test_las_puertas_del_cierre_van_en_una_fila_sin_huecos():
         "@media (min-width:900px){\n  .home-cierre .pie-entidad ul"
     )
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in _regla(".home-cierre.pie-entidadul")
-
-
-def test_las_cubiertas_de_la_portada_no_pasan_de_240_px():
-    """Una columna por cubierta: con dos, a todo el ancho, cada una medía 470 px."""
-    publicaciones = _bloque("@media (min-width:900px){\n  .home-publicaciones .band-in")
-    assert "grid-auto-columns:minmax(0,240px)" in publicaciones
