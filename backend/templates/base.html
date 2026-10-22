@@ -49,7 +49,11 @@
   <link rel="preload" href="{% static 'fonts/bricolage-grotesque.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/rdv-serif.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/site.css' %}{{ version_estaticos }}">
-  {# htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. #}
+  {% comment %}
+     htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. Sin sus estilos de
+     indicador, que mete en un estilo en línea que la CSP bloquea: viven en site.css.
+  {% endcomment %}
+  <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
   {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa (S-19). #}
   <script src="{% static 'js/embeds.js' %}" defer></script>

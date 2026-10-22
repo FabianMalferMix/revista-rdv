@@ -1,6 +1,8 @@
 """Auto-hospedaje de dependencias JS + CSP restrictiva (Lote F2-1)."""
 
+import json
 import re
+from pathlib import Path
 
 import pytest
 from django.http import HttpResponse
@@ -137,6 +139,34 @@ def test_home_carries_csp_and_selfhosts_htmx(client):
     assert b"unpkg.com" not in resp.content
     assert b"cdn.jsdelivr" not in resp.content
     assert b"vendor/htmx/htmx.min.js" in resp.content
+
+
+def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
+    """Por defecto htmx mete sus estilos de indicador en un <style> en línea: la CSP lo bloquea
+    y la consola avisa en cada página. Con `includeIndicatorStyles: false` no lo intenta, y sus
+    reglas viven en site.css, también la del indicador que es el propio elemento marcado (el
+    buscador lo nombra con hx-indicator, y sin ella el «…» no aparecía nunca)."""
+    contenido = client.get(reverse("content:home")).content.decode()
+    meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)
+    assert meta and json.loads(meta.group(1)) == {"includeIndicatorStyles": False}
+    assert contenido.index('name="htmx-config"') < contenido.index("vendor/htmx/htmx.min.js")
+    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
+    assert ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}" in css
+
+
+def test_los_comentarios_de_una_linea_no_ocupan_dos():
+    """`{# … #}` solo vale en una línea: partido en dos, Django lo imprime como texto. Le pasó
+    a un comentario de base.html que nombraba `<style>`: el navegador abrió un estilo en línea
+    en medio de la página, la CSP lo bloqueó y se tragó el buscador. Los de varias líneas van
+    con {% comment %}."""
+    plantillas = Path(__file__).resolve().parent.parent / "templates"
+    partidos = [
+        f"{ruta.relative_to(plantillas)}:{n}"
+        for ruta in plantillas.rglob("*.html")
+        for n, linea in enumerate(ruta.read_text("utf-8").splitlines(), 1)
+        if "{#" in linea and "#}" not in linea.split("{#", 1)[1]
+    ]
+    assert not partidos, partidos
 
 
 def test_article_detail_jsonld_carries_matching_nonce(client, make_article):

@@ -333,7 +333,9 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink)}
 .search input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .htmx-indicator{opacity:0; font-family:var(--mono); color:var(--muted); transition:opacity var(--dur-base) var(--ease)}
-.htmx-request .htmx-indicator{opacity:1}
+/* También cuando el indicador es el propio elemento marcado: el buscador lo nombra con
+   hx-indicator, y htmx le pone la clase a él. */
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}
 /* El «…» de mientras llega la respuesta, en el margen del panel: invisible, le quitaba al
    campo 35 px y lo dejaba descentrado. */
 .busqueda .htmx-indicator{position:absolute; right:4px; top:50%; translate:0 -50%}
