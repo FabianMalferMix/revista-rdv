@@ -494,7 +494,7 @@ def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
 # queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
 MONO_PERMITIDA = {
     ".rotulo,.kicker,.foot-grouph2,.reviewedh2,.event-month,.tag,"
-    ".cinta-piea,.nav-disclosuresummary,.member-role,.foot-group-titulo": (
+    ".nav-disclosuresummary,.member-role,.foot-group-titulo": (
         "rótulo, también el cargo de cada integrante y los grupos del menú del teléfono"
     ),
     ".meta,.muted": "dato: firma, fecha, lugar",
@@ -890,10 +890,10 @@ def test_el_duotono_es_una_tinta_sobre_el_papel():
 def test_al_senalar_o_enfocar_se_ve_el_original():
     """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
     teñido. Y la capa del papel se vuelve transparente. Una sola regla con `:is()` dice
-    dónde se señala: un enlace, la cinta, las tarjetas, la placa, una fila."""
+    dónde se señala: un enlace, las tarjetas, la placa, una fila. Solo la imagen señalada:
+    la cinta (D22, retirada) las pintaba todas a la vez."""
     lugares = (
         "a",
-        ".cinta-caja",
         ".recording-card",
         ".event-card",
         ".player-consent",
@@ -910,13 +910,14 @@ def test_al_senalar_o_enfocar_se_ve_el_original():
     assert "mix-blend-mode:normal" in original
 
 
-# El duotono va en las imágenes de los listados: tarjetas de integrante, cinta, hoja de
+# El duotono va en las imágenes de los listados: tarjetas de integrante (también las de la
+# portada, D22), hoja de
 # contactos, pósters de los registros (índice y placa, D10), imágenes de los textos y afiches
 # de la agenda, la trayectoria y la próxima actividad de la portada. Las cubiertas de las
 # publicaciones, los logos y las fichas se ven tal cual.
 CON_DUOTONO = {
     "_member_card.html",
-    "_member_card_cinta.html",
+    "_member_card_plana.html",
     "gallery.html",
     "_player.html",
     "recording_index.html",

@@ -82,7 +82,7 @@
      41 % de una de 1920, y nada cambiaba al crecer el monitor. Ahora hay tres carriles:
        · lectura  --measure  el ancho de siempre: lo que se lee de corrido.
        · ancho    --wide     cabecera, pie, portada, índices y rejillas.
-       · sangre              de borde a borde: las bandas de color y la cinta.
+       · sangre              de borde a borde: las bandas de color y «El colectivo».
      La columna de lectura NO se ensancha: lo legible son 45–75 letras por línea, y eso
      no depende del monitor. Lo que usa el ancho es todo lo demás.
      --carriles es la plantilla de columnas, con las líneas nombradas. Se declara una
@@ -590,7 +590,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
    y para los datos; lo demás se lee en la serif o en la de titulares. */
 .rotulo, .kicker, .foot-group h2, .reviewed h2, .event-month, .tag,
-.cinta-pie a, .nav-disclosure summary, .member-role, .foot-group-titulo{
+.nav-disclosure summary, .member-role, .foot-group-titulo{
   font-family:var(--mono); font-size:var(--t-2); letter-spacing:var(--tr-rotulo); text-transform:uppercase;
   color:var(--muted)}
 .rotulo--acento, .kicker{color:var(--accent)}
@@ -726,7 +726,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    que la rodea: no hay marco, la foto está impresa en la página. La tinta va de fondo, la
    foto en gris se aclara encima (`screen`) y el papel se multiplica por arriba: cada gris
    cae en un tono entre la tinta y el papel. Es una sola tinta en todo el sitio.
-   Lo llevan las imágenes de los listados: retratos y cinta, fotos de la galería, pósters
+   Lo llevan las imágenes de los listados: retratos, fotos de la galería, pósters
    de los registros, imágenes de los textos y afiches en la agenda y la trayectoria. Las
    cubiertas de las publicaciones, los logos y las fichas se ven tal cual. Al señalar o
    enfocar, el original: hay que quitar a la vez el filtro y la mezcla, o sale teñido. */
@@ -737,11 +737,11 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   background-color:var(--paper); mix-blend-mode:multiply;
   transition:background-color var(--dur-base) var(--ease)}
 .band .riso-duo::after{background-color:var(--paper-2)}
-/* Dónde se señala: un enlace, la cinta, la tarjeta de un registro o de un evento, la
-   placa del reproductor, una fila o la próxima actividad. */
-:is(a, .cinta-caja, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
+/* Dónde se señala: un enlace, la tarjeta de un registro o de un evento, la placa del
+   reproductor, una fila o la próxima actividad. Solo la imagen señalada pasa a color. */
+:is(a, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
   .riso-duo img{filter:none; mix-blend-mode:normal}
-:is(a, .cinta-caja, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
+:is(a, .recording-card, .event-card, .player-consent, .fila, .next-event):is(:hover, :focus-within)
   .riso-duo::after{background-color:transparent}
 .poetics{margin:26px 0; padding:4px 0 4px 20px; border-left:3px solid var(--ink);
   font-style:italic; font-size:var(--t2); color:var(--ink); max-width:var(--medida)}
@@ -1792,103 +1792,44 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .error-links{list-style:none; padding:0; margin:24px 0 0; display:flex; flex-wrap:wrap; gap:8px 20px}
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Cinta de integrantes. Se monta solo por encima de UMBRAL_CINTA (views.py).
+   «El colectivo» en la portada (D22): la plana, que reemplaza a la cinta.
 
-   Sin JavaScript: el sitio ya resuelve el menú con <details> y la galería con
-   CSS. Así no hay nonce que gestionar con la CSP ni nada que falle si un
-   script no carga.
+   El reparto de «Publicaciones» (4 : 8): la cabeza a la izquierda, con el botón; a la
+   derecha, seis retratos en tres columnas, la del medio corrida hacia abajo, con el
+   nombre impreso encima en una etiqueta apenas girada. Toda la tarjeta es el enlace,
+   así que al señalarla solo su retrato pasa a color.
 
-   DOS MODOS, y el que manda es el dispositivo:
-
-   · Fila (lo que hay por defecto). Sin animación: una fila que se recorre con
-     el dedo, el trackpad o el teclado. Es lo que recibe una pantalla táctil y
-     quien pide menos movimiento en su sistema.
-   · Cinta. Solo donde hay puntero que pueda posarse (hover:hover) Y no se ha
-     pedido menos movimiento: ahí se desliza sola.
-
-   Por qué así. WCAG 2.2.2 «Pausar, detener, ocultar» es nivel A —el mínimo—
-   para lo que se mueve solo más de 5 segundos junto a otro contenido. La cinta
-   se movía también en el móvil, donde no hay puntero con que detenerla; y con
-   ratón tampoco se detenía, aunque el CSS lo pretendía: la regla era
-   `.cinta:hover`, pero el enlace extendido de `.cinta-pie a::after` cubre la
-   pista entera, así que el puntero nunca estaba «sobre» .cinta y la regla no
-   se cumplía jamás. Ahora la pausa cuelga de .cinta-caja, que sí contiene al
-   enlace extendido.
-
-   SIN control de pausa, por decisión del usuario (dos veces: retiró el rótulo
-   de texto en dc2ffb3 y el icono que lo sustituyó el 2026-10-08). Lo que queda:
-     · En táctil y con «menos movimiento» no hay nada que pausar: no se mueve.
-     · Con puntero se detiene mientras se la señala (:hover) o mientras el foco
-       está dentro (:focus-within), que es lo que alcanza quien navega con teclado.
-   No hay pausa PERSISTENTE: al apartar el puntero o el foco, sigue. WCAG 2.2.2
-   pide «un mecanismo para pausar, detener u ocultar»; este lo es mientras se usa,
-   y es discutible que baste. Si alguna vez se quiere zanjar, la vía es un control.
+   Con más de seis, los pliegos: las demás vienen en la lista con `hidden` y
+   static/js/integrantes.js cambia cuáles se ven. El guion pone primero, y en orden, las
+   que se ven: así la columna corrida (`nth-child`) cae siempre en la del medio. Nada se
+   mueve solo, y con «menos movimiento» el cambio es instantáneo.
    ────────────────────────────────────────────────────────────────────────── */
-.cinta-caja{position:relative; margin:18px 0 0; padding:14px 0 10px}
-
-/* ── Modo fila ── */
-.cinta{overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:thin; scroll-padding-inline:var(--gutter)}
-.cinta-pista{display:flex; flex-wrap:nowrap; gap:16px; grid-template-columns:none; padding-left:var(--gutter)}
-/* Un elemento vacío al final. En la fila da el margen derecho, que el relleno de un
-   contenedor con desplazamiento no garantiza. En la cinta animada no mide nada, pero
-   AÑADE UN HUECO: la pista pasa a medir exactamente dos vueltas y el -50% del bucle cae
-   en la costura. Sin él faltaba medio hueco y la cinta daba un salto de 14 px por vuelta. */
-.cinta-pista::after{content:""; flex:0 0 calc(var(--gutter) - 16px)}
-/* 42%: dos tarjetas enteras y el borde de la tercera asomando, que es lo que dice
-   «hay más, desliza». El apilado vertical vivía en `.member-card a`, y esta tarjeta
-   no tiene enlace: hay que repetirlo aquí o el nombre se va al lado de la foto. */
-.cinta-card{flex:0 0 42%; min-width:132px; max-width:230px; scroll-snap-align:start;
-  display:flex; flex-direction:column; align-items:flex-start; gap:8px}
-/* La copia existe para que el bucle animado no tenga costura. Sin bucle, sobra:
-   en la fila cada integrante aparecería dos veces. */
-.cinta-card[aria-hidden="true"]{display:none}
-/* Los nombres de dos palabras largas rompen a dos líneas y empujan el rol hacia
-   abajo, dejándolo a alturas distintas en cada tarjeta. Reservar el alto de dos
-   líneas iguala la retícula sin recortar ningún nombre. */
-.cinta-card .member-name{min-height:2.4em; line-height:1.2}
-/* La tarjeta alinea al principio: el retrato se estira a su ancho. */
-.cinta-card > .riso-duo, .cinta-card > .monograma{align-self:stretch}
-
-.cinta-pie{display:flex; align-items:center; justify-content:flex-end; gap:12px; margin:10px auto 0;
-  width:min(var(--wide), 100% - 2*var(--gutter))}
-.cinta-pie a{text-decoration:none}
-.cinta-pie a span{display:inline-block; transition:transform var(--dur-base) var(--ease)}
-.cinta-pie a:hover, .cinta-pie a:focus-visible{color:var(--accent)}
-.cinta-pie a:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-
-/* Solo existen 12..16: por debajo no hay cinta y TOPE_CINTA corta en 16. */
-.cinta-n12{--cinta-n:12} .cinta-n13{--cinta-n:13} .cinta-n14{--cinta-n:14}
-.cinta-n15{--cinta-n:15} .cinta-n16{--cinta-n:16}
-/* La copia duplica el ancho exacto, así que -50% cae justo en la costura. */
-@keyframes cinta-desliza{from{transform:translateX(0)} to{transform:translateX(-50%)}}
-
-/* ── Modo cinta ── */
-@media (hover:hover) and (prefers-reduced-motion:no-preference){
-  .cinta-caja:hover, .cinta-caja:focus-within{cursor:pointer}
-  /* Los bordes se difuminan: sin esto las tarjetas se cortan en seco al entrar
-     y salir, que es lo que delata una cinta mal hecha. */
-  .cinta{overflow:hidden; scroll-snap-type:none;
-    -webkit-mask-image:linear-gradient(90deg, transparent, #000 96px, #000 calc(100% - 96px), transparent);
-    mask-image:linear-gradient(90deg, transparent, #000 96px, #000 calc(100% - 96px), transparent)}
-  /* La duración se escala con el número de integrantes: translateX(-50%) recorre
-     una distancia proporcional al reparto, así que con duración fija la cinta
-     iría más rápida cuanto más gente hubiera. 6s por integrante mantiene
-     constante la VELOCIDAD, no el tiempo de vuelta. */
-  .cinta-pista{width:max-content; gap:28px; padding-left:0;
-    animation:cinta-desliza calc(var(--cinta-n,12) * 6s) linear infinite}
-  .cinta-pista::after{flex:0 0 0}
-  /* 230 px por tarjeta y 28 de hueco. La cinta va a sangre: a 1440 de ancho se ven
-     cinco, y las que entran y salen se difuminan bajo la máscara de los bordes. */
-  .cinta-card{flex:0 0 230px; width:230px; min-width:0; max-width:none}
-  .cinta-card[aria-hidden="true"]{display:flex}
-
-  /* Se detiene mientras se la señala o mientras el foco está dentro. */
-  .cinta-caja:hover .cinta-pista,
-  .cinta-caja:focus-within .cinta-pista{animation-play-state:paused}
-
-  /* El enlace extendido: una capa que hace pulsable el componente entero. Solo
-     aquí: en modo fila taparía la pista y el dedo no podría desplazarla. */
-  .cinta-pie a::after{content:""; position:absolute; inset:0; border-radius:5px}
-  .cinta-caja:hover .cinta-pie a{color:var(--accent)}
-  .cinta-caja:hover .cinta-pie a span{transform:translateX(4px)}
+.integrantes-plana{display:grid; grid-template-columns:minmax(0, 4fr) minmax(0, 8fr); column-gap:var(--s5);
+  align-items:start}
+.integrantes-cabeza .seccion-cabeza{margin-bottom:var(--s3)}
+.integrantes-lead{margin:0 0 var(--s3); max-width:30ch; color:var(--muted); font-size:var(--t1)}
+.integrantes-cta{margin:0}
+.integrantes-cabeza .btn{gap:8px}
+.integrantes-mandos{display:flex; gap:var(--s1); margin-top:var(--s2)}
+.integrantes-mandos[hidden]{display:none}
+.integrantes-pliego{list-style:none; margin:0; padding:0 0 var(--s5); display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2)}
+.integrantes-pliego > li:nth-child(3n+2){translate:0 var(--s5)}
+.integrante-enlace{position:relative; display:block; color:var(--ink); text-decoration:none}
+/* El monograma ya trae su caja 4:5 (.retrato) y centra las iniciales: no se toca. */
+.integrante-enlace > .riso-duo{display:block; aspect-ratio:4 / 5; overflow:hidden}
+/* La etiqueta: papel claro y la sombra en la tinta de los retratos, como impresa encima. */
+.integrante-rotulo{position:absolute; left:10px; right:10px; bottom:10px; display:flex; flex-direction:column;
+  gap:3px; padding:8px 10px 9px; background:var(--paper-2); rotate:-1.5deg; box-shadow:3px 3px 0 var(--caratula)}
+.integrantes-pliego > li:nth-child(2n) .integrante-rotulo{rotate:1deg}
+.integrante-rotulo .member-name{font-size:var(--t1); line-height:1.15}
+.integrante-enlace:hover .member-name, .integrante-enlace:focus-visible .member-name{color:var(--accent)}
+.integrante-enlace:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+/* Con el guion, el gesto horizontal cambia de pliego; el vertical sigue bajando la página. */
+.home-integrantes.con-js .integrantes-pliego{touch-action:pan-y pinch-zoom}
+@media (max-width:719px){
+  .integrantes-plana{grid-template-columns:minmax(0, 1fr); row-gap:var(--s4)}
+  .integrantes-pliego{grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s2) 12px; padding-bottom:var(--s4)}
+  .integrantes-pliego > li:nth-child(3n+2){translate:none}
+  .integrantes-pliego > li:nth-child(2n){translate:0 var(--s4)}
 }

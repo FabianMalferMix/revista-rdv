@@ -86,9 +86,9 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 
 | # | Decisión | Porqué | Cómo quedó |
 |---|---|---|---|
-| D1 | Cinta de integrantes sin control de pausa | Se detiene al señalarla y con el foco dentro; en táctil es una fila; con «menos movimiento», quieta | El dueño descartó dos veces el control (un rótulo y un icono). WCAG 2.2.2 queda discutible; no volver a proponerlo salvo que él lo pida |
+| D1 | Cinta de integrantes sin control de pausa (sin efecto: la cinta se retiró en D22) | Se detiene al señalarla y con el foco dentro; en táctil es una fila; con «menos movimiento», quieta | El dueño descartó dos veces el control (un rótulo y un icono). WCAG 2.2.2 queda discutible; no volver a proponerlo salvo que él lo pida |
 | D2 | El buscador, plegado en una lupa | Sitio pequeño; el sitio de la cabecera va al botón «Dossier» | Lupa con panel (paso 18). La búsqueda cubre personas, registros, publicaciones y actividades, por grupos (paso 24, #134) |
-| D3 | La monoespaciada, solo para rótulos y datos | La voz dominante es la de lectura | Navegación y títulos en Syne, cuerpo en serif (paso 11). La portada queda en 38 % de elementos en mono (meta: 30) por los cargos de la cinta |
+| D3 | La monoespaciada, solo para rótulos y datos | La voz dominante es la de lectura | Navegación y títulos en Syne, cuerpo en serif (paso 11). La portada queda en 38 % de elementos en mono (meta: 30) por los cargos de la cinta (medido antes de D22, que la retiró) |
 | D4 | Serif de lectura autoalojada | La misma voz en todos los sistemas | «RdV Serif», un subconjunto de Source Serif 4 renombrado por la OFL; fuentes en 120 KB (paso 11) |
 | D5 | El amarillo del cartel, solo como fondo | Como texto da 1,03:1 | El dueño rechazó el plano amarillo («invasivo»); queda el trazo de marcador bajo las cifras, que hoy solo están en el dossier (pasos 13 y 22) |
 | D6 | Bandas de tinta, dos por página como mucho | Peso visual dentro de una paleta clara | El dueño rechazó la banda oscura del destacado; la tinta queda solo en el pie (paso 13) |
@@ -97,7 +97,7 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 | D9 | Barra de cinco enlaces y «Dossier»; prensa y aliados como línea de respaldo | Lo de gestores vivía solo en el pie | Barra hecha (paso 18). La línea de respaldo de la portada la quitó el dueño (#128, #129) |
 | D10 | La placa azul del reproductor, nunca vacía | Figura y fondo | Póster a una tinta o carátula tipográfica (paso 15) |
 | D11 | Cifras del dossier en grande | Es lo primero que busca un jurado | Syne de 34 a 56 px con el trazo amarillo, también al imprimir (paso 22) |
-| D12 | La cinta, desde 12 integrantes | La cinta no era el problema; sus tarjetas sí | Retratos 4:5 a una tinta; fila con scroll en táctil (paso 14) |
+| D12 | La cinta, desde 12 integrantes (reemplazada por D22) | La cinta no era el problema; sus tarjetas sí | Retratos 4:5 a una tinta; fila con scroll en táctil (paso 14) |
 | D13 | Títulos de sección en Syne con cejilla | Un título no puede medir menos que su texto | En todo el sitio; en el dossier desde el paso 22 |
 | D14 | Estados por color, radios y filetes en tokens | Acabado consistente; WCAG 1.4.11 | `--r-1`, `--line` y `--edge` (paso 6) |
 | D15 | La cabecera al bajar: opción C (2026-10-15) | Una primera vista limpia de la portada, camino a una portada más estética | Arriba, la cabecera sin filete; en la portada, nada. Al bajar 64 px (56 en el teléfono), una cápsula «Objeto» con el velo (menos en la portada). Cambia, solo para la cabecera, «nada de revelado al scroll» y la navegación a la vista arriba de la portada; el «Ver el dossier» vuelve al titular. Sin JavaScript, la cabecera fija de siempre |
@@ -107,6 +107,7 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 | D19 | La tirada de registros (2026-10-21) | El registro destacado era uno solo, como la tarjeta de una plataforma | Los registros que el colectivo marca como destacados, en su orden y hasta cinco, son pliegos de una tirada en un carril que sangra por la derecha: el del frente a dos tintas (título en `--t7`, el décimo paso de la escala, con corrimiento magenta como estado), los demás como pruebas en trama, hoja de contactos con títulos y colofón. Cada pliego lleva a su ficha: la portada no reproduce (el click-to-play queda en la ficha). Nada avanza solo; las tintas cambian solo de color (`@property`). El póster queda a una tinta también al señalarlo. Imagen: el póster o la primera foto del evento. Sin ninguno marcado, el registro destacado del perfil hace de respaldo; sin registros, vuelve el poema destacado. Sin migración (`Recording.featured` y `position` ya existían) |
 | D20 | La tirada apilada (2026-10-22) | Con la tirada en fila se veía un pliego entero y un trozo: «solo 2 columnas» | Entre cinco variaciones sobre la sección real, el dueño eligió «La pila»: con JavaScript los pliegos se apilan (el de arriba derecho; los que siguen, debajo, corridos y girados; los ya vistos asoman por la izquierda) y se ven los cinco. Al cambiar, el que pasa arriba sale de la pila por su lado y vuelve encima (animación de 0,7 s con la API de animaciones) y los demás se corren en tres `--dur-base`: excepción a «solo color», aprobada con la pila; con menos movimiento, de golpe. En el teléfono, deslizar el dedo pasa de registro (`touch-action: pan-y`). Sin JavaScript sigue la fila con imán |
 | D21 | Duración de los registros y el panel en castellano (2026-10-22) | El sello del pliego no podía decir cuánto dura un registro, y el panel mostraba «Featured», «Position» y «Featured recording» | `Recording.duration_minutes` (migración media 0006): el sello dice «Video · 42 min» (o «1 h 05 min») en la portada, el índice y la ficha. Los rótulos de «Registro» y de «Perfil del sitio» (con sus redes) pasan al castellano (media 0006 y showcase 0009, solo nombres). El resto de los modelos sigue con rótulos en inglés |
+| D22 | «El colectivo» en la portada: la plana, en pliegos de seis (2026-10-22) | La sección gastaba mucho alto para decir poco: la cinta enseñaba tres tarjetas y media sin enlace a su ficha, y con menos de 12 integrantes la portada ponía una rejilla de 1231 px a 951 | Entre las cuatro opciones del tablero «El colectivo en portada», el dueño eligió A, «La plana»: la cabeza a la izquierda con «Conoce al colectivo →»; a la derecha, seis retratos con el nombre y el rol en una etiqueta y la columna del medio más abajo. Cada retrato lleva a su ficha y al señalarlo solo él pasa a color. El título dice «Las voces», sin cifra. Con más de seis, pliegos de seis, sin tope: «Otras seis →», «←» o deslizar en el teléfono; reparto animado salvo con «menos movimiento»; sin JavaScript, las seis primeras. Se retiraron la cinta y su umbral (D1, D12). `static/js/integrantes.js`, `tests/test_integrantes_portada.py` |
 
 ---
 
@@ -179,15 +180,14 @@ Lo que la verificación (`docs/auditoria-ux-ui-verificacion.md`) deja sin cumpli
 Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin preguntarle.
 
 - **La portada mide 4092 px a 1440** (meta: 3300). Eligió conservar las publicaciones (paso 20).
-- **Sin control de pausa en la cinta** (D1).
 - **Sin cifras en la portada** (#128): «aún somos un grupo pequeño». Están en el dossier.
 - **Poca tinta en la primera pantalla de la portada** (16,5 %; meta: 50 %): sin planos de color
   ni bandas oscuras, que descartó al verlos (paso 13).
 - **Cuatro índices de filas con poca tinta** (textos, agenda, trayectoria y aliados, entre 3 % y
   9 %; meta: 20 %). Subiría con más imágenes reales: miniaturas en textos, afiches en la agenda.
-- **Monoespaciada y mayúsculas en la portada** (38 % y 26; metas: 30 % y 15). Casi la mitad son
-  los cargos de la cinta, que se repite para dar la vuelta. Si se quisiera la cifra: el cargo en
-  caja baja, o sin rótulo en la copia oculta.
+- **Monoespaciada y mayúsculas en la portada** (38 % y 26; metas: 30 % y 15). Casi la mitad eran
+  los cargos de la cinta, que se repetía para dar la vuelta; sin ella (D22) la cifra baja, pero no
+  se ha vuelto a medir.
 - **El manifiesto del dossier a 49 letras por línea** (meta: 60 a 75), por ir al lado de la
   ficha. Si molesta, a todo el ancho del carril de lectura.
 - **Los enlaces del pie, de 17 a 21 px de alto** (meta: 44). Cumplen WCAG 2.5.8 por separación;
