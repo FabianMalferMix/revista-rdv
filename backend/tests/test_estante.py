@@ -1,8 +1,8 @@
 """El estante de la portada (D24): la opción 3 del tablero «El catálogo en portada», con las
 recomendaciones que aceptó el dueño del sitio (2026-10-22).
 
-Una publicación de frente y hasta cinco de lomo, de pie sobre la tabla, con la ficha de la de
-frente al lado. Va de frente la marcada «Featured» y, si no hay, la primera según «Position».
+Una publicación de frente y hasta siete de lomo (cinco en D24; más largo en D25), de pie sobre
+la tabla, con la ficha de la de frente al lado y «Ver todo el catálogo →» bajo la tabla. Va de frente la marcada «Featured» y, si no hay, la primera según «Position».
 Sin JavaScript cada lomo lleva a su ficha; static/js/estante.js lo convierte en un botón que
 saca ese libro al frente. Nada se mueve solo.
 """
@@ -46,14 +46,21 @@ def test_va_de_frente_la_destacada_y_si_no_la_primera_por_orden(client):
     assert [f.has_attr("hidden") for f in estante.select(".estante-ficha")] == [False, True, True]
 
 
-def test_hasta_seis_una_de_frente_y_cinco_de_lomo(client):
-    for i in range(8):
+def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
+    """Más largo desde D25: una de frente y hasta siete de lomo, lo que cabe a 951 px junto a
+    la ficha angosta. Quien busca una que no está, tiene «Ver todo el catálogo →» bajo la
+    tabla, como botón lleno: en la cabecera era un enlace que pasaba inadvertido."""
+    for i in range(10):
         make_publication(slug=f"p{i}", title=f"Publicación {i}", position=i)
     _, estante = _estante(client)
-    assert ESTANTE == 6
+    assert ESTANTE == 8
     assert len(estante.select(".estante-tabla > .ejemplar")) == ESTANTE
-    assert estante.select_one(".estante-cabeza .home-mas a")["href"] == reverse(
-        "showcase:publication_index"
+    catalogo = estante.select_one(".estante-mueble > .estante-catalogo a.btn.btn--primary")
+    assert catalogo["href"] == reverse("showcase:publication_index")
+    assert catalogo.get_text(strip=True) == "Ver todo el catálogo→"
+    assert estante.select_one(".estante-cabeza a") is None
+    assert (
+        ".estante{display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 15rem);" in SITE_CSS
     )
 
 
@@ -102,9 +109,9 @@ def test_el_lomo_depende_del_tipo_y_lleva_las_tintas_del_sitio(client):
     assert ["ejemplar--libro" in clases[0], "ejemplar--plaquette" in clases[1]] == [True, True]
     assert "ejemplar--fanzine" in clases[2]
     for regla in (
-        ".ejemplar--libro .ejemplar-lomo{width:54px; height:300px}",
-        ".ejemplar--plaquette .ejemplar-lomo{width:30px; height:246px}",
-        ".ejemplar--fanzine .ejemplar-lomo{width:38px; height:268px}",
+        ".ejemplar--libro .ejemplar-lomo{width:50px; height:300px}",
+        ".ejemplar--plaquette .ejemplar-lomo{width:28px; height:246px}",
+        ".ejemplar--fanzine .ejemplar-lomo{width:36px; height:268px}",
         ".estante-tabla > li:nth-child(4n+1) .ejemplar-lomo{background:var(--caratula)",
         ".estante-tabla > li:nth-child(4n+2) .ejemplar-lomo{background:var(--accent)",
         ".estante-tabla > li:nth-child(4n+3) .ejemplar-lomo{background:var(--riso-amarillo)",

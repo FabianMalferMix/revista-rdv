@@ -1144,29 +1144,32 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
     column-gap:clamp(32px, 5vw, 96px); align-items:start}
   .home-obra-columnas:has(> :nth-child(2)) > .home-obra-columna + .home-obra-columna{margin-top:0}
 }
-/* ── El estante de la portada (D24) ──
+/* ── El estante de la portada (D24; más largo en D25) ──
    Como en una librería: una publicación de frente y las demás de lomo, de pie sobre la tabla
-   y en las tintas del sitio; al lado, la ficha de la de frente. El título de la sección va
-   arriba, a todo el ancho, con «Ver catálogo →» a la derecha. Sin el guion, el lomo es un
-   enlace a la ficha; con static/js/estante.js, un botón que saca ese libro al frente. */
-.estante-cabeza{display:flex; justify-content:space-between; align-items:flex-end; gap:var(--s3); margin-bottom:var(--s4)}
-.estante-cabeza .seccion-cabeza, .estante-cabeza .home-mas{margin:0}
-.estante{display:grid; grid-template-columns:auto minmax(0, 1fr); gap:var(--s5); align-items:end}
+   y en las tintas del sitio; al lado, en una columna angosta, la ficha de la de frente. La
+   tabla ocupa todo lo demás, y bajo su extremo va «Ver todo el catálogo →», bien a la vista.
+   Sin el guion, el lomo es un enlace a la ficha; con static/js/estante.js, un botón que saca
+   ese libro al frente. */
+.estante-cabeza{margin-bottom:var(--s4)}
+.estante-cabeza .seccion-cabeza{margin:0}
+.estante{display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 15rem); gap:var(--s4); align-items:center}
+.estante-mueble{min-width:0}
 /* La tabla: un filete de tinta y, debajo, el canto del estante. */
 .estante-tabla{list-style:none; margin:0; padding:0 14px; display:flex; align-items:flex-end; gap:5px;
   border-bottom:5px solid var(--ink); box-shadow:0 9px 0 var(--line)}
-.ejemplar-frente{display:none; width:212px; box-shadow:7px 0 0 var(--line)}
+.ejemplar-frente{display:none; flex:none; width:200px; box-shadow:7px 0 0 var(--line)}
 .ejemplar-tapa{display:block; width:100%; height:auto; aspect-ratio:5 / 7; object-fit:cover}
 .es-frente .ejemplar-frente{display:block}
 .es-frente .ejemplar-lomo{display:none}
 /* El lomo: el título de abajo hacia arriba, como en los libros de aquí, y el año arriba. El
    alto y el grueso dependen del tipo de publicación. */
 .ejemplar-lomo{display:flex; justify-content:space-between; align-items:center; gap:10px; writing-mode:vertical-rl;
-  rotate:180deg; width:46px; height:282px; padding:12px 0; border:0; text-decoration:none; cursor:pointer; font:inherit;
+  rotate:180deg; width:42px; height:282px; padding:12px 0; border:0; text-decoration:none; cursor:pointer; font:inherit;
   transition:translate var(--dur-base) var(--ease)}
-.ejemplar--libro .ejemplar-lomo{width:54px; height:300px}
-.ejemplar--plaquette .ejemplar-lomo{width:30px; height:246px}
-.ejemplar--fanzine .ejemplar-lomo{width:38px; height:268px}
+/* Un poco más delgados que en D24: con siete lomos, todos de libro, la tabla cabe a 951 px. */
+.ejemplar--libro .ejemplar-lomo{width:50px; height:300px}
+.ejemplar--plaquette .ejemplar-lomo{width:28px; height:246px}
+.ejemplar--fanzine .ejemplar-lomo{width:36px; height:268px}
 .ejemplar-lomo:hover, .ejemplar-lomo:focus-visible{translate:0 -16px}
 .ejemplar-lomo:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
 .ejemplar-lomo-titulo{flex:1 1 auto; min-width:0; min-height:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -1182,17 +1185,18 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .estante-ficha{display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
 .estante-ficha[hidden]{display:none}
 .estante-dato{margin:0}
-.estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t6); line-height:1;
+.estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t5); line-height:1.05;
   letter-spacing:var(--tr-titulo)}
-.estante-sinopsis{margin:0; font-size:var(--t1); color:var(--muted); max-width:36ch;
-  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden}
-.estante-ficha .btn{gap:8px}
+.estante-sinopsis{margin:0; font-size:var(--t0); color:var(--muted);
+  display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden}
+.estante-ficha .btn, .estante-catalogo .btn{gap:8px}
+.estante-catalogo{margin:var(--s3) 0 0; display:flex; justify-content:flex-end}
 @media (max-width:719px){
-  .estante-cabeza{flex-direction:column; align-items:flex-start}
-  .estante{grid-template-columns:minmax(0, 1fr)}
+  .estante{grid-template-columns:minmax(0, 1fr); align-items:start}
+  .estante-catalogo .btn{width:100%}
   /* Con seis no caben de una: la tabla se desliza de lado, con aire arriba para el lomo que asoma. */
   .estante-tabla{overflow-x:auto; padding-top:var(--s2)}
-  .ejemplar-frente{flex:none; width:160px}
+  .ejemplar-frente{width:160px}
   .ejemplar-lomo{height:212px}
   .ejemplar--libro .ejemplar-lomo{height:226px}
   .ejemplar--plaquette .ejemplar-lomo{height:186px}
