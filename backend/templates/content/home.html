@@ -183,12 +183,17 @@
           <div class="estante-mueble">
             <ul class="estante-tabla">
               {% for pub in publications %}
-                <li class="ejemplar ejemplar--{{ pub.kind }}{% if forloop.first %} es-frente{% endif %}">
+                {% comment %}
+                 El lomo y el canto llevan el color del borde de su tapa (D28), como rectángulos de
+                 SVG: un `fill` no es un estilo en línea, y la CSP del sitio no admite estilos en línea.
+              {% endcomment %}
+              <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}">
                   {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
                   <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
                     {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, 200px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
+                    {% if pub.lomo %}<svg class="ejemplar-canto" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.canto }}"/></svg>{% endif %}
                   </a>
-                  <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}"><span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
+                  <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}">{% if pub.lomo %}<svg class="ejemplar-lomo-fondo" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.fondo }}"/></svg>{% endif %}<span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
                 </li>
               {% endfor %}
             </ul>

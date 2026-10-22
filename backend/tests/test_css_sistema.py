@@ -628,8 +628,6 @@ BLANCO_PERMITIDO = {
     ".embed-play:hover::after",
     ".rec-miniatura::before",
     ".recording-card:hover .rec-miniatura::after, .recording-card:focus-within .rec-miniatura::after",
-    # Un objeto: el lomo blanco de un libro del estante de la portada (D24).
-    ".estante-tabla > li:nth-child(4n+4) .ejemplar-lomo",
 }
 
 
@@ -732,17 +730,16 @@ def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
     plano de lado a lado del carril, que el dueño del sitio encontró invasivo, y después un
     trazo de marcador bajo las cifras de la portada (D5). Las quitó de la portada
     (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): la mitad baja del
-    número y no un plano. El 2026-10-22 aprobó además el lomo amarillo del estante de la
-    portada (D24): un objeto angosto, no un plano. Son sus dos únicos usos."""
+    número y no un plano. Los lomos del estante de la portada llevan el color de su tapa
+    (D28): si es amarilla, el lomo también, pero no por el CSS."""
     con_amarillo = {
         selector
         for selector, cuerpo in _pantalla()
         if "riso-amarillo" in cuerpo and selector != ":root"
     }
-    assert con_amarillo == {
-        ".dossier-cifras strong",
-        ".estante-tabla > li:nth-child(4n+3) .ejemplar-lomo",
-    }, f"el amarillo se salió del trazo y del lomo: {con_amarillo}"
+    assert con_amarillo == {".dossier-cifras strong"}, (
+        f"el amarillo se salió del trazo: {con_amarillo}"
+    )
     trazo = _regla(".dossier-cifrasstrong")
     assert "background:linear-gradient(totop,transparent.06em,var(--riso-amarillo).06em," in trazo
     assert "print-color-adjust:exact" in trazo, "el trazo tiene que salir también en papel"

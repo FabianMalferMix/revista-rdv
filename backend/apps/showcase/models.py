@@ -1,3 +1,4 @@
+from functools import cached_property
 from urllib.parse import urlsplit
 
 from django.db import models
@@ -224,6 +225,28 @@ class Publication(models.Model):
         from django.urls import reverse
 
         return reverse("showcase:publication_detail", args=[self.slug])
+
+    @cached_property
+    def lomo(self):
+        """Los colores del libro en el estante de la portada (D28): el lomo, del color del borde
+        de su tapa; el canto (el grueso que asoma junto a la tapa de frente), un poco más oscuro;
+        y `oscuro` si el texto del lomo tiene que ir claro para leerse. Vacío sin tapa legible:
+        el lomo queda en la hoja clara."""
+        color = self.cover.color_de_borde() if self.cover else ""
+        if not color:
+            return {}
+        rgb = [int(color[i : i + 2], 16) for i in (1, 3, 5)]
+
+        def lineal(c):
+            c /= 255
+            return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+        luz = sum(peso * lineal(c) for peso, c in zip((0.2126, 0.7152, 0.0722), rgb, strict=True))
+        # El texto, en tinta (#121823, luminancia 0,009) o en blanco: el que más contraste dé.
+        sobre_tinta = (luz + 0.05) / (0.009 + 0.05)
+        sobre_blanco = 1.05 / (luz + 0.05)
+        canto = "#{:02x}{:02x}{:02x}".format(*(round(c * 0.82) for c in rgb))
+        return {"fondo": color, "canto": canto, "oscuro": sobre_blanco > sobre_tinta}
 
 
 class WhereToBuy(models.Model):

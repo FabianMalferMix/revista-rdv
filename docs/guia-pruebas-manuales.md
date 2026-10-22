@@ -193,7 +193,8 @@ no una plantilla vacía.
 - [ ] **«Publicaciones» en la portada** (D24 y D25). Arriba, «Publicaciones». Debajo, un estante:
       una publicación de frente (la marcada «Featured» en el panel o, si no hay, la primera
       según «Position») y hasta siete de lomo, de pie sobre una línea negra, con el título de
-      abajo hacia arriba y el año. Bajo el extremo derecho de la línea, el botón negro «Ver
+      abajo hacia arriba y el año. Cada lomo es del color de su tapa: al sacarlo al frente, el
+      libro se ve del mismo color, con el canto un poco más oscuro. Bajo el extremo derecho de la línea, el botón negro «Ver
       todo el catálogo →». La línea termina con el último libro. Al lado, el tipo, el año y la
       editorial en magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
       el ratón por un lomo, asoma; al pulsarlo, ese libro gira hasta quedar de frente, los demás
