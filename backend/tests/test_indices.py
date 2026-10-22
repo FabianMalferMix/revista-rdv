@@ -229,7 +229,8 @@ def test_el_contenido_de_las_bandas_de_la_portada_vuelve_al_carril_ancho(client,
 
     make_publication(slug="en-banda", title="Libro en banda", featured=True)
     html = client.get(reverse("content:home")).content.decode()
-    bandas = re.findall(r'<section class="home-block band[^"]*">(.*?)</section>', html, re.S)
+    # Con otros atributos después de la clase: el estante lleva data-estante.
+    bandas = re.findall(r'<section class="home-block band[^"]*"[^>]*>(.*?)</section>', html, re.S)
     assert bandas, "la portada ya no tiene bandas"
     for banda in bandas:
         assert 'class="band-in"' in banda, "una banda perdió su contenedor interior"

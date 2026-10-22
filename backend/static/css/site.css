@@ -1144,19 +1144,59 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
     column-gap:clamp(32px, 5vw, 96px); align-items:start}
   .home-obra-columnas:has(> :nth-child(2)) > .home-obra-columna + .home-obra-columna{margin-top:0}
 }
-/* Las publicaciones: el título a la izquierda y las cubiertas a la derecha, una columna por
-   cubierta y 240 px como mucho. En una rejilla de cuatro, tres cubiertas dejaban un hueco,
-   y a todo el carril cada una medía 315 px de ancho. La cabeza ocupa 4/12: en 3/12,
-   «Publicaciones» se partía a 951 px. */
-@media (min-width:900px){
-  .home-publicaciones .band-in{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr);
-    column-gap:clamp(32px, 5vw, 96px); align-items:start}
-  .home-publicaciones .seccion-cabeza{grid-column:1; grid-row:1}
-  .home-publicaciones .home-mas{grid-column:1; grid-row:2; margin:0}
-  .home-publicaciones .pub-grid{grid-column:2; grid-row:1 / span 2; grid-template-columns:none;
-    grid-auto-flow:column; grid-auto-columns:minmax(0,240px)}
-  /* Un paso menos que en el catálogo: a 951 px «Correspondencias» se partía por la mitad. */
-  .home-publicaciones .pub-title{font-size:var(--t1)}
+/* ── El estante de la portada (D24) ──
+   Como en una librería: una publicación de frente y las demás de lomo, de pie sobre la tabla
+   y en las tintas del sitio; al lado, la ficha de la de frente. El título de la sección va
+   arriba, a todo el ancho, con «Ver catálogo →» a la derecha. Sin el guion, el lomo es un
+   enlace a la ficha; con static/js/estante.js, un botón que saca ese libro al frente. */
+.estante-cabeza{display:flex; justify-content:space-between; align-items:flex-end; gap:var(--s3); margin-bottom:var(--s4)}
+.estante-cabeza .seccion-cabeza, .estante-cabeza .home-mas{margin:0}
+.estante{display:grid; grid-template-columns:auto minmax(0, 1fr); gap:var(--s5); align-items:end}
+/* La tabla: un filete de tinta y, debajo, el canto del estante. */
+.estante-tabla{list-style:none; margin:0; padding:0 14px; display:flex; align-items:flex-end; gap:5px;
+  border-bottom:5px solid var(--ink); box-shadow:0 9px 0 var(--line)}
+.ejemplar-frente{display:none; width:212px; box-shadow:7px 0 0 var(--line)}
+.ejemplar-tapa{display:block; width:100%; height:auto; aspect-ratio:5 / 7; object-fit:cover}
+.es-frente .ejemplar-frente{display:block}
+.es-frente .ejemplar-lomo{display:none}
+/* El lomo: el título de abajo hacia arriba, como en los libros de aquí, y el año arriba. El
+   alto y el grueso dependen del tipo de publicación. */
+.ejemplar-lomo{display:flex; justify-content:space-between; align-items:center; gap:10px; writing-mode:vertical-rl;
+  rotate:180deg; width:46px; height:282px; padding:12px 0; border:0; text-decoration:none; cursor:pointer; font:inherit;
+  transition:translate var(--dur-base) var(--ease)}
+.ejemplar--libro .ejemplar-lomo{width:54px; height:300px}
+.ejemplar--plaquette .ejemplar-lomo{width:30px; height:246px}
+.ejemplar--fanzine .ejemplar-lomo{width:38px; height:268px}
+.ejemplar-lomo:hover, .ejemplar-lomo:focus-visible{translate:0 -16px}
+.ejemplar-lomo:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.ejemplar-lomo-titulo{flex:1 1 auto; min-width:0; min-height:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-family:var(--display); font-weight:700; font-size:var(--t0); letter-spacing:var(--tr-meta)}
+.ejemplar-lomo-anio{font-family:var(--mono); font-size:var(--t-2)}
+/* Las tintas de los lomos, por su lugar en la tabla. El amarillo del cartel entra aquí como
+   lomo, un objeto angosto (lo aprobó el dueño con el tablero, D24); como plano, no (D5). */
+.estante-tabla > li:nth-child(4n+1) .ejemplar-lomo{background:var(--caratula); color:var(--surface)}
+.estante-tabla > li:nth-child(4n+2) .ejemplar-lomo{background:var(--accent); color:var(--surface)}
+.estante-tabla > li:nth-child(4n+3) .ejemplar-lomo{background:var(--riso-amarillo); color:var(--ink)}
+/* El cuarto, blanco con filete: la tinta como fondo es solo del pie (D6). */
+.estante-tabla > li:nth-child(4n+4) .ejemplar-lomo{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
+.estante-ficha{display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
+.estante-ficha[hidden]{display:none}
+.estante-dato{margin:0}
+.estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t6); line-height:1;
+  letter-spacing:var(--tr-titulo)}
+.estante-sinopsis{margin:0; font-size:var(--t1); color:var(--muted); max-width:36ch;
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden}
+.estante-ficha .btn{gap:8px}
+@media (max-width:719px){
+  .estante-cabeza{flex-direction:column; align-items:flex-start}
+  .estante{grid-template-columns:minmax(0, 1fr)}
+  /* Con seis no caben de una: la tabla se desliza de lado, con aire arriba para el lomo que asoma. */
+  .estante-tabla{overflow-x:auto; padding-top:var(--s2)}
+  .ejemplar-frente{flex:none; width:160px}
+  .ejemplar-lomo{height:212px}
+  .ejemplar--libro .ejemplar-lomo{height:226px}
+  .ejemplar--plaquette .ejemplar-lomo{height:186px}
+  .ejemplar--fanzine .ejemplar-lomo{height:202px}
 }
 /* Tres versos, uno por línea: se lee el poema sin abrirlo. */
 .fila-versos span{display:block}

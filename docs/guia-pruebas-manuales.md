@@ -91,7 +91,7 @@ no una plantilla vacía.
       movimiento» activado en el sistema, la obra sube con la página. En la hoja, «Conócenos
       →», «Ver el dossier», «Escríbenos» y, si hay convocatoria, el sello «Convocatoria
       abierta». Después, la tirada de registros («Registros»); la obra (poemas con sus tres primeros versos,
-      y textos); las integrantes («Las voces»), cinco a la vez y en relevo; las publicaciones; y un cierre «Para
+      y textos); las integrantes («Las voces»), cinco a la vez y en relevo; las publicaciones en un estante; y un cierre «Para
       programadores y jurados» con la última actividad y «Actualizado el …». **Sin cifras,
       sin prensa y sin aliados**: los quitó el dueño del sitio y están en el dossier.
       (Cambió con el rediseño UX, pasos 19 y 20, y con la portada como obra, D18.)
@@ -190,6 +190,13 @@ no una plantilla vacía.
       color y su nombre a magenta; al pulsarlo, su ficha. Con «reducir movimiento» activado,
       no cambia. En el teléfono se ven tres y no cambian solos: deslizar el dedo sobre ellos
       trae a otras tres.
+- [ ] **«Publicaciones» en la portada** (D24). Arriba, «Publicaciones» y, a la derecha, «Ver
+      catálogo →». Debajo, un estante: una publicación de frente (la marcada «Featured» en el
+      panel o, si no hay, la primera según «Position») y las demás de lomo, de pie sobre una
+      línea negra, con el título de abajo hacia arriba y el año. Al lado, el tipo, el año y la
+      editorial en magenta, el título grande, la sinopsis y «Ver la publicación →». Al pasar
+      el ratón por un lomo, asoma; al pulsarlo, ese libro sale al frente y su ficha aparece al
+      lado. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
       título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
       Trayectoria · Agenda · Galería · Prensa · Aliados».

@@ -7,6 +7,7 @@
   {# Las flechas y la hoja de contactos de la tirada: solo hacen falta con dos registros o más. #}
   {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}" defer></script>{% endif %}
   {% if relevo_integrantes %}<script src="{% static 'js/integrantes.js' %}" defer></script>{% endif %}
+  {% if publications|length > 1 %}<script src="{% static 'js/estante.js' %}" defer></script>{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -166,15 +167,42 @@
   {% endif %}
 
   {% if publications %}
-    <section class="home-block band home-publicaciones">
+    {% comment %}
+       El estante (D24, la opción 3 del tablero «El catálogo en portada»): como en una
+       librería, una publicación de frente y las demás de lomo, de pie sobre la tabla, y al
+       lado la ficha de la de frente. Va de frente la primera (la vista pone primero las
+       marcadas «Featured»). Sin JavaScript cada lomo lleva a su ficha; con
+       static/js/estante.js, el lomo saca ese libro al frente.
+    {% endcomment %}
+    <section class="home-block band home-publicaciones" data-estante>
       <div class="band-in">
-        {% include "content/partials/_cabeza_de_seccion.html" with cejilla="La obra" titulo="Publicaciones" territorio="obra" only %}
-        <ul class="pub-grid">
-          {% for pub in publications %}
-            {% include "showcase/partials/_publication_card.html" %}
-          {% endfor %}
-        </ul>
-        <p class="home-mas"><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+        <div class="estante-cabeza">
+          {% include "content/partials/_cabeza_de_seccion.html" with cejilla="La obra" titulo="Publicaciones" territorio="obra" only %}
+          <p class="home-mas"><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
+        </div>
+        <div class="estante">
+          <ul class="estante-tabla">
+            {% for pub in publications %}
+              <li class="ejemplar ejemplar--{{ pub.kind }}{% if forloop.first %} es-frente{% endif %}">
+                {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
+                <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+                  {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, 212px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
+                </a>
+                <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}"><span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
+              </li>
+            {% endfor %}
+          </ul>
+          <div class="estante-fichas">
+            {% for pub in publications %}
+              <div class="estante-ficha"{% if not forloop.first %} hidden{% endif %}>
+                <p class="rotulo rotulo--acento estante-dato">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
+                <h3 class="estante-titulo" tabindex="-1">{{ pub.title }}</h3>
+                {% if pub.synopsis %}<p class="estante-sinopsis">{{ pub.synopsis }}</p>{% endif %}
+                <a class="btn" href="{{ pub.get_absolute_url }}">Ver la publicación <span aria-hidden="true">→</span></a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
     </section>
   {% endif %}

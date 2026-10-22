@@ -67,6 +67,10 @@ def _paginate(request, queryset, per_page=12):
 A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
+# El estante de la portada (D24): una publicación de frente y hasta cinco de lomo. Al frente
+# va la marcada «Featured» en el panel y, si no hay, la primera según su orden («Position»).
+ESTANTE = 6
+
 
 # La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de
 # carruseles piden de 2 a 5, para llegar al último en pocos pasos.
@@ -153,9 +157,12 @@ def home(request):
     # su marcado; sus retratos se piden cuando les toca. Se materializa para contarlas.
     _members = list(Contributor.members())
     integrantes = len(_members)
-    # Con su editorial: la tarjeta la nombra, y sin esto era una consulta por publicación.
+    # Las destacadas primero: la primera del estante es la que va de frente. Con su editorial:
+    # la ficha la nombra, y sin esto era una consulta por publicación.
     publicaciones = list(
-        Publication.objects.filter(published=True).select_related("cover", "publisher")[:4]
+        Publication.objects.filter(published=True)
+        .select_related("cover", "publisher")
+        .order_by("-featured", "position", "-year", "title")[:ESTANTE]
     )
     proximo = Event.upcoming().first()
     # La cejilla del titular: el lema, el lugar, el año y cuántas son. El Instagram lo
