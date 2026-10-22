@@ -25,7 +25,10 @@ bundle, para que una actualización sin registrar no pase inadvertida.
 | TinyMCE | 7.9.3 | 2025 | `ca7a4ae9354b117b3133d5b449b4f807ac1484e66b5019c1381e1990ebb1ecd3` | <https://github.com/tinymce/tinymce> (release 7.9.3) |
 
 - **htmx** — `htmx/htmx.min.js`. Un solo archivo. Se carga en todas las páginas
-  (`base.html`) y mueve el buscador en vivo.
+  (`base.html`) y mueve el buscador en vivo. Va con `includeIndicatorStyles: false` (la
+  etiqueta `htmx-config` de `base.html`): por defecto mete sus estilos de indicador en un
+  `<style>` en línea que la CSP bloquea. Esos estilos viven en `site.css`; al actualizar
+  htmx, comprobar que la opción sigue existiendo y que la consola no avisa de la CSP.
 - **TinyMCE** — `tinymce/` (14 archivos: núcleo, tema, modelo, iconos, 3 plugins y
   skins). Solo se carga en el panel editorial. El subárbol está **exento del hash del
   manifiesto** de WhiteNoise (`config/staticfiles.py`) porque carga sus recursos con
