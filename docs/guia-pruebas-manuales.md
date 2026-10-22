@@ -97,9 +97,13 @@ no una plantilla vacía.
       (Cambió con el rediseño UX, pasos 19 y 20, y con la portada como obra, D18.)
 - [ ] **La tirada de registros**, en la portada. Bajo la hoja, «Registros» y «Todos los
       registros →». Cada registro con la casilla «Featured» marcada en el panel es un pliego,
-      en el orden de su «Position» (hasta cinco): el del frente con el título grande, y el siguiente
-      asoma a la derecha en trama. «→» pasa al siguiente y se apaga en el último; la hoja de
-      contactos de abajo lleva a cada uno por su título. Pulsar el título abre la ficha, donde
+      en el orden de su «Position» (hasta cinco), y forman una pila: el de arriba con el
+      título grande; los demás debajo, corridos a la derecha y girados; los ya vistos asoman
+      a la izquierda. «→» reparte el siguiente (sale por la derecha y vuelve encima) y se apaga
+      en el último; la hoja de contactos de abajo lleva a cada uno por su título. En el
+      teléfono, deslizar el dedo a la izquierda trae el siguiente y a la derecha el anterior;
+      deslizarlo hacia arriba sigue bajando la página. Con «reducir movimiento» el cambio es
+      de golpe. Pulsar el título abre la ficha, donde
       se reproduce: en la portada no hay reproductor. Nada avanza solo. Con un solo registro
       no hay flechas ni hoja de contactos; sin ninguno marcado sale el que está elegido en
       «Perfil del sitio» → «Featured recording».

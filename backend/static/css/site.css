@@ -1332,12 +1332,45 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .tirada.con-js .pliego:not([aria-current]):hover{--marca:var(--edge)}
 .tirada.con-js .pliego:not([aria-current]):hover .pliego-titulo a:not(:hover){text-decoration:none}
 .tirada.con-js .pliego[aria-current]{--sobre:var(--accent)}
+/* La pila (D20, elegida por el dueño el 2026-10-22 entre cinco variaciones). Con JavaScript la
+   tirada se apila como impresos sobre la mesa: el pliego de arriba (aria-current), derecho; los
+   que siguen, debajo, corridos a la derecha y apenas girados; los ya vistos asoman por la
+   izquierda. Se ven los cinco a la vez. Sin JavaScript sigue la fila con imán de arriba, para
+   que todos se alcancen. Las posiciones salen de los hermanos del de arriba (:has para los ya
+   vistos); el guion solo mueve aria-current y anima el reparto. touch-action deja el gesto
+   horizontal al guion (deslizar pasa de registro) y el vertical a la página. */
+.tirada.con-js .tirada-carril{overflow:clip; scroll-snap-type:none}
+.tirada.con-js .tirada-pista{display:grid; width:auto; max-width:calc(var(--wide) + 2 * var(--borde)); margin-inline:auto;
+  padding:calc(var(--corte) + 18px) var(--borde) calc(var(--corte) + 40px); touch-action:pan-y pinch-zoom}
+.tirada.con-js .pliego{grid-area:1 / 1; --pliego:min(560px, 62cqi); --x:0px; --y:0px; --g:0deg; z-index:1;
+  translate:calc(66px + var(--x)) var(--y); rotate:var(--g); transform-origin:30% 100%; box-shadow:6px 6px 0 var(--line)}
+.tirada.con-js .pliego[aria-current]{z-index:10}
+.tirada.con-js .pliego[aria-current] + .pliego{--x:150px; --y:12px; --g:2.4deg; z-index:9}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego{--x:270px; --y:22px; --g:-1.4deg; z-index:8}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego{--x:370px; --y:8px; --g:3deg; z-index:7}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego + .pliego{--x:450px; --y:26px; --g:-2deg; z-index:6}
+.tirada.con-js .pliego:has(+ .pliego[aria-current]){--x:-26px; --y:10px; --g:-3deg; z-index:5}
+.tirada.con-js .pliego:has(+ .pliego + .pliego[aria-current]){--x:-48px; --y:18px; --g:2deg; z-index:4}
+.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego[aria-current]){--x:-62px; --y:6px; --g:-2deg; z-index:3}
+.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego + .pliego[aria-current]){--x:-72px; --y:14px; --g:1.5deg; z-index:2}
+/* Los de abajo enseñan su borde (placa en trama, sello, fechador y título); el texto queda
+   para el de arriba. Con todos a la vista, el colofón sobra. */
+.tirada.con-js .pliego:not([aria-current]) .pliego-pie{visibility:hidden}
+.tirada.con-js .tirada-colofon{display:none}
+@media (max-width:719px){
+  .tirada.con-js .pliego{--pliego:calc(100cqi - 2 * var(--borde) - 70px); translate:calc(20px + var(--x) * .25) var(--y);
+    grid-template-columns:minmax(0, 1fr); grid-template-rows:auto auto auto 1fr; grid-template-areas:"tipo" "titulo" "placa" "pie"}
+}
 /* La reimpresión: la tinta sube del papel en --dur-base y el magenta llega después, cuando la
-   tinta ya casi está. Solo color. Con menos movimiento, de golpe. */
+   tinta ya casi está. Y el acomodo de la pila: cada pliego se corre a su lugar en tres
+   --dur-base (0,66 s; excepción a «solo color», aprobada con la pila); el que pasa arriba lo reparte el guion.
+   Con menos movimiento, todo de golpe. */
 @media (prefers-reduced-motion:no-preference){
   .tirada.con-js .pliego{transition:--tinta var(--dur-base) var(--ease), --trama var(--dur-base) var(--ease),
     --marca var(--dur-base) var(--ease), --sello var(--dur-base) var(--ease),
-    --sobre var(--dur-base) var(--ease) calc(var(--dur-base) - var(--dur-fast))}
+    --sobre var(--dur-base) var(--ease) calc(var(--dur-base) - var(--dur-fast)),
+    translate calc(3 * var(--dur-base)) var(--ease), rotate calc(3 * var(--dur-base)) var(--ease)}
+  .tirada.con-js .pliego.pliego--repartiendo{transition-property:none}
   .tirada.con-js :is(.pliego-fechador, .pliego-tipo){
     transition:border-color var(--dur-base) var(--ease), outline-color var(--dur-base) var(--ease)}
 }
