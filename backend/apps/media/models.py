@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import PurePosixPath
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models
@@ -260,6 +261,40 @@ class MediaAsset(models.Model):
             buf = BytesIO()
             resized.save(buf, format=fmt_out, **save_kwargs)
             self.file.storage.save(name, ContentFile(buf.getvalue()))
+
+    def color_de_borde(self):
+        """El color del borde de la imagen, en «#rrggbb»: la mediana del anillo exterior (un 4 %
+        de cada lado). Con él el estante de la portada pinta el lomo y el canto de cada
+        publicación (D28), para que el libro sea el mismo de lomo y de frente. Se mide una vez
+        por archivo y queda en la caché; "" si la imagen no se puede leer."""
+        if not self.file or not self.file.name:
+            return ""
+        clave = f"color-de-borde:{self.file.name}"
+        color = cache.get(clave)
+        if color is None:
+            color = self._medir_color_de_borde()
+            cache.set(clave, color, None)
+        return color
+
+    def _medir_color_de_borde(self):
+        try:
+            with self.file.open("rb") as fh:
+                img = Image.open(fh)
+                img.draft("RGB", (120, 168))  # un JPEG se decodifica ya reducido
+                img = ImageOps.exif_transpose(img).convert("RGB")
+        except Exception:
+            return ""
+        img = img.resize((60, 84))
+        ancho, alto = img.size
+        borde = max(1, round(min(ancho, alto) * 0.04))
+        anillo = [
+            img.getpixel((x, y))
+            for x in range(ancho)
+            for y in range(alto)
+            if x < borde or y < borde or x >= ancho - borde or y >= alto - borde
+        ]
+        mediana = [sorted(p[c] for p in anillo)[len(anillo) // 2] for c in range(3)]
+        return "#{:02x}{:02x}{:02x}".format(*mediana)
 
     def srcset(self):
         """Cadena `srcset` con los derivados existentes + el original. Robusta: solo

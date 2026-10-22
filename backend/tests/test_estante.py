@@ -7,13 +7,18 @@ Sin JavaScript cada lomo lleva a su ficha; static/js/estante.js lo convierte en 
 saca ese libro al frente. Nada se mueve solo.
 """
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.urls import reverse
+from PIL import Image
 
 from apps.content.views import ESTANTE
+from apps.media.models import MediaAsset
 from apps.reviews.models import Publisher
 from tests.factories import make_image, make_publication
 
@@ -100,7 +105,7 @@ def test_la_ficha_dice_tipo_anio_editorial_y_sinopsis(client):
     assert boton["href"] == reverse("showcase:publication_detail", args=["cuadernos"])
 
 
-def test_el_lomo_depende_del_tipo_y_lleva_las_tintas_del_sitio(client):
+def test_el_lomo_depende_del_tipo(client):
     make_publication(slug="a", kind="libro", position=0)
     make_publication(slug="b", kind="plaquette", position=1)
     make_publication(slug="c", kind="fanzine", position=2)
@@ -112,16 +117,46 @@ def test_el_lomo_depende_del_tipo_y_lleva_las_tintas_del_sitio(client):
         ".ejemplar--libro .ejemplar-lomo{width:50px; height:300px}",
         ".ejemplar--plaquette .ejemplar-lomo{width:28px; height:246px}",
         ".ejemplar--fanzine .ejemplar-lomo{width:36px; height:268px}",
-        ".estante-tabla > li:nth-child(4n+1) .ejemplar-lomo{background:var(--caratula)",
-        ".estante-tabla > li:nth-child(4n+2) .ejemplar-lomo{background:var(--accent)",
-        ".estante-tabla > li:nth-child(4n+3) .ejemplar-lomo{background:var(--riso-amarillo)",
-        ".estante-tabla > li:nth-child(4n+4) .ejemplar-lomo{background:var(--surface)",
     ):
         assert regla in SITE_CSS, regla
     assert (
         "writing-mode:vertical-rl" in SITE_CSS
         and ".es-frente .ejemplar-lomo{display:none}" in SITE_CSS
     )
+
+
+def _tapa(nombre, borde, centro):
+    """Una tapa con un borde de un color y el centro de otro, como las provisionales. En PNG:
+    un JPEG corre el color en una unidad y la comparación tiene que ser exacta."""
+    imagen = Image.new("RGB", (100, 140), borde)
+    imagen.paste(Image.new("RGB", (60, 90), centro), (20, 25))
+    buffer = BytesIO()
+    imagen.save(buffer, format="PNG")
+    tapa = MediaAsset(alt_text=nombre)
+    tapa.file.save(f"{nombre}.png", ContentFile(buffer.getvalue()))
+    return tapa
+
+
+def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
+    """D28: azul de lomo y blanco de frente no era el mismo libro. El lomo lleva el color del
+    borde de su tapa y el canto (el grueso que asoma junto a la tapa de frente), uno más
+    oscuro; los dos como rectángulos de SVG, porque la CSP no admite estilos en línea. Sobre
+    un lomo oscuro, el texto va claro."""
+    cache.clear()
+    make_publication(slug="rosa", position=0, cover=_tapa("rosa", (246, 214, 230), (20, 30, 200)))
+    make_publication(slug="azul", position=1, cover=_tapa("azul", (31, 115, 199), (250, 250, 250)))
+    make_publication(slug="sin-tapa", position=2)
+    _, estante = _estante(client)
+    rosa, azul, sin_tapa = estante.select(".ejemplar")
+    assert rosa.select_one(".ejemplar-lomo-fondo rect")["fill"] == "#f6d6e6"
+    assert rosa.select_one(".ejemplar-canto rect")["fill"] == "#caafbd"
+    assert "ejemplar--oscuro" not in rosa["class"] and "ejemplar--oscuro" in azul["class"]
+    assert azul.select_one(".ejemplar-lomo-fondo rect")["fill"] == "#1f73c7"
+    assert sin_tapa.select_one("svg") is None
+    for svg in estante.select(".ejemplar svg"):
+        assert svg["aria-hidden"] == "true" and svg["focusable"] == "false"
+    assert ".ejemplar-lomo-fondo{position:absolute; inset:0; z-index:-1;" in SITE_CSS
+    assert "nth-child(4n" not in SITE_CSS
 
 
 def test_con_una_sola_no_hay_guion(client):
