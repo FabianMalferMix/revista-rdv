@@ -25,6 +25,9 @@ celerybeat-schedule
 #    cambio de un beneficio de seguridad nulo (es un fichero de texto sin secretos).
 tests
 conftest.py
+# Los datos de desarrollo (contenido de prueba para otro equipo): en desarrollo llegan por el
+# código montado; la imagen de producción no los necesita.
+datos_de_desarrollo
 pytest.ini
 requirements-dev.in
 .coverage
