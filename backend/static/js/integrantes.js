@@ -1,79 +1,92 @@
-// «El colectivo» en la portada (D22), en pliegos de seis. «Otras seis» y la flecha reparten
-// las siguientes o las anteriores, y en el teléfono se desliza sobre los retratos. Sin este
-// guion se ven las seis primeras y el botón a /integrantes/. Aquí solo se cambian atributos
-// (hidden) y el orden de las tarjetas en la lista; las posiciones viven en site.css (la CSP
-// no admite estilos en línea). Nada avanza solo.
+// «Las voces» en la portada (D23): una fila de cinco retratos (tres en el teléfono) y las demás
+// esperando su turno, escondidas al final de la lista. Cada 1,8 s llega otra a uno de los
+// lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de una risógrafo.
+// Corre solo donde hay un puntero que pueda posarse y no se pidió menos movimiento (como la
+// cinta, D1), y se detiene con el puntero encima o el foco dentro, fuera de la vista y con la
+// pestaña oculta. En el teléfono, deslizar el dedo trae a otras tres. Sin este guion se ven las
+// primeras y el botón a /integrantes/. Aquí solo se cambian `hidden` y el orden de la lista; la
+// tinta es una capa con su clase en site.css (la CSP no admite estilos en línea).
 (() => {
+  const CADA = 1800;
+  const CUBRE = 240;
+  const DESTAPA = 300;
+  const CURVA = 'cubic-bezier(.65,0,.35,1)';
+  // A qué lugar llega cada relevo: salteado, para que no parezca una cola.
+  const ORDEN = { 5: [2, 0, 4, 1, 3], 3: [1, 0, 2] };
+  const solo = window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
-  // Las seis salen como cartas que se recogen y entran las siguientes, una tras otra.
-  const SALIDA = 240;
-  const ENTRADA = 380;
-  const PASO = 45;
-  const CURVA = 'cubic-bezier(.45,.05,.25,1)';
+  const movil = window.matchMedia('(max-width: 719px)');
+  // El recorte de la capa: entra por un lado y sale por el otro; `atras`, de derecha a izquierda.
+  const LLENO = 'inset(0 0 0 0)';
+  const ANTES = (atras) => (atras ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)');
+  const DESPUES = (atras) => (atras ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)');
 
   function montar(seccion) {
-    const lista = seccion.querySelector('.integrantes-pliego');
-    const todas = [...lista.children];
-    const n = todas.length;
-    const pliego = todas.filter((li) => !li.hidden).length;
-    if (n <= pliego) return;
-    const anuncio = seccion.querySelector('[data-anuncio]');
-    let inicio = 0;
-    let repartiendo = false;
+    const lista = seccion.querySelector('.integrantes-retratos');
+    const n = lista.children.length;
+    let V = 0;
+    let ocupado = 0;
+    let turno = 0;
+    let enVista = false;
 
+    // Las que se ven son siempre las primeras de la lista.
+    function ajustar() {
+      V = Math.min(movil.matches ? 3 : 5, n);
+      [...lista.children].forEach((li, k) => { li.hidden = k >= V; });
+    }
+    ajustar();
+    movil.addEventListener('change', ajustar);
     seccion.classList.add('con-js');
-    seccion.querySelector('.integrantes-mandos').hidden = false;
 
-    // Las seis que tocan desde `desde`, dando la vuelta: el último pliego se completa con las
-    // primeras, así siempre hay seis y nadie queda sola en una fila.
-    const ventana = (desde) => Array.from({ length: pliego }, (_, k) => todas[(desde + k) % n]);
-
-    function poner(desde) {
-      const visibles = ventana(desde);
-      todas.forEach((li) => { li.hidden = !visibles.includes(li); });
-      // Las que se ven van primero y en orden: así se leen y se recorren con el tabulador
-      // como se ven, y la columna corrida (nth-child en site.css) cae en la del medio.
-      lista.prepend(...visibles);
-      // Los retratos del pliego siguiente se piden ya, para que no lleguen en blanco.
-      ventana(desde + pliego).forEach((li) => li.querySelectorAll('img').forEach((i) => { i.loading = 'eager'; }));
+    function tinta(li, atras) {
+      const capa = document.createElement('span');
+      capa.className = atras ? 'integrante-tinta integrante-tinta--atras' : 'integrante-tinta';
+      capa.setAttribute('aria-hidden', 'true');
+      li.append(capa);
+      return capa;
     }
 
-    function animar(tarjetas, desde, hasta, duracion) {
-      return Promise.all(tarjetas.map((li, k) => li.animate([desde, hasta], {
-        duration: duracion, delay: k * PASO, easing: CURVA, fill: 'both',
-      }).finished.catch(() => {})));
-    }
-
-    // paso: 1, las siguientes; -1, las anteriores.
-    async function ir(paso) {
-      if (repartiendo) return;
-      const salen = ventana(inicio);
-      inicio = (((inicio + paso * pliego) % n) + n) % n;
-      const entran = ventana(inicio);
-      const mueve = !quieto.matches && typeof Element.prototype.animate === 'function';
-      repartiendo = true;
-      if (mueve) {
-        const lado = -paso;
-        await animar(salen, { transform: 'none', opacity: 1 },
-          { transform: `translateX(${lado * 28}px) rotate(${lado * 3}deg)`, opacity: 0 }, SALIDA);
-        salen.forEach((li) => li.getAnimations().forEach((a) => a.cancel()));
+    // Al lugar de `viejo` llega la que lleva más tiempo esperando (la primera escondida), y
+    // `viejo` pasa al final de la espera.
+    async function relevar(viejo, retraso, atras) {
+      const anima = !quieto.matches && typeof Element.prototype.animate === 'function';
+      ocupado += 1;
+      let capa = null;
+      if (anima) {
+        capa = tinta(viejo, atras);
+        await capa.animate([{ clipPath: ANTES(atras) }, { clipPath: LLENO }],
+          { duration: CUBRE, delay: retraso, easing: CURVA, fill: 'both' }).finished.catch(() => {});
       }
-      poner(inicio);
-      anuncio.textContent = `Ahora: ${entran.map((li) => li.querySelector('.member-name').textContent.trim()).join(', ')}.`;
-      if (mueve) {
-        await animar(entran, { transform: `translateX(${paso * 36}px) rotate(${paso * 3}deg)`, opacity: 0 },
-          { transform: 'none', opacity: 1 }, ENTRADA);
-        entran.forEach((li) => li.getAnimations().forEach((a) => a.cancel()));
+      const nuevo = lista.children[V];
+      if (nuevo && nuevo.hidden) {
+        viejo.before(nuevo);
+        nuevo.hidden = false;
+        viejo.hidden = true;
+        lista.append(viejo);
+        if (anima) {
+          const destapa = tinta(nuevo, atras);
+          capa.remove();
+          await destapa.animate([{ clipPath: LLENO }, { clipPath: DESPUES(atras) }],
+            { duration: DESTAPA, easing: CURVA, fill: 'both' }).finished.catch(() => {});
+          destapa.remove();
+        }
       }
-      repartiendo = false;
+      capa?.remove();
+      ocupado -= 1;
     }
 
-    seccion.querySelector('[data-siguientes]').addEventListener('click', () => ir(1));
-    seccion.querySelector('[data-anteriores]').addEventListener('click', () => ir(-1));
+    new IntersectionObserver(([e]) => { enVista = e.isIntersecting; }, { threshold: 0.3 }).observe(seccion);
+    setInterval(() => {
+      if (!solo.matches || !enVista || document.hidden || ocupado || n <= V) return;
+      if (seccion.matches(':hover, :focus-within')) return;
+      const orden = ORDEN[V];
+      relevar(lista.children[orden[turno % orden.length]], 0, false);
+      turno += 1;
+    }, CADA);
 
-    // Deslizar con el dedo (o el lápiz) sobre los retratos: hacia la izquierda, las siguientes;
-    // hacia la derecha, las anteriores. Solo un gesto claramente horizontal: el vertical sigue
-    // bajando la página (touch-action en site.css). Un deslizamiento no abre la ficha de debajo.
+    // Deslizar con el dedo (o el lápiz) sobre los retratos trae a otras, con la tinta en el
+    // sentido del gesto. Solo un gesto claramente horizontal: el vertical sigue bajando la página
+    // (touch-action en site.css). Un deslizamiento no abre la ficha de debajo.
     let x0 = null;
     let y0 = 0;
     let deslizado = 0;
@@ -89,7 +102,10 @@
       x0 = null;
       if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       deslizado = e.timeStamp;
-      ir(dx < 0 ? 1 : -1);
+      if (ocupado || n <= V) return;
+      const atras = dx < 0;
+      const lugares = [...lista.children].slice(0, V);
+      (atras ? lugares.reverse() : lugares).forEach((li, k) => relevar(li, k * 110, atras));
     });
     lista.addEventListener('pointercancel', () => { x0 = null; });
     lista.addEventListener('click', (e) => {

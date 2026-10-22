@@ -91,7 +91,7 @@ no una plantilla vacía.
       movimiento» activado en el sistema, la obra sube con la página. En la hoja, «Conócenos
       →», «Ver el dossier», «Escríbenos» y, si hay convocatoria, el sello «Convocatoria
       abierta». Después, la tirada de registros («Registros»); la obra (poemas con sus tres primeros versos,
-      y textos); las integrantes («Las voces»), seis a la vez; las publicaciones; y un cierre «Para
+      y textos); las integrantes («Las voces»), cinco a la vez y en relevo; las publicaciones; y un cierre «Para
       programadores y jurados» con la última actividad y «Actualizado el …». **Sin cifras,
       sin prensa y sin aliados**: los quitó el dueño del sitio y están en el dossier.
       (Cambió con el rediseño UX, pasos 19 y 20, y con la portada como obra, D18.)
@@ -181,15 +181,15 @@ no una plantilla vacía.
 - [ ] **Cabecera, en el teléfono** (menos de 900 px de ancho): el sello, la lupa y «Menú»
       (en la portada, nada hasta bajar). «Menú» abre el mapa del sitio, con el correo y el
       Instagram; en la cápsula, cuelga de ella.
-- [ ] **«El colectivo» en la portada** («Las voces», D22). A la izquierda, «Quiénes integran
-      el colectivo: poetas, trayectorias y obra.», el botón «Conoce al colectivo →» y, si hay
-      más de seis integrantes, «←» y «Otras seis →». A la derecha, seis retratos con el nombre
-      y el rol en una etiqueta; la columna del medio, más abajo. Al pasar el ratón por un
-      retrato, solo ese pasa a color y su nombre a magenta; al pulsarlo, su ficha. «Otras seis
-      →» reparte las seis siguientes (salen las seis y entran las nuevas, una tras otra), «←»
-      las anteriores, y al final vuelve a empezar. En el teléfono, deslizar el dedo sobre los
-      retratos hacia la izquierda trae las siguientes. Con «reducir movimiento» activado, el
-      cambio es instantáneo. Nada se mueve solo.
+- [ ] **«Las voces» en la portada** (D23). A la izquierda, «Quiénes integran el colectivo:
+      poetas, trayectorias y obra.» y el botón «Conoce al colectivo →»; a la derecha, una fila
+      de cinco retratos con el nombre y el rol debajo, el segundo y el cuarto un poco más
+      abajo. No hay botones para cambiarlos: cada 1,8 segundos uno de los cinco se cubre con
+      una franja azul de filo magenta y, al pasar la franja, hay otra integrante. Con el ratón
+      encima de la sección, deja de cambiar. Al pasar el ratón por un retrato, solo ese pasa a
+      color y su nombre a magenta; al pulsarlo, su ficha. Con «reducir movimiento» activado,
+      no cambia. En el teléfono se ven tres y no cambian solos: deslizar el dedo sobre ellos
+      trae a otras tres.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
       título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
       Trayectoria · Agenda · Galería · Prensa · Aliados».

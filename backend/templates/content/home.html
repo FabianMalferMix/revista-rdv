@@ -6,7 +6,7 @@
 {% block head_extra %}
   {# Las flechas y la hoja de contactos de la tirada: solo hacen falta con dos registros o más. #}
   {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}" defer></script>{% endif %}
-  {% if integrantes_resto %}<script src="{% static 'js/integrantes.js' %}" defer></script>{% endif %}
+  {% if relevo_integrantes %}<script src="{% static 'js/integrantes.js' %}" defer></script>{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -145,30 +145,21 @@
 
   {% if members %}
     {% comment %}
-       «El colectivo» (D22, la opción A del tablero «El colectivo en portada»): la cabeza a la
-       izquierda, con el botón; a la derecha, seis retratos con el nombre impreso encima y la
-       columna del medio más abajo. Cada retrato lleva a su ficha. Con más de seis, las demás
-       vienen escondidas y «Otras seis» las reparte (static/js/integrantes.js); sin
-       JavaScript se ven las seis primeras y el botón.
+       «Las voces» (D23): la opción 3 del tablero «Las voces en relevo», con la pasada de tinta
+       de la 2. La cabeza a la izquierda, con el botón; a la derecha, una fila de cinco retratos
+       (tres en el teléfono) con el nombre debajo. Las demás vienen escondidas y el relevo las
+       trae de a una (static/js/integrantes.js). Sin JavaScript, las primeras y el botón.
     {% endcomment %}
     <section class="home-block sangre home-integrantes" data-integrantes>
-      <div class="band-in integrantes-plana">
+      <div class="band-in integrantes-fila">
         <div class="integrantes-cabeza">
           {% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo="Las voces" territorio="colectivo" only %}
           <p class="integrantes-lead">Quiénes integran el colectivo: poetas, trayectorias y obra.</p>
           <p class="integrantes-cta"><a class="btn" href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
-          {% if integrantes_resto %}
-            {% comment %} Los mandos solo sirven con el guion: él los destapa. {% endcomment %}
-            <div class="integrantes-mandos" hidden>
-              <button type="button" class="btn" data-anteriores aria-label="Seis anteriores"><span aria-hidden="true">←</span></button>
-              <button type="button" class="btn" data-siguientes>Otras seis <span aria-hidden="true">→</span></button>
-            </div>
-            <p class="sr-only" aria-live="polite" data-anuncio></p>
-          {% endif %}
         </div>
-        <ul class="integrantes-pliego">
-          {% for m in integrantes_vista %}{% include "people/partials/_member_card_plana.html" %}{% endfor %}
-          {% for m in integrantes_resto %}{% include "people/partials/_member_card_plana.html" with escondida=True %}{% endfor %}
+        <ul class="integrantes-retratos">
+          {% for m in integrantes_vista %}{% include "people/partials/_member_card_portada.html" %}{% endfor %}
+          {% for m in integrantes_resto %}{% include "people/partials/_member_card_portada.html" with escondida=True %}{% endfor %}
         </ul>
       </div>
     </section>
