@@ -196,8 +196,8 @@ no una plantilla vacía.
       abajo hacia arriba y el año. Bajo el extremo derecho de la línea, el botón negro «Ver
       todo el catálogo →». La línea termina con el último libro. Al lado, el tipo, el año y la
       editorial en magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
-      el ratón por un lomo, asoma; al pulsarlo, ese libro sale al frente y su ficha aparece al
-      lado. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
+      el ratón por un lomo, asoma; al pulsarlo, ese libro gira hasta quedar de frente, los demás
+      se deslizan a su lugar sin saltos y la ficha nueva se funde con la anterior. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
       título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
       Trayectoria · Agenda · Galería · Prensa · Aliados».
