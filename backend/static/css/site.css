@@ -1144,18 +1144,19 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
     column-gap:clamp(32px, 5vw, 96px); align-items:start}
   .home-obra-columnas:has(> :nth-child(2)) > .home-obra-columna + .home-obra-columna{margin-top:0}
 }
-/* ── El estante de la portada (D24; hasta ocho en D25; a la medida en D26) ──
+/* ── El estante de la portada (D24; hasta ocho en D25; a la medida en D26; con aire en D27) ──
    Como en una librería: una publicación de frente y las demás de lomo, de pie sobre la tabla
    y en las tintas del sitio, y bajo el extremo de la tabla «Ver todo el catálogo →», bien a
-   la vista. La tabla mide lo que sus libros, sin tramos vacíos, y la ficha de la de frente
-   ocupa el resto del ancho. Sin el guion, el lomo es un enlace a la ficha; con
-   static/js/estante.js, un botón que saca ese libro al frente. */
+   la vista. La tabla mide lo que sus libros más un tramo libre al final, proporcional a la
+   pantalla: ni medio vacía ni saturada. La ficha de la de frente ocupa el resto del ancho.
+   Sin el guion, el lomo es un enlace a la ficha; con static/js/estante.js, un botón que saca
+   ese libro al frente. */
 .estante-cabeza{margin-bottom:var(--s4)}
 .estante-cabeza .seccion-cabeza{margin:0}
-.estante{display:grid; grid-template-columns:auto minmax(0, 1fr); gap:var(--s4); align-items:center}
+.estante{display:grid; grid-template-columns:auto minmax(0, 1fr); gap:var(--s3); align-items:center}
 .estante-mueble{min-width:0; width:fit-content; max-width:100%}
 /* La tabla: un filete de tinta y, debajo, el canto del estante. */
-.estante-tabla{list-style:none; margin:0; padding:0 14px; display:flex; align-items:flex-end; gap:5px;
+.estante-tabla{list-style:none; margin:0; padding:0 clamp(40px, 6vw, 120px) 0 14px; display:flex; align-items:flex-end; gap:5px;
   width:fit-content; max-width:100%; border-bottom:5px solid var(--ink); box-shadow:0 9px 0 var(--line)}
 .ejemplar-frente{display:none; flex:none; width:200px; box-shadow:7px 0 0 var(--line)}
 .ejemplar-tapa{display:block; width:100%; height:auto; aspect-ratio:5 / 7; object-fit:cover}
@@ -1182,7 +1183,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .estante-tabla > li:nth-child(4n+3) .ejemplar-lomo{background:var(--riso-amarillo); color:var(--ink)}
 /* El cuarto, blanco con filete: la tinta como fondo es solo del pie (D6). */
 .estante-tabla > li:nth-child(4n+4) .ejemplar-lomo{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
-.estante-ficha{display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
+/* Las fichas, apiladas en la misma celda: al cambiar de libro, la vieja se desvanece mientras
+   llega la nueva, sin que la columna salte. */
+.estante-fichas{display:grid}
+.estante-ficha{grid-area:1 / 1; display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
 .estante-ficha[hidden]{display:none}
 .estante-dato{margin:0}
 .estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t5); line-height:1.05;
@@ -1198,7 +1202,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 @media (max-width:719px){
   .estante-catalogo .btn{width:100%}
   /* Con seis no caben de una: la tabla se desliza de lado, con aire arriba para el lomo que asoma. */
-  .estante-tabla{overflow-x:auto; padding-top:var(--s2)}
+  .estante-tabla{overflow-x:auto; padding-top:var(--s2); padding-right:14px}
   .ejemplar-frente{width:160px}
   .ejemplar-lomo{height:212px}
   .ejemplar--libro .ejemplar-lomo{height:226px}

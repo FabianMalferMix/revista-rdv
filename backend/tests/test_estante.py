@@ -148,3 +148,20 @@ def test_el_guion_saca_al_frente_sin_moverse_solo():
     assert "enlace.replaceWith(boton)" in ESTANTE_JS and "'Sacar al frente: '" in ESTANTE_JS
     assert "querySelector('.estante-titulo').focus({ preventScroll: true })" in ESTANTE_JS
     assert "prefers-reduced-motion: reduce" in ESTANTE_JS and "!quieto.matches" in ESTANTE_JS
+
+
+def test_la_tabla_tiene_aire_al_final_ni_medio_vacia_ni_saturada():
+    """D27: la tabla mide lo que sus libros más un tramo libre, proporcional a la pantalla."""
+    assert "padding:0 clamp(40px, 6vw, 120px) 0 14px;" in SITE_CSS
+
+
+def test_el_cambio_de_libro_es_suave():
+    """D27: cada libro se desliza desde donde estaba hasta su lugar nuevo (FLIP), el elegido
+    gira desde el lomo hasta quedar de frente, y las fichas, apiladas en la misma celda, se
+    funden. Un cambio a medias se corta antes del siguiente. Con «reducir movimiento», al
+    instante."""
+    assert "getBoundingClientRect().left" in ESTANTE_JS and "translateX(${dx}px)" in ESTANTE_JS
+    assert "rotateY(-80deg)" in ESTANTE_JS
+    assert "seccion.getAnimations({ subtree: true }).forEach((a) => a.cancel())" in ESTANTE_JS
+    assert ".estante-fichas{display:grid}" in SITE_CSS
+    assert ".estante-ficha{grid-area:1 / 1;" in SITE_CSS
