@@ -67,9 +67,10 @@ def _paginate(request, queryset, per_page=12):
 A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
-# El estante de la portada (D24): una publicación de frente y hasta cinco de lomo. Al frente
-# va la marcada «Featured» en el panel y, si no hay, la primera según su orden («Position»).
-ESTANTE = 6
+# El estante de la portada (D24, más largo en D25): una publicación de frente y hasta siete de
+# lomo, lo que cabe a 951 px junto a la ficha. Al frente va la marcada «Featured» en el panel y,
+# si no hay, la primera según su orden («Position»).
+ESTANTE = 8
 
 
 # La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de

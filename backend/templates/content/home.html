@@ -178,20 +178,26 @@
       <div class="band-in">
         <div class="estante-cabeza">
           {% include "content/partials/_cabeza_de_seccion.html" with cejilla="La obra" titulo="Publicaciones" territorio="obra" only %}
-          <p class="home-mas"><a href="{% url 'showcase:publication_index' %}">Ver catálogo →</a></p>
         </div>
         <div class="estante">
-          <ul class="estante-tabla">
-            {% for pub in publications %}
-              <li class="ejemplar ejemplar--{{ pub.kind }}{% if forloop.first %} es-frente{% endif %}">
-                {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
-                <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
-                  {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, 212px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
-                </a>
-                <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}"><span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
-              </li>
-            {% endfor %}
-          </ul>
+          <div class="estante-mueble">
+            <ul class="estante-tabla">
+              {% for pub in publications %}
+                <li class="ejemplar ejemplar--{{ pub.kind }}{% if forloop.first %} es-frente{% endif %}">
+                  {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
+                  <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+                    {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, 200px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
+                  </a>
+                  <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}"><span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
+                </li>
+              {% endfor %}
+            </ul>
+            {% comment %}
+               Bajo la tabla, donde termina la fila de libros: quien busca una publicación que no
+               está en el estante la encuentra aquí (D25). Antes era un enlace discreto en la cabecera.
+            {% endcomment %}
+            <p class="estante-catalogo"><a class="btn btn--primary" href="{% url 'showcase:publication_index' %}">Ver todo el catálogo <span aria-hidden="true">→</span></a></p>
+          </div>
           <div class="estante-fichas">
             {% for pub in publications %}
               <div class="estante-ficha"{% if not forloop.first %} hidden{% endif %}>

@@ -190,11 +190,12 @@ no una plantilla vacía.
       color y su nombre a magenta; al pulsarlo, su ficha. Con «reducir movimiento» activado,
       no cambia. En el teléfono se ven tres y no cambian solos: deslizar el dedo sobre ellos
       trae a otras tres.
-- [ ] **«Publicaciones» en la portada** (D24). Arriba, «Publicaciones» y, a la derecha, «Ver
-      catálogo →». Debajo, un estante: una publicación de frente (la marcada «Featured» en el
-      panel o, si no hay, la primera según «Position») y las demás de lomo, de pie sobre una
-      línea negra, con el título de abajo hacia arriba y el año. Al lado, el tipo, el año y la
-      editorial en magenta, el título grande, la sinopsis y «Ver la publicación →». Al pasar
+- [ ] **«Publicaciones» en la portada** (D24 y D25). Arriba, «Publicaciones». Debajo, un estante:
+      una publicación de frente (la marcada «Featured» en el panel o, si no hay, la primera
+      según «Position») y hasta siete de lomo, de pie sobre una línea negra, con el título de
+      abajo hacia arriba y el año. Bajo el extremo derecho de la línea, el botón negro «Ver
+      todo el catálogo →». Al lado, en una columna angosta, el tipo, el año y la editorial en
+      magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
       el ratón por un lomo, asoma; al pulsarlo, ese libro sale al frente y su ficha aparece al
       lado. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
