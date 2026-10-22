@@ -891,7 +891,7 @@ def test_al_senalar_o_enfocar_se_ve_el_original():
     """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
     teñido. Y la capa del papel se vuelve transparente. Una sola regla con `:is()` dice
     dónde se señala: un enlace, las tarjetas, la placa, una fila. Solo la imagen señalada:
-    la cinta (D22, retirada) las pintaba todas a la vez."""
+    la cinta (retirada en D22) las pintaba todas a la vez."""
     lugares = (
         "a",
         ".recording-card",
@@ -911,13 +911,13 @@ def test_al_senalar_o_enfocar_se_ve_el_original():
 
 
 # El duotono va en las imágenes de los listados: tarjetas de integrante (también las de la
-# portada, D22), hoja de
+# portada, D23), hoja de
 # contactos, pósters de los registros (índice y placa, D10), imágenes de los textos y afiches
 # de la agenda, la trayectoria y la próxima actividad de la portada. Las cubiertas de las
 # publicaciones, los logos y las fichas se ven tal cual.
 CON_DUOTONO = {
     "_member_card.html",
-    "_member_card_plana.html",
+    "_member_card_portada.html",
     "gallery.html",
     "_player.html",
     "recording_index.html",

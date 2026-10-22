@@ -1792,44 +1792,43 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .error-links{list-style:none; padding:0; margin:24px 0 0; display:flex; flex-wrap:wrap; gap:8px 20px}
 
 /* ──────────────────────────────────────────────────────────────────────────
-   «El colectivo» en la portada (D22): la plana, que reemplaza a la cinta.
+   «Las voces» en la portada (D23), que reemplazó a la cinta y a los pliegos de D22.
 
-   El reparto de «Publicaciones» (4 : 8): la cabeza a la izquierda, con el botón; a la
-   derecha, seis retratos en tres columnas, la del medio corrida hacia abajo, con el
-   nombre impreso encima en una etiqueta apenas girada. Toda la tarjeta es el enlace,
-   así que al señalarla solo su retrato pasa a color.
+   La cabeza a la izquierda, angosta y a 40 px de los retratos; a la derecha, una fila de
+   cinco con el nombre debajo, los pares un poco más abajo. En el teléfono, tres. Toda la
+   tarjeta es el enlace, así que al señalarla solo su retrato pasa a color.
 
-   Con más de seis, los pliegos: las demás vienen en la lista con `hidden` y
-   static/js/integrantes.js cambia cuáles se ven. El guion pone primero, y en orden, las
-   que se ven: así la columna corrida (`nth-child`) cae siempre en la del medio. Nada se
-   mueve solo, y con «menos movimiento» el cambio es instantáneo.
+   El relevo (static/js/integrantes.js): cada 1,8 s llega otra integrante a uno de los
+   cinco, bajo una pasada de tinta azul con el filo magenta, como el tambor de una
+   risógrafo. Las que se ven van siempre primero en la lista: los pares (`nth-child`) son
+   siempre los mismos lugares.
    ────────────────────────────────────────────────────────────────────────── */
-.integrantes-plana{display:grid; grid-template-columns:minmax(0, 4fr) minmax(0, 8fr); column-gap:var(--s5);
-  align-items:start}
+.integrantes-fila{display:grid; grid-template-columns:minmax(0, 216px) minmax(0, 1fr); column-gap:var(--s4);
+  align-items:center}
 .integrantes-cabeza .seccion-cabeza{margin-bottom:var(--s3)}
-.integrantes-lead{margin:0 0 var(--s3); max-width:30ch; color:var(--muted); font-size:var(--t1)}
+.integrantes-lead{margin:0 0 var(--s3); color:var(--muted); font-size:var(--t0)}
 .integrantes-cta{margin:0}
-.integrantes-cabeza .btn{gap:8px}
-.integrantes-mandos{display:flex; gap:var(--s1); margin-top:var(--s2)}
-.integrantes-mandos[hidden]{display:none}
-.integrantes-pliego{list-style:none; margin:0; padding:0 0 var(--s5); display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2)}
-.integrantes-pliego > li:nth-child(3n+2){translate:0 var(--s5)}
-.integrante-enlace{position:relative; display:block; color:var(--ink); text-decoration:none}
+.integrantes-cta .btn{gap:8px}
+.integrantes-retratos{list-style:none; margin:0; padding:0 0 var(--s3); display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px}
+.integrantes-retratos > li:nth-child(2n){translate:0 var(--s3)}
+.integrante{position:relative}
+.integrante-enlace{display:block; color:var(--ink); text-decoration:none}
 /* El monograma ya trae su caja 4:5 (.retrato) y centra las iniciales: no se toca. */
 .integrante-enlace > .riso-duo{display:block; aspect-ratio:4 / 5; overflow:hidden}
-/* La etiqueta: papel claro y la sombra en la tinta de los retratos, como impresa encima. */
-.integrante-rotulo{position:absolute; left:10px; right:10px; bottom:10px; display:flex; flex-direction:column;
-  gap:3px; padding:8px 10px 9px; background:var(--paper-2); rotate:-1.5deg; box-shadow:3px 3px 0 var(--caratula)}
-.integrantes-pliego > li:nth-child(2n) .integrante-rotulo{rotate:1deg}
-.integrante-rotulo .member-name{font-size:var(--t1); line-height:1.15}
+.integrante-rotulo{display:flex; flex-direction:column; gap:3px; padding-top:8px}
+.integrante-rotulo .member-name{font-size:var(--t0); line-height:1.15}
 .integrante-enlace:hover .member-name, .integrante-enlace:focus-visible .member-name{color:var(--accent)}
 .integrante-enlace:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-/* Con el guion, el gesto horizontal cambia de pliego; el vertical sigue bajando la página. */
-.home-integrantes.con-js .integrantes-pliego{touch-action:pan-y pinch-zoom}
+/* La pasada de tinta: el guion pone esta capa durante el relevo y la quita al terminar. El
+   filo magenta va delante, del lado hacia el que avanza (--atras: de derecha a izquierda). */
+.integrante-tinta{position:absolute; inset:-4px; z-index:2; pointer-events:none;
+  background:linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}
+.integrante-tinta--atras{background:linear-gradient(270deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}
+/* Con el guion, el gesto horizontal trae a otras; el vertical sigue bajando la página. */
+.home-integrantes.con-js .integrantes-retratos{touch-action:pan-y pinch-zoom}
 @media (max-width:719px){
-  .integrantes-plana{grid-template-columns:minmax(0, 1fr); row-gap:var(--s4)}
-  .integrantes-pliego{grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s2) 12px; padding-bottom:var(--s4)}
-  .integrantes-pliego > li:nth-child(3n+2){translate:none}
-  .integrantes-pliego > li:nth-child(2n){translate:0 var(--s4)}
+  .integrantes-fila{grid-template-columns:minmax(0, 1fr); row-gap:var(--s4)}
+  .integrantes-retratos{grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px}
+  .integrantes-retratos > li:nth-child(n+4){display:none}
 }

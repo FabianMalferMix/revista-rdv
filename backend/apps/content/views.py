@@ -62,9 +62,10 @@ def _paginate(request, queryset, per_page=12):
     return Paginator(queryset, per_page).get_page(request.GET.get("page"))
 
 
-# «El colectivo» en la portada (D22): seis retratos a la vez, dos filas de tres. Con más
-# integrantes, las demás vienen en la página, escondidas, y «Otras seis» las reparte.
-PLIEGO_INTEGRANTES = 6
+# «Las voces» en la portada (D23): cinco retratos a la vez, en una fila; en el teléfono, tres.
+# Las demás vienen en la página, escondidas, y el relevo las trae de a una.
+A_LA_VISTA = 5
+A_LA_VISTA_TELEFONO = 3
 
 
 # La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de
@@ -148,8 +149,8 @@ def home(request):
     featured = (
         {"kind": "poem", "object": featured_poem} if featured_poem and not registros else None
     )
-    # Todas, sin tope: a cada una se llega por los pliegos. Las escondidas solo cuestan su
-    # marcado; sus retratos se piden cuando llega su pliego. Se materializa para contarlas.
+    # Todas, sin tope: a cada una le llega su turno en el relevo. Las escondidas solo cuestan
+    # su marcado; sus retratos se piden cuando les toca. Se materializa para contarlas.
     _members = list(Contributor.members())
     integrantes = len(_members)
     # Con su editorial: la tarjeta la nombra, y sin esto era una consulta por publicación.
@@ -180,8 +181,10 @@ def home(request):
             "poemas": list(_published_poems()[:3]),
             "articles": _published()[:3],
             "members": _members,
-            "integrantes_vista": _members[:PLIEGO_INTEGRANTES],
-            "integrantes_resto": _members[PLIEGO_INTEGRANTES:],
+            "integrantes_vista": _members[:A_LA_VISTA],
+            "integrantes_resto": _members[A_LA_VISTA:],
+            # En el teléfono se ven tres: con cuatro o más ya hay a quién traer deslizando.
+            "relevo_integrantes": len(_members) > A_LA_VISTA_TELEFONO,
             "featured": featured,
             "registros": registros,
             "registros_cuantos": NUMERALES.get(len(registros), str(len(registros))),

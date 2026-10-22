@@ -1,11 +1,11 @@
-"""«El colectivo» en la portada (D22): la opción A, «La plana», que eligió el dueño del sitio
-en el tablero «El colectivo en portada» (2026-10-22). Reemplaza a la cinta.
+"""«Las voces» en la portada (D23): la opción 3 del tablero «Las voces en relevo», con la pasada
+de tinta de la 2, que eligió el dueño del sitio (2026-10-22). Reemplaza a la cinta y a los
+pliegos de D22.
 
-La cabeza a la izquierda, con el botón a /integrantes/; a la derecha, seis retratos con el
-nombre impreso encima, y cada retrato lleva a su ficha. El título ya no cuenta: «Las voces».
-Con más de seis, los pliegos: todas vienen en la página y «Otras seis» (static/js/
-integrantes.js) cambia cuáles se ven. Nada avanza solo. El aspecto está en site.css; aquí,
-el reparto, el orden y lo que hace el guion.
+La cabeza a la izquierda, con el botón a /integrantes/; a la derecha, una fila de cinco retratos
+(tres en el teléfono) con el nombre debajo, y cada retrato lleva a su ficha. El título no cuenta:
+«Las voces». Las demás vienen en la página, escondidas, y el relevo (static/js/integrantes.js)
+las trae de a una, cada 1,8 s, bajo una pasada de tinta; en el teléfono, deslizando el dedo.
 """
 
 import re
@@ -15,7 +15,7 @@ import pytest
 from bs4 import BeautifulSoup
 from django.urls import reverse
 
-from apps.content.views import PLIEGO_INTEGRANTES
+from apps.content.views import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from apps.people.models import Contributor
 from tests.factories import make_image
 
@@ -45,7 +45,7 @@ def _seccion(client):
 
 def test_el_titulo_no_cuenta_y_el_boton_lleva_al_colectivo(client):
     """«12 voces» decía el número exacto de integrantes; el dueño prefirió no mostrar cifras
-    que delaten el tamaño del colectivo."""
+    que delaten el tamaño del colectivo (D22)."""
     _integrantes(3)
     _, seccion = _seccion(client)
     assert seccion.select_one(".rotulo").get_text() == "El colectivo"
@@ -62,7 +62,7 @@ def test_cada_retrato_lleva_a_su_ficha_y_el_retrato_no_repite_el_nombre(client):
     con_foto.photo = make_image("retrato-0", alt="Retrato de Integrante 0")
     con_foto.save()
     _, seccion = _seccion(client)
-    enlaces = seccion.select(".integrantes-pliego > li > a.integrante-enlace")
+    enlaces = seccion.select(".integrantes-retratos > li > a.integrante-enlace")
     assert [a["href"] for a in enlaces] == [
         reverse("people:member_detail", args=[f"integrante-{i}"]) for i in range(2)
     ]
@@ -77,69 +77,83 @@ def test_cada_retrato_lleva_a_su_ficha_y_el_retrato_no_repite_el_nombre(client):
     assert all(d.find_parent("a", class_="integrante-enlace") for d in seccion.select(".riso-duo"))
 
 
-def test_con_seis_o_menos_no_hay_pliegos(client):
-    _integrantes(PLIEGO_INTEGRANTES)
+def test_con_tres_o_menos_no_hay_relevo(client):
+    _integrantes(A_LA_VISTA_TELEFONO)
     sopa, seccion = _seccion(client)
-    tarjetas = seccion.select(".integrantes-pliego > li")
-    assert len(tarjetas) == PLIEGO_INTEGRANTES
-    assert not [t for t in tarjetas if t.has_attr("hidden")]
-    assert seccion.select_one(".integrantes-mandos") is None
+    assert not [t for t in seccion.select(".integrantes-retratos > li") if t.has_attr("hidden")]
     assert sopa.select_one('script[src*="js/integrantes.js"]') is None
 
 
-def test_con_mas_de_seis_vienen_todas_y_las_demas_esperan_su_pliego(client):
-    """Sin tope: a cada integrante se llega por los pliegos. Sin JavaScript se ven las seis
-    primeras, en el orden del panel, y los mandos llegan escondidos: los destapa el guion."""
+def test_vienen_todas_y_las_que_no_caben_esperan_su_turno(client):
+    """Sin tope: a cada integrante le llega su turno. Sin JavaScript se ven las cinco primeras,
+    en el orden del panel. Sin botones: el relevo es automático, y no se anuncia, porque
+    cambiaría cada 1,8 s."""
     _integrantes(20)
     sopa, seccion = _seccion(client)
-    tarjetas = seccion.select(".integrantes-pliego > li")
+    tarjetas = seccion.select(".integrantes-retratos > li")
     assert [t.select_one(".member-name").get_text() for t in tarjetas] == [
         f"Integrante {i}" for i in range(20)
     ]
-    assert [t.has_attr("hidden") for t in tarjetas] == [False] * PLIEGO_INTEGRANTES + [True] * 14
-    mandos = seccion.select_one(".integrantes-mandos")
-    assert mandos.has_attr("hidden")
-    assert mandos.select_one("[data-anteriores]")["aria-label"] == "Seis anteriores"
-    assert mandos.select_one("[data-siguientes]").get_text(strip=True) == "Otras seis→"
-    assert seccion.select_one("[data-anuncio]")["aria-live"] == "polite"
+    assert [t.has_attr("hidden") for t in tarjetas] == [False] * A_LA_VISTA + [True] * 15
+    assert seccion.select_one("button") is None
+    assert seccion.select_one("[aria-live]") is None
     assert sopa.select_one('script[src*="js/integrantes.js"]').has_attr("defer")
 
 
-def test_la_cinta_ya_no_existe():
-    assert not list((BACKEND / "templates").rglob("_member_card_cinta.html"))
-    assert "cinta" not in SITE_CSS.replace("reemplaza a la cinta", "")
+def test_cinco_en_la_fila_y_tres_en_el_telefono():
+    assert A_LA_VISTA == 5 and A_LA_VISTA_TELEFONO == 3
+    assert "repeat(5, minmax(0, 1fr))" in SITE_CSS
+    telefono = SITE_CSS[SITE_CSS.index("@media (max-width:719px){\n  .integrantes-fila") :]
+    assert ".integrantes-retratos > li:nth-child(n+4){display:none}" in telefono
+    assert "movil.matches ? 3 : 5" in INTEGRANTES_JS
 
 
-def test_el_guion_no_avanza_solo_ni_escribe_estilos():
-    """Nada avanza solo (ningún temporizador que cambie de pliego), no se toca la dirección ni
-    el historial, y la CSP no admite estilos en línea."""
-    for prohibido in (
-        "setInterval",
-        "setTimeout",
-        ".style",
-        "cssText",
-        "location.hash",
-        "history.",
-    ):
+def test_el_relevo_corre_solo_con_puntero_y_se_detiene_al_senalar():
+    """Como la cinta (D1): solo donde hay un puntero que pueda posarse y no se pidió menos
+    movimiento; se detiene con el puntero encima o el foco dentro, fuera de la vista y con la
+    pestaña oculta. Así ningún retrato se escapa cuando se va a pulsar."""
+    assert "'(hover: hover) and (prefers-reduced-motion: no-preference)'" in INTEGRANTES_JS
+    assert "const CADA = 1800;" in INTEGRANTES_JS
+    assert "seccion.matches(':hover, :focus-within')" in INTEGRANTES_JS
+    assert "document.hidden" in INTEGRANTES_JS and "IntersectionObserver" in INTEGRANTES_JS
+
+
+def test_llega_bajo_una_pasada_de_tinta():
+    """La tinta azul con el filo magenta: una capa que el guion pone y quita; el recorte
+    (clipPath) la hace entrar por un lado y salir por el otro."""
+    assert (
+        ".integrante-tinta{position:absolute; inset:-4px; z-index:2; pointer-events:none;\n"
+        "  background:linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}"
+    ) in SITE_CSS
+    assert "clipPath" in INTEGRANTES_JS and "!quieto.matches" in INTEGRANTES_JS
+
+
+def test_las_que_se_ven_van_primero_y_la_que_se_va_espera_al_final():
+    """Los pares van más abajo con nth-child, que cuenta también las escondidas: la que llega
+    ocupa el lugar de la que se va, y esta pasa al final de la espera."""
+    assert "viejo.before(nuevo)" in INTEGRANTES_JS and "lista.append(viejo)" in INTEGRANTES_JS
+    assert ".integrantes-retratos > li:nth-child(2n){translate:0 var(--s3)}" in SITE_CSS
+
+
+def test_el_guion_no_escribe_estilos_ni_toca_la_direccion():
+    for prohibido in (".style", "cssText", "location.hash", "history."):
         assert prohibido not in INTEGRANTES_JS
-    assert "prefers-reduced-motion: reduce" in INTEGRANTES_JS
-    assert "!quieto.matches" in INTEGRANTES_JS and ".animate(" in INTEGRANTES_JS
 
 
-def test_el_pliego_se_cambia_con_los_mandos_o_con_el_dedo():
-    """En el teléfono, deslizar sobre los retratos cambia de pliego (a la izquierda, las
-    siguientes), solo con el dedo o el lápiz, y un deslizamiento no abre la ficha de debajo.
-    El gesto vertical sigue bajando la página."""
+def test_en_el_telefono_se_cambia_con_el_dedo():
+    """En el teléfono no corre solo: deslizar sobre los retratos trae a otras tres, solo con
+    el dedo o el lápiz, y un deslizamiento no abre la ficha de debajo."""
     for evento in ("pointerdown", "pointerup", "pointercancel"):
         assert f"'{evento}'" in INTEGRANTES_JS
     assert "e.pointerType === 'mouse'" in INTEGRANTES_JS
-    assert "ir(dx < 0 ? 1 : -1)" in INTEGRANTES_JS
     assert "e.stopPropagation()" in INTEGRANTES_JS
-    assert ".home-integrantes.con-js .integrantes-pliego{touch-action:pan-y pinch-zoom}" in SITE_CSS
+    assert (
+        ".home-integrantes.con-js .integrantes-retratos{touch-action:pan-y pinch-zoom}" in SITE_CSS
+    )
 
 
-def test_las_que_se_ven_van_primero_para_que_la_columna_corrida_caiga_en_el_medio():
-    """La columna del medio se corre con nth-child, que cuenta también las escondidas: el
-    guion pone primero, y en orden, las que se ven."""
-    assert "lista.prepend(...visibles)" in INTEGRANTES_JS
-    assert ".integrantes-pliego > li:nth-child(3n+2){translate:0 var(--s5)}" in SITE_CSS
+def test_la_cinta_y_los_pliegos_ya_no_existen():
+    assert not list((BACKEND / "templates").rglob("_member_card_cinta.html"))
+    assert not list((BACKEND / "templates").rglob("_member_card_plana.html"))
+    assert "cinta" not in SITE_CSS.replace("reemplazó a la cinta", "")
+    assert "integrantes-pliego" not in SITE_CSS and "data-siguientes" not in INTEGRANTES_JS
