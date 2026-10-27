@@ -1,28 +1,67 @@
-"""En desarrollo, la hoja de estilos y los guiones propios llevan `?v=` con la fecha del más
-reciente: sin él el navegador seguía con copias viejas (con los guiones, al quitar las flechas de
-la tirada, la pila y el índice dejaban de responder). En producción el nombre ya lleva hash."""
+"""La hoja de estilos y los guiones propios no se quedan cacheados en desarrollo.
+
+En producción el nombre lleva hash y cambiar el archivo cambia la URL. En desarrollo se
+sirven con `Last-Modified` pero SIN `Cache-Control`, así que el navegador aplica caché
+heurística: guarda el archivo una fracción del tiempo transcurrido desde su última
+modificación. Con una hoja editada semanas atrás eso son días, y se siguen viendo estilos
+viejos aunque el servidor ya sirva los nuevos. Ocurrió dos veces durante el cambio de
+paleta. Y con los guiones, que no llevaban sufijo: al quitar las flechas de la tirada (D29)
+el navegador siguió con el `registros.js` viejo, que fallaba al arrancar, y la pila y el
+índice dejaron de responder. El sufijo es la fecha del más reciente de la hoja y los guiones.
+"""
 
 import os
 import re
 from pathlib import Path
 
 import pytest
-from django.urls import reverse
+from django.test import Client
 
 pytestmark = pytest.mark.django_db
 
-ESTATICOS = Path(__file__).resolve().parent.parent / "static"
+
+def _enlace(html):
+    m = re.search(r'href="([^"]*css/site\.css[^"]*)"', html)
+    return m.group(1) if m else None
 
 
-def test_la_hoja_y_cada_guion_propio_llevan_la_version(client, settings):
+def _propios(settings):
+    raiz = Path(settings.BASE_DIR) / "static"
+    return [raiz / "css" / "site.css", *(raiz / "js").glob("*.js")]
+
+
+def test_en_desarrollo_la_hoja_lleva_version(settings):
     settings.DEBUG = True
-    html = client.get(reverse("content:home")).content.decode()
-    guiones = re.findall(r'<script src="/static/js/[a-z_]+\.js([^"]*)"', html)
-    assert guiones and all(re.fullmatch(r"\?v=\d+", v) for v in guiones), guiones
-    assert re.search(r'href="/static/css/site\.css\?v=\d+"', html)
+    enlace = _enlace(Client().get("/").content.decode())
+    assert enlace is not None, "no se encontró el enlace a la hoja"
+    assert "?v=" in enlace, f"sin sufijo de versión: {enlace}"
 
 
-def test_la_version_es_la_del_mas_reciente(client, settings, tmp_path):
+def test_en_desarrollo_cada_guion_propio_lleva_version(settings):
+    settings.DEBUG = True
+    html = Client().get("/").content.decode()
+    sufijos = re.findall(r'<script src="/static/js/[a-z_]+\.js([^"]*)"', html)
+    assert sufijos, "no se encontraron guiones propios"
+    assert all(re.fullmatch(r"\?v=\d+", s) for s in sufijos), sufijos
+
+
+def test_la_version_cambia_al_editar_la_hoja(settings):
+    """Es lo que de verdad importa: que el sufijo siga al archivo, no que exista. La hoja pasa
+    a ser el más reciente de todos, como al guardarla en el editor."""
+    settings.DEBUG = True
+    hoja = Path(settings.BASE_DIR) / "static" / "css" / "site.css"
+    antes = _enlace(Client().get("/").content.decode())
+    original = hoja.stat().st_mtime
+    nuevo = max(p.stat().st_mtime for p in _propios(settings)) + 120
+    try:
+        os.utime(hoja, (nuevo, nuevo))
+        despues = _enlace(Client().get("/").content.decode())
+    finally:
+        os.utime(hoja, (original, original))
+    assert antes != despues, f"el sufijo no cambió: {antes}"
+
+
+def test_manda_el_mas_reciente_aunque_sea_un_guion(settings, tmp_path):
     settings.DEBUG = True
     settings.BASE_DIR = tmp_path
     (tmp_path / "static" / "css").mkdir(parents=True)
@@ -38,8 +77,11 @@ def test_la_version_es_la_del_mas_reciente(client, settings, tmp_path):
     assert version_estaticos(None) == {"version_estaticos": "?v=2000"}
 
 
-def test_en_produccion_no_hay_sufijo(settings):
+def test_fuera_de_desarrollo_no_se_ensucia_la_url(settings):
+    """En producción el hash ya hace este trabajo; un ?v= sobrante sería ruido."""
     settings.DEBUG = False
-    from config.context_processors import version_estaticos
-
-    assert version_estaticos(None) == {"version_estaticos": ""}
+    html = Client().get("/").content.decode()
+    enlace = _enlace(html)
+    assert enlace is not None
+    assert "?v=" not in enlace, f"sufijo innecesario en producción: {enlace}"
+    assert "?v=" not in "".join(re.findall(r'<script src="([^"]*)"', html))
