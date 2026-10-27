@@ -99,13 +99,14 @@ no una plantilla vacía.
       registros →». Cada registro con la casilla «Destacado» marcada en el panel es un pliego,
       en el orden de su «Posición» (hasta cinco), y forman una pila: el de arriba con el
       título grande; los demás debajo, corridos a la derecha y girados; los ya vistos asoman
-      a la izquierda. «→» reparte el siguiente (sale por la derecha y vuelve encima) y se apaga
-      en el último; la hoja de contactos de abajo lleva a cada uno por su título. En el
+      a la izquierda. No hay flechas: la hoja de contactos lleva a cada uno por su título (el
+      elegido sale por su lado y vuelve encima). En pantallas de 1100 px o más va a la derecha
+      de la pila, como un índice con miniatura y título; más angostas, debajo. En el
       teléfono, deslizar el dedo a la izquierda trae el siguiente y a la derecha el anterior;
       deslizarlo hacia arriba sigue bajando la página. Con «reducir movimiento» el cambio es
       de golpe. Pulsar el título abre la ficha, donde
       se reproduce: en la portada no hay reproductor. Nada avanza solo. Con un solo registro
-      no hay flechas ni hoja de contactos; sin ninguno marcado sale el que está elegido en
+      no hay hoja de contactos; sin ninguno marcado sale el que está elegido en
       «Perfil del sitio» → «Registro destacado (respaldo)». El sello de cada pliego dice el tipo y,
       si se cargó «Duración (minutos)», los minutos: «Video · 42 min».
 - [ ] **La obra de la portada, desde el panel.** En «Perfil del sitio», elige una imagen en
