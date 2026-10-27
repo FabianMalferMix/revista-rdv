@@ -1209,6 +1209,19 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .ejemplar--plaquette .ejemplar-lomo{height:186px}
   .ejemplar--fanzine .ejemplar-lomo{height:202px}
 }
+/* En pantallas anchas, libros más grandes (D30): a 1900 px el estante y su ficha dejaban unos
+   360 px vacíos a la derecha. Los libros crecen y llenan el hueco con lo suyo; el título y la
+   sinopsis de la ficha, un paso más. Por debajo de 1400 px, como antes. */
+@media (min-width:1400px){
+  .ejemplar-frente{width:270px}
+  .ejemplar-lomo{width:54px; height:376px}
+  .ejemplar--libro .ejemplar-lomo{width:64px; height:400px}
+  .ejemplar--plaquette .ejemplar-lomo{width:36px; height:330px}
+  .ejemplar--fanzine .ejemplar-lomo{width:46px; height:358px}
+  .ejemplar-lomo-titulo{font-size:var(--t1)}
+  .estante-titulo{font-size:var(--t6)}
+  .estante-sinopsis{font-size:var(--t1)}
+}
 /* Tres versos, uno por línea: se lee el poema sin abrirlo. */
 .fila-versos span{display:block}
 /* El cierre: las puertas, sin el aire ni el filete grueso que llevan al pie de una ficha
