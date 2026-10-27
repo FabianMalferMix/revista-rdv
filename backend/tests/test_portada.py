@@ -19,6 +19,7 @@ from PIL import Image
 
 from apps.content.models import EditorialStatus
 from apps.content.services import ultima_publicacion
+from apps.content.templatetags.versos import primera_pausa
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
@@ -181,3 +182,62 @@ def test_las_puertas_del_cierre_son_sellos_en_risografia():
     assert "text-shadow:3px 2px 0 color-mix(in srgb, var(--otra) 85%, transparent)" in css
     movimiento = css[css.index("@media (prefers-reduced-motion:no-preference){\n  .home-cierre") :]
     assert ".home-cierre .pie-entidad li:is(:hover, :focus-within){rotate:0deg" in movimiento
+
+
+def test_la_hoja_es_una_lamina_a_dos_tintas():
+    """D33: desde 900 px, el manifiesto en letra de cartel y tinta azul con grano a la
+    izquierda, y a la derecha un círculo de trama magenta con el sello de la convocatoria
+    encima. El grano es uno solo para toda la portada, y no se come el foco."""
+    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
+    raiz = css[: css.index("}")]
+    assert "--grano:url(" in raiz and css.count("--grano:url(") == 1
+    lamina = css[css.index("/* La hoja como lámina a dos tintas (D33)") :]
+    lamina = lamina[: lamina.index("\n}\n")]
+    assert "@media (min-width:900px){" in lamina
+    assert ".hero{grid-template-columns:minmax(0,7fr) minmax(0,5fr);" in lamina
+    # Letra de cartel: el azul sobre el papel solo cumple AA en letra grande.
+    assert "font-weight:700; font-size:var(--t5);" in lamina
+    assert "@media (min-width:1600px){\n  .hero-manifesto{font-size:var(--t6)}" in css
+    assert "color:var(--caratula)" in lamina and "mask-image:var(--grano)" in lamina
+    assert ".hero-manifesto:has(:focus-visible){-webkit-mask-image:none; mask-image:none}" in lamina
+    assert "radial-gradient(circle, var(--accent) 0 32%, transparent 36%) 0 0 / 13px 13px" in lamina
+    assert ".sello-convocatoria{grid-column:2; grid-row:1 / span 3;" in lamina
+
+
+def test_el_manifiesto_termina_en_su_primera_pausa(client):
+    """D33: la portada cita el manifiesto hasta su primera pausa, no a media frase."""
+    perfil = SiteProfile.load()
+    perfil.manifesto = (
+        "Somos un colectivo que lee en voz alta y lleva los poemas a donde no suelen llegar: "
+        "salas de clases, ferias y plazas. Lo demás vuelve al taller."
+    )
+    perfil.save()
+    manifiesto = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    texto = " ".join(manifiesto.select_one(".hero-manifesto").get_text().split())
+    assert texto == (
+        "Somos un colectivo que lee en voz alta y lleva los poemas a donde no suelen llegar. "
+        "Conócenos →"
+    )
+
+
+LARGA = " ".join(f"palabra{n}" for n in range(1, 41)) + "."
+
+
+@pytest.mark.parametrize(
+    "texto,cita",
+    [
+        ("Leemos en voz alta. Escribimos juntas.", "Leemos en voz alta."),
+        ("Leemos en voz alta; escribimos juntas.", "Leemos en voz alta."),
+        ("¿Quién lee en voz alta? Nosotras.", "¿Quién lee en voz alta?"),
+        ("Somos 2.000 lectores: y más", "Somos 2.000 lectores."),
+        ("  Sin  pausa  ninguna  ", "Sin pausa ninguna"),
+        (LARGA, " ".join(LARGA.split()[:28]) + " …"),
+        ("", ""),
+        (None, ""),
+    ],
+)
+def test_primera_pausa(texto, cita):
+    """Hasta el primer punto, dos puntos, punto y coma, cierre de pregunta o de exclamación
+    (los dos puntos y el punto y coma, cerrados con punto); un punto dentro de una cifra no
+    es una pausa. Si la pausa llega tarde, la palabra 28, como antes."""
+    assert primera_pausa(texto) == cita

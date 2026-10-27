@@ -26,6 +26,9 @@
      (1,03:1 sobre el papel). Pero el contraste se mide por pares: como FONDO, con
      tinta encima, da 13,81:1, y con magenta 4,96:1. Entra solo como superficie. */
   --riso-amarillo:#fce43c;
+  /* El grano de la risografía: una máscara de ruido, para que la tinta no cubra pareja. La
+     usan los sellos del cierre (D31) y el manifiesto de la hoja (D33). */
+  --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
   /* El magenta sobre la tinta del pie da 2,78:1: ahí el acento es este rosa (7,31:1).
      Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
   --accent-on-ink:#f77cc3;
@@ -1122,6 +1125,34 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 @media (min-width:720px){
   .sello-convocatoria-fecha{font-size:var(--t3)}
 }
+/* La hoja como lámina a dos tintas (D33). Desde 900 px: a la izquierda, la cejilla, el
+   manifiesto en letra de cartel y tinta azul, con grano, y los botones; a la derecha, un
+   círculo de trama magenta que recoge el de la obra de arriba, con el sello de la
+   convocatoria estampado encima (sin convocatoria, la trama queda sola). Antes era una
+   columna de 440 px pegada a la izquierda: a 1900 px dejaba más de 900 vacíos y se leía como
+   una nota al pie. El azul como texto sobre el papel no llega a AA en letra corriente
+   (3,89:1); en letra de cartel, sí (pide 3:1). Por debajo de 900 px, la columna de siempre. */
+@media (min-width:900px){
+  .hero{grid-template-columns:minmax(0,7fr) minmax(0,5fr); column-gap:var(--s4); padding:var(--s5) 0 var(--s6);
+    position:relative; isolation:isolate}
+  .hero-texto{display:contents}
+  .hero-cejilla{grid-column:1; grid-row:1}
+  .hero-manifesto{grid-column:1; grid-row:2; font-family:var(--display); font-weight:700; font-size:var(--t5);
+    line-height:1.06; letter-spacing:-.01em; color:var(--caratula); max-width:none; text-wrap:pretty;
+    -webkit-mask-image:var(--grano); mask-image:var(--grano); -webkit-mask-size:180px; mask-size:180px}
+  /* El grano no se come el contorno del foco de «Conócenos». */
+  .hero-manifesto:has(:focus-visible){-webkit-mask-image:none; mask-image:none}
+  .hero-manifesto a{color:inherit}
+  .hero-ctas{grid-column:1; grid-row:3}
+  .hero::before{content:""; position:absolute; z-index:-1; right:0; top:50%; translate:0 -50%; width:min(40vw, 600px);
+    aspect-ratio:1; pointer-events:none; background:radial-gradient(circle, var(--accent) 0 32%, transparent 36%) 0 0 / 13px 13px;
+    -webkit-mask-image:radial-gradient(closest-side, #000 60%, transparent 100%); mask-image:radial-gradient(closest-side, #000 60%, transparent 100%)}
+  .sello-convocatoria{grid-column:2; grid-row:1 / span 3; align-self:center; justify-self:center; margin:0;
+    transform:rotate(-6deg); scale:1.15}
+}
+@media (min-width:1600px){
+  .hero-manifesto{font-size:var(--t6)}
+}
 /* Ritmo de portada: bloques con bandas alternadas a ancho completo.
    box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin
    provocar scroll horizontal (no usan 100vw ni overflow-x:hidden). */
@@ -1232,8 +1263,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    grano (una máscara de ruido: la tinta no cubre pareja). Las palabras pequeñas no llevan la
    segunda pasada, para que se lean. Al señalar, el sello se endereza. Antes eran cuatro
    enlaces de texto entre filetes: lo único de la portada sin objeto ni gesto. */
-.home-cierre{padding-bottom:0;
-  --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>")}
+.home-cierre{padding-bottom:0}
 .home-cierre .pie-entidad{margin-top:0; border-top:0}
 .home-cierre .pie-entidad ul{grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--s4); padding:var(--s3) var(--s2) var(--s2);
   align-items:center}

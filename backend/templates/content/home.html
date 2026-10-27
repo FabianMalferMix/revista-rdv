@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images static %}
+{% load images static versos %}
 
 {% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
@@ -48,7 +48,7 @@
     {% endif %}
     <div class="hero-texto">
       {% if site_profile.manifesto %}
-        <p class="hero-manifesto">{{ site_profile.manifesto|truncatewords:28 }}
+        <p class="hero-manifesto">{{ site_profile.manifesto|primera_pausa }}
           <a href="{% url 'people:member_index' %}">Conócenos →</a></p>
       {% endif %}
       <p class="hero-ctas">
