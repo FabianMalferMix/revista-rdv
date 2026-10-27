@@ -1224,18 +1224,39 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 }
 /* Tres versos, uno por línea: se lee el poema sin abrirlo. */
 .fila-versos span{display:block}
-/* El cierre: las puertas, sin el aire ni el filete grueso que llevan al pie de una ficha
-   (bajo el título ya va el de su territorio). De dos en dos en el teléfono, donde de una
-   en una medían 400 px, y desde 900 px todas en una fila: en la rejilla de tres,
-   «Escríbenos» quedaba sola en la segunda. Sin correo son tres, y la fila no deja hueco.
-   Es el último bloque: abajo, el aire lo pone el lienzo. */
-.home-cierre{padding-bottom:0}
-.home-cierre .pie-entidad{margin-top:0; border-top:1px solid var(--line)}
-.home-cierre .pie-entidad ul{grid-template-columns:repeat(2, minmax(0,1fr))}
+/* El cierre: las puertas, de dos en dos en el teléfono y desde 900 px todas en una fila (en
+   la rejilla de tres, «Escríbenos» quedaba sola en la segunda). Es el último bloque: abajo,
+   el aire lo pone el lienzo.
+   Cada puerta es un sello en risografía (D31): un marco y una palabra en su tinta y, corrida
+   3 px, una segunda pasada en otra tinta que no calza, multiplicada sobre el papel; todo con
+   grano (una máscara de ruido: la tinta no cubre pareja). Las palabras pequeñas no llevan la
+   segunda pasada, para que se lean. Al señalar, el sello se endereza. Antes eran cuatro
+   enlaces de texto entre filetes: lo único de la portada sin objeto ni gesto. */
+.home-cierre{padding-bottom:0;
+  --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>")}
+.home-cierre .pie-entidad{margin-top:0; border-top:0}
+.home-cierre .pie-entidad ul{grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--s4); padding:var(--s3) var(--s2) var(--s2);
+  align-items:center}
 @media (min-width:900px){
   .home-cierre .pie-entidad ul{grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr)}
 }
-.home-cierre-datos{margin:var(--s3) 0 0}
+.home-cierre .pie-entidad li{--otra:var(--caratula); isolation:isolate; padding:18px 20px 16px; border:3px solid currentColor;
+  color:var(--accent); text-align:center; rotate:-3deg;
+  -webkit-mask-image:var(--grano); mask-image:var(--grano); -webkit-mask-size:180px; mask-size:180px}
+/* La segunda pasada: el mismo marco en la otra tinta, corrido y multiplicado. */
+.home-cierre .pie-entidad li::before{content:""; position:absolute; inset:-3px; z-index:-1; border:3px solid var(--otra);
+  translate:4px 3px; mix-blend-mode:multiply}
+.home-cierre .pie-entidad li:nth-child(2){--otra:var(--accent); color:var(--caratula); rotate:2.5deg}
+.home-cierre .pie-entidad li:nth-child(3){--otra:var(--riso-amarillo); color:var(--caratula); rotate:-1.5deg}
+.home-cierre .pie-entidad li:nth-child(4){--otra:var(--riso-amarillo); rotate:3deg}
+.home-cierre .pie-entidad .rotulo{color:inherit; letter-spacing:.18em}
+.home-cierre .pie-entidad a{color:inherit; font-family:var(--display); font-size:var(--t5); font-weight:800;
+  text-transform:uppercase; letter-spacing:.02em; text-shadow:3px 2px 0 color-mix(in srgb, var(--otra) 85%, transparent)}
+@media (prefers-reduced-motion:no-preference){
+  .home-cierre .pie-entidad li{transition:rotate var(--dur-base) var(--ease), scale var(--dur-base) var(--ease)}
+  .home-cierre .pie-entidad li:is(:hover, :focus-within){rotate:0deg; scale:1.04}
+}
+.home-cierre-datos{margin:var(--s3) 0 0; text-align:center}
 /* La banda ocupa el carril a sangre del lienzo. Antes vivía dentro de la caja de 820 px
    y pintaba su fondo hacia fuera con una sombra de 100vmax recortada con clip-path.
    Es la hoja clara. Las bandas eran blancas, el mismo blanco de los campos y las

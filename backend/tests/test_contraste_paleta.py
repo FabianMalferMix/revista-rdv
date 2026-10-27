@@ -180,7 +180,13 @@ def test_toda_regla_que_fija_texto_y_fondo_cumple_aa():
 
 # El magenta como color de TEXTO en reposo: solo la receta de la cejilla y el asterisco
 # de campo obligatorio. Todo lo demás que se pinta en magenta es un estado.
-MAGENTA_EN_REPOSO = {".rotulo--acento, .kicker", ".kicker a", ".form .req"}
+# Y los sellos de «Prensa y gestión» (D31): objetos en su tinta, no texto magenta suelto.
+MAGENTA_EN_REPOSO = {
+    ".rotulo--acento, .kicker",
+    ".kicker a",
+    ".form .req",
+    ".home-cierre .pie-entidad li",
+}
 ESTADOS = (":hover", ":focus", ":checked", "[aria-current")
 
 
