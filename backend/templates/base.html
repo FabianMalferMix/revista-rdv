@@ -56,11 +56,11 @@
   <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
   {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa (S-19). #}
-  <script src="{% static 'js/embeds.js' %}" defer></script>
+  <script src="{% static 'js/embeds.js' %}{{ version_estaticos }}" defer></script>
   {# La lupa de la cabecera: foco al campo al abrir y Escape para cerrar. #}
-  <script src="{% static 'js/buscador.js' %}" defer></script>
+  <script src="{% static 'js/buscador.js' %}{{ version_estaticos }}" defer></script>
   {# La cabecera al bajar: pone la cápsula al pasar la cabecera (el aspecto, en site.css). #}
-  <script src="{% static 'js/cabecera.js' %}" defer></script>
+  <script src="{% static 'js/cabecera.js' %}{{ version_estaticos }}" defer></script>
   {% block head_extra %}{% endblock %}
 </head>
 <body>

@@ -6,7 +6,7 @@
 
 {% block head_extra %}
   {# Botón de impresión sin handler inline (compatible con la CSP restrictiva). #}
-  <script src="{% static 'js/dossier.js' %}" defer></script>
+  <script src="{% static 'js/dossier.js' %}{{ version_estaticos }}" defer></script>
 {% endblock %}
 
 {% block content %}

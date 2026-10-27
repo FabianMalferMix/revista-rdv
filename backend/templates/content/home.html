@@ -5,9 +5,9 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 {% block head_extra %}
   {# Las flechas y la hoja de contactos de la tirada: solo hacen falta con dos registros o más. #}
-  {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}" defer></script>{% endif %}
-  {% if relevo_integrantes %}<script src="{% static 'js/integrantes.js' %}" defer></script>{% endif %}
-  {% if publications|length > 1 %}<script src="{% static 'js/estante.js' %}" defer></script>{% endif %}
+  {% if registros|length > 1 %}<script src="{% static 'js/registros.js' %}{{ version_estaticos }}" defer></script>{% endif %}
+  {% if relevo_integrantes %}<script src="{% static 'js/integrantes.js' %}{{ version_estaticos }}" defer></script>{% endif %}
+  {% if publications|length > 1 %}<script src="{% static 'js/estante.js' %}{{ version_estaticos }}" defer></script>{% endif %}
 {% endblock %}
 
 {% block content %}
