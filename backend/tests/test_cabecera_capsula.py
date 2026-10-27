@@ -68,11 +68,35 @@ def test_la_franja_mide_lo_mismo_y_lo_de_abajo_no_se_mueve():
     )
 
 
-def test_el_velo_no_va_en_la_portada():
-    assert (
-        'html[data-barra="pildora"]:not(:has(.hero-nombre)).masthead{background:linear-gradient('
-        in CON_JS
-    )
+def _reglas():
+    """(selector, declaraciones) de cada regla de la hoja, también dentro de @media, sin
+    comentarios y sin espacios."""
+    sin_comentarios = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    return [
+        (" ".join(selector.split()), _junto(cuerpo))
+        for selector, cuerpo in re.findall(r"([^{}]+)\{([^{}]*)\}", sin_comentarios)
+    ]
+
+
+def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
+    """D34: con la cápsula, la franja de la cabecera es transparente y no recibe el puntero
+    en todas las páginas: lo que pasa a su altura se lee y se pulsa a los lados, como en la
+    portada. Antes, fuera de la portada, un velo de papel la tapaba de lado a lado y cortaba
+    el contenido. Ninguna regla de la cápsula le vuelve a dar fondo a la franja (ni a sus
+    pseudoelementos), sea para todas las páginas o para algunas."""
+    capsula = ':is(html[data-barra="pildora"],html:not([data-barra]):has(.hero-nombre))'
+    franja = f"{capsula}.masthead{{height:var(--alto-cabecera);background:transparent;"
+    assert franja in CON_JS and "pointer-events:none}" in CON_JS[CON_JS.index(franja) :]
+    con_fondo = [
+        selector
+        for selector, cuerpo in _reglas()
+        if 'data-barra="pildora"' in selector
+        and re.search(r"\.masthead(::?(before|after))?$", selector)
+        and re.search(
+            r"(?<![-\w])background(-color|-image)?:(?!transparent[;}]|none[;}])", cuerpo + "}"
+        )
+    ]
+    assert not con_fondo, f"la franja de la cápsula vuelve a tapar el contenido: {con_fondo}"
 
 
 def test_la_transicion_no_deja_la_cabecera_vacia():
