@@ -431,8 +431,11 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   html:not([data-barra]):not(:has(.hero-nombre)) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
   html:not([data-barra]):not(:has(.hero-nombre)) .masthead-fila{background:var(--paper)}
   /* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
-     queda transparente y no recibe el puntero; solo la cápsula. Acabado «Objeto»: la hoja
-     clara con el filete y la sombra plana de las cubiertas, y la esquina de los botones. */
+     queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
+     sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
+     portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
+     «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
+     de los botones. */
   :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
   :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
     margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
@@ -464,10 +467,6 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
   /* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
   html:has(.hero-nombre) .hero-dossier{display:inline-flex}
-  /* El velo: la franja de papel tapa lo que pasa junto a la cápsula y se funde en sus
-     últimos 10 px. No en la portada: sobre sus secciones de hoja clara se veía como una banda. */
-  html[data-barra="pildora"]:not(:has(.hero-nombre)) .masthead{
-    background:linear-gradient(to bottom, var(--paper) 0, var(--paper) calc(100% - 10px), rgba(217,232,247,0) 100%)}
   /* En las demás páginas, de la cabecera a la cápsula hay una transición de vista
      (cabecera.js): cada forma con su nombre, para que no se deformen. */
   html:not([data-barra]):not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-abierta}

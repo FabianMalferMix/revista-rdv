@@ -177,7 +177,9 @@ no una plantilla vacía.
       Registros · Publicaciones · Colectivo», la lupa y el botón «Dossier». La página actual va
       subrayada en magenta; en una ficha, su sección (en un poema, «Poemas»). Al bajar un
       poco, la fila da paso a una cápsula centrada con el monograma, los cinco enlaces, la
-      lupa y «Dossier»; al volver arriba, vuelve la fila.
+      lupa y «Dossier»; al volver arriba, vuelve la fila. Con la cápsula, en cualquier página,
+      lo que pasa a su altura se sigue viendo a los lados, sin una franja de papel que lo
+      corte, y se puede pulsar (D34).
 - [ ] **Cabecera, en la portada.** Al abrir no hay nada arriba: la obra llega hasta lo
       alto, y «Ver el dossier» está en la hoja, bajo la obra. Al bajar un poco aparece la
       cápsula; al volver arriba, se va. Con el teclado, el primer Tab tras «Saltar al
