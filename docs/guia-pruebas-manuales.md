@@ -199,7 +199,7 @@ no una plantilla vacía.
       todo el catálogo →». La línea termina con el último libro. Al lado, el tipo, el año y la
       editorial en magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
       el ratón por un lomo, asoma; al pulsarlo, ese libro gira hasta quedar de frente, los demás
-      se deslizan a su lugar sin saltos y la ficha nueva se funde con la anterior. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
+      se deslizan a su lugar sin saltos y la ficha nueva se funde con la anterior, sin prisa: el cambio dura casi un segundo (D32). Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
 - [ ] **«Prensa y gestión» en la portada** (D31). Bajo «Para programadores y jurados», cuatro
       sellos girados, cada uno con una palabra pequeña arriba y una grande en mayúsculas:
       «Kit de prensa · DOSSIER», «Notas y entrevistas · PRENSA», «Quiénes nos apoyan ·
