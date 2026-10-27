@@ -1269,22 +1269,16 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .tirada{--corte:10px; --pliego:calc(100cqi - var(--borde) - var(--hueco) - 26px)}
 }
 .tirada-cabeza, .tirada-pie{width:min(var(--wide), 100% - 2 * var(--gutter)); margin-inline:auto}
-.tirada-cabeza{display:grid; grid-template-columns:auto minmax(0, 1fr) auto;
-  grid-template-areas:"h todos mandos"; align-items:center; column-gap:var(--s3); min-height:44px}
+.tirada-cabeza{display:grid; grid-template-columns:auto minmax(0, 1fr);
+  grid-template-areas:"h todos"; align-items:center; column-gap:var(--s3); min-height:44px}
 .tirada-h{grid-area:h; margin:0; font-family:var(--display); font-weight:700; font-size:var(--t5);
   line-height:var(--lh-titulo); letter-spacing:var(--tr-titulo); color:var(--ink)}
 .tirada-todos{grid-area:todos; margin:0}
-.tirada-mandos{grid-area:mandos; display:flex; gap:var(--s1)}
-.tirada-mandos[hidden], .tirada-contactos[hidden]{display:none}
+.tirada-contactos[hidden]{display:none}
 @media (max-width:719px){
-  .tirada-cabeza{grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"h mandos" "todos mandos"; row-gap:2px}
+  .tirada-cabeza{grid-template-columns:minmax(0, 1fr); grid-template-areas:"h" "todos"; row-gap:2px}
   .tirada-todos{justify-self:start}
 }
-/* Las flechas: botones secundarios de la casa, cuadrados de 44 px. Su nombre dice adónde
-   llevan; en los extremos se apagan. Sin JavaScript no se enseñan. */
-.tirada-flecha{width:44px; padding:0; font-size:var(--t3); font-family:var(--display)}
-.tirada-flecha:disabled, .tirada-flecha:disabled:hover{border-color:var(--line); color:var(--muted);
-  background:transparent; cursor:default}
 
 /* El carril: nativo, con imán y una barra fina a la vista. */
 .tirada-carril{overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain;
@@ -1410,6 +1404,32 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    para el de arriba. Con todos a la vista, el colofón sobra. */
 .tirada.con-js .pliego:not([aria-current]) .pliego-pie{visibility:hidden}
 .tirada.con-js .tirada-colofon{display:none}
+/* El índice al lado (D29): desde 1100 px la pila va a la izquierda y la hoja de contactos, a la
+   derecha, como índice vertical con miniatura y título entero; con él se pasa de un registro a
+   otro (no hay flechas). Así la tirada llena el carril como las demás secciones: sola, la pila
+   dejaba unos 360 px vacíos a 1900. El pliego y el abanico se ajustan al hueco que deja el
+   índice: a 1900, como en el tablero; a 1100, más juntos. */
+@media (min-width:1100px){
+  .tirada.con-js{display:grid; grid-template-columns:minmax(var(--borde), 1fr) minmax(0, calc(var(--wide) - 320px)) 320px minmax(var(--borde), 1fr)}
+  .tirada.con-js .tirada-cabeza{grid-column:2 / 4; width:auto; margin:0}
+  .tirada.con-js .tirada-carril{grid-column:2; grid-row:2}
+  .tirada.con-js .tirada-pista{max-width:none; padding-inline:0}
+  .tirada.con-js .pliego{--pliego:min(560px, (100cqi - 2 * var(--borde) - 320px) * .64);
+    --libre:calc(100cqi - 2 * var(--borde) - 320px - 60px - var(--pliego)); translate:calc(30px + var(--x)) var(--y)}
+  .tirada.con-js .pliego[aria-current] + .pliego{--x:min(120px, var(--libre) * .33)}
+  .tirada.con-js .pliego[aria-current] + .pliego + .pliego{--x:min(216px, var(--libre) * .6)}
+  .tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego{--x:min(296px, var(--libre) * .82)}
+  .tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego + .pliego{--x:min(360px, var(--libre))}
+  .tirada.con-js .pliego:has(+ .pliego[aria-current]){--x:-21px}
+  .tirada.con-js .pliego:has(+ .pliego + .pliego[aria-current]){--x:-38px}
+  .tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego[aria-current]){--x:-50px}
+  .tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego + .pliego[aria-current]){--x:-58px}
+  /* Los ya vistos asoman más juntos: sus números se montarían. El orden ya lo dice el índice. */
+  .tirada.con-js .pliego:has(~ .pliego[aria-current]) .pliego-folio{visibility:hidden}
+  .tirada.con-js .tirada-pie{grid-column:3; grid-row:2; width:auto; margin:0; align-self:center}
+  .tirada.con-js .tirada-contactos{flex-direction:column; gap:4px; margin:0}
+  .tirada.con-js .tirada-contacto{grid-template-columns:96px minmax(0, 1fr); align-items:center; column-gap:14px; width:100%}
+}
 @media (max-width:719px){
   .tirada.con-js .pliego{--pliego:calc(100cqi - 2 * var(--borde) - 70px); translate:calc(20px + var(--x) * .25) var(--y);
     grid-template-columns:minmax(0, 1fr); grid-template-rows:auto auto auto 1fr; grid-template-areas:"tipo" "titulo" "placa" "pie"}

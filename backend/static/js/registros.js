@@ -1,7 +1,8 @@
 // La tirada de la portada (D19), apilada (D20): un pliego arriba y los demás debajo, corridos
 // y apenas girados, como impresos sobre la mesa. Sin este guion la tirada es una fila con imán
-// y todos los pliegos a dos tintas. Aquí se cambian clases y atributos (aria-current,
-// aria-label, disabled, hidden) y se anima el reparto; las posiciones de la pila viven en
+// y todos los pliegos a dos tintas. Se pasa de uno a otro con la hoja de contactos (desde 1100 px,
+// un índice al lado de la pila, D29), el teclado o el dedo: sin flechas. Aquí se cambian clases y
+// atributos (aria-current, hidden) y se anima el reparto; las posiciones de la pila viven en
 // site.css (la CSP no admite estilos en línea). Nada avanza solo y no se toca la dirección
 // ni el historial.
 (() => {
@@ -19,13 +20,11 @@
     const enlaces = pliegos.map((p) => p.querySelector('.pliego-titulo a'));
     const titulos = pliegos.map((p) => p.dataset.titulo);
     const contactos = [...seccion.querySelectorAll('.tirada-contacto')];
-    const anterior = seccion.querySelector('[data-anterior]');
-    const siguiente = seccion.querySelector('[data-siguiente]');
     const anuncio = seccion.querySelector('[data-anuncio]');
     let actual = -1;
 
     seccion.classList.add('con-js');
-    seccion.querySelectorAll('.tirada-mandos[hidden], .tirada-contactos[hidden]').forEach((e) => { e.hidden = false; });
+    seccion.querySelectorAll('.tirada-contactos[hidden]').forEach((e) => { e.hidden = false; });
 
     // El reparto. Cada pliego conserva su altura en la pila hasta el final, así nadie salta por
     // encima de otro mientras se cruzan; el que pasa arriba sale por su lado (por la derecha si
@@ -54,8 +53,7 @@
     }
 
     // El pliego de arriba: lo marca aria-current (de ahí cuelgan la pila y las tintas en
-    // site.css), las flechas dicen adónde llevan y se apagan en los extremos, y la región viva
-    // lo anuncia.
+    // site.css), la hoja de contactos lo señala y la región viva lo anuncia.
     function marcar(i, avisar) {
       if (i === actual) return;
       const previo = actual;
@@ -65,10 +63,6 @@
       actual = i;
       pliegos.forEach((p, j) => (j === i ? p.setAttribute('aria-current', 'true') : p.removeAttribute('aria-current')));
       contactos.forEach((c, j) => (j === i ? c.setAttribute('aria-current', 'true') : c.removeAttribute('aria-current')));
-      anterior.disabled = i === 0;
-      siguiente.disabled = i === n - 1;
-      anterior.setAttribute('aria-label', i > 0 ? `Anterior: «${titulos[i - 1]}»` : 'Anterior');
-      siguiente.setAttribute('aria-label', i < n - 1 ? `Siguiente: «${titulos[i + 1]}»` : 'Siguiente');
       if (avisar) anuncio.textContent = `Registro ${i + 1} de ${n}: ${titulos[i]}`;
       if (previo >= 0 && !quieto.matches && typeof Element.prototype.animate === 'function') repartir(previo, i, antes);
     }
@@ -77,8 +71,6 @@
     }
     marcar(0, false);
 
-    anterior.addEventListener('click', () => ir(actual - 1));
-    siguiente.addEventListener('click', () => ir(actual + 1));
     // Elegir en la hoja de contactos lleva el foco al título del registro elegido.
     contactos.forEach((c) => c.addEventListener('click', () => {
       const i = Number(c.dataset.marcador);

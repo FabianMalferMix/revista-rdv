@@ -12,12 +12,6 @@
   <div class="tirada-cabeza">
     <h2 class="tirada-h" id="tirada-titulo">Registros</h2>
     <p class="meta tirada-todos"><a href="{% url 'media:recording_index' %}">Todos los registros →</a></p>
-    {% if registros|length > 1 %}
-      <div class="tirada-mandos" hidden>
-        <button class="btn tirada-flecha" type="button" data-anterior disabled aria-controls="tirada-pista" aria-label="Anterior"><span aria-hidden="true">←</span></button>
-        <button class="btn tirada-flecha" type="button" data-siguiente aria-controls="tirada-pista" aria-label="Siguiente: «{{ registros.1.titulo }}»"><span aria-hidden="true">→</span></button>
-      </div>
-    {% endif %}
   </div>
   <div class="tirada-carril">
     <ol class="tirada-pista" id="tirada-pista">

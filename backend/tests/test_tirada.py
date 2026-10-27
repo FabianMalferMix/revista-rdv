@@ -64,7 +64,7 @@ def test_sin_ninguno_marcado_el_del_perfil_hace_de_respaldo(client):
     perfil.save()
     sopa, tirada = _tirada(client)
     assert _titulos(tirada) == ["Respaldo"]
-    # Con uno solo no hay flechas, hoja de contactos ni colofón, ni hace falta el guion.
+    # Con uno solo no hay hoja de contactos ni colofón, ni hace falta el guion.
     assert tirada.select("[data-siguiente], .tirada-contactos, .tirada-colofon") == []
     assert sopa.select_one('script[src*="js/registros.js"]') is None
 
@@ -140,19 +140,17 @@ def test_la_ficha_del_pliego_dice_quien_lee_donde_y_cuando(client):
     assert segundo.select_one(".pliego-datos").get_text().startswith("Leen PM, TS")
 
 
-def test_sin_javascript_estan_todos_y_los_mandos_esperan_al_guion(client):
+def test_sin_javascript_estan_todos_y_la_hoja_de_contactos_espera_al_guion(client):
     for i, slug in enumerate(["a", "b", "c"]):
         _registro(slug, title=f"Registro {slug}", position=i)
     _, tirada = _tirada(client)
     assert tirada["aria-labelledby"] == "tirada-titulo"
     assert tirada.select_one("#tirada-titulo").get_text() == "Registros"
     assert tirada.select_one(".tirada-todos a")["href"] == reverse("media:recording_index")
-    # Las flechas y la hoja de contactos llegan escondidas: sin el guion no harían nada.
-    assert tirada.select_one(".tirada-mandos").has_attr("hidden")
+    # La hoja de contactos llega escondida: sin el guion no haría nada. Flechas no hay (D29): se
+    # navega con la hoja de contactos, que desde 1100 px es un índice al lado de la pila.
     assert tirada.select_one(".tirada-contactos").has_attr("hidden")
-    siguiente = tirada.select_one("[data-siguiente]")
-    assert siguiente["aria-label"] == "Siguiente: «Registro b»"
-    assert tirada.select_one("[data-anterior]").has_attr("disabled")
+    assert tirada.select(".tirada-mandos, [data-siguiente], [data-anterior], .tirada-flecha") == []
     # La hoja de contactos nombra cada registro por su título.
     assert [c.get_text(strip=True) for c in tirada.select(".tirada-contacto")] == [
         "Registro a",
@@ -233,3 +231,14 @@ def test_el_panel_nombra_los_campos_en_castellano(client, django_user_model):
         sopa = BeautifulSoup(client.get(url).content, "html.parser")
         for campo, rotulo in rotulos.items():
             assert sopa.select_one(f"label[for={campo}]").get_text(strip=True).rstrip(":") == rotulo
+
+
+def test_desde_1100_px_la_hoja_de_contactos_es_un_indice_al_lado():
+    """D29: la pila sola dejaba unos 360 px vacíos a 1900; la hoja de contactos va a la derecha,
+    en columna, y el abanico se ajusta al hueco que deja. El guion ya no busca flechas."""
+    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
+    indice = css[css.index("@media (min-width:1100px){\n  .tirada.con-js{display:grid;") :]
+    assert ".tirada.con-js .tirada-pie{grid-column:3; grid-row:2;" in indice
+    assert ".tirada.con-js .tirada-contactos{flex-direction:column;" in indice
+    assert "--x:min(360px, var(--libre))" in indice
+    assert "tirada-flecha" not in css and "data-siguiente" not in REGISTROS_JS
