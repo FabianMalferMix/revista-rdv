@@ -202,6 +202,15 @@ def test_el_cambio_de_libro_es_suave():
     assert ".estante-ficha{grid-area:1 / 1;" in SITE_CSS
 
 
+def test_el_cambio_de_libro_va_sin_prisa():
+    """D32: el cambio se veía demasiado rápido: su curva hacía casi todo el recorrido en los
+    primeros 90 ms. Ahora los libros se mueven con la curva de la tirada, en casi un segundo."""
+    assert "const DESLIZA = 800;" in ESTANTE_JS and "const GIRO = 900;" in ESTANTE_JS
+    registros_js = (BACKEND / "static" / "js" / "registros.js").read_text()
+    curva = "const CURVA = 'cubic-bezier(.45,.05,.25,1)';"
+    assert curva in ESTANTE_JS and curva in registros_js
+
+
 def test_en_pantallas_anchas_los_libros_crecen():
     """D30: a 1900 px el estante y su ficha dejaban unos 360 px vacíos a la derecha; desde
     1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve)."""
