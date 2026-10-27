@@ -200,6 +200,14 @@ no una plantilla vacía.
       editorial en magenta, el título, la sinopsis y «Ver la publicación →». Al pasar
       el ratón por un lomo, asoma; al pulsarlo, ese libro gira hasta quedar de frente, los demás
       se deslizan a su lugar sin saltos y la ficha nueva se funde con la anterior. Con el teclado: Tab hasta un lomo, Intro, y el foco queda en el título nuevo.
+- [ ] **«Prensa y gestión» en la portada** (D31). Bajo «Para programadores y jurados», cuatro
+      sellos girados, cada uno con una palabra pequeña arriba y una grande en mayúsculas:
+      «Kit de prensa · DOSSIER», «Notas y entrevistas · PRENSA», «Quiénes nos apoyan ·
+      ALIADOS» y «Contacto · ESCRÍBENOS». El marco y la palabra grande se repiten en otra
+      tinta, corridos unos pocos píxeles (magenta con azul, azul con magenta, azul con
+      amarillo, magenta con amarillo), y la tinta tiene grano. Desde 900 px, los cuatro en
+      una fila; en el teléfono, de dos en dos. Al pasar el ratón por un sello, se endereza
+      y crece un poco; con «reducir movimiento», no se mueve. Cada sello se pulsa entero.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
       título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
       Trayectoria · Agenda · Galería · Prensa · Aliados».

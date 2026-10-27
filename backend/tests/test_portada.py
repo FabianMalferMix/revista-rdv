@@ -8,6 +8,7 @@ territorio. El dueño del sitio eligió conservar el bloque de publicaciones.
 
 from datetime import timedelta
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
@@ -167,3 +168,16 @@ def test_la_ultima_publicacion_solo_cuenta_lo_publicado(make_poem, make_article)
         published_at=ahora,
     )
     assert ultima_publicacion() == ahora - timedelta(days=10)
+
+
+def test_las_puertas_del_cierre_son_sellos_en_risografia():
+    """D31: cada puerta de «Prensa y gestión» es un sello con grano y una segunda tinta corrida
+    que no calza; las palabras pequeñas, sin ella, para que se lean. Se endereza al señalarlo
+    solo si no se pidió menos movimiento."""
+    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
+    assert "feTurbulence" in css and "mask-image:var(--grano)" in css
+    assert '.home-cierre .pie-entidad li::before{content:""; position:absolute;' in css
+    assert "translate:4px 3px; mix-blend-mode:multiply}" in css
+    assert "text-shadow:3px 2px 0 color-mix(in srgb, var(--otra) 85%, transparent)" in css
+    movimiento = css[css.index("@media (prefers-reduced-motion:no-preference){\n  .home-cierre") :]
+    assert ".home-cierre .pie-entidad li:is(:hover, :focus-within){rotate:0deg" in movimiento

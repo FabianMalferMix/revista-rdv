@@ -191,6 +191,8 @@ def test_todo_boton_comparte_una_receta():
 # Reglas que pintan texto en mayúsculas fuera de la receta de rótulo. Estaba la navegación,
 # como deuda con fecha: salió en el ticket 2.3, al pasar a la tipografía de titulares.
 MAYUSCULAS_PENDIENTES = set()
+# Excepciones con motivo, no deudas: un timbre de goma va en mayúsculas (D31, tablero aprobado).
+MAYUSCULAS_PERMITIDAS = {".home-cierre .pie-entidad a"}
 
 
 def test_las_mayusculas_son_una_sola_receta():
@@ -198,7 +200,7 @@ def test_las_mayusculas_son_una_sola_receta():
     con_mayusculas = {sel for sel, cuerpo in _reglas() if "text-transform:uppercase" in cuerpo}
     receta = {sel for sel in con_mayusculas if sel.startswith(".rotulo")}
     assert len(receta) == 1, f"debe haber exactamente una receta de rótulo: {receta}"
-    extra = con_mayusculas - receta - MAYUSCULAS_PENDIENTES
+    extra = con_mayusculas - receta - MAYUSCULAS_PENDIENTES - MAYUSCULAS_PERMITIDAS
     assert not extra, f"mayúsculas fuera de la receta de rótulo: {extra}"
     espaciado = re.search(r"letter-spacing:var\((--[\w-]+)\)", dict(_reglas())[receta.pop()])
     assert espaciado and _tokens()[espaciado.group(1)] == ".1em"
@@ -731,15 +733,19 @@ def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
     trazo de marcador bajo las cifras de la portada (D5). Las quitó de la portada
     (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): la mitad baja del
     número y no un plano. Los lomos del estante de la portada llevan el color de su tapa
-    (D28): si es amarilla, el lomo también, pero no por el CSS."""
+    (D28): si es amarilla, el lomo también, pero no por el CSS. Y desde D31, la segunda tinta
+    corrida de dos sellos de «Prensa y gestión»: un trazo fino de desregistro, no un plano (el
+    dueño lo aprobó con el tablero)."""
     con_amarillo = {
         selector
         for selector, cuerpo in _pantalla()
         if "riso-amarillo" in cuerpo and selector != ":root"
     }
-    assert con_amarillo == {".dossier-cifras strong"}, (
-        f"el amarillo se salió del trazo: {con_amarillo}"
-    )
+    assert con_amarillo == {
+        ".dossier-cifras strong",
+        ".home-cierre .pie-entidad li:nth-child(3)",
+        ".home-cierre .pie-entidad li:nth-child(4)",
+    }, f"el amarillo se salió del trazo: {con_amarillo}"
     trazo = _regla(".dossier-cifrasstrong")
     assert "background:linear-gradient(totop,transparent.06em,var(--riso-amarillo).06em," in trazo
     assert "print-color-adjust:exact" in trazo, "el trazo tiene que salir también en papel"
