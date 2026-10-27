@@ -90,7 +90,10 @@ no una plantilla vacía.
       manifiesto. Al bajar, la obra se queda quieta y la hoja sube encima; con «reducir
       movimiento» activado en el sistema, la obra sube con la página. En la hoja, «Conócenos
       →», «Ver el dossier», «Escríbenos» y, si hay convocatoria, el sello «Convocatoria
-      abierta». Después, la tirada de registros («Registros»); la obra (poemas con sus tres primeros versos,
+      abierta». Desde 900 px la hoja es una lámina (D33): el manifiesto grande, en azul con
+      grano, a la izquierda, y a la derecha un círculo de puntos magenta con el sello encima.
+      El manifiesto termina en su primera pausa («…donde no suelen llegar.»), no a media
+      frase. Después, la tirada de registros («Registros»); la obra (poemas con sus tres primeros versos,
       y textos); las integrantes («Las voces»), cinco a la vez y en relevo; las publicaciones en un estante; y un cierre «Para
       programadores y jurados» con la última actividad y «Actualizado el …». **Sin cifras,
       sin prensa y sin aliados**: los quitó el dueño del sitio y están en el dossier.

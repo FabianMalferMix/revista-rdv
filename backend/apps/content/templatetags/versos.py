@@ -1,5 +1,8 @@
+import re
+
 from django import template
 from django.utils.html import format_html_join
+from django.utils.text import Truncator
 
 register = template.Library()
 
@@ -50,6 +53,29 @@ def adelanto(cuerpo, cuantos=3):
             citados.append(corte.rstrip(" ,;:.—") + "…")
         break
     return citados
+
+
+# El manifiesto en la portada (D33): hasta su primera pausa, si llega antes de estas palabras.
+PALABRAS_DEL_MANIFIESTO = 36
+_PAUSA = re.compile(r"[.:;?!](?=\s|$)")
+
+
+@register.filter
+def primera_pausa(texto, tope=PALABRAS_DEL_MANIFIESTO):
+    """El comienzo de un texto hasta su primera pausa: punto, dos puntos, punto y coma, o
+    cierre de pregunta o de exclamación.
+
+    La portada cortaba el manifiesto en la palabra 28, a media frase («donde no suelen …»),
+    y en letra de cartel se notaba más. Los dos puntos y el punto y coma se cierran con
+    punto: lo que venía después (una enumeración, otra idea) no se cita. Si la primera pausa
+    llega después de `tope` palabras, se corta en la palabra 28, como antes.
+    """
+    texto = " ".join((texto or "").split())
+    pausa = _PAUSA.search(texto)
+    if pausa and len(texto[: pausa.start()].split()) <= int(tope):
+        signo = pausa.group()
+        return texto[: pausa.start()] + ("." if signo in ":;" else signo)
+    return Truncator(texto).words(28, truncate=" …")
 
 
 @register.filter

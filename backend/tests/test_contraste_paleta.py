@@ -99,6 +99,9 @@ PARES = [
     ("título sobre la fila señalada", "ink", "paper-2", AA_NORMAL),
     ("datos sobre la fila señalada", "muted", "paper-2", AA_NORMAL),
     ("cejilla sobre la fila señalada", "accent", "paper-2", AA_NORMAL),
+    # El manifiesto de la hoja (D33) va en azul, pero en letra de cartel (--t5, 28 px o más,
+    # en negrita): ahí AA pide 3:1. En letra corriente, el par sigue en PROHIBIDOS.
+    ("manifiesto en letra de cartel, azul sobre el papel", "caratula", "paper", AA_GRANDE),
 ]
 
 # Pares que NO se pueden usar como texto sobre fondo. No es una lista de deseos: cada uno
