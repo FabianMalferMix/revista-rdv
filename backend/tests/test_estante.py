@@ -200,3 +200,13 @@ def test_el_cambio_de_libro_es_suave():
     assert "seccion.getAnimations({ subtree: true }).forEach((a) => a.cancel())" in ESTANTE_JS
     assert ".estante-fichas{display:grid}" in SITE_CSS
     assert ".estante-ficha{grid-area:1 / 1;" in SITE_CSS
+
+
+def test_en_pantallas_anchas_los_libros_crecen():
+    """D30: a 1900 px el estante y su ficha dejaban unos 360 px vacíos a la derecha; desde
+    1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve)."""
+    ancho = SITE_CSS[SITE_CSS.index("@media (min-width:1400px){\n  .ejemplar-frente") :]
+    assert ".ejemplar-frente{width:270px}" in ancho
+    assert ".ejemplar--libro .ejemplar-lomo{width:64px; height:400px}" in ancho
+    plantilla = (BACKEND / "templates" / "content" / "home.html").read_text()
+    assert "(min-width: 1400px) 270px" in plantilla
