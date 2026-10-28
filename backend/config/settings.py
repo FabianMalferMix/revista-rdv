@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "apps.agenda",
     "apps.community",
     "apps.submissions",
+    # La marca de base de desarrollo, que exige la exportación de los datos de desarrollo.
+    "apps.devtools",
     # Anti-fuerza-bruta en el login del admin.
     "axes",
 ]

@@ -139,8 +139,8 @@ vigente más cercano y no se agrava la deuda.
    informa éxito.
 7. **Lo que sale del sistema.** Exportaciones, logs, Sentry y archivos servidos llevan listas
    blancas por fila y por campo, y a las tareas se les pasan identificadores, no datos personales.
-   Bien: `MODELOS`, en `datos_de_desarrollo`, elige qué modelos viajan. Mal: de esos modelos viajan
-   todas las filas, también los borradores.
+   Bien: `datos_de_desarrollo exportar` declara qué filas y qué campos de cada modelo viajan, y un
+   campo nuevo sin clasificar hace fallar la exportación hasta que alguien decide si es público.
 8. **URL públicas.** Son permanentes: renombrar una ruta exige dejar la vieja con
    `RedirectView(permanent=True)`; el slug de lo publicado no se cambia, y el GUID de un ítem de
    feed, nunca. Antes del lanzamiento, `dosieres/` pasó a `colecciones/` sin redirección y no costó

@@ -84,10 +84,13 @@ tamaños. Se niega a correr sobre una base que ya tiene contenido (para empezar 
 `docker compose down -v` y volver a levantar) y fuera de desarrollo (`DEBUG=0`). En lugar
 de `seed_demo`, no además.
 
-Solo viaja contenido público: **no** viajan las cuentas de usuario, las sesiones, los
-registros de acceso y del panel, los suscriptores del boletín, los envíos a convocatorias
-ni el historial editorial (por eso hay que crear la cuenta del panel). Para actualizar la
-copia con lo que haya hoy en desarrollo:
+Solo viaja lo que el sitio ya muestra: lo publicado, lo que lo acompaña y las imágenes y el
+catálogo que eso nombra, más tres piezas sin publicar que enseñan el flujo editorial en el panel.
+**No** viajan las cuentas de usuario, las sesiones, los registros de acceso y del panel, los
+suscriptores del boletín, los envíos a convocatorias ni el historial editorial (por eso hay que
+crear la cuenta del panel). Los medios, fondos, librerías y editoriales de la demostración son
+ficticios. Para actualizar la copia con lo que haya hoy en desarrollo, en una base marcada como
+de desarrollo (`cargar` la marca; si no, `datos_de_desarrollo marcar`):
 
 ```bash
 docker compose exec web python manage.py datos_de_desarrollo exportar
