@@ -135,12 +135,12 @@ def confirm(request, token):
 def unsubscribe(request, token):
     """Baja.
 
-    Muta solo por POST, con dos caminos: el formulario de la página (con CSRF) y el
-    un-clic de los clientes de correo (RFC 8058), que envían
-    `List-Unsubscribe=One-Click` en el cuerpo. Ese POST viene de un agente externo sin
-    sesión ni token CSRF, así que la vista queda exenta: no hay nada que un atacante
-    pueda lograr salvo dar de baja a quien ya posee el enlace secreto, y el perjuicio
-    de no poder darse de baja es mayor.
+    Muta solo por POST, con dos caminos: el formulario de la página y el un-clic de los
+    clientes de correo (RFC 8058), que envían `List-Unsubscribe=One-Click` en el cuerpo.
+    Ese POST viene de un agente externo sin sesión ni token CSRF, así que la vista entera
+    queda exenta, también para el formulario: no hay nada que un atacante pueda lograr
+    salvo dar de baja a quien ya posee el enlace secreto, y el perjuicio de no poder
+    darse de baja es mayor. La exención la fija `test_one_click_unsubscribe_skips_csrf`.
     """
     sub = _por_token("token", token)
     if request.method != "POST":

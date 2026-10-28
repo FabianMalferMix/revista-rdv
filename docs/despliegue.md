@@ -1,8 +1,8 @@
 # Despliegue en producción — Proyecto «Reseñas»
 
 Arquitectura de producción: **Caddy** (proxy inverso con TLS automático) → **gunicorn** (app) →
-**PostgreSQL** + **Redis**, con **Celery** (worker + beat). Estáticos por WhiteNoise; **`/media/`
-servido por Caddy**; respaldos por el servicio `backup`.
+**PostgreSQL** + **Redis**, con **Celery** (worker + beat). **Caddy sirve `/static/` y `/media/`**
+directamente desde sus volúmenes; respaldos por el servicio `backup`.
 
 ```
 Internet ──443──▶ Caddy ──▶ web:8000 (gunicorn)

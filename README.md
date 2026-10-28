@@ -1,7 +1,9 @@
-# Reseñas — Revista literaria
+# Reseñas — sitio de Repitentes del Verso
 
-Plataforma editorial a medida para una revista literaria de reseñas. Backend y frontend
-en un **monolito Django + htmx**, PostgreSQL, y todo dockerizado.
+El sitio del colectivo de poesía **Repitentes del Verso**: sus textos y poemas, los registros
+de sus lecturas, la agenda y la trayectoria, el catálogo de publicaciones, la prensa y el
+dossier, el boletín y las convocatorias. Backend y frontend en un **monolito Django + htmx**,
+con PostgreSQL, Celery y Redis, tras Caddy y todo en Docker.
 
 ## Documentos de diseño
 
@@ -12,26 +14,41 @@ en un **monolito Django + htmx**, PostgreSQL, y todo dockerizado.
 
 | Capa | Tecnología |
 | --- | --- |
-| Backend / Frontend | Django 5 + plantillas + htmx |
+| Backend / Frontend | Django 5.2 LTS + plantillas + htmx |
 | Base de datos | PostgreSQL 16 (búsqueda full-text nativa) |
 | Tareas async | Celery + Redis (publicación programada, correos) |
+| Proxy | Caddy (TLS automático; sirve `/static/` y `/media/`) |
 | Contenedores | Docker Compose |
 
 ## Estructura
 
+Una app por cada línea de `INSTALLED_APPS`: `backend/tests/test_readme.py` falla si se instala
+una app sin anotarla aquí o si esta lista nombra una carpeta que no existe.
+
 ```text
 backend/
-  config/            Proyecto Django (settings, urls, celery)
+  config/               Proyecto Django: settings, urls, Celery, CSP y redacción de logs
   apps/
-    media/           MediaAsset (biblioteca de imágenes)
-    people/          Contributor, SocialLink, grupos/roles
-    reviews/         Work, Publisher, BookAuthor
-    content/         Article, Section, Tag, Dossier, Page + flujo editorial
-    community/       Comment, NewsletterSubscriber
-    submissions/     Submission, Call (portal de envíos)
-  templates/         base + vistas htmx
-  static/
-infra/nginx/         Config de proxy inverso (producción)
+    media/              MediaAsset (imágenes) y Recording (registros de audio y vídeo)
+    people/             Contributor (integrantes y colaboradores) y SocialLink
+    reviews/            Work, Publisher y BookAuthor (las obras reseñadas)
+    content/            Article, Poem, Collection, Section, Tag y Page, con el flujo editorial
+    showcase/           SiteProfile, Publication, WhereToBuy, PressMention y Partner; el dossier
+    agenda/             Event, EventPhoto y Milestone; la trayectoria
+    community/          NewsletterSubscriber (el boletín, con doble confirmación)
+    submissions/        Call y Submission (convocatorias y envíos)
+    devtools/           DevelopmentMarker (la marca de una base de desarrollo)
+  templates/            base y vistas htmx
+  static/               css, js, fuentes, imágenes y bibliotecas de terceros (vendor/)
+  tests/                la suite de pytest
+  datos_de_desarrollo/  la copia del contenido de desarrollo (ver más abajo)
+  release.sh            migraciones, grupos y estáticos antes de arrancar (servicio release)
+infra/
+  caddy/                Caddyfile: proxy con TLS, /static/ y /media/
+  backup/               respaldos (base, medios y restic) y restauración
+tools/
+  ux/                   capturas y métricas de la interfaz
+  ci/                   comprobaciones del CI (sintaxis de JS, identificadores de decisión)
 ```
 
 ## Puesta en marcha
@@ -44,8 +61,8 @@ docker compose up --build
 - Sitio: <http://localhost:8000>
 - Admin (bandeja editorial): <http://localhost:8000/admin>
 
-El contenedor `web` aplica migraciones y crea los grupos `admin · editor · autor`
-automáticamente al arrancar.
+Antes de que arranquen `web`, `worker` y `beat`, el servicio `release` aplica las migraciones
+y crea los grupos `admin · editor · autor`.
 
 Crear un superusuario:
 
@@ -121,7 +138,8 @@ Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale 
 
 ### Migraciones
 
-Las migraciones se versionan en el repo; el contenedor solo corre `migrate` al arrancar.
+Las migraciones se versionan en el repo; el servicio `release` las aplica en cada
+`docker compose up`.
 Cuando cambies los modelos, genera la migración y ajusta la propiedad de los archivos
 (el contenedor de **desarrollo** corre como root; la imagen de **producción** usa un
 usuario no-root, ver `backend/Dockerfile`):
@@ -181,8 +199,9 @@ bash tools/ux/preparar-entorno.sh
 
 ## Producción
 
-**Caddy** (proxy con TLS automático) → gunicorn → PostgreSQL/Redis, con Celery. Estáticos por
-**WhiteNoise** y `/media/` servido por Caddy. Guía completa en [docs/despliegue.md](docs/despliegue.md).
+**Caddy** (proxy con TLS automático) → gunicorn → PostgreSQL/Redis, con Celery. Caddy sirve
+`/static/` y `/media/` directamente desde sus volúmenes. Guía completa en
+[docs/despliegue.md](docs/despliegue.md).
 
 ```bash
 cp .env.prod.example .env   # editar secretos, contraseñas y SITE_ADDRESS (tu dominio)

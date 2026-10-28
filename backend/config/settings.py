@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django.contrib.postgres",
-    # Apps del proyecto (orden por dependencias: media es la base)
+    # Apps del proyecto. El orden no expresa dependencias: las apps se importan entre sí.
     "apps.media",
     "apps.people",
     "apps.reviews",
@@ -185,8 +185,9 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 # Almacenamiento privado (envíos): fuera de MEDIA_ROOT, nunca servido públicamente.
 PRIVATE_MEDIA_ROOT = os.environ.get("DJANGO_PRIVATE_MEDIA_ROOT", str(BASE_DIR / "private_media"))
 
-# En producción WhiteNoise sirve los estáticos comprimidos y con hash; en desarrollo
-# se usa el almacenamiento simple (el manifiesto exigiría collectstatic).
+# En producción collectstatic deja los estáticos con hash y comprimidos (manifiesto de
+# WhiteNoise) y los sirve Caddy desde su volumen; en desarrollo se usa el almacenamiento
+# simple (el manifiesto exigiría collectstatic).
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
@@ -226,13 +227,18 @@ CELERY_BEAT_SCHEDULE = {
 # de confirmación por Celery sin worker. En dev/prod es asíncrono normal.
 CELERY_TASK_ALWAYS_EAGER = "pytest" in sys.modules
 
-# Límites de tiempo por tarea (S-23): sin ellos, un SMTP que acepta la conexión pero
-# no responde dejaba el slot del worker ocupado indefinidamente. El soft dispara una
-# excepción capturable (permite el reintento); el duro mata el proceso como último
-# recurso. Se completa con EMAIL_TIMEOUT, más abajo.
+# Límites de tiempo de cada tarea: sin ellos, un SMTP que acepta la conexión y no
+# responde ocupa un proceso del worker indefinidamente. El blando lanza
+# SoftTimeLimitExceeded dentro de la tarea, que termina como fallo salvo que ella misma
+# lo capture o lo reintente; el duro mata el proceso. Se completa con EMAIL_TIMEOUT, más
+# abajo.
 CELERY_TASK_SOFT_TIME_LIMIT = int(os.environ.get("CELERY_TASK_SOFT_TIME_LIMIT", "30"))
 CELERY_TASK_TIME_LIMIT = int(os.environ.get("CELERY_TASK_TIME_LIMIT", "60"))
-# Con acks_late, una tarea que muere por time limit se reencola en vez de perderse;
+# acks_late confirma el mensaje cuando la tarea termina, no cuando llega: si cae el
+# worker entero, Redis reentrega lo que quedó sin confirmar pasado su visibility_timeout
+# (1 h). Una tarea que falla, que agota su límite de tiempo o cuyo proceso muere se
+# confirma igual y no vuelve a la cola (task_acks_on_failure_or_timeout y
+# task_reject_on_worker_lost, en sus valores por defecto).
 # prefetch 1 evita que un worker acapare tareas que no va a poder atender.
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1

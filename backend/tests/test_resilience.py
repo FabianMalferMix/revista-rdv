@@ -70,11 +70,20 @@ def test_la_politica_ante_cache_no_disponible_es_fail_closed(settings):
 
 
 def test_hay_limites_de_tiempo_en_celery_y_en_el_correo(settings):
-    """Sin ellos, un SMTP que acepta la conexión y luego calla inmovilizaba los slots
-    del worker indefinidamente (S-23)."""
+    """Sin ellos, un SMTP que acepta la conexión y luego calla ocupa los procesos del
+    worker indefinidamente."""
     assert settings.EMAIL_TIMEOUT > 0
     assert settings.CELERY_TASK_SOFT_TIME_LIMIT > 0
     assert settings.CELERY_TASK_TIME_LIMIT > settings.CELERY_TASK_SOFT_TIME_LIMIT
-    # Con acks_late, una tarea que muere por time limit se reencola en vez de perderse.
-    assert settings.CELERY_TASK_ACKS_LATE is True
     assert settings.CELERY_WORKER_PREFETCH_MULTIPLIER == 1
+
+
+def test_a_task_that_times_out_is_not_requeued():
+    """acks_late solo cubre la caída del worker entero. Una tarea que falla, agota su
+    límite de tiempo o pierde su proceso se confirma igual y no se reencola: es lo que
+    explica el comentario de settings.py, y si cambia esta configuración, cambia él."""
+    from config.celery import app
+
+    assert app.conf.task_acks_late is True
+    assert app.conf.task_acks_on_failure_or_timeout is True
+    assert not app.conf.task_reject_on_worker_lost

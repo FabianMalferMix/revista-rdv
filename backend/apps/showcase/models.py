@@ -284,7 +284,9 @@ class PressMention(models.Model):
     kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.NOTA)
     published_on = models.DateField(null=True, blank=True)
     url = models.URLField(blank=True)
-    quote = models.TextField(blank=True, help_text="Cita destacada para portada y dossier.")
+    quote = models.TextField(
+        blank=True, help_text="Cita destacada para la página de prensa y el dossier."
+    )
     logo = models.ForeignKey(
         "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
