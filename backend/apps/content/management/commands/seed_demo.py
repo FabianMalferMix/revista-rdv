@@ -32,6 +32,7 @@ from apps.content.models import (
     Section,
     Tag,
 )
+from apps.devtools.models import DevelopmentMarker
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
@@ -73,6 +74,11 @@ class Command(BaseCommand):
                 "en producción. Con DEBUG=0 exige --force explícito."
             )
 
+        # La marca de base de desarrollo, que pide `datos_de_desarrollo exportar`; con --force y
+        # DEBUG=0 no se pone, para que una base de producción nunca pase por una de desarrollo.
+        if settings.DEBUG:
+            DevelopmentMarker.mark()
+
         User = get_user_model()
         now = timezone.now()
         # Credenciales generadas en esta corrida, para mostrarlas al final.
@@ -95,7 +101,13 @@ class Command(BaseCommand):
 
         # ── Catálogo de reseñas ──────────────────────────────
         publishers = {}
-        for name in ["Alquimia Ediciones", "Overol", "Hueders", "Ediciones UDP", "Laurel"]:
+        for name in [
+            "Ediciones La Muestra",
+            "Editorial El Ejemplo",
+            "Sello Supuesto",
+            "Ediciones del Simulacro",
+            "Editorial Ficticia",
+        ]:
             publishers[name], _ = Publisher.objects.get_or_create(
                 slug=slugify(name), defaults={"name": name, "country": "Chile"}
             )
@@ -117,14 +129,20 @@ class Command(BaseCommand):
             (
                 "El invierno de las cosas",
                 Work.Kind.POEMARIO,
-                "Alquimia Ediciones",
+                "Ediciones La Muestra",
                 2023,
                 "Valentina Aguirre",
             ),
-            ("Territorio en fuga", Work.Kind.LIBRO, "Overol", 2022, "Ignacio Bravo"),
-            ("Cuadernos del sur", Work.Kind.ENSAYO, "Hueders", 2024, "Camila Reyes"),
-            ("La casa vacía", Work.Kind.LIBRO, "Ediciones UDP", 2021, "Tomás Vergara"),
-            ("Antología del margen", Work.Kind.ANTOLOGIA, "Laurel", 2023, "Josefa Lillo"),
+            ("Territorio en fuga", Work.Kind.LIBRO, "Editorial El Ejemplo", 2022, "Ignacio Bravo"),
+            ("Cuadernos del sur", Work.Kind.ENSAYO, "Sello Supuesto", 2024, "Camila Reyes"),
+            ("La casa vacía", Work.Kind.LIBRO, "Ediciones del Simulacro", 2021, "Tomás Vergara"),
+            (
+                "Antología del margen",
+                Work.Kind.ANTOLOGIA,
+                "Editorial Ficticia",
+                2023,
+                "Josefa Lillo",
+            ),
         ]
         for title, kind, pub, year, author in works_data:
             w, _ = Work.objects.get_or_create(
@@ -397,7 +415,7 @@ class Command(BaseCommand):
                 "title": "Recital «Nuevas voces»",
                 "type": Event.Type.RECITAL,
                 "starts_at": now - timedelta(days=90),
-                "venue_name": "Casa del Libro",
+                "venue_name": "Librería La Muestra",
                 "city": "Santiago",
                 "description": "Lectura colectiva de apertura del año, con invitados.",
                 "participants": ["Fernanda Soto", "Paula Miranda", "Andrés Cáceres"],
@@ -422,7 +440,7 @@ class Command(BaseCommand):
                 "title": "Taller de escritura: el verso vivo",
                 "type": Event.Type.TALLER,
                 "starts_at": now + timedelta(days=20),
-                "venue_name": "Biblioteca de Santiago",
+                "venue_name": "Biblioteca de Ejemplo",
                 "city": "Santiago",
                 "description": "Taller abierto de escritura poética, cupos limitados.",
                 "registration_url": "https://example.com/inscripcion",
@@ -519,12 +537,12 @@ class Command(BaseCommand):
                 "title": "Cuadernos del ruido",
                 "kind": Publication.Kind.LIBRO,
                 "year": 2024,
-                "publisher": "Overol",
+                "publisher": "Editorial El Ejemplo",
                 "synopsis": "Primer libro individual de Fernanda Soto, escrito dentro del taller "
                 "del colectivo.",
                 "participants": ["Fernanda Soto"],
                 "cover_file": "cover-cuadernos.jpg",
-                "stores": [("Editorial Overol", "https://example.com/overol")],
+                "stores": [("Editorial El Ejemplo", "https://example.com/el-ejemplo")],
             },
             {
                 "slug": "correspondencias",
@@ -566,7 +584,7 @@ class Command(BaseCommand):
         for spec in [
             {
                 "title": "«La poesía vuelve a los recitales»",
-                "outlet": "El Mercurio de Valparaíso",
+                "outlet": "Gaceta de Prueba",
                 "kind": PressMention.Kind.NOTA,
                 "published_on": (now - timedelta(days=200)).date(),
                 "quote": "Uno de los colectivos más activos de la escena joven.",
@@ -574,7 +592,7 @@ class Command(BaseCommand):
             },
             {
                 "title": "Entrevista al colectivo tras su plaquette",
-                "outlet": "Radio Universidad",
+                "outlet": "Radio Muestra",
                 "kind": PressMention.Kind.ENTREVISTA,
                 "published_on": (now - timedelta(days=120)).date(),
                 "quote": "Leen como quien conversa: cerca, sin solemnidad.",
@@ -595,9 +613,9 @@ class Command(BaseCommand):
             )
         for i, (name, kind) in enumerate(
             [
-                ("Fondo Nacional de Fomento del Libro", Partner.Kind.FINANCIAMIENTO),
-                ("Casa del Libro", Partner.Kind.ESPACIO),
-                ("Editorial Overol", Partner.Kind.EDITORIAL),
+                ("Fondo Imaginario de las Letras", Partner.Kind.FINANCIAMIENTO),
+                ("Librería La Muestra", Partner.Kind.ESPACIO),
+                ("Editorial El Ejemplo", Partner.Kind.EDITORIAL),
             ]
         ):
             Partner.objects.get_or_create(name=name, defaults={"kind": kind, "position": i})

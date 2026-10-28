@@ -8,7 +8,6 @@
    "bio": "Crítica literaria y editora.",
    "photo": 12,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Fundadora · edición",
@@ -27,7 +26,6 @@
    "bio": "Escribe sobre narrativa y poesía chilena.",
    "photo": 13,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "",
@@ -46,7 +44,6 @@
    "bio": "Ensayista y traductora.",
    "photo": 14,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Fundadora",
@@ -65,7 +62,6 @@
    "bio": "Periodista cultural.",
    "photo": null,
    "website": "",
-   "user": null,
    "is_member": false,
    "active": true,
    "role": "",
@@ -84,7 +80,6 @@
    "bio": "",
    "photo": 15,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta",
@@ -103,7 +98,6 @@
    "bio": "",
    "photo": 16,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta · taller",
@@ -122,7 +116,6 @@
    "bio": "",
    "photo": 17,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta",
@@ -141,7 +134,6 @@
    "bio": "",
    "photo": 18,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta · edición",
@@ -160,7 +152,6 @@
    "bio": "",
    "photo": 19,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta",
@@ -179,7 +170,6 @@
    "bio": "",
    "photo": 20,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta · gestión",
@@ -198,7 +188,6 @@
    "bio": "",
    "photo": 21,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta",
@@ -217,7 +206,6 @@
    "bio": "",
    "photo": 22,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta",
@@ -236,7 +224,6 @@
    "bio": "",
    "photo": 23,
    "website": "",
-   "user": null,
    "is_member": true,
    "active": true,
    "role": "Poeta · taller",
@@ -250,8 +237,8 @@
   "model": "reviews.publisher",
   "pk": 1,
   "fields": {
-   "slug": "alquimia-ediciones",
-   "name": "Alquimia Ediciones",
+   "slug": "ediciones-la-muestra",
+   "name": "Ediciones La Muestra",
    "country": "Chile",
    "website": ""
   }
@@ -260,8 +247,8 @@
   "model": "reviews.publisher",
   "pk": 2,
   "fields": {
-   "slug": "overol",
-   "name": "Overol",
+   "slug": "editorial-el-ejemplo",
+   "name": "Editorial El Ejemplo",
    "country": "Chile",
    "website": ""
   }
@@ -270,8 +257,8 @@
   "model": "reviews.publisher",
   "pk": 3,
   "fields": {
-   "slug": "hueders",
-   "name": "Hueders",
+   "slug": "sello-supuesto",
+   "name": "Sello Supuesto",
    "country": "Chile",
    "website": ""
   }
@@ -280,8 +267,8 @@
   "model": "reviews.publisher",
   "pk": 4,
   "fields": {
-   "slug": "ediciones-udp",
-   "name": "Ediciones UDP",
+   "slug": "ediciones-del-simulacro",
+   "name": "Ediciones del Simulacro",
    "country": "Chile",
    "website": ""
   }
@@ -290,8 +277,8 @@
   "model": "reviews.publisher",
   "pk": 5,
   "fields": {
-   "slug": "laurel",
-   "name": "Laurel",
+   "slug": "editorial-ficticia",
+   "name": "Editorial Ficticia",
    "country": "Chile",
    "website": ""
   }
@@ -597,7 +584,6 @@
    "credit": "Archivo del colectivo",
    "width": 1200,
    "height": 750,
-   "uploaded_by": null,
    "created_at": "2026-07-27T17:36:24.028Z"
   }
  },
@@ -611,7 +597,6 @@
    "credit": "Archivo del colectivo",
    "width": 1200,
    "height": 750,
-   "uploaded_by": null,
    "created_at": "2026-07-27T17:36:24.039Z"
   }
  },
@@ -625,120 +610,7 @@
    "credit": "Archivo del colectivo",
    "width": 1200,
    "height": 750,
-   "uploaded_by": null,
    "created_at": "2026-07-27T17:36:24.049Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 4,
-  "fields": {
-   "file": "assets/2026/07/cover-umbral.jpg",
-   "alt_text": "Portada — Umbral y otras salidas",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 560,
-   "height": 780,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T17:46:23.563Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 5,
-  "fields": {
-   "file": "assets/2026/07/cover-cuadernos.jpg",
-   "alt_text": "Portada — Cuadernos del ruido",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 560,
-   "height": 780,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T17:46:23.588Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 6,
-  "fields": {
-   "file": "assets/2026/07/cover-correspondencias.jpg",
-   "alt_text": "Portada — Correspondencias",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 560,
-   "height": 780,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T17:46:23.604Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 7,
-  "fields": {
-   "file": "assets/2026/07/member-fernanda.jpg",
-   "alt_text": "Retrato de Fernanda Soto",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 480,
-   "height": 480,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T19:19:09.930Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 8,
-  "fields": {
-   "file": "assets/2026/07/member-andres.jpg",
-   "alt_text": "Retrato de Andrés Cáceres",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 480,
-   "height": 480,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T19:19:09.944Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 9,
-  "fields": {
-   "file": "assets/2026/07/member-paula.jpg",
-   "alt_text": "Retrato de Paula Miranda",
-   "caption": "",
-   "credit": "Placeholder de demo (reemplazable)",
-   "width": 480,
-   "height": 480,
-   "uploaded_by": null,
-   "created_at": "2026-07-27T19:19:09.955Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 10,
-  "fields": {
-   "file": "assets/2026/08/1-foto-grande.jpg",
-   "alt_text": "alt text",
-   "caption": "",
-   "credit": "",
-   "width": 2400,
-   "height": 1600,
-   "uploaded_by": null,
-   "created_at": "2026-08-18T20:39:33.058Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 11,
-  "fields": {
-   "file": "assets/2026/08/2-foto-con-gps.jpg",
-   "alt_text": "fdasd",
-   "caption": "",
-   "credit": "",
-   "width": 2000,
-   "height": 1200,
-   "uploaded_by": null,
-   "created_at": "2026-08-18T20:39:46.447Z"
   }
  },
  {
@@ -751,7 +623,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:52.180Z"
   }
  },
@@ -765,7 +636,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:52.553Z"
   }
  },
@@ -779,7 +649,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:52.901Z"
   }
  },
@@ -793,7 +662,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:53.249Z"
   }
  },
@@ -807,7 +675,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:53.577Z"
   }
  },
@@ -821,7 +688,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:53.906Z"
   }
  },
@@ -835,7 +701,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:54.254Z"
   }
  },
@@ -849,7 +714,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:54.586Z"
   }
  },
@@ -863,7 +727,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:54.926Z"
   }
  },
@@ -877,7 +740,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:55.284Z"
   }
  },
@@ -891,7 +753,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:55.667Z"
   }
  },
@@ -905,7 +766,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1500,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:56.041Z"
   }
  },
@@ -919,7 +779,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:56.392Z"
   }
  },
@@ -933,7 +792,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:56.617Z"
   }
  },
@@ -947,7 +805,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:57.359Z"
   }
  },
@@ -961,7 +818,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:58.047Z"
   }
  },
@@ -975,7 +831,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:58.749Z"
   }
  },
@@ -989,7 +844,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:05:59.464Z"
   }
  },
@@ -1003,7 +857,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:00.125Z"
   }
  },
@@ -1017,7 +870,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:00.761Z"
   }
  },
@@ -1031,7 +883,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:00.986Z"
   }
  },
@@ -1045,7 +896,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:01.715Z"
   }
  },
@@ -1059,7 +909,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:02.421Z"
   }
  },
@@ -1073,7 +922,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:03.095Z"
   }
  },
@@ -1087,7 +935,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:03.809Z"
   }
  },
@@ -1101,7 +948,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:04.546Z"
   }
  },
@@ -1115,7 +961,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:05.241Z"
   }
  },
@@ -1129,7 +974,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:05.437Z"
   }
  },
@@ -1143,7 +987,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:06.089Z"
   }
  },
@@ -1157,7 +1000,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:06.806Z"
   }
  },
@@ -1171,7 +1013,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1200,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:09.629Z"
   }
  },
@@ -1185,7 +1026,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:09.842Z"
   }
  },
@@ -1199,7 +1039,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:10.527Z"
   }
  },
@@ -1213,7 +1052,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:11.165Z"
   }
  },
@@ -1227,7 +1065,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:11.808Z"
   }
  },
@@ -1241,7 +1078,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:12.484Z"
   }
  },
@@ -1255,7 +1091,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1600,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:13.141Z"
   }
  },
@@ -1269,7 +1104,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:13.807Z"
   }
  },
@@ -1283,7 +1117,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:13.982Z"
   }
  },
@@ -1297,64 +1130,7 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:14.143Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 55,
-  "fields": {
-   "file": "assets/2026/10/caratula-test-dos.jpg",
-   "alt_text": "Carátula provisional · test dos",
-   "caption": "",
-   "credit": "Material genérico provisional (reemplazar por el real)",
-   "width": 1920,
-   "height": 1080,
-   "uploaded_by": null,
-   "created_at": "2026-10-08T18:06:14.295Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 56,
-  "fields": {
-   "file": "assets/2026/10/caratula-test-testcito.jpg",
-   "alt_text": "Carátula provisional · test testcito",
-   "caption": "",
-   "credit": "Material genérico provisional (reemplazar por el real)",
-   "width": 1920,
-   "height": 1080,
-   "uploaded_by": null,
-   "created_at": "2026-10-08T18:06:14.507Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 57,
-  "fields": {
-   "file": "assets/2026/10/caratula-recital-nuevas-voces.jpg",
-   "alt_text": "Carátula provisional · Recital «Nuevas voces» (registro)",
-   "caption": "",
-   "credit": "Material genérico provisional (reemplazar por el real)",
-   "width": 1920,
-   "height": 1080,
-   "uploaded_by": null,
-   "created_at": "2026-10-08T18:06:14.717Z"
-  }
- },
- {
-  "model": "media.mediaasset",
-  "pk": 58,
-  "fields": {
-   "file": "assets/2026/10/caratula-umbral-lectura.jpg",
-   "alt_text": "Carátula provisional · «Umbral» — lectura de la autora",
-   "caption": "",
-   "credit": "Material genérico provisional (reemplazar por el real)",
-   "width": 1920,
-   "height": 1080,
-   "uploaded_by": null,
-   "created_at": "2026-10-08T18:06:14.921Z"
   }
  },
  {
@@ -1362,12 +1138,11 @@
   "pk": 59,
   "fields": {
    "file": "assets/2026/10/logo-aliado-1.png",
-   "alt_text": "Logo provisional · Fondo Nacional de Fomento del Libro",
+   "alt_text": "Logo provisional · Fondo Imaginario de las Letras",
    "caption": "",
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 600,
    "height": 300,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.140Z"
   }
  },
@@ -1376,12 +1151,11 @@
   "pk": 60,
   "fields": {
    "file": "assets/2026/10/logo-aliado-2.png",
-   "alt_text": "Logo provisional · Casa del Libro",
+   "alt_text": "Logo provisional · Librería La Muestra",
    "caption": "",
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 600,
    "height": 300,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.225Z"
   }
  },
@@ -1390,12 +1164,11 @@
   "pk": 61,
   "fields": {
    "file": "assets/2026/10/logo-aliado-3.png",
-   "alt_text": "Logo provisional · Editorial Overol",
+   "alt_text": "Logo provisional · Editorial El Ejemplo",
    "caption": "",
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 600,
    "height": 300,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.286Z"
   }
  },
@@ -1404,12 +1177,11 @@
   "pk": 62,
   "fields": {
    "file": "assets/2026/10/logo-medio-2.png",
-   "alt_text": "Logo provisional · Radio Universidad",
+   "alt_text": "Logo provisional · Radio Muestra",
    "caption": "",
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 600,
    "height": 300,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.355Z"
   }
  },
@@ -1418,12 +1190,11 @@
   "pk": 63,
   "fields": {
    "file": "assets/2026/10/logo-medio-1.png",
-   "alt_text": "Logo provisional · El Mercurio de Valparaíso",
+   "alt_text": "Logo provisional · Gaceta de Prueba",
    "caption": "",
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 600,
    "height": 300,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.421Z"
   }
  },
@@ -1437,7 +1208,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.497Z"
   }
  },
@@ -1451,7 +1221,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:15.877Z"
   }
  },
@@ -1465,7 +1234,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:16.239Z"
   }
  },
@@ -1479,7 +1247,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:16.623Z"
   }
  },
@@ -1493,7 +1260,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:17.033Z"
   }
  },
@@ -1507,7 +1273,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:17.418Z"
   }
  },
@@ -1521,7 +1286,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:17.827Z"
   }
  },
@@ -1535,7 +1299,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1800,
    "height": 1200,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:18.217Z"
   }
  },
@@ -1549,7 +1312,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:18.612Z"
   }
  },
@@ -1563,7 +1325,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:18.798Z"
   }
  },
@@ -1577,7 +1338,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:18.943Z"
   }
  },
@@ -1591,7 +1351,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:19.115Z"
   }
  },
@@ -1605,7 +1364,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:19.265Z"
   }
  },
@@ -1619,7 +1377,6 @@
    "credit": "Material genérico provisional (reemplazar por el real)",
    "width": 2400,
    "height": 1260,
-   "uploaded_by": null,
    "created_at": "2026-10-08T18:06:19.427Z"
   }
  },
@@ -1633,7 +1390,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:00.861Z"
   }
  },
@@ -1647,7 +1403,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:01.006Z"
   }
  },
@@ -1661,7 +1416,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:01.124Z"
   }
  },
@@ -1675,7 +1429,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:15.983Z"
   }
  },
@@ -1689,7 +1442,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:16.117Z"
   }
  },
@@ -1703,7 +1455,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:16.231Z"
   }
  },
@@ -1717,7 +1468,6 @@
    "credit": "",
    "width": 1000,
    "height": 1400,
-   "uploaded_by": null,
    "created_at": "2026-10-22T19:03:16.336Z"
   }
  },
@@ -1879,16 +1629,6 @@
  },
  {
   "model": "content.section",
-  "pk": 5,
-  "fields": {
-   "slug": "poesia",
-   "name": "Poesía",
-   "description": "",
-   "position": 3
-  }
- },
- {
-  "model": "content.section",
   "pk": 6,
   "fields": {
    "slug": "cronica",
@@ -1935,14 +1675,6 @@
   "fields": {
    "slug": "entrevista",
    "name": "entrevista"
-  }
- },
- {
-  "model": "content.tag",
-  "pk": 6,
-  "fields": {
-   "slug": "traduccion",
-   "name": "traducción"
   }
  },
  {
@@ -2094,7 +1826,6 @@
   "pk": 2,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-07T16:23:13.513Z",
    "created_at": "2026-07-09T16:23:14.207Z",
    "updated_at": "2026-07-09T16:23:14.207Z",
@@ -2111,7 +1842,6 @@
    "featured": true,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'aguirr':15,50 'cad':58 'conviert':16 'cos':5,35 'debut':12 'despoj':63 'economi':54 'estanci':62 'fin':70 'fri':18,45 'grup':39 'habit':30 'hac':43 'intemperi':10 'inviern':2,32 'leen':25 'lenguaj':66 'libr':22,27 'maner':47 'medi':56 'metod':20 'mir':49 'notabl':57 'pertenec':36 'poem':59 'poemari':41 'poetic':7 'segund':38 'temperatur':71 'trabaj':51 'valentin':14 'vuelv':68",
    "tags": [
     4,
     1
@@ -2123,7 +1853,6 @@
   "pk": 3,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-03T16:23:13.513Z",
    "created_at": "2026-07-09T16:23:14.235Z",
    "updated_at": "2026-07-09T16:23:14.235Z",
@@ -2140,7 +1869,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'atent':44 'atras':29 'avanz':23 'brav':11,22 'carg':31 'detall':46 'encuentr':48 'escrib':12 'espald':37 'form':57 'fug':3,51 'geografi':14 'huy':26 'ignaci':10 'map':8 'mir':28 'nervios':43 'novel':6,20 'paisaj':34 'perd':17 'primer':19 'pros':42 'result':39 'rot':9 'sin':55 'tem':54 'territori':1",
    "tags": [
     2
    ]
@@ -2151,7 +1879,6 @@
   "pk": 4,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-06-27T16:23:13.513Z",
    "created_at": "2026-07-09T16:23:14.255Z",
    "updated_at": "2026-07-09T16:23:14.255Z",
@@ -2168,7 +1895,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'camil':11 'cartografi':15 'centr':25 'critic':16 'cuad':1,39 'diari':44 'discut':37 'ensay':9 'incomod':21 'manifiest':46 'marg':7 'necesari':23 'pens':4 'propon':18 'pued':36 'punt':29 'reorden':13 'rey':12,17 'sur':3 'tambi':26 'tesis':20 'vez':43 'vist':31",
    "tags": [
     3
    ]
@@ -2179,7 +1905,6 @@
   "pk": 5,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-05T16:23:13.513Z",
    "created_at": "2026-07-09T16:23:14.275Z",
    "updated_at": "2026-07-09T16:23:14.275Z",
@@ -2196,7 +1921,6 @@
    "featured": true,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'acompan':21 'adul':13 'buen':33 'calific':19 'critic':6,34 'dej':35 'destru':15 'discut':48 'encontr':44 'honest':31 'lectur':23,26 'legibl':46 'lent':28 'libr':37 'mas':27,30,45,47,49 'mejor':39 'not':7 'ofici':3 'resen':10,16 'viv':50",
    "tags": [
     3
    ]
@@ -2207,7 +1931,6 @@
   "pk": 6,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-01T16:23:13.513Z",
    "created_at": "2026-07-09T16:23:14.289Z",
    "updated_at": "2026-07-09T16:23:14.289Z",
@@ -2224,7 +1947,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'apuest':21 'cas':19,42 'catalog':8,25 'comenz':15 'convers':29 'conversacion':1 'dic':13 'editorial':4,37 'grand':41 'habl':6 'independient':5 'nombr':23 'pequen':26 'proyect':36 'riesg':9 'signif':33 'sosten':34 'supervivent':11 'terc':28",
    "tags": [
     5
    ]
@@ -2235,7 +1957,6 @@
   "pk": 7,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-09T16:26:06.728Z",
    "created_at": "2026-07-09T16:23:14.304Z",
    "updated_at": "2026-07-09T16:26:13.948Z",
@@ -2252,7 +1973,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'acumul':40 'arqueologi':21 'cas':2,14,27 'comprob':32 'domest':22 'duel':9,19,35 'form':7 'infanci':17,30 'nadi':54 'novel':45 'polv':38 'qued':49,53 'regres':5 'rincon':43 'vaci':3 'verg':10,23 'vuelv':11,24",
    "tags": [
     2
    ]
@@ -2263,7 +1983,6 @@
   "pk": 8,
   "fields": {
    "status": "archived",
-   "owner": null,
    "published_at": "2026-08-18T15:14:53Z",
    "created_at": "2026-07-09T16:23:14.323Z",
    "updated_at": "2026-08-18T15:48:20.193Z",
@@ -2280,7 +1999,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'antologi':1 'aun':10 'borrador':4,7 'envi':12 'marg':3 'preparacion':6 'revision':14 'trabaj':9",
    "tags": [
     1
    ]
@@ -2291,7 +2009,6 @@
   "pk": 9,
   "fields": {
    "status": "in_review",
-   "owner": null,
    "published_at": null,
    "created_at": "2026-07-09T16:23:14.340Z",
    "updated_at": "2026-09-02T20:15:28.285Z",
@@ -2308,7 +2025,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'avanz':19 'comit':10,15 'decidir':17 'decision':8 'editorial':5,16 'envi':6 'esper':7 'resen':2 'revision':4,13 'si':18 'text':11",
    "tags": [
     2
    ]
@@ -2319,7 +2035,6 @@
   "pk": 11,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-06-01T16:00:00Z",
    "created_at": "2026-10-14T15:09:48.733Z",
    "updated_at": "2026-10-14T15:09:48.733Z",
@@ -2336,7 +2051,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'borr':21,37 'cuad':4 'enlac':13 'fich':30 'prueb':3,9,24 'publicacion':16,33 'resen':1,19 'ruid':6 'seccion':35 'sirv':25 'text':7,22 'ver':11,27",
    "tags": []
   }
  },
@@ -2345,14 +2059,13 @@
   "pk": 16,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-12T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.706Z",
    "updated_at": "2026-10-14T19:27:34.706Z",
    "slug": "zz-largo-la-casa-como-lengua-extranjera",
    "title": "La casa como lengua extranjera",
    "subtitle": "Inventario de lo que no se dijo, el primer libro de Marta Ilabaca, convierte una mudanza familiar en una gramática del silencio. Una lectura lenta de sus cinco secciones.",
-   "body": "<p>Hay libros que empiezan por el final, y <em>Inventario de lo que no se dijo</em>, el primer libro de Marta Ilabaca, empieza por la última caja. La que nadie quiere cerrar en una mudanza porque adentro van las cosas que no tienen lugar en ninguna otra: un control remoto sin televisor, tres llaves que no abren nada, una carta sin sobre, el certificado de bautizo de una tía que nunca se casó. Desde esa caja, que el libro llama «la caja de lo suelto», Ilabaca arma cinco secciones que son también cinco cuartos de una casa que se vende, y en cada una prueba una manera distinta de decir lo que en esa familia no se decía.</p>\n\n<p>Conviene advertirlo desde ya: no es un libro sobre la casa. Es un libro sobre el idioma que una casa obliga a hablar, y sobre lo que pasa con ese idioma cuando la casa deja de existir. La mudanza es el pretexto, pero el verdadero tema es la lengua familiar, esa gramática doméstica hecha de eufemismos, de frases que se dicen siempre en el mismo orden, de silencios que todos entienden y nadie nombra. Ilabaca lo sabe y lo dice en el poema que abre el libro, que funciona casi como un manifiesto:</p>\n\n<blockquote>\n<p>En esta casa no se decía cáncer, se decía <em>lo de la mamá</em>.<br>\nNo se decía deuda, se decía <em>el asunto del banco</em>.<br>\nNo se decía que mi padre bebía:<br>\nse decía que llegaba cansado.<br>\nAprendí a hablar en esta casa<br>\ny ahora que la venden no sé en qué idioma voy a vivir.</p>\n</blockquote>\n\n<p>El poema es eficaz, quizás demasiado: tiene la contundencia de un primer poema que sabe que va primero. Pero lo que viene después lo complica y lo matiza, y eso es lo que hace que el libro valga mucho más que su arranque.</p>\n\n<h2>Una mudanza que no termina</h2>\n\n<p>La primera sección, «Cocina», es la más narrativa del libro. Son nueve poemas en verso largo, casi prosaicos, que reconstruyen una escena: la madre de la hablante cocinando el último almuerzo en la casa, el domingo antes de que llegue el camión. Ilabaca trabaja aquí con una paciencia que se agradece. No hay epifanías ni grandes cierres; hay ollas, hay una radio que transmite un partido que nadie escucha, hay una conversación que da vueltas sobre el precio de la palta para no hablar de lo único que importa. La tensión del poema está en lo que se deja fuera, y el lector la siente en cada frase interrumpida, en cada «bueno, ya» que cierra un tema antes de que se abra.</p>\n\n<p>Lo interesante es que la autora no se instala en la nostalgia. La casa no es un paraíso perdido; es un lugar donde ocurrieron cosas difíciles, y la mudanza es, de algún modo, una liberación que nadie se atreve a celebrar. Hay un poema, «Lo que se queda», que enumera los objetos que la familia decide no llevarse, y la enumeración termina con un verso que me parece de los mejores del libro: «se queda también la costumbre de bajar la voz en el pasillo / aunque ya no haya nadie durmiendo en la pieza del fondo». Esa costumbre es el libro entero: un gesto que sobrevive a la causa que lo explicaba.</p>\n\n<p>Si hay un reparo que hacerle a esta sección es su extensión. Nueve poemas sobre un mismo almuerzo son muchos, y hacia el séptimo la voz empieza a repetir recursos —la radio, la palta, el reloj de la cocina que atrasa diez minutos— que al principio funcionaban como anclas y al final suenan a tics. Un editor más severo habría dejado seis. Pero incluso en esa insistencia hay algo coherente con el proyecto: las familias también repiten, y un libro sobre la lengua familiar quizás tenga derecho a ser un poco reiterativo.</p>\n\n<h2>La gramática del inventario</h2>\n\n<p>La segunda sección, «Living», cambia de forma de manera radical. Aquí los poemas son listas: inventarios numerados de objetos, de frases, de fechas. Ilabaca toma el formato burocrático del inventario —el que hacen las empresas de mudanza, el que hace el corredor de propiedades, el que exige un notario cuando hay una herencia de por medio— y lo vuelve un instrumento poético. El efecto es extraño y, por momentos, conmovedor. Una lista como esta, que transcribo entera porque su fuerza está en la acumulación, dice más que muchos poemas confesionales:</p>\n\n<blockquote>\n<p>1. Sillón de tres cuerpos, tapiz verde, una quemadura de cigarro en el brazo izquierdo (no se habla de quién fumaba).<br>\n2. Mesa de centro, vidrio trizado desde 2009 (no se habla de cómo se trizó).<br>\n3. Foto de matrimonio, marco dorado (se habla de la foto, no del matrimonio).<br>\n4. Enciclopedia Salvat, tomos 1 al 12, falta el 7 (nadie sabe dónde está el 7, todos saben).<br>\n5. Planta de interior, muerta, que nadie se atreve a botar.</p>\n</blockquote>\n\n<p>Lo que hace la lista es convertir el paréntesis en el lugar de la verdad. El inventario oficial dice lo que hay; el paréntesis dice lo que eso significa, y lo dice siempre en la forma de lo que no se habla. La operación es sencilla y por eso mismo poderosa: Ilabaca descubre que la forma del inventario, que parece la más fría y objetiva de todas, es en realidad la más adecuada para hablar de lo que una familia esconde, porque esconder también es una manera de ordenar.</p>\n\n<p>Hay en esta sección una conciencia formal que no es frecuente en los primeros libros. Ilabaca sabe que la lista corre el riesgo de volverse un truco, y la interrumpe justo a tiempo: después de cuatro inventarios, el quinto poema de la sección rompe la numeración y se convierte en un bloque de prosa sin puntos, una sola frase que se desborda durante página y media. Es el único momento del libro en que la hablante pierde el control, y el lector lo agradece como se agradece un grito en una casa donde todos hablan bajo.</p>\n\n<h2>Las cosas que hablan</h2>\n\n<p>«Dormitorios», la tercera sección, es la más arriesgada y también la más desigual. Aquí los objetos toman la palabra: hay un poema dicho por el colchón, otro por el velador, otro por la cortina que nunca cerró bien. La prosopopeya es un recurso antiguo y peligroso, y Ilabaca no siempre lo esquiva. Cuando funciona, funciona muy bien: el poema del velador, que guarda en su cajón los remedios de la madre y las cartas del padre y que «sabe más de esta familia que el cura y el psiquiatra juntos», es uno de los textos más logrados del libro, irónico y tierno a la vez.</p>\n\n<p>Pero hay otros donde el recurso se vuelve previsible. El poema de la cortina, por ejemplo, insiste en una metáfora —la luz que se cuela por la rendija como la verdad que se cuela por los silencios— que el lector ya entendió tres poemas antes y que aquí se explica de más. Es el problema clásico de los libros temáticos: cuando todo apunta al mismo lugar, algunos poemas se vuelven redundantes, ilustraciones de una idea en vez de experiencias en sí mismas.</p>\n\n<p>Aun así, la sección tiene un mérito que no quiero pasar por alto: por primera vez en el libro aparecen otras voces. Los objetos no hablan como la hablante; cada uno tiene su registro, su humor, su manera de callar. El colchón es quejumbroso y algo vulgar; el velador, discreto y chismoso; la lámpara del pasillo, solemne como una abuela. Esa polifonía prepara lo que viene, porque la cuarta sección es, sobre todo, un libro de voces.</p>\n\n<h2>El silencio como método</h2>\n\n<p>«Pasillo» es la sección más breve y, a mi juicio, la mejor del libro. Son seis poemas cortos, casi aforismos, que trabajan con el blanco de la página tanto como con la palabra. Ilabaca reduce aquí la lengua al mínimo: versos de dos o tres palabras, frases que se cortan a mitad de camino, espacios que obligan a leer despacio. Es como si, después de tres secciones de enumerar, describir y hacer hablar a las cosas, la autora llegara al lugar donde ya no hay nada que decir, y descubriera que ese lugar también tiene su lengua.</p>\n\n<blockquote>\n<p>el pasillo<br>\nes donde<br>\nse escucha<br>\n<br>\ntodo<br>\n<br>\nlo que en las piezas<br>\nse dice<br>\ncon la puerta cerrada</p>\n</blockquote>\n\n<p>Lo que me interesa de estos poemas es que no son minimalistas por elegancia sino por necesidad. El pasillo es, en la lógica del libro, el espacio del entremedio: el lugar por donde se pasa, donde no se vive, donde se escucha lo que no está dirigido a uno. Es el espacio de la infancia, si se quiere, porque los niños viven en los pasillos de las conversaciones adultas, enterándose a medias de lo que nadie les cuenta. Y el libro encuentra aquí su forma más precisa para eso que viene persiguiendo desde la primera página: la lengua de lo que se escucha sin que nadie lo diga.</p>\n\n<p>Hay un poema en esta sección que cita, sin nombrarlo, un verso muy conocido de la tradición chilena —no voy a decir cuál para no arruinar el hallazgo— y lo hace con una delicadeza que muestra a una lectora atenta, alguien que conoce a sus mayores y no les tiene miedo. Es un gesto pequeño, casi secreto, que dice mucho del lugar desde donde Ilabaca escribe: no desde la ruptura, sino desde la conversación.</p>\n\n<h2>Lo que el libro no resuelve</h2>\n\n<p>La quinta y última sección, «Patio», intenta cerrar el ciclo y es donde el libro se debilita. Después de la intensidad contenida del «Pasillo», los poemas del patio vuelven al verso largo y a la narración, y cuentan la tarde en que la familia entrega las llaves. Hay buenos momentos —una escena con el perro, que no entiende por qué lo suben al auto, está muy bien resuelta— pero la sección se resiente de una necesidad de conclusión que el resto del libro había evitado con inteligencia.</p>\n\n<p>El último poema, «Escritura», propone que la hablante ha encontrado por fin su propia lengua, distinta de la de la casa, y que el libro mismo es la prueba. Es un final comprensible, casi inevitable en un primer libro, pero me parece que contradice lo mejor de lo que vino antes. Si algo había mostrado <em>Inventario de lo que no se dijo</em> es que la lengua familiar no se abandona: se lleva, como la costumbre de bajar la voz en el pasillo, a todas las casas que vienen después. Un final más abierto, o más incómodo, habría sido más fiel al libro que Ilabaca escribió.</p>\n\n<p>Tampoco me convence del todo la edición. Ediciones Pájaro de Cemento ha hecho un trabajo cuidado en la tipografía y el papel, pero el libro habría ganado con una corrección más exigente: hay al menos tres erratas visibles, y la decisión de imprimir los títulos de las secciones en mayúsculas espaciadas sobre fondo gris le resta sobriedad a un libro que la pide. Son detalles, pero en un primer libro los detalles importan, porque son lo que el lector usa para decidir si confía.</p>\n\n<h2>Coda</h2>\n\n<p>Con todos sus desniveles, <em>Inventario de lo que no se dijo</em> es uno de los primeros libros más interesantes que he leído este año. No por su tema —la casa familiar, la memoria, la mudanza son territorios muy transitados por la poesía chilena reciente— sino por la inteligencia con que Ilabaca encuentra, para cada parte de su tema, una forma distinta: el verso narrativo para la cocina, el inventario para el living, la prosopopeya para los dormitorios, el blanco para el pasillo. Esa búsqueda formal, que en otros libros sería un ejercicio, aquí está al servicio de una pregunta verdadera: ¿en qué idioma se vive cuando la casa donde aprendimos a hablar deja de existir?</p>\n\n<p>El libro no responde esa pregunta, y está bien que no lo haga. Lo que hace es mostrar, con una precisión a veces dolorosa, cómo funciona esa lengua mientras todavía la hablamos sin saberlo. Leí el libro dos veces y la segunda lectura fue mejor que la primera: los paréntesis del inventario, que en la primera lectura parecían un recurso ingenioso, en la segunda se volvieron lo más triste del libro. Eso solo pasa con los libros que tienen algo que decir, incluso cuando lo que tienen que decir es, precisamente, lo que no se dijo<sup>1</sup>.</p>\n\n<hr>\n\n<p><small><sup>1</sup> Marta Ilabaca leyó tres poemas de este libro en la lectura de otoño del colectivo, en la Biblioteca de Santiago. La reseña se escribió antes de esa lectura y no se modificó después, aunque la manera en que leyó el inventario del living —con los paréntesis en voz más baja— confirmó algunas de las intuiciones que aquí se exponen.</small></p>\n",
+   "body": "<p>Hay libros que empiezan por el final, y <em>Inventario de lo que no se dijo</em>, el primer libro de Marta Ilabaca, empieza por la última caja. La que nadie quiere cerrar en una mudanza porque adentro van las cosas que no tienen lugar en ninguna otra: un control remoto sin televisor, tres llaves que no abren nada, una carta sin sobre, el certificado de bautizo de una tía que nunca se casó. Desde esa caja, que el libro llama «la caja de lo suelto», Ilabaca arma cinco secciones que son también cinco cuartos de una casa que se vende, y en cada una prueba una manera distinta de decir lo que en esa familia no se decía.</p>\n\n<p>Conviene advertirlo desde ya: no es un libro sobre la casa. Es un libro sobre el idioma que una casa obliga a hablar, y sobre lo que pasa con ese idioma cuando la casa deja de existir. La mudanza es el pretexto, pero el verdadero tema es la lengua familiar, esa gramática doméstica hecha de eufemismos, de frases que se dicen siempre en el mismo orden, de silencios que todos entienden y nadie nombra. Ilabaca lo sabe y lo dice en el poema que abre el libro, que funciona casi como un manifiesto:</p>\n\n<blockquote>\n<p>En esta casa no se decía cáncer, se decía <em>lo de la mamá</em>.<br>\nNo se decía deuda, se decía <em>el asunto del banco</em>.<br>\nNo se decía que mi padre bebía:<br>\nse decía que llegaba cansado.<br>\nAprendí a hablar en esta casa<br>\ny ahora que la venden no sé en qué idioma voy a vivir.</p>\n</blockquote>\n\n<p>El poema es eficaz, quizás demasiado: tiene la contundencia de un primer poema que sabe que va primero. Pero lo que viene después lo complica y lo matiza, y eso es lo que hace que el libro valga mucho más que su arranque.</p>\n\n<h2>Una mudanza que no termina</h2>\n\n<p>La primera sección, «Cocina», es la más narrativa del libro. Son nueve poemas en verso largo, casi prosaicos, que reconstruyen una escena: la madre de la hablante cocinando el último almuerzo en la casa, el domingo antes de que llegue el camión. Ilabaca trabaja aquí con una paciencia que se agradece. No hay epifanías ni grandes cierres; hay ollas, hay una radio que transmite un partido que nadie escucha, hay una conversación que da vueltas sobre el precio de la palta para no hablar de lo único que importa. La tensión del poema está en lo que se deja fuera, y el lector la siente en cada frase interrumpida, en cada «bueno, ya» que cierra un tema antes de que se abra.</p>\n\n<p>Lo interesante es que la autora no se instala en la nostalgia. La casa no es un paraíso perdido; es un lugar donde ocurrieron cosas difíciles, y la mudanza es, de algún modo, una liberación que nadie se atreve a celebrar. Hay un poema, «Lo que se queda», que enumera los objetos que la familia decide no llevarse, y la enumeración termina con un verso que me parece de los mejores del libro: «se queda también la costumbre de bajar la voz en el pasillo / aunque ya no haya nadie durmiendo en la pieza del fondo». Esa costumbre es el libro entero: un gesto que sobrevive a la causa que lo explicaba.</p>\n\n<p>Si hay un reparo que hacerle a esta sección es su extensión. Nueve poemas sobre un mismo almuerzo son muchos, y hacia el séptimo la voz empieza a repetir recursos —la radio, la palta, el reloj de la cocina que atrasa diez minutos— que al principio funcionaban como anclas y al final suenan a tics. Un editor más severo habría dejado seis. Pero incluso en esa insistencia hay algo coherente con el proyecto: las familias también repiten, y un libro sobre la lengua familiar quizás tenga derecho a ser un poco reiterativo.</p>\n\n<h2>La gramática del inventario</h2>\n\n<p>La segunda sección, «Living», cambia de forma de manera radical. Aquí los poemas son listas: inventarios numerados de objetos, de frases, de fechas. Ilabaca toma el formato burocrático del inventario —el que hacen las empresas de mudanza, el que hace el corredor de propiedades, el que exige un notario cuando hay una herencia de por medio— y lo vuelve un instrumento poético. El efecto es extraño y, por momentos, conmovedor. Una lista como esta, que transcribo entera porque su fuerza está en la acumulación, dice más que muchos poemas confesionales:</p>\n\n<blockquote>\n<p>1. Sillón de tres cuerpos, tapiz verde, una quemadura de cigarro en el brazo izquierdo (no se habla de quién fumaba).<br>\n2. Mesa de centro, vidrio trizado desde 2009 (no se habla de cómo se trizó).<br>\n3. Foto de matrimonio, marco dorado (se habla de la foto, no del matrimonio).<br>\n4. Enciclopedia Salvat, tomos 1 al 12, falta el 7 (nadie sabe dónde está el 7, todos saben).<br>\n5. Planta de interior, muerta, que nadie se atreve a botar.</p>\n</blockquote>\n\n<p>Lo que hace la lista es convertir el paréntesis en el lugar de la verdad. El inventario oficial dice lo que hay; el paréntesis dice lo que eso significa, y lo dice siempre en la forma de lo que no se habla. La operación es sencilla y por eso mismo poderosa: Ilabaca descubre que la forma del inventario, que parece la más fría y objetiva de todas, es en realidad la más adecuada para hablar de lo que una familia esconde, porque esconder también es una manera de ordenar.</p>\n\n<p>Hay en esta sección una conciencia formal que no es frecuente en los primeros libros. Ilabaca sabe que la lista corre el riesgo de volverse un truco, y la interrumpe justo a tiempo: después de cuatro inventarios, el quinto poema de la sección rompe la numeración y se convierte en un bloque de prosa sin puntos, una sola frase que se desborda durante página y media. Es el único momento del libro en que la hablante pierde el control, y el lector lo agradece como se agradece un grito en una casa donde todos hablan bajo.</p>\n\n<h2>Las cosas que hablan</h2>\n\n<p>«Dormitorios», la tercera sección, es la más arriesgada y también la más desigual. Aquí los objetos toman la palabra: hay un poema dicho por el colchón, otro por el velador, otro por la cortina que nunca cerró bien. La prosopopeya es un recurso antiguo y peligroso, y Ilabaca no siempre lo esquiva. Cuando funciona, funciona muy bien: el poema del velador, que guarda en su cajón los remedios de la madre y las cartas del padre y que «sabe más de esta familia que el cura y el psiquiatra juntos», es uno de los textos más logrados del libro, irónico y tierno a la vez.</p>\n\n<p>Pero hay otros donde el recurso se vuelve previsible. El poema de la cortina, por ejemplo, insiste en una metáfora —la luz que se cuela por la rendija como la verdad que se cuela por los silencios— que el lector ya entendió tres poemas antes y que aquí se explica de más. Es el problema clásico de los libros temáticos: cuando todo apunta al mismo lugar, algunos poemas se vuelven redundantes, ilustraciones de una idea en vez de experiencias en sí mismas.</p>\n\n<p>Aun así, la sección tiene un mérito que no quiero pasar por alto: por primera vez en el libro aparecen otras voces. Los objetos no hablan como la hablante; cada uno tiene su registro, su humor, su manera de callar. El colchón es quejumbroso y algo vulgar; el velador, discreto y chismoso; la lámpara del pasillo, solemne como una abuela. Esa polifonía prepara lo que viene, porque la cuarta sección es, sobre todo, un libro de voces.</p>\n\n<h2>El silencio como método</h2>\n\n<p>«Pasillo» es la sección más breve y, a mi juicio, la mejor del libro. Son seis poemas cortos, casi aforismos, que trabajan con el blanco de la página tanto como con la palabra. Ilabaca reduce aquí la lengua al mínimo: versos de dos o tres palabras, frases que se cortan a mitad de camino, espacios que obligan a leer despacio. Es como si, después de tres secciones de enumerar, describir y hacer hablar a las cosas, la autora llegara al lugar donde ya no hay nada que decir, y descubriera que ese lugar también tiene su lengua.</p>\n\n<blockquote>\n<p>el pasillo<br>\nes donde<br>\nse escucha<br>\n<br>\ntodo<br>\n<br>\nlo que en las piezas<br>\nse dice<br>\ncon la puerta cerrada</p>\n</blockquote>\n\n<p>Lo que me interesa de estos poemas es que no son minimalistas por elegancia sino por necesidad. El pasillo es, en la lógica del libro, el espacio del entremedio: el lugar por donde se pasa, donde no se vive, donde se escucha lo que no está dirigido a uno. Es el espacio de la infancia, si se quiere, porque los niños viven en los pasillos de las conversaciones adultas, enterándose a medias de lo que nadie les cuenta. Y el libro encuentra aquí su forma más precisa para eso que viene persiguiendo desde la primera página: la lengua de lo que se escucha sin que nadie lo diga.</p>\n\n<p>Hay un poema en esta sección que cita, sin nombrarlo, un verso muy conocido de la tradición chilena —no voy a decir cuál para no arruinar el hallazgo— y lo hace con una delicadeza que muestra a una lectora atenta, alguien que conoce a sus mayores y no les tiene miedo. Es un gesto pequeño, casi secreto, que dice mucho del lugar desde donde Ilabaca escribe: no desde la ruptura, sino desde la conversación.</p>\n\n<h2>Lo que el libro no resuelve</h2>\n\n<p>La quinta y última sección, «Patio», intenta cerrar el ciclo y es donde el libro se debilita. Después de la intensidad contenida del «Pasillo», los poemas del patio vuelven al verso largo y a la narración, y cuentan la tarde en que la familia entrega las llaves. Hay buenos momentos —una escena con el perro, que no entiende por qué lo suben al auto, está muy bien resuelta— pero la sección se resiente de una necesidad de conclusión que el resto del libro había evitado con inteligencia.</p>\n\n<p>El último poema, «Escritura», propone que la hablante ha encontrado por fin su propia lengua, distinta de la de la casa, y que el libro mismo es la prueba. Es un final comprensible, casi inevitable en un primer libro, pero me parece que contradice lo mejor de lo que vino antes. Si algo había mostrado <em>Inventario de lo que no se dijo</em> es que la lengua familiar no se abandona: se lleva, como la costumbre de bajar la voz en el pasillo, a todas las casas que vienen después. Un final más abierto, o más incómodo, habría sido más fiel al libro que Ilabaca escribió.</p>\n\n<p>Tampoco me convence del todo la edición. Ediciones Pájaro de Cemento ha hecho un trabajo cuidado en la tipografía y el papel, pero el libro habría ganado con una corrección más exigente: hay al menos tres erratas visibles, y la decisión de imprimir los títulos de las secciones en mayúsculas espaciadas sobre fondo gris le resta sobriedad a un libro que la pide. Son detalles, pero en un primer libro los detalles importan, porque son lo que el lector usa para decidir si confía.</p>\n\n<h2>Coda</h2>\n\n<p>Con todos sus desniveles, <em>Inventario de lo que no se dijo</em> es uno de los primeros libros más interesantes que he leído este año. No por su tema —la casa familiar, la memoria, la mudanza son territorios muy transitados por la poesía chilena reciente— sino por la inteligencia con que Ilabaca encuentra, para cada parte de su tema, una forma distinta: el verso narrativo para la cocina, el inventario para el living, la prosopopeya para los dormitorios, el blanco para el pasillo. Esa búsqueda formal, que en otros libros sería un ejercicio, aquí está al servicio de una pregunta verdadera: ¿en qué idioma se vive cuando la casa donde aprendimos a hablar deja de existir?</p>\n\n<p>El libro no responde esa pregunta, y está bien que no lo haga. Lo que hace es mostrar, con una precisión a veces dolorosa, cómo funciona esa lengua mientras todavía la hablamos sin saberlo. Leí el libro dos veces y la segunda lectura fue mejor que la primera: los paréntesis del inventario, que en la primera lectura parecían un recurso ingenioso, en la segunda se volvieron lo más triste del libro. Eso solo pasa con los libros que tienen algo que decir, incluso cuando lo que tienen que decir es, precisamente, lo que no se dijo<sup>1</sup>.</p>\n\n<hr>\n\n<p><small><sup>1</sup> Marta Ilabaca leyó tres poemas de este libro en la lectura de otoño del colectivo, en la Biblioteca de Ejemplo. La reseña se escribió antes de esa lectura y no se modificó después, aunque la manera en que leyó el inventario del living —con los paréntesis en voz más baja— confirmó algunas de las intuiciones que aquí se exponen.</small></p>\n",
    "excerpt": "",
    "type": "resena",
    "section": 2,
@@ -2362,7 +2075,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'1':733,787,2043,2044 '12':789 '2':754 '2009':761 '3':769 '4':783 '5':801 '7':792,798 'abandon':1711 'abiert':1734 'abra':462 'abre':231 'abren':90 'abuel':1234 'acumulacion':726 'adecu':884 'adentr':70 'adult':1438 'advert':148 'afor':1274 'agradec':391,984,987 'ahor':282 'algui':1518 'algun':494 'almuerz':371,565 'alto':1187 'anclas':596 'ano':1855 'antigu':1043 'aparec':1194 'aprend':1941 'aprendi':275 'apunt':1155 'aqui':385,653,1013,1140,1290,1452,1924,2101 'arma':115 'arranqu':336 'arriesg':1007 'arruin':1503 'asi':1176 'asunt':260 'atent':1517 'atras':588 'atrev':501,809 'aun':1175 'aunqu':2078 'aut':1619 'autor':468,1332 'baj':996,1718,2094 'banc':262 'bautiz':99 'bebi':269 'bibliotec':2062 'bien':1037,1056,1622,1955 'blanc':1279,1910 'bloqu':952 'bot':811 'braz':746 'brev':1260 'buen':452,1604 'burocrat':670 'busqued':1915 'cad':131,447,451,1204,1885 'caj':60,109 'cajon':1065 'call':1214 'cambi':647 'camin':1308 'camion':382 'canc':246 'cans':274 'cart':93,1073 'cas':2,106,125,157,166,180,242,280,374,476,992,1662,1727,1861,1939 'casi':236,357,1273,1533,1675 'caus':544 'celebr':503 'cement':1757 'centr':757 'cerr':65,1036,1369,1564 'certific':97 'chilen':1495,1874 'chismos':1226 'cicl':1566 'cierr':397,455 'cigarr':743 'cinc':33,116,121 'cit':1485 'clasic':1148 'cocin':368,586,1898 'cod':1831 'coherent':617 'colchon':1025,1216 'colect':2059 'complic':318 'comprens':1674 'concienci':906 'conclusion':1633 'confesional':732 'confi':1830 'confirm':2095 'conmovedor':712 'conoc':1491,1520 'conten':1578 'contradic':1685 'control':82,979 'contundent':302 'convenc':1749 'convers':1437 'conversacion':412,1551 'convert':818 'convien':147 'conviert':19,949 'corr':921 'correccion':1776 'corredor':684 'cort':1272,1304 'cortin':1033,1106 'cos':73,487,998,1330 'costumbr':533,1716 'cuart':122,1243 'cuatr':936 'cuel':1117,1126 'cuent':1447,1593 'cuerp':737 'cuid':1762 'da':414 'debilit':1573 'dec':138,1342,1499,2028,2035 'deci':146,245,248,255,258,265,271 'decid':514,1828 'decision':1787 'dej':181,439,608,1944 'delicadez':1511 'demasi':299 'derech':634 'desbord':962 'describ':1324 'descubr':864,1344 'desigual':1012 'desnivel':1835 'despaci':1314 'despu':316,934,1318,1574,1730,2077 'detall':1811,1818 'deud':256 'dic':207,226,727,830,836,843,1365,1536 'dich':1022 'diez':589 'dificil':488 'dig':1477 'dij':12,49,1703,1842,2042 'dirig':1416 'discret':1224 'distint':136,1657,1892 'dolor':1970 'domest':199 'doming':376 'dor':774 'dormitori':1908 'dos':1297,1984 'edicion':1753,1754 'editor':604 'efect':706 'eficaz':297 'ejempl':1108 'ejercici':1923 'eleg':1383 'empiez':38,56,574 'empres':677 'enciclopedi':784 'encontr':1651 'encuentr':1451,1883 'entendi':1134 'enter':537,719,1439 'entiend':217,1613 'entreg':1600 'entremedi':1398 'enumer':508,1323 'enumeracion':519 'epifani':394 'errat':1783 'escen':362,1607 'escond':892,894 'escrib':1543 'escribi':1746,2068 'escuch':409,1357,1411,1472 'espaci':1309,1396,1421,1797 'esquiv':1051 'eufem':202 'evit':1640 'exig':689 'exigent':1778 'exist':183,1946 'experient':1171 'explic':547,1142 'expon':2103 'extension':559 'extran':708 'extranjer':5 'falt':790 'famili':22,143,196,513,622,631,891,1599,1708,1862 'fech':665 'fiel':1741 'fin':1653 'final':41,599,1673,1732 'fond':1799 'form':649,847,867,1454,1891 'formal':907,1916 'format':669 'fot':770,779 'fras':204,448,663,959,1301 'frecuent':911 'fri':874 'fuerz':722 'fum':753 'funcion':235,594,1053,1054,1972 'gan':1773 'gest':539,1531 'gramat':25,198,641 'grand':396 'gris':1800 'grit':989 'guard':1062 'habi':1639,1695 'habl':169,277,424,750,764,776,853,886,995,1000,1200,1327,1943,1978 'hablant':367,976,1203,1649 'habri':607,1738,1772 'hac':327,553,675,682,814,1326,1508,1962 'haci':569 'hag':1959 'hallazg':1505 'hech':200,1759 'herenci':695 'humor':1210 'ide':1167 'idiom':163,177,290,1934 'ilabac':18,55,114,221,383,666,863,916,1047,1288,1542,1745,1882,2046 'ilustr':1164 'import':429,1819 'imprim':1789 'inclus':611,2029 'incomod':1737 'inevit':1676 'infanci':1424 'ingeni':2007 'insist':1109 'insistent':614 'instal':471 'instrument':703 'inteligent':1642,1879 'intens':1577 'intent':1563 'interes':464,1373,1850 'interior':804 'interrump':449,930 'intuicion':2099 'inventari':6,43,643,658,672,828,869,937,1697,1836,1900,1998,2085 'iron':1087 'izquierd':747 'juici':1264 'just':931 'lamp':1228 'larg':356,1587 'lector':443,982,1132,1516,1825 'lectur':29,1989,2003,2055,2072 'leer':1313 'lei':1981 'leid':1853 'lengu':4,195,630,1292,1351,1467,1656,1707,1974 'lent':30 'ley':2047,2083 'liberacion':497 'libr':15,36,52,112,154,160,233,330,350,531,536,627,915,972,1086,1151,1193,1249,1268,1394,1450,1555,1571,1638,1666,1680,1743,1771,1806,1816,1848,1920,1948,1983,2017,2023,2052 'list':657,714,816,920 'living':1903,2087 'llam':113 'llav':87,1602 'lleg':273,380,1333 'llev':516,1713 'logic':1392 'logr':1084 'lug':77,484,823,1158,1335,1347,1400,1539 'luz':1114 'madr':364,1070 'mam':252 'maner':135,651,898,1212,2080 'manifiest':239 'marc':773 'mart':17,54,2045 'mas':333,347,605,728,873,883,1006,1011,1083,1144,1259,1455,1733,1736,1740,1777,1849,2014,2093 'matiz':321 'matrimoni':772,782 'mayor':1523 'mayuscul':1796 'medi':698,966,1441 'mejor':529,1266,1687,1991 'memori':1864 'men':1781 'merit':1181 'mes':755 'metafor':1112 'metod':1255 'mied':1528 'mientr':1975 'minim':1294 'minimal':1381 'minut':590 'mism':211,564,861,1157,1174,1667 'mit':1306 'mod':495 'modif':2076 'moment':711,970,1605 'mostr':1696,1964 'mudanz':21,68,185,338,491,679,1866 'muert':805 'muestr':1513 'nadi':63,219,408,499,793,807,1445,1475 'narracion':1591 'narrat':348,1895 'neces':1386,1631 'nin':1430 'ningun':79 'nombr':220,1487 'nostalgi':474 'notari':691 'nuev':352,560 'numer':659 'numeracion':946 'nunc':104,1035 'objet':510,661,876,1015,1198 'oblig':167,1311 'ocurr':486 'oficial':829 'ollas':399 'operacion':855 'orden':212,900 'oton':2057 'pacienci':388 'padr':268,1075 'pagin':964,1282,1465 'pajar':1755 'palabr':1018,1287,1300 'palt':421,581 'papel':1768 'parais':480 'parec':526,871,1683 'pareci':2004 'parentesis':820,835,1996,2090 'part':406,1886 'pas':174,1185,1404,2020 'pasill':1230,1353,1388,1434,1723,1913 'pati':1583 'peligr':1045 'pequen':1532 'perd':481 'perr':1610 'persigu':1461 'pid':1809 'pierd':977 'piez':1363 'plant':802 'poder':862 'poem':229,295,306,353,433,506,561,655,731,940,1021,1058,1103,1136,1160,1271,1376,1480,1581,1645,2049 'poesi':1873 'poetic':704 'polifoni':1236 'preci':418 'precis':1456,2037 'precision':1967 'pregunt':1930,1952 'prep':1237 'pretext':188 'previs':1101 'prim':14,51,305,1679,1815 'primer':311,343,914,1189,1464,1847,1994,2002 'principi':593 'problem':1147 'propi':1655 'propiedad':686 'propon':1646 'pros':954 'prosaic':358 'prosopopey':1039,1905 'proyect':620 'prueb':133,1670 'puert':1368 'punt':956 'quejumbr':1218 'quemadur':741 'quier':64,1184,1427 'quint':939,1559 'quiz':298,632 'radi':402,579 'radical':652 'realid':881 'recient':1875 'reconstru':360 'recurs':577,1042,1098,2006 'reduc':1289 'redund':1163 'registr':1208 'reiter':639 'reloj':583 'remedi':1067 'remot':83 'rendij':1120 'repar':551 'repet':576 'repit':624 'resen':2066 'resient':1628 'respond':1950 'rest':1636,1802 'resuelt':1623 'resuelv':1557 'riesg':923 'romp':944 'ruptur':1547 'sab':223,308,794,800,917,1980 'salvat':785 'santiag':2064 'seccion':34,117,344,556,646,904,943,1003,1178,1244,1258,1321,1483,1562,1626,1794 'secret':1534 'segund':645,1988,2010 'seis':609,1270 'sencill':857 'septim':571 'ser':636 'seri':1921 'servici':1927 'sever':606 'si':548,1173,1317,1425,1693,1829 'sid':1739 'siempr':208,844,1049 'signif':840 'silenci':27,214,1129,1253 'sillon':734 'sin':1384,1548,1876 'sobreviv':541 'sobried':1803 'sol':958,2019 'solemn':1231 'sub':1617 'suen':600 'tambi':120,623,895,1009,1348 'tampoc':1747 'tapiz':738 'tard':1595 'televisor':85 'tem':192,457,1859,1889 'temat':1152 'tension':431 'tercer':1002 'termin':341,520 'territori':1868 'text':1082 'tia':102 'tics':602 'tiemp':933 'tiern':1089 'tipografi':1765 'titul':1791 'tod':878,1725 'todavi':1976 'tom':667,786,1016 'trabaj':384,1276,1761 'tradicion':1494 'transcrib':718 'transit':1870 'transmit':404 'tres':86,736,1135,1299,1320,1782,2048 'trist':2015 'triz':759,768 'truc':927 'ultim':59,370,1561,1644 'unic':427,969 'usa':1826 'va':310 'valg':331 'van':71 'vec':1969,1985 'velador':1029,1060,1223 'vend':128,285 'verd':739,826,1123 'verdader':191,1931 'vers':355,523,1295,1489,1586,1894 'vez':1092,1169,1190 'vidri':758 'vien':315,1240,1460,1729 'vin':1691 'visibl':1784 'viv':293,1408,1431,1936 'voc':1196,1251 'volv':925,2012 'voy':291,1497 'voz':573,1720,2092 'vuelt':415 'vuelv':701,1100,1162,1584 'vulg':1221",
    "tags": [
     18,
     17,
@@ -2375,14 +2087,13 @@
   "pk": 17,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-13T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.780Z",
    "updated_at": "2026-10-14T19:27:34.780Z",
    "slug": "zz-largo-repetir-el-verso",
    "title": "Repetir el verso: notas sobre la lectura en voz alta, la memoria y el error",
    "subtitle": "Un colectivo que se llama Repitentes del Verso tendría que explicar alguna vez por qué repetir no es fracasar. Este ensayo lo intenta en siete movimientos y una partitura.",
-   "body": "<p>Un colectivo que se llama Repitentes del Verso tendría que explicar, alguna vez, por qué repetir no es fracasar. El nombre nació como una broma: varios de nosotros nos conocimos en un taller al que volvíamos año tras año, como quien repite un curso, y alguien dijo que éramos los repitentes del verso. La broma se quedó, y con el tiempo dejó de ser una broma. Este ensayo intenta explicar por qué, en siete movimientos que no siguen un orden lógico sino el orden en que fuimos entendiendo las cosas, y en una partitura que no sabemos si es un poema.</p>\n\n<p>Lo escribimos entre dos, lo que significa que lo escribimos tres o cuatro veces. Cada uno reescribía lo que el otro había escrito, y en esa reescritura descubrimos que el texto mejoraba precisamente en los lugares donde repetíamos algo que ya estaba dicho, pero dicho de otra manera. Esa es, si se quiere, la tesis de todo lo que sigue: la repetición no es la ausencia de novedad, sino la forma en que lo nuevo se vuelve audible.</p>\n\n<h2>1. La escuela y la repetición</h2>\n\n<p>En la escuela, repetir es un castigo. Se repite de curso cuando no se aprendió lo suficiente; se repite una plana de caligrafía cuando la letra salió fea; se repite cien veces «no debo hablar en clases» cuando se habló en clases. La repetición escolar es una pedagogía del error: se repite lo que salió mal, para que salga bien, y el objetivo de toda repetición es dejar de repetir. Quien aprende ya no necesita repetir; quien repite es porque todavía no aprendió.</p>\n\n<p>Esa idea, que parece obvia, tiene una consecuencia extraña cuando se la aplica a la poesía. Si repetir es la marca del que no aprendió, entonces el poema que repite —el estribillo, la anáfora, la letanía, el paralelismo de los salmos— sería un poema que no aprendió a decir las cosas de una vez. Y sin embargo, buena parte de la poesía que más nos importa está hecha de repeticiones: las canciones de cuna, los romances, las tonadas, los rezos, los poemas que se aprendieron de memoria y que sobreviven precisamente porque repiten.</p>\n\n<h3>La plana y el verso</h3>\n\n<p>Hay una diferencia entre repetir una plana y repetir un verso. La plana busca la identidad: cada línea debe ser igual a la anterior, y la mejor plana es aquella en que todas las líneas son indistinguibles. El verso que se repite, en cambio, nunca es el mismo verso: la segunda vez que aparece ya no significa lo que significó la primera, porque entre una aparición y otra pasó algo —otro verso, un silencio, una vida—. La repetición poética no busca la identidad sino la diferencia, y la produce precisamente insistiendo en lo mismo.</p>\n\n<p>Esto lo sabe cualquiera que haya cantado una canción de memoria. El estribillo de la tercera vez no se canta igual que el de la primera: se canta con lo que pasó en las estrofas, con el cansancio o la emoción acumulada, con la conciencia de que pronto se va a acabar. La repetición es un dispositivo para medir el tiempo, para que el oyente sienta que algo cambió aunque las palabras sean las mismas.</p>\n\n<h3>Repetir de curso</h3>\n\n<p>Volvamos a la broma del nombre. Repetir de curso significa volver a pasar por lo mismo con otros compañeros, y eso es exactamente lo que ocurre en un taller de poesía al que se vuelve año tras año. Los textos de los clásicos son los mismos, los ejercicios a veces también, pero los compañeros cambian, y con ellos cambia la lectura. Un poema que leímos el primer año como una curiosidad lo leímos el tercero como una revelación, no porque el poema hubiera cambiado, sino porque había cambiado la mesa alrededor de la cual lo leíamos.</p>\n\n<p>El taller nos enseñó que la lectura es un acto colectivo incluso cuando se lee en silencio, porque cada uno lee con las voces de los que leyeron antes. Y nos enseñó también que repetir un curso no es necesariamente un fracaso: a veces es la única manera de aprender lo que el primer paso no alcanzó a enseñar.</p>\n\n<h2>2. El cuerpo que lee</h2>\n\n<p>Leer en voz alta es poner el cuerpo. No solo la voz: el cuerpo entero, que respira, que se cansa, que tiembla un poco antes de empezar. Cualquiera que haya leído en público sabe que el poema que se lee no es el mismo que se escribió, y que la diferencia está en el cuerpo. Hay poemas que en la página funcionan y en la voz se derrumban, porque dependían de un corte de verso que la voz no puede marcar, o de una ambigüedad que la entonación resuelve sin querer. Y hay poemas que en la página parecen planos y en la voz se levantan, porque su música estaba esperando un cuerpo que la hiciera sonar.</p>\n\n<p>Durante años, en el colectivo, discutimos sobre cómo leer. Algunos defendían la lectura neutra, casi monótona, que deja que el poema hable por sí mismo; otros preferían una lectura actuada, con cambios de ritmo y de volumen, que interpreta el poema como se interpreta una partitura. La discusión nunca se resolvió, pero de ella salió una serie de reglas prácticas que todavía usamos, y que transcribimos aquí no como verdades sino como acuerdos provisorios:</p>\n\n<ul>\n<li>Leer el poema en voz alta al menos tres veces antes de leerlo en público, y al menos una de esas veces frente a otra persona.</li>\n<li>No pedir disculpas antes de leer. El público no necesita saber que el poema es nuevo, que no está terminado o que el lector está nervioso; necesita escuchar el poema.</li>\n<li>Respetar los cortes de verso con una pausa breve, pero no tan larga que el verso se convierta en una sucesión de palabras sueltas.</li>\n<li>Si el poema tiene un estribillo, no leerlo siempre igual: dejar que cambie, aunque sea un poco, con lo que vino antes.</li>\n<li>Equivocarse es parte de leer. Si una palabra sale mal, no hay que repetirla de inmediato: es mejor seguir y, si importa, volver a ella al final.</li>\n<li>Mirar al público al menos una vez, aunque sea al final, para que el poema termine en alguien y no en el papel.</li>\n</ul>\n\n<p>La quinta regla es la que más nos costó aceptar, y es la que más tiene que ver con el nombre del colectivo. Volveremos a ella.</p>\n\n<h3>Respirar</h3>\n\n<p>Un poema largo leído en voz alta es una prueba de resistencia. Hay que decidir dónde respirar, y esa decisión cambia el poema. Respirar al final de cada verso produce una lectura entrecortada, casi asmática; respirar solo al final de cada estrofa obliga a leer versos largos de un tirón, y la voz se va apagando hacia el final de la frase. La respiración es la puntuación del cuerpo, y no siempre coincide con la puntuación del texto.</p>\n\n<p>En los ensayos previos a una lectura colectiva solemos marcar las respiraciones en el papel con una barra diagonal, como hacen los actores. Es un gesto mínimo que cambia mucho: obliga a leer el poema antes de leerlo, a decidir dónde está su aire. Y muchas veces descubrimos que el poema respira en lugares que no esperábamos, que su sintaxis pedía una pausa donde la página no la marcaba.</p>\n\n<h2>3. Una partitura</h2>\n\n<p>Lo que sigue es una partitura que preparamos para la lectura colectiva de otoño. No es un poema, o no lo es del todo: es un mapa de cómo leímos a seis voces un texto que había escrito una sola persona. Las columnas indican quién lee cada fragmento; los espacios, las pausas; las mayúsculas, los momentos en que todos leen a la vez. La reproducimos tal cual, con su tipografía de máquina de escribir, porque su forma es parte de lo que dice:</p>\n\n<pre>VOZ 1                VOZ 2                VOZ 3                TODAS\nla casa              .                    .\n.                    se vende             .\n.                    .                    con todo adentro\n.                    .                    .                    CON TODO ADENTRO\n(pausa de cuatro respiraciones; la voz 4 cuenta en silencio con los dedos)\nla casa se vende con todo adentro y nadie pregunta qué es todo, nadie pregunta qué es adentro, nadie pregunta\n.                    TODO                 .                    .\n.                    .                    ADENTRO              .\n(silencio)                                                     la casa</pre>\n\n<p>Leída así, la partitura parece un juego, y en parte lo es. Pero cuando la ensayamos descubrimos algo que no esperábamos: el verso «con todo adentro», repetido primero por una voz y después por todas, adquiría un peso que en el poema original no tenía. La repetición coral lo convertía en una especie de verdad compartida, algo que ya no decía una persona sino un grupo. Y la línea larga del medio, la que una sola voz lee de corrido sin respirar, funcionaba como su opuesto: la voz individual que se desborda, que pregunta lo que el coro no pregunta.</p>\n\n<figure>\n<img src=\"/media/assets/2026/07/event-cierre.jpg\" alt=\"Seis personas leen de pie, cada una con su hoja, en una sala de biblioteca.\" width=\"1200\" height=\"750\">\n<figcaption>Ensayo de la lectura colectiva de otoño, en la sala de la Biblioteca de Santiago. Cada hoja tenía marcadas, con lápiz rojo, las respiraciones de quien la leía.</figcaption>\n</figure>\n\n<p>La partitura tiene además una historia técnica que vale la pena contar, porque dice algo sobre cómo trabajamos. La primera versión la escribimos en un procesador de texto, y al imprimirla las columnas se desalinearon: la fuente proporcional desordenaba los espacios y la voz 3 terminaba leyendo lo que le tocaba a la voz 2. La segunda versión la escribimos en un editor de texto plano, con fuente de ancho fijo, y la guardamos con un nombre que todavía nos avergüenza: <code>partitura_otono_FINAL_v3_ahora_si_definitiva_NO_TOCAR.txt</code>. El nombre del archivo es, también, una forma de repetición: la de quien vuelve una y otra vez sobre lo mismo creyendo que esta vez sí será la última.</p>\n\n<h2>4. El error como forma</h2>\n\n<p>Volvamos a la quinta regla: equivocarse es parte de leer. Nos costó aceptarla porque la lectura pública tiene algo de examen, y en los exámenes no se puede fallar. Durante mucho tiempo, cuando alguien del colectivo se equivocaba al leer —se saltaba un verso, pronunciaba mal una palabra, perdía el hilo— la lectura se volvía incómoda para todos, y el que se había equivocado salía de ella con la sensación de haber fracasado.</p>\n\n<p>Hasta que una noche, en una lectura en Valparaíso, una de nosotras se saltó una estrofa entera de un poema largo, se dio cuenta al final, y en vez de pedir disculpas dijo: «me salté una estrofa; la leo ahora, y ustedes decidan dónde va». Y la leyó. El público, que hasta entonces escuchaba con la atención cortés de las lecturas de poesía, se rió, aplaudió, y después escuchó la estrofa extraviada con una atención completamente distinta. Esa estrofa, leída fuera de lugar, fue lo que todos recordaron de la noche.</p>\n\n<p>De esa noche aprendimos que el error, en la lectura en voz alta, no es necesariamente una falla. Puede ser una forma. La estrofa leída al final no era la misma que habría sido leída en su lugar: era una estrofa que había estado perdida, que volvía, que el público tenía que ubicar en su memoria del poema. El error había producido una repetición —el poema se volvía a recorrer, mentalmente, para encontrar el hueco— y esa repetición había hecho audible algo que la lectura correcta habría dejado pasar.</p>\n\n<h3>Tres tipos de error</h3>\n\n<p>Con el tiempo empezamos a distinguir, medio en broma, tres tipos de error en la lectura:</p>\n\n<ol>\n<li><strong>El error de lengua</strong>: una palabra mal pronunciada, una sílaba de más o de menos. Es el más común y el menos grave. Casi nunca afecta al poema, y cuando lo afecta, suele hacerlo de manera interesante: hay erratas orales que mejoran el verso.</li>\n<li><strong>El error de memoria</strong>: un verso saltado, una estrofa fuera de orden, un poema que se interrumpe porque el lector perdió la página. Es el más temido y, como mostró la noche de Valparaíso, a veces el más fértil.</li>\n<li><strong>El error de tono</strong>: leer un poema triste con voz alegre, un poema irónico con solemnidad, un poema íntimo como si fuera un discurso. Es el más grave, porque no se nota como error: el público simplemente escucha otro poema, y nadie sabe que debería haber escuchado uno distinto.</li>\n</ol>\n\n<p>El tercer tipo es el que más nos preocupa, y es el único contra el cual la repetición no sirve de nada. Se puede leer cien veces un poema en el tono equivocado, y cada repetición lo confirma en su error. Contra el error de tono solo sirve la escucha ajena: alguien que lea el poema por nosotros, o que nos escuche leerlo y nos diga «no, eso no es lo que dice».</p>\n\n<h2>5. Memoria y archivo</h2>\n\n<p>Desde hace unos años grabamos todas nuestras lecturas. Al principio lo hacíamos con un teléfono apoyado en una silla, y las grabaciones eran malísimas: se escuchaban más las tazas de café que los poemas. Después conseguimos una grabadora decente, y empezamos a armar un archivo que hoy tiene más de doscientas lecturas, con sus errores, sus toses, sus aplausos y sus silencios incómodos.</p>\n\n<p>El archivo nos cambió la manera de entender la repetición. Antes, cada lectura era única e irrepetible: lo que pasaba esa noche se perdía, y solo quedaba en la memoria de los que estaban. Ahora cada lectura se puede volver a escuchar, y al escucharla de nuevo descubrimos cosas que en el momento se nos escaparon: un verso que el público recibió con un murmullo, una pausa que se alargó sin querer y que mejoró el poema, un error que en vivo nos pareció terrible y en la grabación casi no se nota.</p>\n\n<p>Pero el archivo también tiene sus peligros. Una lectura grabada se vuelve, de algún modo, la versión oficial de un poema, y la tentación es imitarla en las lecturas siguientes. Hemos visto a compañeros que escuchan su propia grabación antes de leer y tratan de reproducir exactamente las mismas pausas, la misma entonación, como si la lectura anterior fuera un modelo. Eso es repetir como en la escuela, buscando la identidad, y es exactamente lo contrario de lo que nos interesa.</p>\n\n<h3>Lo que el archivo no guarda</h3>\n\n<p>Hay cosas que ninguna grabación guarda: la temperatura de la sala, la luz, la manera en que el público se acomoda en las sillas cuando un poema se alarga, el olor de la lluvia en una lectura al aire libre. El archivo guarda la voz, pero no el cuerpo, y por eso escuchar una lectura grabada es siempre una experiencia incompleta. Lo sabemos y lo aceptamos: el archivo no reemplaza la lectura, la acompaña. Es una memoria auxiliar, como las notas que uno toma al margen de un libro.</p>\n\n<p>Para quien quiera escuchar las grabaciones, están todas en la sección de registros del sitio, ordenadas por fecha. Las más antiguas tienen mucho ruido; las más recientes, menos. Ninguna está editada: los errores, las toses y los silencios se quedaron donde estaban, porque son parte de lo que pasó.</p>\n\n<h2>6. Lo que repite un colectivo</h2>\n\n<p>Un colectivo también es una forma de repetición. Nos juntamos los mismos, en los mismos lugares, a hacer más o menos lo mismo: leer, escribir, discutir, organizar lecturas. Y sin embargo cada reunión es distinta, porque cada vez llegamos con algo que no teníamos la vez anterior: un poema nuevo, un libro que leímos, una pena, una alegría. La repetición del colectivo es la del estribillo: la misma forma que se llena cada vez con un contenido distinto.</p>\n\n<p>Hay quien piensa que los colectivos son una etapa, algo que los poetas jóvenes atraviesan antes de encontrar su voz individual. Puede ser. Pero nosotros hemos descubierto que la voz individual, si existe, se forma en la repetición colectiva: en leer a otros, en escuchar cómo otros leen lo nuestro, en reescribir lo que otro escribió. La voz propia no es la que se libera del coro, sino la que aprende a sonar dentro de él.</p>\n\n<p>Repetir, en este sentido, es una forma de fidelidad. No a una idea ni a un programa —no tenemos manifiesto, aunque a veces finjamos que sí— sino a una práctica: la de volver, una y otra vez, a la mesa donde se lee. Esa vuelta no garantiza nada. No garantiza que los poemas sean buenos, ni que el colectivo dure, ni que alguien nos lea. Pero es lo único que sabemos hacer, y lo hacemos con la terquedad de los que repiten de curso, convencidos de que esta vez, por fin, vamos a entender algo.</p>\n\n<h2>7. Coda</h2>\n\n<p>Terminamos este ensayo repitiendo su primera frase, porque no se nos ocurre una mejor manera de terminarlo: un colectivo que se llama Repitentes del Verso tendría que explicar, alguna vez, por qué repetir no es fracasar. Ahora la frase significa otra cosa. Al principio era una promesa; ahora es una pregunta que seguimos sin responder del todo, y que quizás no haya que responder. Basta con seguir repitiéndola, cada vez de una manera un poco distinta, hasta que suene como algo que valga la pena decir.</p>\n\n<hr>\n\n<h2>Notas</h2>\n\n<ol>\n<li>Las reglas de lectura del segundo apartado circulan en el colectivo desde 2023 en una hoja impresa que alguien pegó en la puerta de la sala de ensayo. La versión que transcribimos es la cuarta; la primera tenía once reglas y era, según todos, insoportable.</li>\n<li>La noche de la estrofa extraviada quedó grabada. Se puede escuchar en el archivo del colectivo, en https://repitentesdelverso.cl/registros/lectura-en-valparaiso-la-noche-de-la-estrofa-extraviada-grabacion-completa-sin-editar-2025/ (minuto 34).</li>\n<li>Sobre la repetición en la poesía oral hay una bibliografía enorme que no pretendemos resumir. Para quien quiera empezar, recomendamos buscar los estudios sobre el romancero tradicional y las colecciones de poesía popular chilena que guardan las bibliotecas públicas; muchas están digitalizadas en repositorios con direcciones del tipo https://www.bibliotecadigital.ejemplo.cl/colecciones/poesia-popular/romances-y-tonadas-recopilados-en-la-zona-central-1940-1960/documento-completo.pdf, que son imposibles de dictar por teléfono.</li>\n<li>La partitura del tercer apartado se puede descargar, en su versión de texto plano y con su vergonzoso nombre de archivo intacto, desde la sección de publicaciones del sitio.</li>\n</ol>\n",
+   "body": "<p>Un colectivo que se llama Repitentes del Verso tendría que explicar, alguna vez, por qué repetir no es fracasar. El nombre nació como una broma: varios de nosotros nos conocimos en un taller al que volvíamos año tras año, como quien repite un curso, y alguien dijo que éramos los repitentes del verso. La broma se quedó, y con el tiempo dejó de ser una broma. Este ensayo intenta explicar por qué, en siete movimientos que no siguen un orden lógico sino el orden en que fuimos entendiendo las cosas, y en una partitura que no sabemos si es un poema.</p>\n\n<p>Lo escribimos entre dos, lo que significa que lo escribimos tres o cuatro veces. Cada uno reescribía lo que el otro había escrito, y en esa reescritura descubrimos que el texto mejoraba precisamente en los lugares donde repetíamos algo que ya estaba dicho, pero dicho de otra manera. Esa es, si se quiere, la tesis de todo lo que sigue: la repetición no es la ausencia de novedad, sino la forma en que lo nuevo se vuelve audible.</p>\n\n<h2>1. La escuela y la repetición</h2>\n\n<p>En la escuela, repetir es un castigo. Se repite de curso cuando no se aprendió lo suficiente; se repite una plana de caligrafía cuando la letra salió fea; se repite cien veces «no debo hablar en clases» cuando se habló en clases. La repetición escolar es una pedagogía del error: se repite lo que salió mal, para que salga bien, y el objetivo de toda repetición es dejar de repetir. Quien aprende ya no necesita repetir; quien repite es porque todavía no aprendió.</p>\n\n<p>Esa idea, que parece obvia, tiene una consecuencia extraña cuando se la aplica a la poesía. Si repetir es la marca del que no aprendió, entonces el poema que repite —el estribillo, la anáfora, la letanía, el paralelismo de los salmos— sería un poema que no aprendió a decir las cosas de una vez. Y sin embargo, buena parte de la poesía que más nos importa está hecha de repeticiones: las canciones de cuna, los romances, las tonadas, los rezos, los poemas que se aprendieron de memoria y que sobreviven precisamente porque repiten.</p>\n\n<h3>La plana y el verso</h3>\n\n<p>Hay una diferencia entre repetir una plana y repetir un verso. La plana busca la identidad: cada línea debe ser igual a la anterior, y la mejor plana es aquella en que todas las líneas son indistinguibles. El verso que se repite, en cambio, nunca es el mismo verso: la segunda vez que aparece ya no significa lo que significó la primera, porque entre una aparición y otra pasó algo —otro verso, un silencio, una vida—. La repetición poética no busca la identidad sino la diferencia, y la produce precisamente insistiendo en lo mismo.</p>\n\n<p>Esto lo sabe cualquiera que haya cantado una canción de memoria. El estribillo de la tercera vez no se canta igual que el de la primera: se canta con lo que pasó en las estrofas, con el cansancio o la emoción acumulada, con la conciencia de que pronto se va a acabar. La repetición es un dispositivo para medir el tiempo, para que el oyente sienta que algo cambió aunque las palabras sean las mismas.</p>\n\n<h3>Repetir de curso</h3>\n\n<p>Volvamos a la broma del nombre. Repetir de curso significa volver a pasar por lo mismo con otros compañeros, y eso es exactamente lo que ocurre en un taller de poesía al que se vuelve año tras año. Los textos de los clásicos son los mismos, los ejercicios a veces también, pero los compañeros cambian, y con ellos cambia la lectura. Un poema que leímos el primer año como una curiosidad lo leímos el tercero como una revelación, no porque el poema hubiera cambiado, sino porque había cambiado la mesa alrededor de la cual lo leíamos.</p>\n\n<p>El taller nos enseñó que la lectura es un acto colectivo incluso cuando se lee en silencio, porque cada uno lee con las voces de los que leyeron antes. Y nos enseñó también que repetir un curso no es necesariamente un fracaso: a veces es la única manera de aprender lo que el primer paso no alcanzó a enseñar.</p>\n\n<h2>2. El cuerpo que lee</h2>\n\n<p>Leer en voz alta es poner el cuerpo. No solo la voz: el cuerpo entero, que respira, que se cansa, que tiembla un poco antes de empezar. Cualquiera que haya leído en público sabe que el poema que se lee no es el mismo que se escribió, y que la diferencia está en el cuerpo. Hay poemas que en la página funcionan y en la voz se derrumban, porque dependían de un corte de verso que la voz no puede marcar, o de una ambigüedad que la entonación resuelve sin querer. Y hay poemas que en la página parecen planos y en la voz se levantan, porque su música estaba esperando un cuerpo que la hiciera sonar.</p>\n\n<p>Durante años, en el colectivo, discutimos sobre cómo leer. Algunos defendían la lectura neutra, casi monótona, que deja que el poema hable por sí mismo; otros preferían una lectura actuada, con cambios de ritmo y de volumen, que interpreta el poema como se interpreta una partitura. La discusión nunca se resolvió, pero de ella salió una serie de reglas prácticas que todavía usamos, y que transcribimos aquí no como verdades sino como acuerdos provisorios:</p>\n\n<ul>\n<li>Leer el poema en voz alta al menos tres veces antes de leerlo en público, y al menos una de esas veces frente a otra persona.</li>\n<li>No pedir disculpas antes de leer. El público no necesita saber que el poema es nuevo, que no está terminado o que el lector está nervioso; necesita escuchar el poema.</li>\n<li>Respetar los cortes de verso con una pausa breve, pero no tan larga que el verso se convierta en una sucesión de palabras sueltas.</li>\n<li>Si el poema tiene un estribillo, no leerlo siempre igual: dejar que cambie, aunque sea un poco, con lo que vino antes.</li>\n<li>Equivocarse es parte de leer. Si una palabra sale mal, no hay que repetirla de inmediato: es mejor seguir y, si importa, volver a ella al final.</li>\n<li>Mirar al público al menos una vez, aunque sea al final, para que el poema termine en alguien y no en el papel.</li>\n</ul>\n\n<p>La quinta regla es la que más nos costó aceptar, y es la que más tiene que ver con el nombre del colectivo. Volveremos a ella.</p>\n\n<h3>Respirar</h3>\n\n<p>Un poema largo leído en voz alta es una prueba de resistencia. Hay que decidir dónde respirar, y esa decisión cambia el poema. Respirar al final de cada verso produce una lectura entrecortada, casi asmática; respirar solo al final de cada estrofa obliga a leer versos largos de un tirón, y la voz se va apagando hacia el final de la frase. La respiración es la puntuación del cuerpo, y no siempre coincide con la puntuación del texto.</p>\n\n<p>En los ensayos previos a una lectura colectiva solemos marcar las respiraciones en el papel con una barra diagonal, como hacen los actores. Es un gesto mínimo que cambia mucho: obliga a leer el poema antes de leerlo, a decidir dónde está su aire. Y muchas veces descubrimos que el poema respira en lugares que no esperábamos, que su sintaxis pedía una pausa donde la página no la marcaba.</p>\n\n<h2>3. Una partitura</h2>\n\n<p>Lo que sigue es una partitura que preparamos para la lectura colectiva de otoño. No es un poema, o no lo es del todo: es un mapa de cómo leímos a seis voces un texto que había escrito una sola persona. Las columnas indican quién lee cada fragmento; los espacios, las pausas; las mayúsculas, los momentos en que todos leen a la vez. La reproducimos tal cual, con su tipografía de máquina de escribir, porque su forma es parte de lo que dice:</p>\n\n<pre>VOZ 1                VOZ 2                VOZ 3                TODAS\nla casa              .                    .\n.                    se vende             .\n.                    .                    con todo adentro\n.                    .                    .                    CON TODO ADENTRO\n(pausa de cuatro respiraciones; la voz 4 cuenta en silencio con los dedos)\nla casa se vende con todo adentro y nadie pregunta qué es todo, nadie pregunta qué es adentro, nadie pregunta\n.                    TODO                 .                    .\n.                    .                    ADENTRO              .\n(silencio)                                                     la casa</pre>\n\n<p>Leída así, la partitura parece un juego, y en parte lo es. Pero cuando la ensayamos descubrimos algo que no esperábamos: el verso «con todo adentro», repetido primero por una voz y después por todas, adquiría un peso que en el poema original no tenía. La repetición coral lo convertía en una especie de verdad compartida, algo que ya no decía una persona sino un grupo. Y la línea larga del medio, la que una sola voz lee de corrido sin respirar, funcionaba como su opuesto: la voz individual que se desborda, que pregunta lo que el coro no pregunta.</p>\n\n<figure>\n<img src=\"/media/assets/2026/07/event-cierre.jpg\" alt=\"Seis personas leen de pie, cada una con su hoja, en una sala de biblioteca.\" width=\"1200\" height=\"750\">\n<figcaption>Ensayo de la lectura colectiva de otoño, en la sala de la Biblioteca de Ejemplo. Cada hoja tenía marcadas, con lápiz rojo, las respiraciones de quien la leía.</figcaption>\n</figure>\n\n<p>La partitura tiene además una historia técnica que vale la pena contar, porque dice algo sobre cómo trabajamos. La primera versión la escribimos en un procesador de texto, y al imprimirla las columnas se desalinearon: la fuente proporcional desordenaba los espacios y la voz 3 terminaba leyendo lo que le tocaba a la voz 2. La segunda versión la escribimos en un editor de texto plano, con fuente de ancho fijo, y la guardamos con un nombre que todavía nos avergüenza: <code>partitura_otono_FINAL_v3_ahora_si_definitiva_NO_TOCAR.txt</code>. El nombre del archivo es, también, una forma de repetición: la de quien vuelve una y otra vez sobre lo mismo creyendo que esta vez sí será la última.</p>\n\n<h2>4. El error como forma</h2>\n\n<p>Volvamos a la quinta regla: equivocarse es parte de leer. Nos costó aceptarla porque la lectura pública tiene algo de examen, y en los exámenes no se puede fallar. Durante mucho tiempo, cuando alguien del colectivo se equivocaba al leer —se saltaba un verso, pronunciaba mal una palabra, perdía el hilo— la lectura se volvía incómoda para todos, y el que se había equivocado salía de ella con la sensación de haber fracasado.</p>\n\n<p>Hasta que una noche, en una lectura en Valparaíso, una de nosotras se saltó una estrofa entera de un poema largo, se dio cuenta al final, y en vez de pedir disculpas dijo: «me salté una estrofa; la leo ahora, y ustedes decidan dónde va». Y la leyó. El público, que hasta entonces escuchaba con la atención cortés de las lecturas de poesía, se rió, aplaudió, y después escuchó la estrofa extraviada con una atención completamente distinta. Esa estrofa, leída fuera de lugar, fue lo que todos recordaron de la noche.</p>\n\n<p>De esa noche aprendimos que el error, en la lectura en voz alta, no es necesariamente una falla. Puede ser una forma. La estrofa leída al final no era la misma que habría sido leída en su lugar: era una estrofa que había estado perdida, que volvía, que el público tenía que ubicar en su memoria del poema. El error había producido una repetición —el poema se volvía a recorrer, mentalmente, para encontrar el hueco— y esa repetición había hecho audible algo que la lectura correcta habría dejado pasar.</p>\n\n<h3>Tres tipos de error</h3>\n\n<p>Con el tiempo empezamos a distinguir, medio en broma, tres tipos de error en la lectura:</p>\n\n<ol>\n<li><strong>El error de lengua</strong>: una palabra mal pronunciada, una sílaba de más o de menos. Es el más común y el menos grave. Casi nunca afecta al poema, y cuando lo afecta, suele hacerlo de manera interesante: hay erratas orales que mejoran el verso.</li>\n<li><strong>El error de memoria</strong>: un verso saltado, una estrofa fuera de orden, un poema que se interrumpe porque el lector perdió la página. Es el más temido y, como mostró la noche de Valparaíso, a veces el más fértil.</li>\n<li><strong>El error de tono</strong>: leer un poema triste con voz alegre, un poema irónico con solemnidad, un poema íntimo como si fuera un discurso. Es el más grave, porque no se nota como error: el público simplemente escucha otro poema, y nadie sabe que debería haber escuchado uno distinto.</li>\n</ol>\n\n<p>El tercer tipo es el que más nos preocupa, y es el único contra el cual la repetición no sirve de nada. Se puede leer cien veces un poema en el tono equivocado, y cada repetición lo confirma en su error. Contra el error de tono solo sirve la escucha ajena: alguien que lea el poema por nosotros, o que nos escuche leerlo y nos diga «no, eso no es lo que dice».</p>\n\n<h2>5. Memoria y archivo</h2>\n\n<p>Desde hace unos años grabamos todas nuestras lecturas. Al principio lo hacíamos con un teléfono apoyado en una silla, y las grabaciones eran malísimas: se escuchaban más las tazas de café que los poemas. Después conseguimos una grabadora decente, y empezamos a armar un archivo que hoy tiene más de doscientas lecturas, con sus errores, sus toses, sus aplausos y sus silencios incómodos.</p>\n\n<p>El archivo nos cambió la manera de entender la repetición. Antes, cada lectura era única e irrepetible: lo que pasaba esa noche se perdía, y solo quedaba en la memoria de los que estaban. Ahora cada lectura se puede volver a escuchar, y al escucharla de nuevo descubrimos cosas que en el momento se nos escaparon: un verso que el público recibió con un murmullo, una pausa que se alargó sin querer y que mejoró el poema, un error que en vivo nos pareció terrible y en la grabación casi no se nota.</p>\n\n<p>Pero el archivo también tiene sus peligros. Una lectura grabada se vuelve, de algún modo, la versión oficial de un poema, y la tentación es imitarla en las lecturas siguientes. Hemos visto a compañeros que escuchan su propia grabación antes de leer y tratan de reproducir exactamente las mismas pausas, la misma entonación, como si la lectura anterior fuera un modelo. Eso es repetir como en la escuela, buscando la identidad, y es exactamente lo contrario de lo que nos interesa.</p>\n\n<h3>Lo que el archivo no guarda</h3>\n\n<p>Hay cosas que ninguna grabación guarda: la temperatura de la sala, la luz, la manera en que el público se acomoda en las sillas cuando un poema se alarga, el olor de la lluvia en una lectura al aire libre. El archivo guarda la voz, pero no el cuerpo, y por eso escuchar una lectura grabada es siempre una experiencia incompleta. Lo sabemos y lo aceptamos: el archivo no reemplaza la lectura, la acompaña. Es una memoria auxiliar, como las notas que uno toma al margen de un libro.</p>\n\n<p>Para quien quiera escuchar las grabaciones, están todas en la sección de registros del sitio, ordenadas por fecha. Las más antiguas tienen mucho ruido; las más recientes, menos. Ninguna está editada: los errores, las toses y los silencios se quedaron donde estaban, porque son parte de lo que pasó.</p>\n\n<h2>6. Lo que repite un colectivo</h2>\n\n<p>Un colectivo también es una forma de repetición. Nos juntamos los mismos, en los mismos lugares, a hacer más o menos lo mismo: leer, escribir, discutir, organizar lecturas. Y sin embargo cada reunión es distinta, porque cada vez llegamos con algo que no teníamos la vez anterior: un poema nuevo, un libro que leímos, una pena, una alegría. La repetición del colectivo es la del estribillo: la misma forma que se llena cada vez con un contenido distinto.</p>\n\n<p>Hay quien piensa que los colectivos son una etapa, algo que los poetas jóvenes atraviesan antes de encontrar su voz individual. Puede ser. Pero nosotros hemos descubierto que la voz individual, si existe, se forma en la repetición colectiva: en leer a otros, en escuchar cómo otros leen lo nuestro, en reescribir lo que otro escribió. La voz propia no es la que se libera del coro, sino la que aprende a sonar dentro de él.</p>\n\n<p>Repetir, en este sentido, es una forma de fidelidad. No a una idea ni a un programa —no tenemos manifiesto, aunque a veces finjamos que sí— sino a una práctica: la de volver, una y otra vez, a la mesa donde se lee. Esa vuelta no garantiza nada. No garantiza que los poemas sean buenos, ni que el colectivo dure, ni que alguien nos lea. Pero es lo único que sabemos hacer, y lo hacemos con la terquedad de los que repiten de curso, convencidos de que esta vez, por fin, vamos a entender algo.</p>\n\n<h2>7. Coda</h2>\n\n<p>Terminamos este ensayo repitiendo su primera frase, porque no se nos ocurre una mejor manera de terminarlo: un colectivo que se llama Repitentes del Verso tendría que explicar, alguna vez, por qué repetir no es fracasar. Ahora la frase significa otra cosa. Al principio era una promesa; ahora es una pregunta que seguimos sin responder del todo, y que quizás no haya que responder. Basta con seguir repitiéndola, cada vez de una manera un poco distinta, hasta que suene como algo que valga la pena decir.</p>\n\n<hr>\n\n<h2>Notas</h2>\n\n<ol>\n<li>Las reglas de lectura del segundo apartado circulan en el colectivo desde 2023 en una hoja impresa que alguien pegó en la puerta de la sala de ensayo. La versión que transcribimos es la cuarta; la primera tenía once reglas y era, según todos, insoportable.</li>\n<li>La noche de la estrofa extraviada quedó grabada. Se puede escuchar en el archivo del colectivo, en https://repitentesdelverso.cl/registros/lectura-en-valparaiso-la-noche-de-la-estrofa-extraviada-grabacion-completa-sin-editar-2025/ (minuto 34).</li>\n<li>Sobre la repetición en la poesía oral hay una bibliografía enorme que no pretendemos resumir. Para quien quiera empezar, recomendamos buscar los estudios sobre el romancero tradicional y las colecciones de poesía popular chilena que guardan las bibliotecas públicas; muchas están digitalizadas en repositorios con direcciones del tipo https://www.bibliotecadigital.ejemplo.cl/colecciones/poesia-popular/romances-y-tonadas-recopilados-en-la-zona-central-1940-1960/documento-completo.pdf, que son imposibles de dictar por teléfono.</li>\n<li>La partitura del tercer apartado se puede descargar, en su versión de texto plano y con su vergonzoso nombre de archivo intacto, desde la sección de publicaciones del sitio.</li>\n</ol>\n",
    "excerpt": "",
    "type": "ensayo",
    "section": 3,
@@ -2392,7 +2103,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'/colecciones/poesia-popular/romances-y-tonadas-recopilados-en-la-zona-central-1940-1960/documento-completo.pdf,':2961 '/registros/lectura-en-valparaiso-la-noche-de-la-estrofa-extraviada-grabacion-completa-sin-editar-2025/':2908 '1':224,1342 '2':733,1344,1575 '2023':2856 '3':1255,1346,1565 '34':2910 '4':1364,1632 '5':2115 '6':2500 '7':2755 'acab':551 'acept':1090,1649,2427 'acomod':2382 'acompan':2435 'acto':683 'actor':1208 'actu':884 'acuerd':927 'acumul':541 'adem':1524 'adentr':1354,1357,1377,1388,1392 'adquiri':1428 'afect':1935,1941 'ahor':1749,2216,2793,2804 'air':1229,2400 'ajen':2092 'alarg':2251,2390 'alcanz':730 'alegr':2003 'alegri':2563 'algui':90,1075,1670,2093,2722,2862 'algun':27,56,2288,2785 'alrededor':668 'alta':10,741,934,1114,1813 'ambigued':822 'anafor':341 'ancho':1590 'ano':81,83,613,615,645 'anos':856,2122 'anterior':429,2332,2552 'antigu':2471 'apag':1163 'aparec':459 'aparicion':471 'apart':2850,2973 'aplaudi':1775 'aplaus':2177 'aplic':320 'apoy':2134 'aprend':296,392,723,1804,2654 'aprendi':244,307,332,354 'aquell':435 'aqui':921 'archiv':1606,2118,2163,2183,2277,2359,2403,2429,2902,2989 'armar':2161 'asi':1397 'asmat':1142 'atencion':1766,1784 'atravies':2598 'audibl':223,1881 'aunqu':569,1022,1065,2680 'ausenci':211 'auxili':2439 'averguenz':1601 'barr':1203 'bast':2821 'bibliografi':2920 'bibliotec':1505,2948 'bien':284 'brev':993 'brom':69,99,110,581,1902 'buen':365,2714 'busc':419,486,2343,2931 'cad':160,422,692,1135,1148,1304,1508,2076,2193,2217,2537,2542,2578,2825 'caf':2149 'caligrafi':252 'cambi':449,568,632,636,661,665,886,1021,1128,1214,2185 'cancion':379,508 'cans':757 'cansanci':537 'cant':506,519,527 'cas':1349,1372,1395 'casi':869,1141,1933,2271 'castig':236 'chilen':2944 'cien':260,2067 'circul':2851 'clas':266 'clasic':620 'cod':2756 'coincid':1180 'coleccion':2940 'colect':17,46,684,859,1103,1193,1269,1497,1672,2505,2507,2567,2589,2622,2718,2775,2854,2904 'column':1300,1553 'companer':596,631,2308 'compart':1448 'complet':1785 'comun':1928 'concienci':544 'confirm':2079 'conoc':74 'consecuent':315 'consegu':2154 'cont':1532 'conten':2582 'contrari':2350 'convenc':2744 'converti':1442 'conviert':1002 'cor':1490,2650 'coral':1440 'corr':1472 'correct':1886 'cort':810,987,1767 'cos':134,358,2230,2363,2798 'cost':1089,1648 'creyend':1624 'cualqu':503,765 'cuart':2878 'cuatr':158,1360 'cuent':1365,1733 'cuerp':735,745,751,792,850,1176,2410 'cun':381 'curi':648 'curs':88,240,577,586,710,2743 'deb':424 'deberi':2037 'dec':356,2842 'decent':2157 'deci':1453 'decid':1122,1225,1752 'decision':1127 'ded':1370 'defendi':865 'dej':106,292,872,1019,1888 'dentr':2657 'dependi':807 'derrumb':805 'desalin':1555 'desbord':1484 'descarg':2976 'descubiert':2610 'descubr':173,1233,1412,2229 'desorden':1559 'despu':1425,1777,2153 'diagonal':1204 'dic':1340,1534,2114 'dich':188,190 'dict':2966 'diferent':408,491,788 'dig':2107 'digitaliz':2952 'dij':91,1742 'dio':1732 'direccion':2956 'disculp':957,1741 'discurs':2016 'discusion':902 'discut':860,2531 'disposit':556 'distingu':1899 'distint':1786,2041,2540,2583,2832 'dos':149 'doscient':2169 'dur':2719 'edit':2481 'editor':1583 'ejercici':625 'embarg':364,2536 'emocion':540 'empez':764,1897,2159,2929 'encontr':1873,2601 'enorm':2921 'ensay':36,112,1188,1411,1493,2759,2871 'ensen':677,705,732 'entend':132,2189,2753 'enter':752,1726 'entonacion':825,2327 'entonc':333,1762 'entrecort':1140 'equivoc':1031,1642,1674,1700,2074 'eram':93 'errat':1948 'error':15,274,1634,1807,1860,1893,1906,1911,1955,1994,2026,2082,2085,2173,2260,2483 'escap':2237 'escol':269 'escrib':147,155,1331,1543,1580,2530 'escribi':784,2639 'escrit':168,1295 'escuch':982,1763,1778,2030,2039,2091,2103,2144,2223,2226,2310,2414,2454,2628,2899 'escuel':226,232,2342 'espaci':1307,1561 'especi':1445 'esper':848 'esperab':1242,1416 'estan':2457,2951 'estribill':339,512,1014,2571 'estrof':534,1149,1725,1746,1780,1788,1824,1841,1962,2893 'estudi':2933 'etap':2592 'exact':600,2321,2348 'exam':1657 'examen':1661 'exist':2616 'experient':2421 'explic':26,55,114,2784 'extran':316 'extravi':1781,2894 'fall':1665,1818 'fea':257 'fech':2468 'fertil':1992 'fidel':2668 'fij':1591 'fin':2750 'final':1057,1068,1133,1146,1166,1735,1827 'finj':2683 'form':216,1334,1610,1636,1822,2511,2574,2618,2666 'fracas':34,63,715,1709,2792 'fragment':1305 'fras':1169,2763,2795 'frent':951 'fuent':1557,1588 'funcion':799,1475 'garantiz':2706,2709 'gest':1211 'grab':2123,2284,2417,2896 'grabacion':2140,2270,2313,2366,2456 'grabador':2156 'grav':1932,2020 'grup':1458 'guard':1594,2361,2367,2404,2946 'hab':1708,2038 'habi':167,664,1294,1699,1843,1861,1879 'habl':264,876 'habri':1833,1887 'hac':1206,1943,2120,2523,2731,2734 'haci':1164,2130 'hech':375,1880 'hic':853 'hil':1687 'histori':1526 'hoj':1509,2859 'hoy':2165 'huec':1875 'ide':309,2672 'ident':421,488,2345 'igual':426,520,1018 'imit':2300 'import':373,1052 'impos':2964 'impres':2860 'imprim':1551 'inclus':685 'incomod':1692,2181 'incomplet':2422 'indic':1301 'indistingu':442 'individual':1481,2604,2614 'inmediat':1046 'insist':496 'insoport':2888 'intact':2990 'intent':38,113 'interes':1946,2355 'interpret':893,898 'interrump':1970 'intim':2011 'iron':2006 'irrepet':2198 'joven':2597 'jueg':1402 'junt':2515 'lapiz':1513 'larg':997,1110,1154,1462,1730 'lea':2095,2724 'lector':978,1973 'lectur':7,638,680,867,883,1139,1192,1268,1496,1652,1689,1716,1770,1810,1885,1909,2126,2170,2194,2218,2283,2303,2331,2398,2416,2433,2533,2847 'lee':688,694,737,777,1303,1470,2702 'leen':1317,2631 'leer':738,863,929,960,1035,1152,1218,1646,1676,1997,2066,2316,2529,2624 'leerl':941,1016,1223,2104 'lei':673,1520 'leid':768,1111,1396,1789,1825,1835 'leim':642,650,1287,2559 'lengu':1913 'leo':1748 'letani':343 'letr':255 'levant':843 'ley':1757 'leyend':1567 'leyeron':701 'liber':2648 'libr':2401,2450,2557 'lin':440 'line':423,1461 'llam':20,49,2778 'lleg':2544 'llen':2577 'lluvi':2395 'logic':125 'lug':1792,1838 'lugar':181,1239,2521 'luz':2374 'mal':280,1040,1682,1916 'malisim':2142 'maner':193,721,1945,2187,2376,2771,2829 'manifiest':2679 'map':1284 'maquin':1329 'marc':328,818,1195,1254,1511 'marg':2447 'mas':371,1087,1095,1921,1927,1979,1991,2019,2048,2145,2167,2470,2476,2524 'mayuscul':1311 'med':558 'medi':1464,1900 'mejor':177,432,1048,1951,2256,2770 'memori':12,394,510,1856,1957,2116,2211,2438 'men':936,946,1062,1924,1931,2478,2526 'mental':1871 'mes':667,2699 'minim':1212 'minut':2909 'mir':1058 'mism':453,499,574,593,623,781,879,1623,1831,2323,2326,2517,2520,2528,2573 'mod':2289 'model':2335 'moment':1313,2234 'monoton':870 'mostr':1983 'movimient':41,119 'much':1231,2950 'murmull':2246 'music':846 'naci':66 'nadi':1379,1384,1389,2034 'necesari':713,1816 'necesit':299,964,981 'nervios':980 'neutr':868 'ningun':2365,2479 'noch':1713,1800,1803,1985,2203,2890 'nombr':65,583,1101,1597,1604,2987 'not':4,2024,2274,2442,2843 'noved':213 'nuev':220,970,2228,2555 'nunc':450,903,1934 'objet':287 'oblig':1150,1216 'obvi':312 'ocurr':603,2768 'oficial':2292 'olor':2392 'once':2882 'opuest':1478 'oral':1949,2917 'orden':124,128,1965,2466 'organiz':2532 'original':1435 'oton':1271,1499 'oyent':564 'pagin':798,835,1251,1976 'palabr':571,1007,1038,1684,1915 'papel':1080,1200 'paralel':345 'parec':311,836,1400 'pareci':2265 'part':366,1033,1336,1405,1644,2495 'partitur':44,138,900,1257,1263,1399,1522,2970 'partitura_otono_final_v3_ahora_si_definitiva_no_tocar.txt':1602 'pas':474,531,590,728,1889,2201,2499 'paus':992,1248,1309,1358,2248,2324 'ped':956,1740 'pedagogi':272 'pedi':1246 'peg':2863 'peligr':2281 'pen':1531,2561,2841 'perd':1845 'perdi':1685,1974,2205 'person':954,1298,1455 'pes':1430 'piens':2586 'plan':250,402,412,418,433,837,1586,2982 'poem':145,335,351,389,640,659,774,794,831,875,895,931,968,984,1011,1072,1109,1130,1220,1236,1275,1434,1729,1858,1866,1937,1967,1999,2005,2010,2032,2070,2097,2152,2258,2295,2388,2554,2712 'poesi':323,369,608,1772,2916,2942 'poet':2596 'poetic':484 'pon':743 'popul':2943 'practic':914,2689 'precis':178,398,495 'preferi':881 'pregunt':1380,1385,1390,1486,1492,2807 'preocup':2050 'prepar':1265 'pretend':2924 'previ':1189 'prim':644,727 'primer':467,525,1420,1540,2762,2880 'principi':2128,2800 'proces':1546 'produc':494,1137,1862 'program':2676 'promes':2803 'pront':547 'pronunci':1681,1917 'propi':2312,2642 'proporcional':1558 'provisori':928 'prueb':1117 'public':770,943,962,1060,1653,1759,1850,2028,2242,2380,2949,2995 'pued':817,1664,1819,2065,2220,2605,2898,2975 'puert':2866 'puntuacion':1174,1183 'qued':101,2208,2490,2895 'quer':828,2253 'quier':198,2453,2928 'quint':1082,1640 'quiz':2816 'recibi':2243 'recient':2477 'recomend':2930 'record':1797 'recorr':1870 'reemplaz':2431 'reescrib':2635 'reescribi':162 'reescritur':172 'registr':2463 'regl':913,1083,1641,2845,2883 'repet':1,31,60,233,294,300,325,410,414,575,584,708,1044,1419,2338,2660,2789 'repeti':183 'repeticion':207,229,268,290,377,483,553,1439,1612,1864,1878,2059,2077,2191,2513,2565,2621,2913 'repit':86,238,248,259,276,302,337,400,447,2503,2741,2760,2824 'repitent':21,50,95,2779 'repitentesdelverso.cl':2907 'repitentesdelverso.cl/registros/lectura-en-valparaiso-la-noche-de-la-estrofa-extraviada-grabacion-completa-sin-editar-2025/':2906 'repositori':2954 'reproduc':1322,2320 'resistent':1119 'resolvi':905 'respet':985 'respir':754,1107,1124,1131,1143,1197,1237,1361,1474,1516 'respiracion':1171 'respond':2811,2820 'resuelv':826 'resum':2925 'reunion':2538 'revelacion':655 'rez':387 'rio':1774 'ritm':888 'roj':1514 'romanc':383 'romancer':2936 'ruid':2474 'sab':141,502,771,965,2035,2424,2730 'sal':1039,1502,2372,2869 'salg':283 'sali':256,279,909,1701 'salm':348 'salt':1678,1723,1744,1960 'santiag':1507 'seccion':2461,2993 'segu':1049,2809,2823 'segun':2886 'segund':456,1577,2849 'seis':1289 'sensacion':1706 'ser':108,425,1629,1820,2606 'seri':349,911 'si':142,196,324,878,1009,1036,1051,1628,2013,2329,2615,2685 'sid':1834 'siempr':1017,1179,2419 'sient':565 'siet':40,118 'sig':122,205,1260 'signif':152,462,465,587,2796 'siguient':2304 'sil':1919 'silenci':479,690,1367,1393,2180,2488 'sill':2137,2385 'simplement':2029 'sin':126,214,489,662,925,1456,2651,2686 'sintaxis':1245 'sirv':2061,2089 'siti':2465,2997 'sobreviv':397 'sol':747,1144,1194,1297,1468,2088,2207 'solemn':2008 'son':854,2656 'sucesion':1005 'suel':1942 'suelt':1008 'suen':2835 'suficient':246 'tal':1323 'tall':77,606,675 'tambi':628,706,1608,2278,2508 'tan':996 'taz':2147 'tecnic':1527 'telefon':2133,2968 'tem':1980 'temperatur':2369 'tendri':24,53,2782 'teni':1437,1510,1851,2549,2881 'tentacion':2298 'terc':2043,2972 'tercer':515,652 'termin':974,1073,1566,2757,2773 'terqued':2737 'terribl':2266 'tesis':200 'text':176,617,1185,1292,1548,1585,2981 'tiembl':759 'tiemp':105,560,1668,1896 'tip':1891,1904,2044,2958 'tipografi':1327 'tiron':1157 'toc':1571 'tod':289,438,1347,1427,2124,2458 'todavi':305,916,1599 'tom':2445 'ton':385,1996,2073,2087 'tos':2175,2485 'trabaj':1538 'tradicional':2937 'transcrib':920,2875 'tras':82,614 'trat':2318 'tres':156,937,1890,1903 'trist':2000 'ubic':1853 'ultim':1631 'unic':720,2054,2196,2728 'usam':917 'usted':1751 'va':549,1162,1754 'val':1529 'valg':2839 'valparais':1718,1987 'vam':2751 'vari':70 'vec':159,261,627,717,938,950,1232,1989,2068,2682 'vend':1351,1374 'ver':1098 'verd':1447 'verdad':924 'vergonz':2986 'vers':3,23,52,97,405,416,444,454,477,812,989,1000,1136,1153,1418,1680,1953,1959,2239,2781 'version':1541,1578,2291,2873,2979 'vez':28,57,361,457,516,1064,1320,1620,1627,1738,2543,2551,2579,2696,2748,2786,2826 'vid':481 'vin':1029 'vist':2306 'viv':2263 'voc':697,1290 'volum':891 'volv':578,588,1053,1104,1637,2221,2692 'volvi':80,1691,1847,1868 'voz':9,740,749,803,815,841,933,1113,1160,1341,1343,1345,1363,1423,1469,1480,1564,1574,1812,2002,2406,2603,2613,2641 'vuelt':2704 'vuelv':222,612,1616,2286 'www.bibliotecadigital.ejemplo.cl':2960 'www.bibliotecadigital.ejemplo.cl/colecciones/poesia-popular/romances-y-tonadas-recopilados-en-la-zona-central-1940-1960/documento-completo.pdf,':2959",
    "tags": [
     22,
     20,
@@ -2406,7 +2116,6 @@
   "pk": 18,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-11T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.819Z",
    "updated_at": "2026-10-14T19:27:34.819Z",
@@ -2423,7 +2132,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'aburr':826 'acostumbr':979 'acust':1846 'adentr':666 'adorn':177 'afuer':146 'agend':125 'agot':881,1330 'agradec':1869 'ahi':658,1833 'ahor':182,893,1331,1776,1823 'ahorr':1552 'air':1897 'algui':251,540,608,805,1743,2101 'algun':678,1862,2066 'alla':1981 'alta':80,533,2105 'amig':1662 'amor':307 'ano':155,1323,1564,1893,2076 'anos':85,171,323,1581,1917,1958,2002 'anot':1356 'anticip':418 'antologi':1913 'aplicacion':1528 'apoy':1209 'aprend':1314 'apur':623 'aqui':287,1975 'archiv':983 'argument':1394,1431 'asumi':1324 'atrevi':193 'aunqu':168,371,1653,1692,1992 'autor':538,945 'avis':1074 'barri':1445,1903 'bibliotec':119,1070,1811 'bien':377,459,1121,1213,1424,1476 'bonit':878 'borrador':1024 'brav':4,41 'buen':737,1187 'busc':820 'busqu':788 'cabez':1556 'cabl':1714 'cad':274,427,524,944,1334,1354,1640,1805 'caf':1813 'cambi':835,843,953,1617,1652 'cambiari':1636 'captur':1827 'carrer':790 'cart':1207 'cas':142,1815 'casi':590 'ciert':204,208 'cinc':1916 'ciudad':1195 'clasic':358 'cocin':139,908,1468,1473,1820 'colect':7,44,106,1039,1151,1300,1369,1412,1443,1885,1919,1946,2050 'colegi':304 'coment':545,554,1606 'comentari':286 'compart':1352 'complacient':1413 'complet':652 'component':1521 'compromet':934 'comun':261 'conoc':1302,1967 'consegu':111,803,1058,1084,1905 'consuel':1253 'contact':800 'contart':376 'convers':130,904 'conversacion':1 'coordin':14,92,497,841,1078 'corrig':1608 'cort':1716 'cos':613,746,822,845,988,1503,1660 'cost':1545,1930 'cre':455,509,1427,2130 'creci':926 'cuadr':1027 'cualqui':1372,2053 'cuatr':84 'cuent':181,278,339,2086,2095 'cuid':960,1490 'cultur':1818 'cumpl':1417,1530 'curi':2079 'dar':750 'deberi':1381 'dec':578,713,776 'deci':1784 'ded':386 'dej':885 'dem':293,1053,1261,2060 'depend':1382 'dependent':1403 'desconfi':462 'descubr':659 'descubri':1695 'desorden':129 'despu':318,543,905,1006,1696 'determin':1496 'devolv':1091 'di':2094 'dia':1095 'dic':436,1376,1658,1667 'dict':55 'diez':897 'dificil':574 'dig':1772,1999 'digital':1524 'dij':1745 'dio':674 'discusion':1932 'distint':653,1339 'divers':735 'doc':1575 'document':1365 'dolor':1554 'dos':534,1345,2085 'dud':401,1016 'dur':518 'edicion':1188 'editorial':833,1447 'educacion':201 'ejempl':1515 'electr':1713 'electric':32,1702 'elegi':2133 'empez':856,936 'encabalg':759 'encarg':100 'enchuf':1715 'encuentr':1190,1944 'endecasilab':364,382 'enfermer':722 'enorm':588 'ensay':144 'entendi':219 'entiend':627,1392 'entonc':87,2126 'entra':1170 'entrad':1161,2121 'entusiasm':1794 'equivoc':11,63,159,633,963,2030 'error':46,639,1019 'escrib':113,335,412,645,710,726,812,1049,1055,1241,1343,1423,1698,1755,1763,1774,1778,1987 'escribi':325,1578 'escrit':295,560,583 'escritur':431,1233,1559 'escuch':72,217,252,612,618,1010,1388,2042,2084 'espaci':1843 'especificacion':414 'esper':279,1593,2099 'estan':1599 'estructur':444 'estudi':319,695 'existi':1398 'experient':1569 'explic':744,769 'extranez':1590 'fall':1116 'fech':122 'festival':1183 'fij':1619 'final':2112 'fio':465,470 'fond':27,116,189,407,1149,1200,1384,1400,1440,1453,1494,1512,1538,1938,2083 'formacion':351 'formulari':1205 'forz':312 'frustracion':1286 'funcion':480,490,504,1110 'gan':1226,1936 'gast':428 'gent':74,289,348,352,707,786,884,929,1435,1852,2037 'gestion':22,399,1030,1034,1327,1787,1990 'gestor':1294 'grab':938 'grabacion':952 'grand':1181 'gust':214,1627 'gustari':1970,2004,2013 'habi':234,271,294,354,617,716,1135,2120 'habl':23,831,1031,1123,1131 'habri':197,559,582,1279 'hac':83,402,517,598,712,771,799,1043,1178,1272,1318,1434,1460,1484,1499,1895,1955,1957 'hag':1267 'hari':1506 'hech':272,1214 'hic':337 'histori':173 'hiz':243,1359 'honest':1235 'hor':921 'horari':853 'hoy':13,373,981 'iba':47,864 'ido':176 'ignaci':3,40 'igual':1507 'imagin':656 'import':249,604,2048 'impres':1584 'imprim':1071,1174 'inform':331 'ingenieri':320,389,451,487 'ingrat':1104 'ingres':1157,1451 'innovacion':1523 'inspiracion':468 'interes':732 'invent':1526 'invis':1100 'ir':1978 'irse':824 'juev':19,97,502 'juni':1942 'junt':520 'justific':426 'lad':61 'lector':631 'lectur':595,669,702,940,1013,1063,1119,1280,1335,1888 'lee':39,530,609,648,1080,1674,2038 'leen':1604 'leer':240,815,957,1057,1465,1470,1612,1974,1980 'lei':76,225,245,276,290 'leid':355,1367,1804 'lej':1144 'leo':1643,1649 'leyer':2102 'leyeron':997,1840 'libr':1163,1681,1898,2007 'literari':791 'literatur':697 'llam':107 'lleg':5,42,699,819,848,1854 'llev':1229 'llovi':147 'lluev':149 'lug':797,810,2034 'lugar':1872 'luz':1718,1850 'mal':200,309,1129,1234 'man':1726 'manan':874 'maner':238,955,1458,1867 'mantien':2058 'mas':458,541,573,603,961,989,1139,1180,1293,1303,1366,1370,1414,1988,2051 'mayor':708 'mayori':1223 'mecan':724 'mecen':1449 'mejor':641,773 'memori':1860 'men':964,1991 'mes':567,1218,1237 'microfon':1136 'mied':705,1720 'mientr':145 'mism':1844,2115 'mit':221,229,2090 'mod':679,1863 'moj':1727 'mostr':717 'movimient':1602 'much':109,701,883,1389,1960 'mund':301 'nadi':829,1106,1268 'narrat':52,269,2072 'necesit':1438,1767 'negoci':117 'nombr':676 'nunc':591,715 'objet':1736 'oblig':742 'obligacion':767 'obvi':569 'orden':120,442,1083 'oton':1065 'padr':31,1689,1700,1751 'palabr':625 'papel':1656 'parec':409,484,568,914 'pareci':231,342 'pas':1565,1832 'ped':1066 'pendient':902 'pens':772,1254,1731 'pensari':264 'pequen':846 'perd':317 'perfect':728 'permis':942,1067,1907 'person':600 'pid':1513 'pirat':1677 'planill':1306,1351,1361 'plaquett':91,1562,1573,1615 'plat':1406,1509 'plaz':425,1901 'podi':890 'poem':77,305,439,477,556,586,611,662,665,684,994,1126,1310,1373,1576,1598,1634,1645,1686,1707,1734,1748,1798,1806,1837,2107 'poesi':296,345,396,1041,1379,1396,1961 'poet':764,1192,1296,1672 'postul':114,1147,1198,1341,1501,1535,1940 'postulacion':404,1212,1251 'precis':422 'precision':110 'pregunt':420,2065 'prejuici':370 'prens':1077 'preocup':1415 'prepar':1249 'presupuest':1206 'prim':1322 'primaver':1890 'primer':493,999,1012,2023,2123 'principal':548 'principi':947 'probabl':1363 'produj':1586 'profesor':720 'program':1073 'pront':825 'propi':1158,1680 'proyect':1247,1518,1547,1791,1858,2054 'public':28,89,733,1008,1201,1282,1385,1407,1454,1560,1647 'publicacion':1185,1910 'publiqu':807 'pud':1638 'pued':452,553,749,1054,1215,1408 'puert':10,65,158,165,2029,2116 'pus':920 'qued':68,211,244,891,901,913,1618 'quer':1483,1894,1954 'quier':912 'quit':368,968 'rar':1571 'rarisim':232 'razon':1753 'recib':285,1876 'region':1949 'regl':547,1541 'rendicion':1210 'repart':1333 'repit':682 'requisit':1420,1532 'resistent':949 'respons':1338 'reun':1574 'rien':1664 'rim':311 'rind':1245 'sab':930,1760 'sabi':360 'sabri':375 'sal':36,58,112,195,1060,1088,1120,1128,1801,1809,2010,2134 'santiag':151,1964 'segund':594,668,2092 'sensacion':1588 'sent':187,752,2018,2081 'senti':2021 'sep':755 'septiembr':136 'ser':421,453 'seri':1796 'si':247,482,1117,1127,1263,1287,1487,1510,1637,1904,1935,2055 'sid':198 'siempr':127,680,1397,1600 'sient':1290 'siet':523,859 'sig':1657 'signif':1036,1042,1204 'siguient':1096,1176,2077 'sil':379 'sill':1085,1093,1848 'simpl':507 'simplement':1533 'simplic':512 'sin':561 'sirv':391,592 'sol':1319,2062 'sonet':727 'suel':823,1433 'suert':315 'tal':763 'tall':16,50,94,257,366,496,499,606,691,740,793,837,850,925,973,1003,1596,1741,2070 'taller':25,267 'tambi':206,880,935,1426,1865,1977 'tan':260 'tard':71,134,1855 'tecnic':415 'teni':663,852,1752 'tentacion':576 'terc':1633 'termin':281,855,861,894,923,1329,2005 'text':528 'tiemp':977,1140,1730 'titul':1924 'toc':1722 'tod':69,1325 'todavi':372,1921 'tom':1142,1216 'ton':651 'tonter':916 'tra':526 'trabaj':472,1099,1220,1258,1277 'trat':1488,1684,1825 'tres':1347,1580 'tropiez':620 'turn':283 'ultim':866,2064 'unic':1457,1481,1671 'usa':1172 'usar':384 'va':689,1270 'vali':990 'vari':1931 've':1108 'vec':535,629,647,868,1103,1289,1390,1766 'ven':887,1114 'vend':1160,1165 'ver':1022,1710 'verd':161,167 'verl':1583 'vers':636,1630 'version':179,1676 'vez':153,1000,1641,2024,2067,2074,2124 'vid':971 'vien':448,457,1880,1882,1886,1908,1934,2061 'vin':1972 'volv':474,1409,2016,2068 'volvi':333 'voz':79,532,2104 'vuelt':2129 'vuelv':1610",
    "tags": [
     24,
     23
@@ -2435,7 +2143,6 @@
   "pk": 19,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-10T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.843Z",
    "updated_at": "2026-10-14T19:27:34.843Z",
@@ -2452,7 +2159,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'abiert':505,908,912,1033 'abraz':951 'abren':125 'abrig':288 'abrir':1177 'acert':742 'acord':834,1244 'acuerd':342 'acust':645 'afich':399 'agu':168,734,868 'ahi':1152 'ajen':516 'alamed':1236 'aler':23,162,278,1089 'algui':1063,1174,1242 'alla':540 'amas':115 'ano':532 'anos':977,1139 'anterior':496 'antologi':875 'anunci':66 'aplaud':1001 'aplaus':814 'apoy':415,1268 'apret':279,1083 'argument':185,205 'arregl':1069 'asi':711,769,869 'aunqu':337 'baj':10,21,160,232,276,561,631,635,1087 'bald':173 'barri':15,77,367,528,969,1106,1143 'bienven':470 'bodeg':322,1264 'bols':447 'bolsill':295 'bot':226 'boton':128 'brasilen':354,987 'busc':725,1258 'cabl':702 'cad':485,549 'cai':1145 'caj':112,652 'call':359,797 'camin':1233 'carpet':1114 'casi':130 'cason':75,285,1129,1192 'cay':752 'centr':81,377,558,1266 'cerc':1048 'cercan':394 'cerr':940,1164 'chic':1054 'chilen':895 'cierr':517,1093,1097 'cinc':242,483 'clar':50 'cocin':165,421 'colect':475,570,877 'colg':699 'color':224 'companer':949 'comunitari':432 'confes':830 'cont':266 'coreografi':586 'corri':778 'cronic':6 'cuadr':538 'cualqui':506 'cuarent':219,976 'cuart':60,251 'cuent':1037,1066 'cultural':82,378,1267 'cumpli':465 'cuy':33,896 'dec':412,861 'deci':453,544 'decid':1067 'decim':971 'decision':151 'dej':383,1023,1212 'despu':812,827 'detr':608 'diecinuev':252 'diez':158 'dificultad':640 'dij':213,369,1202 'dio':1036,1065 'discut':156 'distanci':685 'doc':1,99,178,297,1273 'dos':19,265 'empap':303 'empez':261 'encend':1199 'enorm':120 'entendi':995 'entonc':854 'envuelt':444 'eram':262 'escribi':37 'escrit':900,974,1136 'escuch':361,671,1091 'esper':1278 'esperab':349 'esquin':1252 'estab':1194 'estrof':35,772,898 'estudi':390,921 'falt':1206 'felip':764,828 'fin':260,1062 'final':315,410,783 'foc':697,722 'fri':196 'funcion':27,104,648,1017,1025 'gabriel':928 'gent':346,1045 'gol':957 'golp':617 'gord':751 'got':750,777 'grab':434 'grup':1238 'guard':1221 'habi':84,217,243,396,761,973,981,1016,1108,1135 'habl':1155 'hac':975,1240 'haci':706,720,1187,1205 'hermos':1012 'histori':891 'hiz':1076 'hoj':719 'iba':52,573,844 'ibam':1249 'iban':1163 'igual':1002,1059 'ilumin':694 'import':146 'impres':218 'inclin':717 'inclu':883 'individual':482 'invent':588,789 'juev':374,962 'juni':905 'junt':170 'just':756 'larg':684,801,823 'lector':269,550,599,659,714 'lectur':9,64,440,472,481,520,1074,1281 'leer':231,511,553,630,634,763,1183 'lei':581 'leid':982 'lev':677 'levant':1184 'ley':766,790,924,963,988,1099,1121 'leyeron':913 'lice':393,923 'llam':682 'lleg':202,237,244,345,422,1058 'llen':804,1115 'llev':317,866 'llov':54,1214 'llovi':62 'lluvi':12,39,194,234,388,616,810,903,1283 'luc':1198 'luz':690 'maipu':1111 'man':292 'manteni':583 'manuscrit':1117 'march':591 'mas':145,539,745,822,1086 'mayordom':613 'mayori':272 'medi':44,257,1211 'mejor':852 'memori':934 'men':59 'mes':108 'met':955 'metafor':334 'mezcl':626 'microfon':25,102,192,363,504,907,911,1014,1032 'miembr':568 'mientr':166,578 'minut':159,484,1042 'mism':674 'mistral':929 'mit':437,1030 'mod':667 'moj':181,289,574,850,1220 'mund':148 'muri':530 'nadi':135,203,305,325,994,1034,1149,1254,1276 'negr':119,564 'noch':141,313,826,1022 'not':880,1005 'nuev':1209 'nunc':338,842,980 'objet':144 'ocasion':748 'ochent':1140 'ocho':426 'ojo':134 'ojos':939,1160 'once':245 'orden':489 'oton':477 'palabr':414,759 'pan':114,503,1229 'papel':222,602,710,755,936 'par':282,1040 'paragu':5,118,563,607,633,637,647,705,739,1246 'pareci':228,332 'parej':351,623 'parentesis':882 'pas':356,533 'pati':72,88,92,175,302,560,692,1051 'paul':214 'paus':497 'pedaz':1147 'peg':400 'pens':382 'peor':229 'pequen':651 'perdi':768 'period':428 'person':20,246,507,915 'pie':275,555 'plastic':448 'poem':32,474,513,523,775,839,872,888,926,965,990,1009,1095,1123,1154 'poesi':894 'poet':526,1104 'portug':992 'posibil':198 'post':403 'prest':85 'previst':469 'primer':150,642 'probabl':885 'program':220,450,452,546 'propi':514,966 'proxim':1280 'public':509,917,984,1082 'pued':510 'puert':418 'pur':1078 'pus':340 'qued':407,793,796,870,1224 'queri':1150 'quis':1255 'radi':431 'rat':29,106,1019 'razon':190,216 'rebot':660 'recog':1215 'record':597 'recuerd':136 'reescrib':846 'remedi':183 'reson':654 'rest':863,1071 'retras':678 'ruid':622,807 'sabi':932 'sac':132 'santiag':94 'sec':584 'segu':207 'segui':299,1219 'segun':816 'segund':436,687 'seis':42,479 'seman':495 'senal':726 'senor':365,959 'sent':307 'si':673,953 'siempr':741,1241 'siend':593 'siet':58,69,240,249,255,914 'sig':1261 'siguient':455 'silenci':800 'sill':2,100,179,298,1217,1274 'sobrin':1101,1180 'sol':210 'sombr':707 'sorte':493 'sosten':565 'sosteni':605,737 'supong':1259 'suspend':154,187 'tal':466 'tambi':423 'tan':1047,1053 'tard':47 'tech':97 'tel':619,663 'telefon':443,729 'temblor':944 'tendri':551 'teni':96,98,215,715,1196 'tercer':731,767 'termin':592,837,947,1169,1181 'tia':1120,1134 'tint':780 'tod':311,1020 'traj':139 'transcrib':458 'treint':17,263 'tres':389,537 'trist':1010 'turist':353,986 'ultim':34,771,897 'unic':462,887 'usad':328 'uso':1277 'ven':385,1109 'veni':371 'ventan':1126,1158,1172,1189 'vers':782 'version':849 'vez':787 'vin':110,500,1226 'vist':397,1186 'viv':1151 'vivi':536 'voc':480 'volv':1256 'volvi':1175 'voz':629,657,943,1057,1079 'vuelt':319 'vuelv':665 'yungay':16,78,1131",
    "tags": [
     25,
     26
@@ -2464,7 +2170,6 @@
   "pk": 20,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-14T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.866Z",
    "updated_at": "2026-10-14T19:27:34.866Z",
@@ -2481,7 +2186,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'/opinion/2026/10/14/por-que-la-poesia-contemporanea-debe-ganarse-al-lector-en-el-primer-verso-o-resignarse-a-no-tener-lectores-version-corregida-y-aumentada?utm_source=correo&amp;utm_medium=boletin&amp;utm_campaign=primavera.':1227 '0':1100 '1':1094,1095,1098,1099 '12':1092 '15':1110 '17':1116 '2':1089,1090 '3':1088,1113 '4':1112 '43':1115 '5':1093 '6':1118 '7':1097 '8':1111,1117 '9':1087 'abandon':78,551,707,831,842,862,1031,1038,1072,1124,1401 'abiert':1071 'abrim':637 'acompan':478 'acuerd':171 'adel':430 'afirmacion':878 'ahorr':1328 'alcanz':508 'algui':100,292,751,1169,1356 'alin':1066 'anot':1386 'anteman':519 'anterior':545,894 'anticonstitucional':758 'antoni':1096 'anunci':912 'aprend':414 'apret':606 'apur':4,400,403 'aqui':183 'argument':1213 'articul':1176 'atrev':1372 'atrevi':764 'aunqu':822 'autopromocion':378 'autor':255,413,1246 'autoriz':886 'bast':1308 'bibliotec':853 'bien':259,352,846 'borr':1374,1392 'buen':629,662,1286,1292 'cad':174,993 'calent':138 'cas':130,1413 'casi':462,974 'casual':454,488 'chic':1138 'circul':386,826,1164,1219,1348 'colect':757 'column':1065 'com':784 'coment':101 'comentari':1362 'compit':780 'complet':1204 'conced':897 'concesion':15,75,187,890,956 'confes':705 'constanci':370 'contemporane':1185 'contrari':1181 'contratap':30,274,283,307 'convencion':322 'convert':867 'corre':1262 'cort':736,850 'cos':368,1342 'costumbr':18,865 'cre':63,972 'criteri':333 'critic':840,1404 'cuarent':445 'cuatr':149 'cuent':1012,1108 'cuerp':585,588 'culp':81 'darl':991,1233 'deb':1186 'dec':165,1298 'decid':152,407,1329 'defend':953 'defiend':1178 'dej':104,745 'dem':432 'depend':579 'desconoc':608 'desment':575 'desperdici':1007 'despreci':1141 'despu':448,1036,1078,1131,1333 'detr':733 'dia':581,633 'dias':590 'dic':58,313,964,967,976 'dich':891 'diecisiet':1122 'dificil':660 'dij':289,1380 'direccion':1260 'discusion':37,87,135,740 'dispuest':686 'doming':616 'dos':1104 'dur':44,95,798 'editorial':325 'educ':642 'eleg':163 'embarg':340 'empez':270 'empiez':422,921 'enlac':1173,1201 'enlaz':1230 'enter':298,1238 'entiend':536 'entonc':957 'escond':732 'escrib':153,276,350,416 'escribi':176,1166,1255 'escrit':49 'esfuerz':682,691 'estadist':1051 'etiquet':1354 'exact':1179 'experient':522 'extension':1269 'extraordinari':443 'favor':6 'felpud':133 'final':145,193,539,989,1382 'form':947 'fot':782 'fras':208,236 'gan':1187 'gust':118,639,648,1082,1130 'habi':103,117 'habil':375 'habri':574,1158 'hac':262,688,694 'hered':216 'hipopotomonstrosesquipedaliofobi':761 'hor':789,1305 'hoy':1220 'ide':567,1222 'idiom':310 'ilumin':543 'iluminacion':561 'import':467,469,979 'impresion':578,626,1020 'indic':305 'infinit':855 'informacion':873 'inmediat':668,1420 'intent':1103 'interdisciplinaried':760 'invent':1357 'juev':42,93 'juici':870 'just':191,390 'juzg':20,128,278,285,509,620,631,793,1152 'larg':699 'lector':406,876,1069,1189,1199,1257 'lectur':3,473,515,906 'lecturas.y.relecturas.obstinadas.del.taller.de.los.jueves@correo-electronico-del-colectivo.cl':1270 'leem':582 'leen':527 'leer':106,399,484,985,1041,1339,1395 'leerl':652,811,820 'legitim':835 'leid':593,614 'leim':1237 'ley':297,302 'libr':22,79,108,222,245,266,280,317,398,402,421,437,511,524,531,569,572,622,709,766,805,833,843,881,900,919,994,1029,1070,1123,1149,1250,1335,1415 'list':747 'literari':334 'lleg':557 'llev':1024 'logr':168 'longitud':1207 'lug':252 'mal':355,821,1416 'man':52,158,1068 'manan':602,1320 'mand':1171 'maner':162,1216 'march':239 'mas':45,96,141,726,778,978,1018,1142,1241 'masoqu':949 'mati':1091 'med':630 'mejor':429 'men':59,968,996 'merc':324 'merec':903,1264 'merit':392 'mes':1023 'metr':596,1317 'mid':363 'mientr':1165 'mir':343 'mism':573,612,1211 'moment':389 'moral':933 'mostr':502 'much':249 'muerd':701 'naci':84 'nadi':762 'narrat':205 'necesit':1304 'ningun':463,931,1049,1364 'noch':148,1385 'not':1418 'notici':786 'novel':228 'numer':33,184,327,365,1137 'nunc':558,975,1337 'objecion':12,178,195 'objet':858 'oblig':547 'obligacion':486,932 'obstin':10,938 'ocho':51,157,599 'ocurr':70,459 'olvid':447 'once':11 'oportun':998,1005 'otorrinolaringolog':759 'palabr':698,712,735,749 'pantall':803 'parec':424 'pareci':190 'pas':800 'ped':982 'pens':218 'pequen':1045 'perd':1159,1398 'person':121 'pid':680,808,1247 'pierd':1332 'pizarr':1060,1389 'pod':1297 'poem':24,110,224,247,384,442,446,464,475,533,542,592,644,659,720,756,774,807,824,1076,1128,1252,1314 'poesi':72,214,461,1184 'poet':345,357 'pon':169 'pong':237 'precision':724,914 'pregunt':1272,1287 'prestigi':211 'prim':27,56,113,197,241,410,441,554,961,1075,1127,1155,1192,1406 'primer':207,235,417,472,506,514,577,625,884,909 'privilegi':1279 'probabl':923 'produc':401 'promes':202 'pronost':1085 'propi':311 'propus':752 'public':769,818,1351 'publicacion':777 'pued':349,669,944 'puert':1410 'qued':564,1057,1265 'quer':952 'rap':1330 'razon':48,99 'rechaz':667 'recient':438 'recompens':696 'red':373,772,830,1345 'registr':1026,1043,1266,1376 'rel':549,1001,1077 'relectur':9,67,456,937,1134,1275,1302 'relecturaobstinadacontraelprimerversocomocriteriodefinitivodecalidadliterari':1363 'rellen':434 'renunci':517 'reproduc':1054,1203,1360 'resign':1195 'resolvi':743 'respondi':123,717 'respuest':1293 'reun':182 'rev':529 'roci':1086 'sab':258,336,651 'seguidor':35,329,348,359 'segund':496,796,888,905 'seis':1119,1148 'senal':674 'separ':180 'ser':670,945,1000 'si':404,664,813,963,1146,1210,1273 'sid':1151 'siempr':1161 'signif':656 'siguient':1321 'sin':863,990 'sol':303,534,1313 'son':272 'sorprend':927 'sospech':450 'sucesion':816 'suel':695 'suelt':827 'suen':604 'suert':295,301,380 'sum':140 'sup':1338 'tach':1423 'tal':1055 'tall':39,90,1014,1062 'tambi':360,640,825,943,1107,1253 'tampoc':1370 'tard':619 'temporal':810 'ten':1016,1198 'tercer':499 'terci':1145 'termin':935,1081,1129 'terqued':491 'text':83,155,1168,1347 'tiemp':1283,1325,1400 'todavi':256,267,653 'tom':1109 'total':1114 'tram':232 'ultim':541,788,1341 'unic':1295 'usa':722 'usan':711 'usar':753 'usari':1368 'va':925 'vag':738 'validez':1050 'valient':727 'vec':250,672,1003,1009,1105,1307 'vers':28,57,114,198,242,411,418,555,910,962,1156,1193,1407 'vez':500 'vid':848 'vien':917 'virtud':941 'visit':1234 'vist':436 'vitrin':426 'voc':142 'volv':482,1039,1310,1393 'www.ejemplo-de-un-sitio-con-un-nombre-larguisimo.cl':1226 'www.ejemplo-de-un-sitio-con-un-nombre-larguisimo.cl/opinion/2026/10/14/por-que-la-poesia-contemporanea-debe-ganarse-al-lector-en-el-primer-verso-o-resignarse-a-no-tener-lectores-version-corregida-y-aumentada?utm_source=correo&amp;utm_medium=boletin&amp;utm_campaign=primavera.':1225",
    "tags": [
     26,
     29,
@@ -2499,7 +2203,6 @@
   "pk": 21,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-09T17:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.906Z",
    "updated_at": "2026-10-14T19:27:34.906Z",
@@ -2516,7 +2219,6 @@
    "featured": false,
    "seo_title": "",
    "seo_description": "",
-   "search_vector": "'1987':318 'absurd':163 'abuel':222 'agu':5,50 'aguacer':234,346 'algun':409 'ambici':128 'amig':445 'anim':412 'ano':37 'anot':302 'aparec':265 'arman':382 'arriesg':348 'aunqu':181,419 'austral':474 'autor':65,207 'barc':439 'brev':241 'cad':143,160,249,279 'cae':288 'camp':471 'carg':436 'casi':294 'castellan':225 'cientif':295 'compart':46 'conmovedor':330 'conoc':57 'conversacion':28,94,380 'cost':316 'cruz':13,116,147 'cuadern':469 'cualqu':404 'cualqui':501 'cuarent':133 'da':220 'demasi':453 'describ':255 'descrit':281 'desg':189 'dia':26,91 'diferent':45 'dificult':463 'disen':448 'distint':72 'dos':1,33,131,135,370 'edicion':431,468 'editorial':39,410,438 'eleg':342,368 'empez':308 'enfri':325 'ensen':145 'escrib':66,290 'exact':305 'exist':121 'extran':244 'falt':367 'final':184 'form':22,92 'formul':186 'fot':491 'fotografi':278 'gener':514 'got':298 'hac':366,488 'haci':182 'hector':123 'hermos':449 'hor':304 'ilustr':500 'indic':154 'ingeni':170 'instruccion':142,218,396 'interes':402 'interrump':204 'invent':260 'involuntari':29,95 'junt':75,375 'justici':489 'larg':459 'leen':373,461 'legibl':480 'lei':78 'leid':23,74,362 'lengu':113 'libr':2,34,180,371,502,509 'llov':310 'lluvi':20,256,257,280,284,394,505 'luci':236 'lugar':68 'manan':83 'maner':106 'manual':11,114,140,202,386 'mas':127,162,165,240,243,349,401,476,479 'med':399 'mejor':191,353,374 'memori':100 'men':513 'mereci':516 'mes':43 'mezcl':226 'mid':296,335 'mism':25,90 'moj':442,497 'muestr':187 'negat':275 'noch':88 'nombr':211,267 'not':333 'nunc':266 'observacion':428 'obsesion':48 'ofici':176 'ojal':408 'olvid':338 'organiz':137 'ortuz':238 'pagin':253 'painemal':237,289,466 'paisaj':110 'palabr':228 'papel':441 'parec':357 'part':272,407 'pas':426 'pequen':40,454 'poc':42 'podri':499 'poem':136,144,192,231,246,327,354,456 'port':484 'precis':155 'precision':293,321 'pros':248 'public':35,414 'puebl':313 'quedari':344 'quilodr':124,172,434 'real':258 'record':21,259 'recuerd':209 'recurs':168 'registr':18,299,389 'rio':149,213,391 'rios':14,103,117 'romp':197 'sec':15,152 'sencill':477 'separ':377 'sequi':32,98,263 'si':59,339 'sol':417 'son':261 'sostien':174 'stock':493 'sur':473 'temperatur':301 'tipografi':452 'tod':271 'tradicion':70 'traduc':233 'trist':166 'va':424 'van':158 'ventan':496 'vez':161,323 'volum':418 'volv':159 'vuelv':112,329",
    "tags": [
     34,
     33
@@ -2771,7 +2473,6 @@
   "pk": 1,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-24T17:24:41.163Z",
    "created_at": "2026-07-27T17:24:41.310Z",
    "updated_at": "2026-07-27T17:24:41.310Z",
@@ -2783,8 +2484,7 @@
    "featured": true,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'agu':17 'apag':24 'aprend':28 'cas':3 'duel':32 'entrar':26 'gir':15 'guard':4 'habl':11 'idiom':6 'llav':13 'luz':21 'nadi':8 'nuev':30 'pared':34 'sol':25 'sub':19 'termin':9 'umbral':1"
+   "seo_description": ""
   }
  },
  {
@@ -2792,7 +2492,6 @@
   "pk": 2,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-07-20T17:24:41.163Z",
    "created_at": "2026-07-27T17:24:41.321Z",
    "updated_at": "2026-07-27T17:24:41.321Z",
@@ -2804,8 +2503,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'apur':11 'corrig':7 'dej':16 'editor':9 'lluev':5 'lluvi':4 'moj':23 'ofici':1 'pie':18 'sobr':15 'tach':12 'verd':22"
+   "seo_description": ""
   }
  },
  {
@@ -2813,7 +2511,6 @@
   "pk": 3,
   "fields": {
    "status": "draft",
-   "owner": null,
    "published_at": null,
    "created_at": "2026-07-27T17:24:41.332Z",
    "updated_at": "2026-07-27T17:24:41.332Z",
@@ -2825,8 +2522,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'aun':8 'borrador':1 'fri':7 'inviern':3 'prim':4 'trabaj':10 'vers':5"
+   "seo_description": ""
   }
  },
  {
@@ -2834,7 +2530,6 @@
   "pk": 25,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-14T16:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.946Z",
    "updated_at": "2026-10-14T19:27:34.946Z",
@@ -2846,8 +2541,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'abiert':20 'afuer':9 'algui':10,21 'aprend':12,23 'cans':54 'casi':63 'cre':94 'departament':30 'despu':71 'hac':84 'imposibil':3 'intent':75 'lad':33 'llev':35 'mas':89 'mism':40 'nombr':45 'not':41,68 'parec':88 'poem':7,82 'practic':48 'sali':65 'segund':67 'seman':37,86 'siet':51,57 'termin':5,80 'toc':14,25 'trat':78 'tres':36,85 'trompet':16,27 'veint':59 'ventan':19 'viern':62 'volvi':73"
+   "seo_description": ""
   }
  },
  {
@@ -2855,7 +2549,6 @@
   "pk": 26,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-13T16:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.961Z",
    "updated_at": "2026-10-14T19:27:34.961Z",
@@ -2867,8 +2560,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'alcanz':70 'ano':20 'anos':77 'arrib':23 'baj':71 'buzon':32 'cad':15 'cas':11 'color':39 'desmemori':57 'diri':58 'edad':25 'edifici':6 'escaler':1,4,73 'habi':67 'invent':62 'llav':27 'lleg':22 'madr':60 'man':53 'manill':42,50 'mejor':54 'mism':45 'ningun':82 'nombr':29 'palabr':63 'peldan':16 'pint':36 'primer':10 'propi':12 'puert':34 'puest':80 'qued':84 'quit':18 'recuerd':51 'sub':2 'toc':47 'vivi':8 'vuelt':79"
+   "seo_description": ""
   }
  },
  {
@@ -2876,7 +2568,6 @@
   "pk": 27,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-12T16:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.969Z",
    "updated_at": "2026-10-14T19:27:34.969Z",
@@ -2888,8 +2579,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'abiert':26,254 'abrig':25 'acas':69 'afuer':368 'ahi':148 'algui':52,151,375,440 'amas':307 'andand':373 'apil':438 'aplaud':65 'arrepient':226 'atencion':339 'atras':171 'baj':450 'barr':442,454 'boc':34 'cad':181 'caf':385 'call':132 'cansanci':110 'car':72 'ciud':371 'coch':167 'colg':96 'conversacion':310 'credencial':94 'cruz':48 'cuad':208 'cuell':98 'culp':217 'da':46 'despiert':177 'despu':312 'devolv':247 'dia':134,213 'dic':315,343,350 'direct':89 'disculp':29 'dorm':164 'embarg':122 'empez':287 'entiend':75 'entrar':278 'equivoc':128,141 'escuch':180,337 'esper':280 'estacion':243 'estan':437 'estudi':200,221 'gent':430 'got':22 'guagu':163,197 'habermel':346 'hor':113,399 'igual':66,137,447 'import':80 'junt':40 'lastim':345 'lectur':9,18,140,364 'lee':53,376,446 'leyend':235 'libr':252 'lleg':5,14,57,136,160,202,230,249,261,283,296,320,324,329,396,406,422 'llen':206 'lug':392,402 'madr':158 'man':257 'metr':238 'micr':130 'mientr':51,374 'mis':286 'mit':264 'mochil':205 'nunc':330 'ocho':112 'oda':1,10,419 'odas':427 'oficin':104 'ofreci':153 'oid':185 'ojos':118 'olor':101,383 'pan':306 'pantall':115 'paragu':21 'pas':241 'perd':347 'perdi':78 'persign':292 'pie':39 'pod':173 'poem':61,182,188,267,378 'poesi':388 'pregunt':332 'prepar':31 'prim':60 'proxim':318 'prueb':211 'pued':409 'puert':43 'qued':37,144,234,270 'quiet':271 'recuerd':361 'respiracion':194 'resum':341 'rop':107 'sab':83,276,290 'sal':50,174,381 'seri':352 'si':68,175,277,291 'siempr':333 'sient':170 'sig':372 'siguient':214 'sill':155,436 'sin':400 'tambi':421 'tard':6,15,231,423 'tardanz':359 'tempran':321 'termin':63,300 'tod':425 'todavi':95,253 'trabaj':91 'umbral':274 'verguenz':47 'vez':319 'vien':88 'vin':123,303 'voz':449"
+   "seo_description": ""
   }
  },
  {
@@ -2897,7 +2587,6 @@
   "pk": 28,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-11T16:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.977Z",
    "updated_at": "2026-10-14T19:27:34.977Z",
@@ -2909,8 +2598,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'abuel':12,73,145,172,267 'agu':77 'ahi':86 'algun':197 'ampli':356 'aunqu':45 'aut':341 'avanz':290 'baj':237,262 'bate':17,136 'biciclet':61 'blanc':252 'buen':371 'busc':324 'cad':186 'capit':44,159,161 'cardenal':70 'cas':9,102,326 'cement':19 'certez':57 'clav':31 'cocin':37,149,242 'coincid':195,218 'colg':23 'comi':132 'cos':125,355 'cuadrit':363,369 'cualqui':354 'cuatr':228 'cuerd':21 'curi':328 'dab':121 'dej':178 'dem':59 'demasi':414 'despu':94 'detr':239 'dia':198 'dic':116,152 'dorm':276,335 'dos':249,340 'dur':128 'encend':280 'encontr':375 'estacion':317 'fot':322,387 'garfi':162 'grand':210 'gris':338 'habi':13,47,309 'hac':407 'hoy':182,312 'iba':26,289 'imag':358 'inventari':1 'jaul':64 'jugab':299 'junt':200 'larg':293 'lav':79,146 'lej':415 'limon':122 'limoner':15,28,119,264,350 'line':282,377 'llam':43,158 'luz':221,225,285,380 'macet':68 'manch':344 'mar':50 'mas':209 'mediodi':392 'mejor':402 'memori':409 'mimbr':272 'mir':367,412 'mit':251,259 'muebl':99 'munec':104 'nadi':130 'necesit':206 'ningun':191 'noch':330 'nunc':46 'oxid':62 'pajar':66 'par':34 'part':247 'pas':179 'pati':3,6,190,194,208,245,314 'pelicul':165 'perr':40,155 'pies':256 'pis':302 'podi':334 'podri':347,352 'pon':97 'poni':268 'prim':115 'pued':82,88 'puest':92 'qued':246,275,366 'quem':254 'quiz':400 'radi':279 'rat':372 'record':203,223 'rectangul':337 'recuerd':55,108 'reg':74 'rej':185 'resum':403 'rio':307 'rop':24 'rot':138 'salt':311 'satelital':323,388 'ser':348,353 'si':196,217,304 'siempr':140 'sill':270 'sin':123,160,173 'sol':236 'sombr':261,288,383,396 'tan':112 'tard':231,296 'tia':151 'tom':390 'trat':373 'unas':124 'vaci':113 'vam':204 'vea':111 'vecin':175 'veran':233 'verd':126,345 'verdur':81 'vi':319 'vist':48 'volvi':362"
+   "seo_description": ""
   }
  },
  {
@@ -2918,7 +2606,6 @@
   "pk": 29,
   "fields": {
    "status": "published",
-   "owner": null,
    "published_at": "2026-10-10T16:27:34.694Z",
    "created_at": "2026-10-14T19:27:34.987Z",
    "updated_at": "2026-10-14T19:27:34.987Z",
@@ -2930,8 +2617,7 @@
    "featured": false,
    "og_image": null,
    "seo_title": "",
-   "seo_description": "",
-   "search_vector": "'1998':92 'abuel':218 'acord':21 'adentr':38,570 'agost':395 'agu':248,397 'ahor':233 'almac':362 'almuerz':594 'alto':117 'amarr':306 'apag':23 'aprend':166,423 'aprendi':59 'arregl':96 'asi':98 'atras':88 'azulej':246 'ban':243 'basur':51 'bien':392 'buen':534 'cab':576 'caj':579 'cajon':456 'cambi':255 'camion':48 'cart':451 'cas':4,10,324,406,524,564 'centr':149 'cerr':369,536 'cierr':391 'ciert':359 'clar':199 'cocin':57,68,403,589 'colg':295 'com':290 'comprador':344,380 'corredor':341 'cort':299 'cos':231,547 'costumbr':142 'crec':270 'cruji':182 'cuatr':63 'cuerd':293 'da':286 'debaj':315,606 'dec':515 'decid':459 'dej':195 'descolg':205 'desconoc':70 'despu':220,225 'dich':586 'diez':89 'dij':494 'dirig':173 'discusion':538 'eco':582 'encend':17,598 'enciclopedi':440 'encontr':453 'enfrent':349 'entendi':100,558 'enterr':314 'entra':396 'escrib':509 'escuch':168 'espald':128 'espej':266 'esquin':365 'falt':445 'firm':473,482 'fond':213 'form':125 'fot':193 'frent':184 'gener':64 'gote':260 'grand':74 'habl':158,531 'hac':407 'herman':489 'hor':592 'idiom':521 'igual':370 'import':498 'inviern':301 'jazmin':317,608 'juni':144 'just':183 'lad':36 'ladron':414 'leer':461 'leim':465 'letani':1 'letr':479 'libret':484 'limon':287 'limoner':284 'living':106,389 'llam':501 'llav':28,258,601 'lleg':339 'llev':78 'luz':16,597 'mader':417 'madr':251,471 'marc':197 'marz':136 'mas':198 'mes':147 'mientr':620 'minut':90 'mir':110,334 'mism':478 'muebl':432 'nac':353 'nadi':19,76,95,223,275,289,305,526 'noch':263,410,555 'nombr':585 'not':486 'notici':112 'nuev':308 'nunc':156,254,542 'odi':252 'olla':73 'olor':61 'once':552 'padr':109 'pap':190 'par':202 'pas':46,302 'pasill':164 'pati':281 'perr':311,605 'piez':187,211,228,237 'plant':131 'pregunt':356 'puert':34 'puest':602 'qued':31 'quis':77 'reconoc':273 'reg':140 'reloj':86 'remat':437 'rop':296 'rueg':52,101,159,206,238,276,327,375,427,466,516,559,609,612,615 'ruid':408 'sab':67,321,383 'sal':25 'sec':134 'segu':139 'senor':347 'serl':624 'si':357 'siet':448 'signific':541,545 'silenci':549 'sillon':120 'sin':415 'sol':235,426 'suel':180 'suen':43 'tabl':178 'tant':83 'tard':505 'tech':400 'ten':513 'teni':622 'tercer':386 'timbr':41 'todavi':44,122,621 'tom':447 'tres':502 'triz':153 'va':367,527 'van':421,435 'vec':503 'vecin':332 'vend':7,13,326,567 'vent':475 'ventan':337,387 'verd':247 'vidri':152 'vin':492 'vio':269,352 'volum':115 'volv':529"
+   "seo_description": ""
   }
  },
  {
@@ -3133,7 +2819,7 @@
    "type": "recital",
    "starts_at": "2026-04-28T17:36:23.872Z",
    "ends_at": null,
-   "venue_name": "Casa del Libro",
+   "venue_name": "Librería La Muestra",
    "address": "",
    "city": "Santiago",
    "description": "Lectura colectiva de apertura del año, con invitados.",
@@ -3184,7 +2870,7 @@
    "type": "taller",
    "starts_at": "2026-08-16T17:36:23.872Z",
    "ends_at": null,
-   "venue_name": "Biblioteca de Santiago",
+   "venue_name": "Biblioteca de Ejemplo",
    "address": "",
    "city": "Santiago",
    "description": "Taller abierto de escritura poética, cupos limitados.",
@@ -3758,8 +3444,8 @@
   "pk": 2,
   "fields": {
    "publication": 2,
-   "label": "Editorial Overol",
-   "url": "https://example.com/overol",
+   "label": "Editorial El Ejemplo",
+   "url": "https://example.com/el-ejemplo",
    "position": 0
   }
  },
@@ -3768,7 +3454,7 @@
   "pk": 1,
   "fields": {
    "title": "«La poesía vuelve a los recitales»",
-   "outlet": "El Mercurio de Valparaíso",
+   "outlet": "Gaceta de Prueba",
    "author": "",
    "kind": "nota",
    "published_on": "2026-01-08",
@@ -3785,7 +3471,7 @@
   "pk": 2,
   "fields": {
    "title": "Entrevista al colectivo tras su plaquette",
-   "outlet": "Radio Universidad",
+   "outlet": "Radio Muestra",
    "author": "M. Torres",
    "kind": "entrevista",
    "published_on": "2026-03-29",
@@ -3801,7 +3487,7 @@
   "model": "showcase.partner",
   "pk": 1,
   "fields": {
-   "name": "Fondo Nacional de Fomento del Libro",
+   "name": "Fondo Imaginario de las Letras",
    "kind": "financiamiento",
    "logo": 59,
    "url": "",
@@ -3814,7 +3500,7 @@
   "model": "showcase.partner",
   "pk": 2,
   "fields": {
-   "name": "Casa del Libro",
+   "name": "Librería La Muestra",
    "kind": "espacio",
    "logo": 60,
    "url": "",
@@ -3827,7 +3513,7 @@
   "model": "showcase.partner",
   "pk": 3,
   "fields": {
-   "name": "Editorial Overol",
+   "name": "Editorial El Ejemplo",
    "kind": "editorial",
    "logo": 61,
    "url": "",
