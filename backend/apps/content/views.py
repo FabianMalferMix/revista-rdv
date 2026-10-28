@@ -93,7 +93,11 @@ def _registros_destacados(profile):
         .select_related("poster", "event")
         .prefetch_related(
             "participants",
-            Prefetch("event__photos", queryset=EventPhoto.objects.select_related("asset")),
+            # Solo las fotos de eventos publicados: las de uno oculto nunca llegan al pliego.
+            Prefetch(
+                "event__photos",
+                queryset=EventPhoto.objects.filter(event__published=True).select_related("asset"),
+            ),
         )
     )
     registros = list(consulta.filter(featured=True)[:TOPE_TIRADA])
@@ -111,7 +115,7 @@ def _registros_destacados(profile):
         poemas.setdefault(poema.recording_id, poema)
     pliegos = []
     for registro in registros:
-        evento = registro.event
+        evento = registro.public_event
         fotos = list(evento.photos.all()) if evento else []
         poema = poemas.get(registro.pk)
         autores = ", ".join(c.display_name for c in poema.authors.all()) if poema else ""
