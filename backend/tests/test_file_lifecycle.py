@@ -11,13 +11,18 @@ cámara. Publicar la ubicación exacta de un recital es una fuga real.
 """
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from PIL import Image
 from PIL.TiffImagePlugin import IFDRational
 
-from apps.media.models import MediaAsset, Recording
+from apps.media.models import ImageCleanupError, MediaAsset, Recording
 from apps.submissions.models import Submission
 
 pytestmark = pytest.mark.django_db
@@ -44,6 +49,48 @@ def _jpeg(width=1200, height=800, con_gps=True):
         img.save(buf, format="JPEG", exif=exif)
     else:
         img.save(buf, format="JPEG")
+    return buf.getvalue()
+
+
+def _gps():
+    return {1: "S", 2: (IFDRational(33), IFDRational(27), IFDRational(0))}
+
+
+def _avif_con_gps():
+    exif = Image.Exif()
+    exif[0x8825] = _gps()
+    buf = BytesIO()
+    Image.new("RGB", (200, 100), (120, 130, 140)).save(buf, format="AVIF", exif=exif)
+    return buf.getvalue()
+
+
+def _jpeg_con_ubicacion_en_xmp():
+    """La ubicación solo en el bloque XMP, como la dejan algunos programas de edición."""
+    xmp = (
+        b'<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF '
+        b'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description '
+        b'xmlns:exif="http://ns.adobe.com/exif/1.0/" exif:GPSLatitude="33,27.0S" '
+        b'exif:GPSLongitude="70,39.0W"/></rdf:RDF></x:xmpmeta>'
+    )
+    buf = BytesIO()
+    Image.new("RGB", (300, 200), (120, 130, 140)).save(buf, format="JPEG", xmp=xmp)
+    return buf.getvalue()
+
+
+def _jpeg_truncado_con_gps():
+    datos = _jpeg()
+    return datos[: len(datos) // 2]
+
+
+def _png_de_64_megapixeles():
+    buf = BytesIO()
+    Image.new("1", (8000, 8000)).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _gif():
+    buf = BytesIO()
+    Image.new("RGB", (20, 20), (1, 2, 3)).save(buf, format="GIF")
     return buf.getvalue()
 
 
@@ -81,7 +128,8 @@ def test_la_imagen_sobrevive_a_la_limpieza():
 
 
 def test_una_imagen_sin_metadatos_no_se_recomprime():
-    """Idempotencia: sin EXIF no hay reescritura, así que guardar no degrada la calidad."""
+    """Idempotencia: el original se reescribe una sola vez, al subirlo; guardar otra vez la
+    misma imagen no la recomprime ni degrada su calidad."""
     asset = MediaAsset.objects.create(
         file=SimpleUploadedFile("limpia.jpg", _jpeg(con_gps=False), content_type="image/jpeg"),
         alt_text="Limpia",
@@ -91,6 +139,60 @@ def test_una_imagen_sin_metadatos_no_se_recomprime():
     asset.save()
     with asset.file.open("rb") as fh:
         assert fh.read() == antes
+
+
+def test_los_casos_de_prueba_realmente_llevan_la_ubicacion():
+    assert b"GPSLatitude" in _jpeg_con_ubicacion_en_xmp()
+    assert 0x8825 in Image.open(BytesIO(_avif_con_gps())).getexif()
+
+
+@pytest.mark.parametrize(
+    "nombre, datos, motivo",
+    [
+        ("foto.avif", _avif_con_gps, "no admitido"),
+        ("foto.jpg", _jpeg_truncado_con_gps, "No se pudo leer la imagen entera"),
+        # Django mide la imagen al asignarla y Pillow avisa del tamaño; en producción es solo
+        # un aviso en el log, y el validador la rechaza igual.
+        pytest.param(
+            "enorme.png",
+            _png_de_64_megapixeles,
+            "40 megapíxeles",
+            marks=pytest.mark.filterwarnings("ignore::PIL.Image.DecompressionBombWarning"),
+        ),
+    ],
+)
+def test_lo_que_no_se_puede_limpiar_se_rechaza_al_subirlo(nombre, datos, motivo):
+    """Sin estos rechazos, la limpieza no podría reescribir el original y la foto se
+    publicaría con su ubicación."""
+    asset = MediaAsset(file=SimpleUploadedFile(nombre, datos()), alt_text="Foto")
+    with pytest.raises(ValidationError, match=motivo):
+        asset.full_clean()
+
+
+def test_la_ubicacion_solo_en_xmp_tampoco_se_publica():
+    asset = MediaAsset.objects.create(
+        file=SimpleUploadedFile("xmp.jpg", _jpeg_con_ubicacion_en_xmp()), alt_text="Foto"
+    )
+    with asset.file.open("rb") as fh:
+        datos = fh.read()
+    assert b"GPSLatitude" not in datos and b"xmpmeta" not in datos
+
+
+def test_una_imagen_recien_subida_que_no_se_puede_limpiar_no_se_publica():
+    """Una subida que se salta el validador (por código, sin full_clean) falla cerrada: ni la
+    fila ni el archivo quedan."""
+    with pytest.raises(ImageCleanupError):
+        MediaAsset.objects.create(file=SimpleUploadedFile("anim.gif", _gif()), alt_text="Gif")
+    assert not MediaAsset.objects.filter(alt_text="Gif").exists()
+    assert not [p for p in Path(settings.MEDIA_ROOT).rglob("anim*") if p.is_file()]
+
+
+def test_el_comando_avisa_de_las_imagenes_que_no_puede_limpiar():
+    asset = MediaAsset.objects.create(file=SimpleUploadedFile("foto.jpg", _jpeg()), alt_text="Foto")
+    with asset.file.storage.open(asset.file.name, "wb") as fh:
+        fh.write(b"ya no es una imagen")
+    with pytest.raises(CommandError, match="no se pudieron limpiar"):
+        call_command("generate_image_derivatives", verbosity=0)
 
 
 # ── S-13: archivos huérfanos ──────────────────────────────

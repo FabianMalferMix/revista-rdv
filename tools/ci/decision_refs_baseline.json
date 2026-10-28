@@ -15,7 +15,7 @@
   "backend/apps/media/apps.py": 2,
   "backend/apps/media/feeds.py": 2,
   "backend/apps/media/filecleanup.py": 2,
-  "backend/apps/media/models.py": 6,
+  "backend/apps/media/models.py": 4,
   "backend/apps/media/templatetags/embeds.py": 2,
   "backend/apps/media/templatetags/images.py": 2,
   "backend/apps/media/validators.py": 2,
