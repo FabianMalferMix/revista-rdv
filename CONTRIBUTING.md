@@ -67,18 +67,101 @@ pre-commit run --all-files    # opcional: corre los hooks sobre todo el repo
 Los hooks (ruff check + format, más higiene de archivos) usan la misma versión de
 ruff que el lockfile, de modo que coincidan con el CI.
 
-## Flujo de contribución (por lote)
+## Flujo de trabajo
 
-1. Rama desde `main`: `git checkout -b <rama>`.
-2. Implementa el cambio, con tests.
-3. Verifica **todo en verde**:
+1. **Una rama por cambio.** Cada cambio es un ticket de [docs/backlog-codigo.md](docs/backlog-codigo.md),
+   o un pedido del dueño, en su propia rama desde `main`, en kebab-case descriptivo:
+   `git switch -c <rama>`.
+2. **El cambio y sus pruebas.** Las pruebas comprueban comportamiento (ver «Reglas del código»).
+3. **Todo en verde:**
    - `ruff check .` y `ruff format --check .`
    - `pytest`
    - `python manage.py makemigrations --check --dry-run` (sin drift)
    - `python manage.py check`
-4. Commit y Pull Request contra `main`. El CI corre ruff, `pip-audit` (bloqueante),
-   migraciones, tests con cobertura (`--cov-fail-under=80`) y `check --deploy`.
-5. Merge a `main` (`--no-ff`) y borra la rama.
+4. **Commit.** Cada archivo se añade por su nombre, nunca una carpeta entera: en `docs/` hay un
+   documento personal que no es del repositorio. Mensaje: `rama: qué cambia (Bxx)`, y en el
+   cuerpo, el porqué del cambio, que es lo que no va en los comentarios del código.
+5. **Pull Request** contra `main`, titulado `rama — qué cambia (Bxx)`, con la lista de
+   [.github/pull_request_template.md](.github/pull_request_template.md) en el cuerpo. El CI corre
+   ruff, `pip-audit` (bloqueante), migraciones, tests con cobertura (`--cov-fail-under=80`),
+   `check --deploy` y gitleaks. pip-audit y gitleaks solo corren allí: el PR está listo cuando el
+   CI está en verde, no cuando pasan las pruebas locales.
+6. **Lo visual.** Si el cambio se ve, el dueño lo revisa antes de fusionar: a 951 px, que es su
+   ventana, y en el teléfono, con alternativas si hay más de una manera.
+7. **Fusión** con commit de fusión (no squash) y se borra la rama. En el mismo PR se actualizan
+   «Estado» y el avance del backlog.
+
+## Reglas del código
+
+`CLAUDE.md` las resume para los agentes; aquí va cada una con un ejemplo del propio código.
+Algunas describen el destino del backlog: mientras su ticket no esté hecho, se sigue el patrón
+vigente más cercano y no se agrava la deuda.
+
+1. **Dónde va cada cosa.**
+   - Las consultas reutilizables son métodos de QuerySet.
+   - Los cambios de estado, servicios (`services.py`, `workflow.py`).
+   - Los cálculos visuales, templatetags.
+   - Las señales, `signals.py`, conectado desde `ready()`.
+   - Lo transversal, `config/`.
+
+   Bien: `perform_transition` (`apps/content/workflow.py`) concentra los cambios de estado
+   editorial, con su bloqueo y su bitácora. Mal: el alta, la confirmación y la baja del boletín
+   viven en `apps/community/views.py`.
+2. **Lo publicable.** La regla de visibilidad vive en el modelo, y no se reescribe en cada vista,
+   sitemap o feed; toda relación hacia algo publicable la respeta. Bien: `Poem.published_recording`
+   (`apps/content/models.py`) devuelve el registro solo si está publicado. Mal: `Recording.event` se
+   muestra sin mirar si el evento está publicado.
+3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas, se decide en un lugar y
+   viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la
+   relación entre la fuente y la copia. Mal: el número de integrantes que se ven en la portada está
+   en `A_LA_VISTA` (`apps/content/views.py`), en `site.css`, en `integrantes.js` y en los `sizes`, y
+   una prueba fija cada copia por separado. Bien: las rutas se resuelven con `{% url %}` y
+   `reverse()` en todo el sitio.
+4. **Idioma.** Los identificadores nuevos de Python y de JavaScript van en inglés. En castellano
+   van los textos visibles y el vocabulario del diseño: clases CSS y nombres de componentes
+   (tirada, estante, pliego, cápsula), que se usan tal cual también dentro de nombres en inglés,
+   como `tirada_items`. Lo existente no se renombra, salvo los nombres trampa que lista el backlog.
+5. **Comentarios.** Dicen qué hace el código hoy y qué restricción lo explica. Bien: el comentario
+   del feed de registros en `config/urls.py` explica por qué se instancia por petición (gunicorn
+   usa hilos). Mal: los comentarios que cuentan qué se hizo en cada sesión o citan una decisión o
+   un ticket («D23», «paso 18»): esa historia va en el commit. Una garantía de seguridad o de
+   privacidad se escribe como prueba, no como comentario.
+6. **Errores.** Nada de `except Exception: return` sin registro: lo esperado, `logger.warning`
+   sin traza; lo inesperado, `logger.exception`. Los controles de privacidad fallan cerrados, y un
+   proceso solo declara éxito cuando lo verificó. Mal: en `infra/backup/backup.sh`,
+   `tar … 2>/dev/null || echo "(media vacío)"` convierte cualquier fallo en «vacío», y el respaldo
+   informa éxito.
+7. **Lo que sale del sistema.** Exportaciones, logs, Sentry y archivos servidos llevan listas
+   blancas por fila y por campo, y a las tareas se les pasan identificadores, no datos personales.
+   Bien: `MODELOS`, en `datos_de_desarrollo`, elige qué modelos viajan. Mal: de esos modelos viajan
+   todas las filas, también los borradores.
+8. **URL públicas.** Son permanentes: renombrar una ruta exige dejar la vieja con
+   `RedirectView(permanent=True)`; el slug de lo publicado no se cambia, y el GUID de un ítem de
+   feed, nunca. Antes del lanzamiento, `dosieres/` pasó a `colecciones/` sin redirección y no costó
+   nada. Después, el mismo cambio rompería los enlaces de la prensa, de los dossiers enviados y de
+   los lectores de feeds.
+9. **Tareas y migraciones.**
+   - Cada tarea declara sus límites de tiempo, su política de reintento y si es idempotente, y se
+     encola con `delay_on_commit`.
+   - Toda migración de datos usa `apps.get_model` y lleva su prueba.
+   - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
+     anterior siga funcionando mientras se despliega.
+   - Los permisos de un modelo nuevo se reparten a los roles de forma explícita.
+
+   Bien: `publish_due_items` (`apps/content/tasks.py`) es idempotente ante un doble beat o un
+   reintento.
+10. **Pruebas.** Comprueban lo que ve o hace una persona.
+    - Un `.css` o un `.js` solo se lee para afirmar una invariante.
+    - Toda prueba de «no aparece» lleva un control positivo en la misma respuesta.
+    - Los permisos se prueban por HTTP, con los grupos reales.
+
+    Bien: `tests/test_contraste_paleta.py` calcula el contraste desde los tokens. Mal: afirmar que
+    `site.css` contiene `repeat(5, minmax(0, 1fr))`, porque un cambio cosmético la rompe y una
+    regresión real la pasa. Si una prueba falla tras un cambio de diseño, no se copia el valor
+    nuevo sin preguntarse qué vigilaba.
+11. **Herramientas de desarrollo.** No viven en las apps de producción ni se protegen con
+    `--force`, y hay un solo camino para poblar desarrollo. Mal: `seed_demo` está en
+    `apps/content`, y con `--force` corre también con `DEBUG=0`.
 
 ## Documentación relacionada
 
