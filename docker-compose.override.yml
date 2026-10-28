@@ -19,6 +19,17 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
 
+  # El release migra con el código montado y no recoge estáticos: runserver los sirve desde las
+  # apps. Corre en cada `docker compose up`, antes que web, worker y beat.
+  release:
+    build:
+      context: ./backend
+      target: dev
+    environment:
+      RELEASE_COLLECTSTATIC: "0"
+    volumes:
+      - ./backend:/app
+
   worker:
     build:
       context: ./backend

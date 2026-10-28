@@ -32,8 +32,21 @@ services:
       timeout: 3s
       retries: 12
 
-  # App. Sin command → usa el CMD (gunicorn) de la imagen. El entrypoint migra + siembra
-  # grupos salvo DJANGO_SKIP_MIGRATE=1 (producción los corre como paso de despliegue).
+  # Paso de despliegue (backend/release.sh): migra, sincroniza los grupos y recoge los
+  # estáticos, una vez y antes de que arranquen web, worker y beat, que esperan a que termine
+  # bien. Si falla, no arranca nada con el código nuevo.
+  release:
+    build: ./backend
+    command: ["sh", "release.sh"]
+    env_file: .env
+    volumes:
+      - staticfiles:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  # App. Sin command → usa el CMD (gunicorn) de la imagen.
   web:
     build: ./backend
     env_file: .env
@@ -48,6 +61,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      release:
+        condition: service_completed_successfully
 
   # Worker de Celery (correo, publicación programada).
   worker:
@@ -58,7 +73,10 @@ services:
       - media:/app/mediafiles
       - private_media:/app/private_media
     depends_on:
-      - web
+      redis:
+        condition: service_healthy
+      release:
+        condition: service_completed_successfully
 
   # Planificador de Celery (dispara publish_due_articles cada minuto).
   beat:
@@ -66,7 +84,10 @@ services:
     entrypoint: ["celery", "-A", "config", "beat", "-l", "info"]
     env_file: .env
     depends_on:
-      - web
+      redis:
+        condition: service_healthy
+      release:
+        condition: service_completed_successfully
 
   # Respaldos (perfil "backup"): NO arranca con `docker compose up`.
   #  · Respaldo puntual:   docker compose run --rm --entrypoint sh backup /scripts/backup.sh

@@ -705,16 +705,15 @@ EOF
 # 2. un override que sustituya el env_file de desarrollo
 cat > /tmp/prod.override.yml <<'EOF'
 services:
-  web:    { env_file: !override [/tmp/prod.env] }
-  worker: { env_file: !override [/tmp/prod.env] }
-  beat:   { env_file: !override [/tmp/prod.env] }
+  release: { env_file: !override [/tmp/prod.env] }
+  web:     { env_file: !override [/tmp/prod.env] }
+  worker:  { env_file: !override [/tmp/prod.env] }
+  beat:    { env_file: !override [/tmp/prod.env] }
 EOF
 
-# 3. levantar, migrar y sembrar
+# 3. levantar (el release migra y siembra los grupos) y sembrar la demostración
 C="docker compose --env-file /tmp/prod.env -p resenasprod -f docker-compose.yml -f docker-compose.prod.yml -f /tmp/prod.override.yml"
 $C up -d --build
-$C run --rm --entrypoint python web manage.py migrate
-$C run --rm --entrypoint python web manage.py setup_groups
 $C run --rm --entrypoint python web manage.py seed_demo --force   # anota las contraseñas
 
 # bajar y borrar sus datos

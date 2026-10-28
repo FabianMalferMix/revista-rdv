@@ -27,6 +27,9 @@ COMPOSES = ["docker-compose.yml", "docker-compose.prod.yml", "docker-compose.ove
 _FROM = re.compile(r"^FROM\s+(\S+)", re.MULTILINE)
 _IMAGE = re.compile(r"^\s*image:\s*(\S+)", re.MULTILINE)
 _DIGEST = re.compile(r"@sha256:[0-9a-f]{64}$")
+# La imagen que construye el propio compose (`build: ./backend`) no se descarga de ningún
+# registro: su etiqueta es la del commit desplegado (APP_VERSION) y el digest no aplica.
+OWN_IMAGE = "resenas-app:"
 
 
 def _leer(relativa):
@@ -48,7 +51,7 @@ def test_las_imagenes_base_van_por_digest(relativa):
 @pytest.mark.parametrize("relativa", COMPOSES)
 def test_las_imagenes_de_compose_van_por_digest(relativa):
     for imagen in _IMAGE.findall(_leer(relativa)):
-        if imagen.startswith("$"):  # parametrizada por entorno
+        if imagen.startswith("$") or imagen.startswith(OWN_IMAGE):
             continue
         assert _DIGEST.search(imagen), f"{relativa}: {imagen} no está fijada por digest"
 

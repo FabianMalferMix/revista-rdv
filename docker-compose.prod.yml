@@ -1,16 +1,29 @@
 # Override de PRODUCCIÓN. No carga docker-compose.override.yml → usa el código de la imagen.
 #
 #   cp .env.prod.example .env   &&   editar .env (SECRET_KEY, contraseñas, SITE_ADDRESS…)
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-#   # migraciones y grupos, como paso de despliegue (web no los corre al arrancar):
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py migrate
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py setup_groups
+#   APP_VERSION=$(git rev-parse --short HEAD) \
+#     docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# `up` corre primero el servicio `release` (migraciones, grupos y estáticos) y solo si termina
+# bien arranca web, worker y beat. La imagen queda etiquetada con el commit: la anterior se
+# conserva para volver atrás (ver docs/despliegue.md).
 #
 # Caddy (proxy) termina TLS automáticamente (Let's Encrypt) cuando SITE_ADDRESS es un dominio.
 # Ver docs/despliegue.md.
 
 services:
+  release:
+    image: resenas-app:${APP_VERSION:-local}
+    environment:
+      DJANGO_DEBUG: "0"
+    mem_limit: ${WEB_MEM_LIMIT:-768m}
+    cpus: ${WEB_CPUS:-1.5}
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
   web:
+    image: resenas-app:${APP_VERSION:-local}
     command:
       - gunicorn
       - config.wsgi:application
@@ -39,8 +52,6 @@ services:
       # formato de acceso no admite sustituciones (residuo del hallazgo S-20).
     environment:
       DJANGO_DEBUG: "0"
-      DJANGO_COLLECTSTATIC: "1"
-      DJANGO_SKIP_MIGRATE: "1"
     # Aislamiento de recursos (hallazgo S-08): sin límites, un pico de `web` podía
     # llevarse por delante a `db` en el mismo host y convertir una degradación en
     # indisponibilidad total. Ajusta los valores a la RAM real de tu host: la suma de
@@ -65,9 +76,9 @@ services:
       start_period: 20s
 
   worker:
+    image: resenas-app:${APP_VERSION:-local}
     environment:
       DJANGO_DEBUG: "0"
-      DJANGO_SKIP_MIGRATE: "1"
     mem_limit: ${WORKER_MEM_LIMIT:-512m}
     cpus: ${WORKER_CPUS:-1.0}
     pids_limit: 256
@@ -84,9 +95,9 @@ services:
       start_period: 40s
 
   beat:
+    image: resenas-app:${APP_VERSION:-local}
     environment:
       DJANGO_DEBUG: "0"
-      DJANGO_SKIP_MIGRATE: "1"
     mem_limit: ${BEAT_MEM_LIMIT:-256m}
     cpus: ${BEAT_CPUS:-0.5}
     pids_limit: 128
@@ -139,8 +150,8 @@ services:
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - media:/srv/media:ro
-      # Estáticos recolectados por `web` (DJANGO_COLLECTSTATIC=1). En :ro — el proxy
-      # solo los sirve; quien los escribe es la app.
+      # Estáticos recolectados por el servicio `release`. En :ro — el proxy solo los
+      # sirve; quien los escribe es la app.
       - staticfiles:/srv/static:ro
       - caddydata:/data
       - caddyconfig:/config

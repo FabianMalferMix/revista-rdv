@@ -33,15 +33,17 @@ Claves obligatorias (con `DJANGO_DEBUG=0` el arranque se rechaza si faltan o son
 ```bash
 COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
 
-docker compose $COMPOSE up -d --build
+APP_VERSION=$(git rev-parse --short HEAD) docker compose $COMPOSE up -d --build
 
-# Migraciones y grupos como paso explícito (web NO los corre al arrancar en prod):
-docker compose $COMPOSE run --rm --entrypoint python web manage.py migrate
-docker compose $COMPOSE run --rm --entrypoint python web manage.py setup_groups
 docker compose $COMPOSE run --rm --entrypoint python web manage.py createsuperuser
 # Si importas medios preexistentes, genera sus derivados responsivos (srcset):
 docker compose $COMPOSE run --rm --entrypoint python web manage.py generate_image_derivatives
 ```
+
+`up` corre primero el servicio `release` (`backend/release.sh`): aplica las migraciones, sincroniza
+los grupos y permisos y recoge los estáticos. Solo si termina bien arrancan `web`, `worker` y
+`beat`; si falla, no arranca nada (`docker compose $COMPOSE logs release` dice por qué). La imagen
+queda etiquetada con el commit (`resenas-app:<commit>`).
 
 Caddy servirá el sitio por HTTPS en tu dominio. `web` no publica ningún puerto al host: solo el
 proxy es accesible desde fuera.
@@ -50,13 +52,33 @@ proxy es accesible desde fuera.
 
 ```bash
 git pull
-docker compose $COMPOSE up -d --build
-docker compose $COMPOSE run --rm --entrypoint python web manage.py migrate   # si hubo migraciones
+APP_VERSION=$(git rev-parse --short HEAD) docker compose $COMPOSE up -d --build
+# El release migra, sincroniza los grupos y recoge los estáticos antes de arrancar el código
+# nuevo. Si falla, el código nuevo no arranca: revisar `docker compose $COMPOSE logs release`.
 # Genera los derivados responsivos (srcset) de las imágenes ya existentes.
 # Idempotente: solo crea los que falten. Correr tras subir imágenes en masa o
 # tras un cambio en MediaAsset.SRCSET_WIDTHS. Las nuevas imágenes los generan al guardarse.
 docker compose $COMPOSE run --rm --entrypoint python web manage.py generate_image_derivatives
 ```
+
+**Las migraciones van en dos pasos.** Mientras el release migra, el código anterior sigue
+sirviendo, y si hay que volver atrás, el código anterior corre sobre el esquema nuevo. Por eso un
+cambio de esquema primero añade (una columna, una tabla) y, en un despliegue posterior, quita lo
+que ya no se usa.
+
+### Volver atrás (rollback)
+
+La imagen de cada despliegue queda en el host como `resenas-app:<commit>`:
+
+```bash
+git checkout <commit-anterior>
+APP_VERSION=<commit-anterior> docker compose $COMPOSE up -d   # sin --build: usa la imagen guardada
+```
+
+Si la versión que se retira trajo una migración que el código anterior no tolera, primero hay que
+revertirla, con el código nuevo todavía en marcha:
+`docker compose $COMPOSE run --rm --entrypoint python web manage.py migrate <app> <migración-anterior>`.
+Las imágenes viejas se limpian a mano (`docker image ls resenas-app`, `docker image rm …`).
 
 `web`, `worker`, `beat`, `db`, `redis` y `proxy` llevan `restart: unless-stopped`: se recuperan
 solos ante caídas. `web` tiene healthcheck a `/healthz/`.

@@ -159,18 +159,17 @@ jobs:
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
         run: |
           # Ejercita la ruta REAL de estáticos de producción, que el smoke de gunicorn
-          # NO cubre (corre con DEBUG=1 y --entrypoint gunicorn, saltándose el
-          # entrypoint donde vive collectstatic). Con DEBUG=0 el entrypoint corre
-          # collectstatic con VendoredStaticFilesStorage (hash + manifiesto WhiteNoise,
-          # con vendor/tinymce/ exento del hash). Sin BD: DJANGO_SKIP_MIGRATE=1.
-          docker run --name prod-static \
-            -e DJANGO_DEBUG=0 -e DJANGO_SKIP_MIGRATE=1 -e DJANGO_COLLECTSTATIC=1 \
+          # NO cubre (corre con DEBUG=1). Con DEBUG=0, collectstatic usa
+          # VendoredStaticFilesStorage (hash + manifiesto WhiteNoise, con vendor/tinymce/
+          # exento del hash). No necesita la BD.
+          docker run --name prod-static --entrypoint python \
+            -e DJANGO_DEBUG=0 \
             -e DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
             -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
             -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
             -e DJANGO_CSRF_TRUSTED_ORIGINS="$DJANGO_CSRF_TRUSTED_ORIGINS" \
-            resenas-prod true
+            resenas-prod manage.py collectstatic --noinput
           docker cp prod-static:/app/staticfiles/staticfiles.json staticfiles.json
           docker rm -f prod-static
           python3 - <<'PY'
@@ -307,11 +306,14 @@ jobs:
             -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
             -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost"
 
-          # web (DEBUG=0): el entrypoint migra + collectstatic (VendoredStaticFilesStorage).
+          # El mismo orden que producción: release.sh (migraciones, grupos y estáticos con
+          # VendoredStaticFilesStorage) y después web, que comparte el volumen de estáticos.
+          docker run --rm --network qa13net $COMMON -v qa13static:/app/staticfiles \
+            resenas-prod sh release.sh
           docker run -d --name prod-web --network qa13net $COMMON \
-            -e DJANGO_COLLECTSTATIC=1 -e DJANGO_SECURE_SSL_REDIRECT=0 resenas-prod
+            -v qa13static:/app/staticfiles -e DJANGO_SECURE_SSL_REDIRECT=0 resenas-prod
 
-          echo "Esperando a gunicorn (migrate + collectstatic)..."
+          echo "Esperando a gunicorn..."
           for i in $(seq 1 40); do
             docker exec prod-web python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/',timeout=3)" 2>/dev/null && break
             sleep 3
@@ -329,14 +331,45 @@ jobs:
           docker exec prod-web python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5).status==200 else 1)"
 
           echo "--- worker y beat + sus healthchecks de compose ---"
-          docker run -d --name prod-worker --network qa13net $COMMON -e DJANGO_SKIP_MIGRATE=1 \
+          docker run -d --name prod-worker --network qa13net $COMMON \
             --entrypoint celery resenas-prod -A config worker -l warning
-          docker run -d --name prod-beat --network qa13net $COMMON -e DJANGO_SKIP_MIGRATE=1 \
+          docker run -d --name prod-beat --network qa13net $COMMON \
             --entrypoint celery resenas-prod -A config beat -l warning --schedule /app/celerybeat-schedule
           sleep 20
           docker exec prod-worker sh -c 'celery -A config inspect ping -d celery@$(hostname) -t 10 >/dev/null 2>&1'
           docker exec prod-beat python -c "import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)"
           echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
+
+      - name: Orden de despliegue con compose (release antes que web, worker y beat)
+        run: |
+          cp .env.example .env
+          C="docker compose -f docker-compose.yml"
+          # Base nueva, con todas las migraciones pendientes: el release las aplica y solo
+          # entonces arranca web.
+          $C up -d web
+          [ "$(docker inspect -f '{{.State.ExitCode}}' resenas-release-1)" = "0" ] \
+            || { echo "FALLO: el release no terminó bien"; exit 1; }
+          FIN=$(docker inspect -f '{{.State.FinishedAt}}' resenas-release-1)
+          INICIO=$(docker inspect -f '{{.State.StartedAt}}' resenas-web-1)
+          [[ "$FIN" < "$INICIO" ]] \
+            || { echo "FALLO: web arrancó ($INICIO) antes de que terminara el release ($FIN)"; exit 1; }
+          PENDIENTES=$($C exec -T web python manage.py showmigrations --plan | grep -c '^\[ \]' || true)
+          [ "$PENDIENTES" = "0" ] || { echo "FALLO: quedaron $PENDIENTES migraciones sin aplicar"; exit 1; }
+          echo "OK: el release migra antes de que arranque web"
+
+          # Si migrate falla, no arranca nada con el código nuevo: una tabla que ya existe hace
+          # fallar la migración inicial de content.
+          $C down -v
+          $C up -d --wait db
+          $C exec -T db psql -U resenas -d resenas -qc "CREATE TABLE content_article (id int);"
+          if $C up -d web worker beat; then
+            echo "FALLO: compose arrancó los servicios con el release fallido"; exit 1
+          fi
+          ARRANCADOS=$($C ps --status running --services | grep -c -E '^(web|worker|beat)$' || true)
+          [ "$ARRANCADOS" = "0" ] \
+            || { echo "FALLO: arrancaron $ARRANCADOS servicios con el release fallido"; exit 1; }
+          echo "OK: si el release falla, web, worker y beat no arrancan"
+          $C down -v
 
       # Caddy sirve /media/ FUERA de Django: ni SecurityMiddleware ni config.csp tocan
       # esas respuestas, así que ningún test de la suite las cubre. Se verifica con el

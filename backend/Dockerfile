@@ -18,9 +18,6 @@ FROM base AS dev
 # Lockfile con hashes: instalación reproducible y verificada.
 RUN pip install --require-hashes -r requirements-dev.txt
 COPY . .
-RUN chmod +x entrypoint.sh
-# Invocado vía bash para no depender del bit +x (el bind-mount lo sobrescribe).
-ENTRYPOINT ["bash", "entrypoint.sh"]
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
 
 # ── Producción ────────────────────────────────────────────
@@ -32,7 +29,8 @@ RUN pip install --require-hashes -r requirements.txt
 RUN useradd --system --create-home --uid 1000 app \
     && mkdir -p /app/mediafiles /app/private_media /app/staticfiles
 COPY --chown=app:app . .
-RUN chmod +x entrypoint.sh && chown -R app:app /app
+RUN chown -R app:app /app
 USER app
-ENTRYPOINT ["bash", "entrypoint.sh"]
+# Las migraciones, los grupos y los estáticos no se hacen al arrancar: los hace release.sh,
+# desde el servicio `release` del compose, antes de que arranquen web, worker y beat.
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
