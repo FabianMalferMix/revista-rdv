@@ -413,21 +413,31 @@ jobs:
           TRG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_trigger WHERE tgname LIKE '%search_vector_trg';")
           EXT=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_extension WHERE extname='unaccent';")
           echo "content_page orig=$ORIG restaurado=$REST | triggers FTS=$TRG | unaccent=$EXT"
-          test "$ORIG" = "$REST" && test "$ORIG" -gt 0 && test "$TRG" = "2" && test "$EXT" = "1"
+          # Comprobaciones explícitas: con `set -e`, en `test A && test B` el fallo de A no
+          # aborta el paso, y la comprobación nunca podía fallar.
+          [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$TRG" = "2" ] && [ "$EXT" = "1" ] \
+            || { echo "FALLO: la restauración no coincide con el original"; exit 1; }
           echo "OK: respaldo restaurado íntegro (datos + triggers FTS + extensión)"
 
-          # ── backup.sh REAL: permisos de los artefactos (S-06) ──
-          # El bloque anterior imita pg_dump, pero nunca ejecutaba el script. Los
-          # artefactos llevan la BD completa y los manuscritos privados: deben quedar
-          # cerrados. postgres:16 basta (restic y curl son opcionales en el script).
-          mkdir -p /tmp/bk /tmp/bkmedia /tmp/bkpriv
+          # ── backup.sh REAL, con la imagen del sidecar (trae curl para el ping) ──
+          # Los artefactos llevan la BD completa y los manuscritos privados: deben quedar
+          # cerrados. Un receptor de pings registra cada aviso de éxito o de fallo.
+          docker build -q -t resenas-backup ./infra/backup >/dev/null
+          docker run -d --name bk-ping --network bknet python:3.12-alpine \
+            python -m http.server 8000 >/dev/null
+          for i in $(seq 1 30); do
+            docker exec bk-ping wget -q -O /dev/null http://localhost:8000/ 2>/dev/null && break
+            sleep 1
+          done
+          BK="docker run --rm --network bknet -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
+            -e POSTGRES_USER=resenas -e POSTGRES_PASSWORD=ci-strong-db-password
+            -e BACKUP_PING_URL=http://bk-ping:8000/ping -v $PWD/infra/backup:/scripts:ro
+            --entrypoint sh"
+          mkdir -p /tmp/bk /tmp/bkmedia /tmp/bkpriv /tmp/vacio /tmp/bkgrande
+          echo "foto" > /tmp/bkmedia/foto.jpg
           echo "manuscrito" > /tmp/bkpriv/privado.txt
-          docker run --rm --network bknet \
-            -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
-            -e POSTGRES_PASSWORD=ci-strong-db-password \
-            -v "$PWD/infra/backup:/scripts:ro" -v /tmp/bk:/backups \
-            -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media \
-            postgres:16 sh /scripts/backup.sh
+          $BK -v /tmp/bk:/backups -v /tmp/bkmedia:/volumes/media \
+            -v /tmp/bkpriv:/volumes/private_media resenas-backup /scripts/backup.sh
 
           # Los artefactos los crea root dentro del contenedor: se leen desde otro
           # contenedor en vez de con sudo (portable y sin depender del runner).
@@ -440,18 +450,54 @@ jobs:
             test "$(stat -c %a "$DIR")" = "700" || { echo "FALLO: el directorio no es 700"; exit 1; }
             test "$(stat -c %a "$D")" = "600" || { echo "FALLO: el dump no es 600"; exit 1; }
             test "$(stat -c %a "$DIR/private_media.tar.gz")" = "600" || { echo "FALLO: el tar privado no es 600"; exit 1; }
+            test -f "$DIR/OK" || { echo "FALLO: el respaldo completo no tiene OK"; exit 1; }
           '
-          echo "OK: los respaldos no son legibles por otros usuarios del host"
+          echo "OK: los respaldos no son legibles por otros usuarios del host y llevan OK"
 
-          # ── restore.sh exige confirmación explícita (S-06) ──
-          if docker run --rm --network bknet \
-            -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
-            -e POSTGRES_PASSWORD=ci-strong-db-password \
-            -v "$PWD/infra/backup:/scripts:ro" -v /tmp/bk:/backups \
-            -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media \
-            postgres:16 sh /scripts/restore.sh latest; then
+          # ── Un respaldo que no se pudo hacer entero falla en voz alta ──
+          # Medios sin montar (un volumen vacío), un volumen que no es un directorio y un
+          # destino donde cabe el dump pero no el tar de los medios.
+          touch /tmp/no-es-dir
+          head -c 4000000 /dev/urandom > /tmp/bkgrande/grande.bin
+          for caso in "vacio:-v /tmp/vacio:/volumes/media -v /tmp/bk:/backups" \
+                      "no-es-dir:-v /tmp/no-es-dir:/volumes/media -v /tmp/bk:/backups" \
+                      "sin-espacio:-v /tmp/bkgrande:/volumes/media --tmpfs /backups:size=2m"; do
+            if $BK ${caso#*:} -v /tmp/bkpriv:/volumes/private_media resenas-backup /scripts/backup.sh; then
+              echo "FALLO: backup.sh dio por bueno el caso ${caso%%:*}"; exit 1
+            fi
+            echo "OK: el caso ${caso%%:*} hace fallar el respaldo"
+          done
+          EXITOS=$(docker logs bk-ping 2>&1 | grep -c 'GET /ping HTTP' || true)
+          FALLOS=$(docker logs bk-ping 2>&1 | grep -c 'GET /ping/fail' || true)
+          echo "pings → éxito=$EXITOS fallo=$FALLOS"
+          [ "$EXITOS" = "1" ] && [ "$FALLOS" = "3" ] \
+            || { echo "FALLO: se esperaba 1 aviso de éxito y 3 de fallo"; exit 1; }
+          docker run --rm -v /tmp/bk:/backups alpine sh -c \
+            'test "$(find /backups -name OK | wc -l)" = "1"' \
+            || { echo "FALLO: un respaldo fallido quedó como completo"; exit 1; }
+          echo "OK: cada fallo avisa, y ninguno queda como respaldo completo"
+
+          # ── restore.sh exige confirmación explícita ──
+          RESTORE="docker run --rm --network bknet -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
+            -e POSTGRES_USER=resenas -e POSTGRES_PASSWORD=ci-strong-db-password
+            -v $PWD/infra/backup:/scripts:ro -v /tmp/bk:/backups
+            -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media"
+          if $RESTORE postgres:16 sh /scripts/restore.sh latest; then
             echo "FALLO: restore.sh se ejecutó sin confirmación"; exit 1
           fi
           echo "OK: restore.sh se niega a destruir sin RESTORE_CONFIRM"
 
+          # ── restore.sh latest elige el respaldo completo más reciente ──
+          # Un directorio más nuevo pero sin OK (a medias) no se restaura nunca.
+          docker run --rm -v /tmp/bk:/backups alpine sh -c \
+            'D=$(dirname "$(find /backups -name OK | head -1)"); mkdir /backups/20991231-235959 && cp "$D/db.dump" /backups/20991231-235959/'
+          SALIDA=$($RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 sh /scripts/restore.sh latest)
+          echo "$SALIDA"
+          if echo "$SALIDA" | grep -q "20991231-235959"; then
+            echo "FALLO: restore.sh latest eligió un respaldo a medias"; exit 1
+          fi
+          echo "$SALIDA" | grep -q "✓ restauración completa"
+          echo "OK: restore.sh latest restaura el último respaldo completo"
+
+          docker rm -f bk-ping >/dev/null
           docker rm -f bk-db >/dev/null && docker network rm bknet >/dev/null

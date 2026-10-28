@@ -19,12 +19,14 @@ if [ "${RESTORE_CONFIRM:-}" != "$ESPERADO" ]; then
 fi
 
 TS="${1:-latest}"
+# Solo se restaura un respaldo completo: backup.sh deja OK dentro cuando lo verificó entero.
 if [ "$TS" = "latest" ]; then
-  SRC=$(ls -1dt /backups/*/ 2>/dev/null | head -1)
+  SRC=$(for dir in /backups/*/; do [ -f "${dir}OK" ] && echo "$dir"; done | sort -r | head -1)
 else
   SRC="/backups/$TS/"
 fi
 [ -n "${SRC:-}" ] && [ -d "$SRC" ] || { echo "✗ no existe el respaldo: ${SRC:-$TS}"; exit 1; }
+[ -f "$SRC/OK" ] || { echo "✗ el respaldo $SRC no está completo (le falta OK)"; exit 1; }
 echo "→ restaurando desde $SRC"
 
 echo "→ pg_restore (--clean --if-exists)"
