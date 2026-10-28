@@ -1,3 +1,4 @@
+# Prueba de las guardas: este comentario cita la decisión D35.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
