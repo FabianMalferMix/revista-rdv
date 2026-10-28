@@ -186,9 +186,12 @@ bash tools/ux/preparar-entorno.sh
 
 ```bash
 cp .env.prod.example .env   # editar secretos, contraseñas y SITE_ADDRESS (tu dominio)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint python web manage.py migrate
+APP_VERSION=$(git rev-parse --short HEAD) \
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
+
+`up` migra, sincroniza los grupos y recoge los estáticos (servicio `release`) antes de arrancar el
+código nuevo, y si eso falla no arranca nada.
 
 Con `DEBUG=0` el arranque exige credenciales propias; cookies seguras, HSTS y redirección a HTTPS
 quedan activas por defecto. `web` no publica puertos (solo el proxy). Todos los servicios llevan

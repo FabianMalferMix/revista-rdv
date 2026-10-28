@@ -271,7 +271,7 @@ En `docs/respaldos.md`, corregir el procedimiento de restauración (en producci�
 
 - un servicio `release` de un solo uso, con la misma imagen, que corre `migrate`, `setup_groups` y `collectstatic` con `restart: "no"`; web, worker y beat dependen de él con `service_completed_successfully`;
 - `lock_timeout` en la sesión de `migrate` (RES-7);
-- `entrypoint.sh` no migra salvo con `DJANGO_MIGRATE_ON_START=1`, que solo pone el override de desarrollo; fuera el `DJANGO_SKIP_MIGRATE` muerto de worker y beat;
+- el release corre también en desarrollo (con el código montado y sin `collectstatic`), así que `entrypoint.sh` ya no hace falta y se retira, y con él `DJANGO_SKIP_MIGRATE` y `DJANGO_COLLECTSTATIC` (el primero era configuración muerta en worker y beat). Los pasos del release están en un solo guion, `backend/release.sh`, que usan el compose y el CI;
 - la imagen etiquetada con el commit (`APP_VERSION`) y el rollback documentado;
 - el smoke del CI, en el mismo orden que producción.
 
@@ -708,7 +708,7 @@ De WEB-9: los textos de ayuda del formulario público se generan desde las const
 - `CONN_HEALTH_CHECKS = True` (REN-8);
 - junto al ajuste de hilos, dejar escrito que con gthread `--timeout` no es un plazo por petición, y corregir el comentario del Caddyfile.
 
-El `lock_timeout` va en la sesión de `migrate` del release (B06), y los plazos de la caché, en B36. De REN-4: `--concurrency ${CELERY_CONCURRENCY:-2}` y `--max-tasks-per-child 200`, documentados junto a `WORKER_MEM_LIMIT`.
+El `lock_timeout` va en la sesión de `migrate` del release (B06, por `PGOPTIONS` en `backend/release.sh`): si `DATABASES` fija `options`, que libpq antepone a `PGOPTIONS`, hay que sumarlo ahí. Los plazos de la caché van en B36. De REN-4: `--concurrency ${CELERY_CONCURRENCY:-2}` y `--max-tasks-per-child 200`, documentados junto a `WORKER_MEM_LIMIT`.
 
 **Hecho cuando.** Una consulta que supera el `statement_timeout` falla con un error (prueba con `pg_sleep`), y el worker arranca con dos procesos aunque la máquina tenga ocho núcleos.
 

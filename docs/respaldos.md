@@ -82,10 +82,8 @@ docker compose run --rm --entrypoint sh -e RESTORE_CONFIRM=SI-DESTRUIR-resenas \
 #   … o, desde el off-site: /scripts/restore.sh --from-restic latest   (o un id de instantánea)
 #   … y solo una parte: --db-only o --media-only, delante de lo anterior
 
-# 3. Si el código es más nuevo que el respaldo, aplicar sus migraciones antes de levantar
-docker compose run --rm web python manage.py migrate
-
-# 4. Volver a levantar
+# 3. Volver a levantar: el servicio release aplica antes las migraciones que falten, si el
+#    código es más nuevo que el respaldo
 docker compose up -d
 ```
 
@@ -97,8 +95,8 @@ docker compose up -d
    si algo falla, la base queda como estaba y la carpeta preparada se borra.
 4. Solo con la base ya restaurada, sustituye el contenido de `media` y `private_media`.
 
-En producción nadie migra al arrancar (`DJANGO_SKIP_MIGRATE=1`): el esquema queda como en el
-respaldo, y si el código desplegado es más nuevo hay que migrar (paso 3) antes de levantar `web`.
+El esquema queda como en el respaldo. Si el código desplegado es más nuevo, el servicio `release`
+aplica las migraciones que falten al levantar (paso 3), antes de que arranque `web`.
 
 > **Confirmación obligatoria.** `restore.sh` es destructivo y antes bastaba con invocarlo sin
 > argumentos (`latest` era el valor por defecto) para arrasar la base y los medios. Ahora exige
@@ -122,8 +120,8 @@ respaldo, y si el código desplegado es más nuevo hay que migrar (paso 3) antes
 
 **Recuperación total desde cero** (host nuevo): si se perdió el host, se perdió también
 `BACKUP_DIR`, y el respaldo está en restic. Clonar el repo, poner en `.env` las variables de restic,
-`docker compose up -d db`, restaurar con `restore.sh --from-restic latest`, migrar si hace falta y
-`docker compose up -d`.
+`docker compose up -d db`, restaurar con `restore.sh --from-restic latest` y `docker compose up -d`
+(el release migra si hace falta).
 
 ## Prueba de restauración (obligatoria)
 

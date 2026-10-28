@@ -111,25 +111,34 @@ La configuración vive **fuera del repositorio** y hay que recrearla. Guárdala 
 > `PROXY_HTTPS_PORT=8443`.
 
 ```yaml
+# Los valores de producción van en un ancla y los reciben release, web, worker y beat. Si
+# faltaran en alguno, ese servicio arrancaría con los de desarrollo (.env) y DEBUG=0, y
+# settings.py lo detendría; sin ellos en release, no arranca nada.
+x-entorno-prod-local: &entorno-prod-local
+  DJANGO_DEBUG: "0"
+  DJANGO_SECRET_KEY: local-prod-demo-9f3Kx7mQ2vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN
+  DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+  DJANGO_CSRF_TRUSTED_ORIGINS: https://localhost
+  DJANGO_SECURE_SSL_REDIRECT: "0"
+  DJANGO_HSTS_SECONDS: "0"
+  POSTGRES_PASSWORD: local-prod-demo-db-password
+  REDIS_PASSWORD: local-prod-demo-redis-password
+  # El compose base carga env_file: .env (DESARROLLO), que fija estas dos SIN
+  # credenciales y pisa las que settings.py construye a partir de REDIS_PASSWORD.
+  # Sin reponerlas, /readyz/ responde 503 con broker:false aunque Redis esté sano.
+  # No es un defecto del proyecto: .env.prod.example no las define a propósito.
+  CELERY_BROKER_URL: redis://:local-prod-demo-redis-password@redis:6379/0
+  CELERY_RESULT_BACKEND: redis://:local-prod-demo-redis-password@redis:6379/1
+
 services:
+  release:
+    environment: *entorno-prod-local
   web:
-    environment:
-      DJANGO_DEBUG: "0"
-      DJANGO_SECRET_KEY: local-prod-demo-9f3Kx7mQ2vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://localhost
-      DJANGO_SECURE_SSL_REDIRECT: "0"
-      DJANGO_HSTS_SECONDS: "0"
-      DJANGO_COLLECTSTATIC: "1"
-      DJANGO_SKIP_MIGRATE: "1"
-      POSTGRES_PASSWORD: local-prod-demo-db-password
-      REDIS_PASSWORD: local-prod-demo-redis-password
-      # El compose base carga env_file: .env (DESARROLLO), que fija estas dos SIN
-      # credenciales y pisa las que settings.py construye a partir de REDIS_PASSWORD.
-      # Sin reponerlas, /readyz/ responde 503 con broker:false aunque Redis esté sano.
-      # No es un defecto del proyecto: .env.prod.example no las define a propósito.
-      CELERY_BROKER_URL: redis://:local-prod-demo-redis-password@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:local-prod-demo-redis-password@redis:6379/1
+    environment: *entorno-prod-local
+  worker:
+    environment: *entorno-prod-local
+  beat:
+    environment: *entorno-prod-local
 ```
 
 > Esas credenciales son **de demostración local**. No las uses en ningún despliegue real.

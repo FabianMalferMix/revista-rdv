@@ -14,14 +14,14 @@ las convenciones y el flujo de trabajo.
 El `docker-compose.override.yml` se carga solo y monta el código con recarga en caliente.
 
 ```bash
-docker compose up -d                              # web, worker, beat, db, redis
-docker compose exec web python manage.py migrate
-docker compose exec web python manage.py setup_groups
+docker compose up -d                              # release, web, worker, beat, db, redis
 docker compose exec web python manage.py seed_demo        # datos de demostración
 docker compose exec web python manage.py createsuperuser
 ```
 
-El sitio queda en <http://127.0.0.1:8000/> (solo escucha en 127.0.0.1).
+El sitio queda en <http://127.0.0.1:8000/> (solo escucha en 127.0.0.1). Cada `docker compose up`
+corre antes el servicio `release` (`backend/release.sh`), que aplica las migraciones y sincroniza
+los grupos; web, worker y beat esperan a que termine bien.
 
 ## Comandos habituales
 
