@@ -64,8 +64,13 @@ pre-commit install            # instala el gancho de git
 pre-commit run --all-files    # opcional: corre los hooks sobre todo el repo
 ```
 
-Los hooks (ruff check + format, más higiene de archivos) usan la misma versión de
-ruff que el lockfile, de modo que coincidan con el CI.
+Además de ruff y gitleaks, los ganchos revisan la higiene de los archivos (espacios, YAML y
+archivos de más de 2 MB), la sintaxis de los guiones de `backend/static/js/` (`node --check`) y
+los identificadores de decisión en el código. El CI los corre todos en el job `hygiene`, salvo
+ruff y gitleaks, que tienen sus propios jobs. Sin pre-commit instalado, el recuento de
+identificadores se corre con `python3 tools/ci/decision_refs.py`: su línea base
+(`tools/ci/decision_refs_baseline.json`) solo puede bajar, y tras quitar alguno se baja con
+`--update`.
 
 ## Flujo de trabajo
 
@@ -124,7 +129,8 @@ vigente más cercano y no se agrava la deuda.
 5. **Comentarios.** Dicen qué hace el código hoy y qué restricción lo explica. Bien: el comentario
    del feed de registros en `config/urls.py` explica por qué se instancia por petición (gunicorn
    usa hilos). Mal: los comentarios que cuentan qué se hizo en cada sesión o citan una decisión o
-   un ticket («D23», «paso 18»): esa historia va en el commit. Una garantía de seguridad o de
+   un ticket («D23», «paso 18»): esa historia va en el commit, y el CI falla si un archivo suma
+   identificadores de esos (`tools/ci/decision_refs.py`). Una garantía de seguridad o de
    privacidad se escribe como prueba, no como comentario.
 6. **Errores.** Nada de `except Exception: return` sin registro: lo esperado, `logger.warning`
    sin traza; lo inesperado, `logger.exception`. Los controles de privacidad fallan cerrados, y un

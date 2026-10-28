@@ -23,7 +23,7 @@ Sitio del colectivo de poesía Repitentes del Verso: Django 5.2 LTS, htmx, Postg
 5. **Comentarios.**
    - Dicen qué hace el código hoy y qué restricción lo explica (CSP, accesibilidad, rendimiento).
    - La historia («antes…», «el dueño pidió…») va en el commit.
-   - En el código no van identificadores de ticket, de decisión ni de sesión.
+   - En el código no van identificadores de ticket, de decisión ni de sesión: `tools/ci/decision_refs.py` los cuenta y el CI falla si crecen.
    - Una garantía de seguridad o de privacidad no se escribe como comentario: se escribe una prueba.
 6. **Errores.**
    - Nada de `except Exception: return` sin registro: lo esperado, `logger.warning`; lo inesperado, `logger.exception`.

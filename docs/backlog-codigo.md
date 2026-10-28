@@ -223,7 +223,7 @@ Remite a `CONTRIBUTING.md`, que desarrolla cada regla con un ejemplo del propio 
 - `pre-commit run --all-files`, que incluye `check-added-large-files`;
 - una prueba que cuenta, archivo por archivo, los identificadores de decisión o de sesión en el código fuera de las migraciones (`D\d+`, `S-\d+`, «ticket», «hallazgo», «paso N», «Lote»), contra una línea base guardada en el repositorio. Falla si un archivo sube; cuando baja, se actualiza la línea base. B78 la lleva a cero.
 
-**Hecho cuando.** En el PR, tres commits de prueba, revertidos antes de fusionar, ponen el CI en rojo: un guion con un error de sintaxis, un archivo de 3 MB y un comentario nuevo que cita «D35».
+**Hecho cuando.** Un PR de prueba, que no se fusiona, pone en rojo el job del CI con tres fallos, uno por cada guarda: un guion con un error de sintaxis, un archivo de 3 MB y un comentario nuevo que cita «D35». Va en un PR aparte para que esos cambios no queden en el historial de `main`.
 
 ### Tanda 1 — Lo que puede causar daño
 
