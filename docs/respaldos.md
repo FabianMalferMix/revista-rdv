@@ -13,7 +13,12 @@ Este documento define la política de respaldos, cómo ejecutarlos y —lo más 
 | **`private_media`** | Manuscritos de envíos (privados) | `tar czf` del volumen |
 
 Cada respaldo es una carpeta con marca de tiempo en `/backups/<YYYYmmdd-HHMMSS>/` que contiene
-`db.dump`, `media.tar.gz` y `private_media.tar.gz`.
+`db.dump`, `media.tar.gz`, `private_media.tar.gz` y un archivo `OK`. `backup.sh` escribe primero en
+`<marca>.partial`, verifica el dump (`pg_restore --list`) y los tar (`gzip -t`), y solo entonces le
+da su nombre definitivo con `OK`: una carpeta sin `OK` nunca fue un respaldo completo, y ni la
+rotación ni `restore.sh` la usan. Si algo falla (un `tar` que no puede leer, el disco lleno, un
+volumen que no es un directorio o que tiene menos archivos que `BACKUP_MIN_MEDIA_FILES` o
+`BACKUP_MIN_PRIVATE_FILES`, porque un volumen sin montar llega vacío), el respaldo aborta y avisa.
 
 ## Dónde se guardan (crítico)
 
@@ -30,9 +35,12 @@ El sidecar (`infra/backup/`, imagen `postgres:16` + `restic` + `curl`) hace dos 
 respaldo local, **ambas opt-in por variables de entorno**:
 
 - **Off-site cifrado (restic).** Con `RESTIC_REPOSITORY` + `RESTIC_PASSWORD` definidos, cada respaldo
-  se sube a almacenamiento externo cifrado y deduplicado (S3/BackBlaze/rclone según el backend). El
-  repo se inicializa solo la primera vez; la retención off-site la controla `RESTIC_KEEP` (30 por
-  defecto). Sin `RESTIC_REPOSITORY` el paso se omite con un aviso.
+  sube a almacenamiento externo cifrado (S3/BackBlaze/rclone según el backend) el dump y los
+  volúmenes tal cual, sin tar.gz, para que restic deduplique los archivos que no cambian. El repo se
+  inicializa solo la primera vez. La retención agrupa las instantáneas por host y etiqueta y poda
+  según `RESTIC_KEEP_DAILY`, `RESTIC_KEEP_WEEKLY` y `RESTIC_KEEP_MONTHLY` (7, 5 y 12 por defecto), y
+  una vez por semana `restic check` comprueba el repositorio. Sin `RESTIC_REPOSITORY` el paso se omite
+  con un aviso.
 - **Alerta de fallo (dead-man's-switch).** Con `BACKUP_PING_URL` (p. ej. healthchecks.io), se hace
   `GET` a la URL al terminar OK y a `<URL>/fail` si el respaldo aborta (vía `trap`). Así un sidecar
   que falla en silencio **dispara una alerta** en lugar de pasar semanas sin backups válidos.
@@ -55,9 +63,8 @@ docker compose --profile backup up -d backup
 
 Alternativa: **cron del host** invocando el comando puntual (p. ej. `0 3 * * *`).
 
-**Retención:** local, se conservan los últimos `BACKUP_KEEP` respaldos (14 por defecto); off-site,
-`RESTIC_KEEP` (30 por defecto). restic aporta cifrado y deduplicación; para política
-abuelo-padre-hijo usar `restic forget --keep-daily/--keep-weekly/--keep-monthly`.
+**Retención:** local, se conservan los últimos `BACKUP_KEEP` respaldos completos (14 por defecto);
+off-site, la política diaria, semanal y mensual de arriba.
 
 ## Restaurar
 
@@ -67,19 +74,31 @@ abuelo-padre-hijo usar `restic forget --keep-daily/--keep-weekly/--keep-monthly`
 # 1. Detener la app (mantener db arriba)
 docker compose stop web worker beat
 
-# 2. Restaurar el último respaldo (o un timestamp concreto)
+# 2. Restaurar el último respaldo completo (o una marca de tiempo concreta)
 #    Exige confirmación explícita nombrando la base que se va a destruir.
 docker compose run --rm --entrypoint sh -e RESTORE_CONFIRM=SI-DESTRUIR-resenas \
   backup /scripts/restore.sh latest
 #   … o: /scripts/restore.sh 20260709-030000
+#   … o, desde el off-site: /scripts/restore.sh --from-restic latest   (o un id de instantánea)
+#   … y solo una parte: --db-only o --media-only, delante de lo anterior
 
-# 3. Volver a levantar
+# 3. Si el código es más nuevo que el respaldo, aplicar sus migraciones antes de levantar
+docker compose run --rm web python manage.py migrate
+
+# 4. Volver a levantar
 docker compose up -d
 ```
 
-`restore.sh` usa `pg_restore --clean --if-exists` (recrea el esquema y los datos) y reemplaza el
-contenido de `media`/`private_media`. Como el dump incluye la tabla `django_migrations`, el `migrate`
-del arranque queda como no-op.
+`restore.sh` no deja nada a medias:
+
+1. Primero verifica el dump (`pg_restore --list`) y los medios (`tar tzf`).
+2. Después prepara los medios en una carpeta aparte dentro de cada volumen.
+3. Restaura la base en una sola transacción (`pg_restore --single-transaction --exit-on-error`):
+   si algo falla, la base queda como estaba y la carpeta preparada se borra.
+4. Solo con la base ya restaurada, sustituye el contenido de `media` y `private_media`.
+
+En producción nadie migra al arrancar (`DJANGO_SKIP_MIGRATE=1`): el esquema queda como en el
+respaldo, y si el código desplegado es más nuevo hay que migrar (paso 3) antes de levantar `web`.
 
 > **Confirmación obligatoria.** `restore.sh` es destructivo y antes bastaba con invocarlo sin
 > argumentos (`latest` era el valor por defecto) para arrasar la base y los medios. Ahora exige
@@ -101,8 +120,10 @@ del arranque queda como no-op.
 > privados. `BACKUP_DIR` debe pertenecer a un usuario dedicado y **nunca** apuntar al directorio del
 > repositorio. El cifrado en reposo lo aporta restic en el off-site; el respaldo local va en claro.
 
-**Recuperación total desde cero** (host nuevo): clonar el repo, copiar `BACKUP_DIR` desde el
-almacenamiento externo, `docker compose up -d db`, restaurar, `docker compose up -d`.
+**Recuperación total desde cero** (host nuevo): si se perdió el host, se perdió también
+`BACKUP_DIR`, y el respaldo está en restic. Clonar el repo, poner en `.env` las variables de restic,
+`docker compose up -d db`, restaurar con `restore.sh --from-restic latest`, migrar si hace falta y
+`docker compose up -d`.
 
 ## Prueba de restauración (obligatoria)
 
@@ -118,8 +139,15 @@ docker compose up -d                                                # 5. levanta
 # 6. verificar que el contenido volvió (home con artículos, adjuntos presentes)
 ```
 
-Este flujo es el procedimiento de verificación de referencia. **Debe ejecutarse tras cualquier
-cambio en el esquema de respaldos y, en producción, de forma periódica** (idealmente automatizado:
-un job programado que restaure el último respaldo en una BD desechable y compruebe un conteo de
-filas). Un RTO/RPO objetivo (p. ej. RTO < 2 h, RPO < 24 h) debe declararse y probarse contra este
-procedimiento; hoy no está automatizado.
+Este flujo es el procedimiento de verificación de referencia. **Debe ejecutarse en producción de
+forma periódica**: el CI no ve el VPS. Lo que sí prueba el CI en cada cambio (job `backup-restore`):
+
+- `backup.sh` deja un respaldo completo y cerrado (`OK`, permisos 700 y 600);
+- falla y avisa con un volumen vacío, con un volumen que no es un directorio y con el disco lleno;
+- `restore.sh latest` salta los respaldos a medias;
+- la base y los medios vuelven desde un repositorio restic, y la retención de restic poda;
+- una restauración que falla a mitad deja la base y los medios como estaban;
+- `--media-only` no toca la base.
+
+Un RTO/RPO objetivo (p. ej. RTO < 2 h, RPO < 24 h) debe declararse y probarse contra este
+procedimiento en el VPS.

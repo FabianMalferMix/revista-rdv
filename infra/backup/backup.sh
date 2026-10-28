@@ -83,15 +83,27 @@ touch "$PARTIAL/OK"
 mv "$PARTIAL" "$DEST"
 
 # ── Off-site (opcional pero recomendado) ──
-# Con RESTIC_REPOSITORY + RESTIC_PASSWORD definidos, sube el respaldo a almacenamiento
-# externo cifrado y deduplicado (S3/BackBlaze/rclone/… según el backend de restic).
+# Con RESTIC_REPOSITORY + RESTIC_PASSWORD definidos, sube a almacenamiento externo cifrado
+# (S3/BackBlaze/rclone/… según el backend de restic) el dump y los volúmenes tal cual: sin
+# tar.gz, restic deduplica los archivos que no cambian. El dump sube desde una ruta fija, para
+# que todas las instantáneas tengan las mismas rutas y la retención las agrupe y las pode.
 # Sin RESTIC_REPOSITORY el paso se omite (un respaldo solo local NO protege ante la
 # pérdida del host).
 if [ -n "${RESTIC_REPOSITORY:-}" ]; then
   echo "→ off-site (restic → $RESTIC_REPOSITORY)"
   restic snapshots >/dev/null 2>&1 || restic init          # inicializa el repo la 1ª vez
-  restic backup --tag resenas --host "${RESTIC_HOST:-resenas}" "$DEST"
-  restic forget --prune --keep-last "${RESTIC_KEEP:-30}" >/dev/null
+  mkdir -p /backups/.restic
+  ln -f "$DEST/db.dump" /backups/.restic/db.dump
+  restic backup --tag resenas --host "${RESTIC_HOST:-resenas}" \
+    /backups/.restic /volumes/media /volumes/private_media
+  restic forget --tag resenas --group-by host,tags --prune \
+    --keep-daily "${RESTIC_KEEP_DAILY:-7}" --keep-weekly "${RESTIC_KEEP_WEEKLY:-5}" \
+    --keep-monthly "${RESTIC_KEEP_MONTHLY:-12}" >/dev/null
+  # Una vez por semana, comprobar que el repositorio sigue entero.
+  if [ -z "$(find /backups/.restic/comprobado -mtime -7 2>/dev/null)" ]; then
+    restic check
+    touch /backups/.restic/comprobado
+  fi
 else
   echo "  (off-site desactivado: define RESTIC_REPOSITORY para activarlo)"
 fi
