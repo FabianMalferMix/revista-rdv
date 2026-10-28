@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 1 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 2 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -58,7 +58,7 @@
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
 | B01 | Retirar las auditorías anteriores sin dejar referencias colgadas | — | S | no | hecho (#172) |
-| B02 | Reglas de trabajo para los agentes | — | S | no | pendiente |
+| B02 | Reglas de trabajo para los agentes | — | S | no | hecho (#173) |
 | B03 | Guardas baratas en el CI | — | S | no | pendiente |
 
 **Tanda 1 — Lo que puede causar daño**
