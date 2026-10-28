@@ -499,5 +499,59 @@ jobs:
           echo "$SALIDA" | grep -q "✓ restauración completa"
           echo "OK: restore.sh latest restaura el último respaldo completo"
 
+          # ── Off-site: respaldo a un repositorio restic y restauración desde él ──
+          # Lo que cambia después del respaldo (los títulos y un archivo) vuelve al restaurar.
+          mkdir -p /tmp/restic
+          RESTIC_ENV="-e RESTIC_REPOSITORY=/restic -e RESTIC_PASSWORD=ci-restic-password
+            -v /tmp/restic:/restic"
+          CAMBIADAS="SELECT count(*) FROM content_page WHERE title = 'cambiado';"
+          $BK $RESTIC_ENV -v /tmp/bk:/backups -v /tmp/bkmedia:/volumes/media \
+            -v /tmp/bkpriv:/volumes/private_media resenas-backup /scripts/backup.sh
+          $PG psql -U resenas -d resenas -qc "UPDATE content_page SET title = 'cambiado';"
+          docker run --rm -v /tmp/bkmedia:/m alpine rm /m/foto.jpg
+          $RESTORE $RESTIC_ENV -e RESTORE_CONFIRM=SI-DESTRUIR-resenas --entrypoint sh \
+            resenas-backup /scripts/restore.sh --from-restic latest
+          [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "0" ] \
+            || { echo "FALLO: restic no devolvió la base del respaldo"; exit 1; }
+          docker run --rm -v /tmp/bkmedia:/m alpine test -f /m/foto.jpg \
+            || { echo "FALLO: restic no devolvió el archivo de medios"; exit 1; }
+          echo "OK: la base y los medios vuelven desde restic"
+
+          # La retención agrupa las instantáneas y poda: con un solo diario por política, dos
+          # respaldos dejan una (si cada instantánea formara su propio grupo, quedarían las dos).
+          $BK $RESTIC_ENV -e RESTIC_KEEP_DAILY=1 -e RESTIC_KEEP_WEEKLY=0 -e RESTIC_KEEP_MONTHLY=0 \
+            -v /tmp/bk:/backups -v /tmp/bkmedia:/volumes/media \
+            -v /tmp/bkpriv:/volumes/private_media resenas-backup /scripts/backup.sh
+          INSTANTANEAS=$(docker run --rm $RESTIC_ENV --entrypoint restic resenas-backup \
+            snapshots --json | grep -o '"short_id"' | wc -l)
+          [ "$INSTANTANEAS" = "1" ] \
+            || { echo "FALLO: la retención de restic dejó $INSTANTANEAS instantáneas"; exit 1; }
+          echo "OK: la retención de restic agrupa y poda"
+
+          # ── Un fallo a mitad deja la base y los medios como estaban ──
+          # Una vista que depende de content_page hace fallar el DROP de pg_restore a mitad.
+          $PG psql -U resenas -d resenas -qc "UPDATE content_page SET title = 'cambiado';"
+          $PG psql -U resenas -d resenas -qc "CREATE VIEW bloqueo AS SELECT * FROM content_page;"
+          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'echo marca > /m/marca.txt'
+          if $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 sh /scripts/restore.sh latest; then
+            echo "FALLO: la restauración debía fallar a mitad"; exit 1
+          fi
+          [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "$ORIG" ] \
+            || { echo "FALLO: la base no quedó como estaba"; exit 1; }
+          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'test -f /m/marca.txt && test ! -e /m/.restaurando' \
+            || { echo "FALLO: los medios no quedaron como estaban"; exit 1; }
+          $PG psql -U resenas -d resenas -qc "DROP VIEW bloqueo;"
+          echo "OK: un fallo a mitad deja la base y los medios como estaban"
+
+          # ── --media-only no toca la base ──
+          docker run --rm -v /tmp/bkmedia:/m alpine rm /m/foto.jpg
+          $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 \
+            sh /scripts/restore.sh --media-only latest
+          [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "$ORIG" ] \
+            || { echo "FALLO: --media-only tocó la base"; exit 1; }
+          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'test -f /m/foto.jpg && test ! -e /m/marca.txt' \
+            || { echo "FALLO: --media-only no restauró los medios"; exit 1; }
+          echo "OK: --media-only restaura los medios y deja la base"
+
           docker rm -f bk-ping >/dev/null
           docker rm -f bk-db >/dev/null && docker network rm bknet >/dev/null

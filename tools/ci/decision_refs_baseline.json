@@ -107,7 +107,6 @@
   "backend/tests/test_version_estaticos.py": 1,
   "docker-compose.prod.yml": 6,
   "docker-compose.yml": 2,
-  "infra/backup/restore.sh": 2,
   "infra/caddy/Caddyfile": 8,
   "tools/ux/iconos.js": 1,
   "tools/ux/superficies.js": 1,
