@@ -25,8 +25,8 @@ def recording_detail(request, slug):
         puerta("Poema registrado", p.title, p.get_absolute_url())
         for p in Poem.objects.filter(recording=recording, status=EditorialStatus.PUBLISHED)
     ]
-    if recording.event:
-        pie.append(puerta("Evento", recording.event.title, recording.event.get_absolute_url()))
+    if evento := recording.public_event:
+        pie.append(puerta("Evento", evento.title, evento.get_absolute_url()))
     pie += puertas_vecinas(
         *vecinos_en_lista(_published(), recording), "Registro", lambda r: r.title
     )

@@ -6,7 +6,7 @@ from django.utils import timezone
 from apps.media.models import Recording
 from apps.media.templatetags.embeds import embed_src
 from apps.showcase.models import SiteProfile
-from tests.factories import make_recording  # noqa: E402
+from tests.factories import make_event, make_recording  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -250,3 +250,30 @@ def test_podcast_feed_emits_itunes_namespace(client):
     assert b"<itunes:author>" in body
     assert b"<itunes:category" in body
     assert b"<itunes:explicit>false</itunes:explicit>" in body
+
+
+@pytest.mark.parametrize("publicado", [False, True])
+def test_un_registro_publicado_no_ensena_su_evento_oculto(client, publicado):
+    """Un recital cancelado o privado se despublica, pero su registro destacado sigue público:
+    ni la portada, ni el índice, ni la ficha, ni los feeds, ni el sitemap pueden enseñar el
+    título, la sala o la ciudad del evento. Con el evento publicado, sí (el control positivo)."""
+    evento = make_event(
+        title="Recital-marcador",
+        venue_name="Sala-marcador",
+        city="Ciudad-marcador",
+        starts_at=timezone.now() - timezone.timedelta(days=3),
+        published=publicado,
+    )
+    make_recording(slug="con-evento", title="Registro con evento", featured=True, event=evento)
+    paginas = [
+        reverse("content:home"),
+        reverse("media:recording_index"),
+        reverse("media:recording_detail", args=["con-evento"]),
+        reverse("recordings_feed"),
+        reverse("feed"),
+        "/sitemap.xml",
+    ]
+    textos = [client.get(url).content.decode() for url in paginas]
+    marcadores = ("Recital-marcador", "Sala-marcador", "Ciudad-marcador")
+    vistos = {m for m in marcadores for texto in textos if m in texto}
+    assert vistos == (set(marcadores) if publicado else set())

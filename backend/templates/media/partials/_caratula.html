@@ -7,6 +7,6 @@
    plantilla.
 {% endcomment %}
 <span class="rec-caratula" aria-hidden="true">
-  <span class="rotulo">{{ r.get_kind_display }}{% if r.event %} · {{ r.event.get_type_display }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"Y" }}{% elif r.event %} · {{ r.event.starts_at|date:"Y" }}{% endif %}</span>
+  <span class="rotulo">{{ r.get_kind_display }}{% if r.public_event %} · {{ r.public_event.get_type_display }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"Y" }}{% elif r.public_event %} · {{ r.public_event.starts_at|date:"Y" }}{% endif %}</span>
   <span class="rec-caratula-titulo">{{ r.title }}</span>
 </span>

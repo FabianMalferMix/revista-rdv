@@ -103,3 +103,9 @@ class Work(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def public_publication(self):
+        """La publicación del colectivo que es esta obra, solo si está publicada."""
+        publication = self.publicacion
+        return publication if publication is not None and publication.published else None

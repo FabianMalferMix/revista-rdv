@@ -28,7 +28,7 @@
         </div>
         <h2><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>
         <p class="meta">
-          {{ r.get_kind_display }}{% if r.duracion %} · {{ r.duracion }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}{% if r.event %} · <a href="{{ r.event.get_absolute_url }}">{{ r.event.title }}</a>{% endif %}
+          {{ r.get_kind_display }}{% if r.duracion %} · {{ r.duracion }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}{% if r.public_event %} · <a href="{{ r.public_event.get_absolute_url }}">{{ r.public_event.title }}</a>{% endif %}
         </p>
       </li>
     {% empty %}

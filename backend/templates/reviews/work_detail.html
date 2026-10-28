@@ -17,8 +17,8 @@
       </p>
     {% endwith %}
     {% if work.description %}<p class="dek">{{ work.description }}</p>{% endif %}
-    {% if work.publicacion and work.publicacion.published %}
-      <p class="meta">Publicación del colectivo: <a href="{{ work.publicacion.get_absolute_url }}">{{ work.publicacion.title }}</a></p>
+    {% if work.public_publication %}
+      <p class="meta">Publicación del colectivo: <a href="{{ work.public_publication.get_absolute_url }}">{{ work.public_publication.title }}</a></p>
     {% endif %}
   </header>
   <h2 class="subhead">Reseñas de esta obra</h2>

@@ -450,6 +450,13 @@ class Recording(models.Model):
         return reverse("media:recording_detail", args=[self.slug])
 
     @property
+    def public_event(self):
+        """El evento del registro, solo si está publicado: un registro publicado no puede enseñar
+        la sala, la ciudad, la fecha ni las fotos de un evento oculto (cancelado o privado)."""
+        event = self.event
+        return event if event is not None and event.published else None
+
+    @property
     def duracion(self):
         """La duración como se lee en el sello: «42 min» o «1 h 05 min». Vacía si no se sabe."""
         if not self.duration_minutes:
