@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 2 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 3 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -59,7 +59,7 @@
 | --- | --- | --- | --- | --- | --- |
 | B01 | Retirar las auditorías anteriores sin dejar referencias colgadas | — | S | no | hecho (#172) |
 | B02 | Reglas de trabajo para los agentes | — | S | no | hecho (#173) |
-| B03 | Guardas baratas en el CI | — | S | no | pendiente |
+| B03 | Guardas baratas en el CI | — | S | no | hecho (#174) |
 
 **Tanda 1 — Lo que puede causar daño**
 
@@ -223,7 +223,7 @@ Remite a `CONTRIBUTING.md`, que desarrolla cada regla con un ejemplo del propio 
 - `pre-commit run --all-files`, que incluye `check-added-large-files`;
 - una prueba que cuenta, archivo por archivo, los identificadores de decisión o de sesión en el código fuera de las migraciones (`D\d+`, `S-\d+`, «ticket», «hallazgo», «paso N», «Lote»), contra una línea base guardada en el repositorio. Falla si un archivo sube; cuando baja, se actualiza la línea base. B78 la lleva a cero.
 
-**Hecho cuando.** En el PR, tres commits de prueba, revertidos antes de fusionar, ponen el CI en rojo: un guion con un error de sintaxis, un archivo de 3 MB y un comentario nuevo que cita «D35».
+**Hecho cuando.** Un PR de prueba, que no se fusiona, pone en rojo el job del CI con tres fallos, uno por cada guarda: un guion con un error de sintaxis, un archivo de 3 MB y un comentario nuevo que cita «D35». Va en un PR aparte para que esos cambios no queden en el historial de `main`.
 
 ### Tanda 1 — Lo que puede causar daño
 

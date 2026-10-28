@@ -1,5 +1,12 @@
 # Ganchos de pre-commit. Instalar una vez:  pip install pre-commit && pre-commit install
 # Correr sobre todo el repo:                 pre-commit run --all-files
+# El CI los corre en el job hygiene, salvo ruff y gitleaks, que tienen sus propios jobs.
+
+# Lo de terceros y lo generado no se toca: lo vendorizado se verifica por sha256
+# (tests/test_vendored_assets.py), las licencias de las fuentes van tal cual las publica
+# su autor y las métricas de tools/ux/ las escribe capture.js.
+exclude: ^(backend/static/vendor/|backend/static/fonts/[^/]+\.txt$|tools/ux/(linea-base|final)/)
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -9,7 +16,9 @@ repos:
       - id: check-yaml
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: ["--maxkb=2048"]
+        # --enforce-all mira todos los archivos que recibe, no solo los recién añadidos al
+        # índice: sin él, `pre-commit run --all-files` no revisaría ninguno.
+        args: ["--maxkb=2048", "--enforce-all"]
 
   # ruff: linter + formateador. Se fija a la misma versión que el lockfile (0.16.0)
   # para que el resultado local coincida con el del CI.
@@ -26,3 +35,19 @@ repos:
     rev: v8.21.2
     hooks:
       - id: gitleaks
+
+  # Ganchos propios (tools/ci/): la sintaxis de los guiones, que ninguna prueba ejecuta, y
+  # la regla de que la historia va en el commit y no en los comentarios del código.
+  - repo: local
+    hooks:
+      - id: js-syntax
+        name: sintaxis de los guiones (node --check)
+        entry: tools/ci/js_syntax.sh
+        language: script
+        files: ^backend/static/js/[^/]+\.js$
+      - id: decision-refs
+        name: identificadores de decisión en el código
+        entry: python3 tools/ci/decision_refs.py
+        language: system
+        pass_filenames: false
+        always_run: true

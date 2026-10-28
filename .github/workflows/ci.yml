@@ -208,6 +208,27 @@ jobs:
 
   # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
   # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Higiene del repositorio (pre-commit, bloqueante)
+        # Espacios, YAML, archivos de más de 2 MB, la sintaxis de los guiones (node --check)
+        # y los identificadores de decisión en el código (tools/ci/decision_refs.py). ruff y
+        # gitleaks se saltan porque ya corren, bloqueantes, en los jobs test y security. La
+        # versión va fijada, como la de bandit.
+        env:
+          SKIP: ruff-check,ruff-format,gitleaks
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pre-commit==4.7.0"
+          pre-commit run --all-files --show-diff-on-failure
+
   security:
     runs-on: ubuntu-latest
     # dependency-review-action necesita leer el PR además del contenido; se le concede
