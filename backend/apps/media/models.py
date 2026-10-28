@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 from pathlib import PurePosixPath
 
@@ -5,10 +6,27 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import models
+from django.db import models, transaction
 from PIL import Image, ImageOps
 
-from .validators import validate_audio_video_extension
+from .validators import validate_audio_video_extension, validate_image
+
+logger = logging.getLogger(__name__)
+
+# Dónde guarda Pillow los metadatos que delatan la ubicación, la fecha o la cámara: EXIF, XMP
+# (en JPEG y WebP, y en PNG bajo su propia clave) e IPTC (el bloque «photoshop» de un JPEG).
+METADATA_KEYS = {"exif", "xmp", "XML:com.adobe.xmp", "photoshop", "iptc"}
+# Cómo se reescribe cada formato admitido (ver validators.IMAGE_FORMATS).
+REWRITE_FORMATS = {
+    "JPEG": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
+    "MPO": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
+    "WEBP": ("WEBP", {"quality": 92}),
+    "PNG": ("PNG", {"optimize": True}),
+}
+
+
+class ImageCleanupError(Exception):
+    """No se pudo reescribir sin metadatos una imagen recién subida: no se publica."""
 
 
 class MediaAsset(models.Model):
@@ -27,6 +45,8 @@ class MediaAsset(models.Model):
         upload_to="assets/%Y/%m/",
         width_field="width",
         height_field="height",
+        validators=[validate_image],
+        help_text="JPEG, PNG o WebP, hasta 40 megapíxeles.",
     )
     alt_text = models.CharField(
         max_length=255,
@@ -56,10 +76,15 @@ class MediaAsset(models.Model):
 
     # ── Imágenes responsivas (srcset) ─────────────────────────
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # El orden importa: limpiar el original ANTES de derivar, para que las copias
-        # se generen a partir de la imagen ya despojada y con la orientación aplicada.
-        self.strip_metadata()
+        # Una imagen recién subida todavía no está en el almacenamiento.
+        recien_subida = bool(self.file) and not self.file._committed
+        # En una transacción: si la limpieza de una imagen recién subida falla, la fila tampoco
+        # queda, aunque quien guarda no haya abierto una.
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            # El orden importa: limpiar el original ANTES de derivar, para que las copias
+            # se generen a partir de la imagen ya despojada y con la orientación aplicada.
+            self.strip_metadata(force=recien_subida)
         self.ensure_derivatives()
 
     def _derivative_name(self, width):
@@ -154,50 +179,62 @@ class MediaAsset(models.Model):
             if self.file.storage.exists(self._portada_name(w, ext))
         )
 
-    def strip_metadata(self):
-        """Reescribe el original sin metadatos EXIF (hallazgo S-14).
+    def strip_metadata(self, force=False):
+        """Reescribe el original sin metadatos (EXIF, XMP, IPTC). Las copias salen limpias
+        porque Pillow no copia los metadatos al guardarlas, pero el original, que se sirve a
+        tamaño completo, publicaría la ubicación, la fecha y la cámara de la foto.
 
-        Las derivadas ya salían limpias porque Pillow no copia el EXIF al guardarlas,
-        pero el ORIGINAL —que es el que se sirve a tamaño completo— conservaba la
-        geolocalización, la fecha y el modelo de cámara. Publicar la ubicación exacta
-        de un recital o del domicilio donde se tomó una foto es una fuga real.
+        Al subir una imagen (`force`) se reescribe siempre; después, solo si trae metadatos,
+        para no recomprimirla en cada guardado. Aplica antes `exif_transpose`, para que la
+        orientación quede en los píxeles y la imagen no se vea girada al perder la etiqueta.
 
-        Solo reescribe si el archivo trae metadatos, para no recomprimir en cada
-        guardado; y aplica antes `exif_transpose`, de modo que la orientación quede
-        grabada en los píxeles y la imagen no se vea girada al perder la etiqueta.
+        Falla cerrado: si una imagen recién subida no se puede reescribir, se borra su archivo
+        y se lanza ImageCleanupError, que deshace el guardado. Con una imagen ya publicada,
+        registra el fallo y devuelve False. Devuelve True si el original queda limpio.
         """
         if not self.file:
-            return
+            return True
         try:
             with self.file.open("rb") as fh:
                 img = Image.open(fh)
                 img.load()
                 fmt = (img.format or "").upper()
-                tiene_metadatos = bool(img.getexif()) or "exif" in img.info
-                if not tiene_metadatos or fmt not in ("JPEG", "MPO", "WEBP", "TIFF", "PNG"):
-                    return
+                metadatos = bool(img.getexif()) or bool(METADATA_KEYS & img.info.keys())
+                if not force and not metadatos:
+                    return True
+                if fmt not in REWRITE_FORMATS:
+                    raise ImageCleanupError(f"formato {fmt or 'desconocido'}")
+                icc = img.info.get("icc_profile")
                 limpia = ImageOps.exif_transpose(img)
-        except Exception:
-            return  # archivo ilegible o formato no rasterizable: no romper el guardado
+        except Exception as exc:
+            if force:
+                logger.exception(
+                    "La imagen recién subida %s (recurso %s) no se pudo limpiar: no se publica",
+                    self.file.name,
+                    self.pk,
+                )
+                self.file.storage.delete(self.file.name)
+                raise ImageCleanupError(self.file.name) from exc
+            logger.warning(
+                "La imagen %s (recurso %s) no se pudo limpiar: %s", self.file.name, self.pk, exc
+            )
+            return False
 
-        fmt_out, kwargs = {
-            "JPEG": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
-            "MPO": ("JPEG", {"quality": 92, "optimize": True, "progressive": True}),
-            "TIFF": ("TIFF", {}),
-            "WEBP": ("WEBP", {"quality": 92}),
-            "PNG": ("PNG", {"optimize": True}),
-        }[fmt]
+        fmt_out, kwargs = REWRITE_FORMATS[fmt]
         if fmt_out == "JPEG" and limpia.mode not in ("RGB", "L"):
             limpia = limpia.convert("RGB")
+        if icc:
+            kwargs = {**kwargs, "icc_profile": icc}  # el perfil de color no delata nada
 
         buf = BytesIO()
-        limpia.save(buf, format=fmt_out, **kwargs)  # sin `exif=`: los metadatos se pierden
+        limpia.save(buf, format=fmt_out, **kwargs)  # sin exif= ni xmp=: los metadatos se pierden
         name = self.file.name
         # Sobrescribe conservando el nombre (el valor de la columna no cambia).
         self.file.storage.delete(name)
         self.file.storage.save(name, ContentFile(buf.getvalue()))
         self.width, self.height = limpia.width, limpia.height
         type(self).objects.filter(pk=self.pk).update(width=limpia.width, height=limpia.height)
+        return True
 
     def ensure_derivatives(self):
         """Repara width/height ausentes y genera (si faltan) las copias reducidas para
@@ -266,14 +303,15 @@ class MediaAsset(models.Model):
         """El color del borde de la imagen, en «#rrggbb»: la mediana del anillo exterior (un 4 %
         de cada lado). Con él el estante de la portada pinta el lomo y el canto de cada
         publicación (D28), para que el libro sea el mismo de lomo y de frente. Se mide una vez
-        por archivo y queda en la caché; "" si la imagen no se puede leer."""
+        por archivo y queda en la caché; "" si la imagen no se puede leer, y ese fallo solo se
+        recuerda unos minutos: una lectura que falló una vez no queda fijada para siempre."""
         if not self.file or not self.file.name:
             return ""
         clave = f"color-de-borde:{self.file.name}"
         color = cache.get(clave)
         if color is None:
             color = self._medir_color_de_borde()
-            cache.set(clave, color, None)
+            cache.set(clave, color, None if color else 300)
         return color
 
     def _medir_color_de_borde(self):
