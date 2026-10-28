@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 8 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 9 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -71,7 +71,7 @@
 | B07 | La copia de desarrollo solo lleva lo público | — | M | urgente | hecho (#176) |
 | B08 | Las fotos no publican su ubicación | — | M | sí | hecho (#180) |
 | B09 | Comentarios y documentos que afirman lo falso | B07 | S | no | pendiente |
-| B10 | Un registro publicado no enseña su evento oculto | — | S | sí | pendiente |
+| B10 | Un registro publicado no enseña su evento oculto | — | S | sí | hecho (#181) |
 
 **Tanda 2 — Red de pruebas y reglas de dominio con una sola fuente**
 
