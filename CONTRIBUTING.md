@@ -84,4 +84,6 @@ ruff que el lockfile, de modo que coincidan con el CI.
 
 - Despliegue: [docs/despliegue.md](docs/despliegue.md)
 - Respaldos: [docs/respaldos.md](docs/respaldos.md)
-- Auditoría de calidad y hoja de ruta: [docs/auditoria-mvp.md](docs/auditoria-mvp.md)
+- Auditoría de código y su backlog: [docs/auditoria-codigo.md](docs/auditoria-codigo.md) y
+  [docs/backlog-codigo.md](docs/backlog-codigo.md)
+- Decisiones y diferidos, con su porqué: [docs/deferidos-y-decisiones.md](docs/deferidos-y-decisiones.md)

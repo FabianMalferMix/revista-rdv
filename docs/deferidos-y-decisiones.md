@@ -1,13 +1,16 @@
 # Diferidos y decisiones — referencia para desarrollo futuro
 
 Documento vivo que consolida **las decisiones importantes** (con su porqué) y **todo
-lo diferido conscientemente** a lo largo de las tres auditorías y sus remediaciones
-(PRs #5–#72). Objetivo: que quien retome el proyecto entienda *qué se decidió y por
-qué*, y *qué quedó pendiente, por qué, y cómo abordarlo*.
+lo diferido conscientemente**, desde las tres primeras auditorías y sus remediaciones
+(PRs #5–#72) hasta la auditoría de código de octubre de 2026. Objetivo: que quien retome
+el proyecto entienda *qué se decidió y por qué*, y *qué quedó pendiente, por qué, y cómo
+abordarlo*.
 
-Auditorías de referencia: `docs/auditoria-mvp.md` (#1), `docs/auditoria-post-fase3.md`
-(#2), `docs/auditoria-qa.md` (#3 + plan de remediación). Estado al cierre: **P0+P1+P2
-y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
+Las auditorías anteriores y sus planes se retiraron del árbol el 2026-10-27 y siguen en git,
+en `git show 38fdf03:docs/<archivo>`. Las tres primeras son `auditoria-mvp.md` (#1),
+`auditoria-post-fase3.md` (#2) y `auditoria-qa.md` (#3, con su plan de remediación), y
+cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigente es
+`docs/auditoria-codigo.md`, con su backlog, `docs/backlog-codigo.md`.
 
 ---
 
@@ -55,11 +58,12 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 - **FTS por trigger de Postgres, no `GeneratedField`.** El `search_vector` lo mantiene un
   trigger (migraciones 0009→0011). *Porqué:* `unaccent` no es `IMMUTABLE`, así que no
   sirve en un `GeneratedField`/índice de expresión; el trigger sí lo permite y además
-  cubre `bulk_update`/`QuerySet.update`/imports (que no pasan por `save()`).
+  cubre `bulk_update`/`QuerySet.update`/imports (que no pasan por `save()`). **Reabierta
+  el 2026-10-28 (C23).**
 
 - **`CACHES` → Redis (db 2) en prod, LocMem en dev/tests.** Necesario para que los
   contadores de `django-ratelimit` se compartan entre workers. Seguro con `noeviction`
-  gracias a los TTLs.
+  gracias a los TTLs. **Reabierta el 2026-10-28 (C25).**
 
 - **`CELERY_TASK_ALWAYS_EAGER` en tests** (`"pytest" in sys.modules`). *Porqué:*
   hermeticidad. *Consecuencia importante:* **la suite normal NO ejecuta reintentos ni
@@ -79,10 +83,10 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 
 ### Decisiones del rediseño UX/UI (D1 a D14, 2026-10-08)
 
-> Numeración propia del backlog `docs/backlog-ux-ui.md` §1: **no son las D1 y D2 de arriba**.
-> El dueño del sitio delegó las catorce el 2026-10-08; la última columna dice cómo quedaron,
-> con lo que él cambió al ver cada paso. La verificación está en
-> `docs/auditoria-ux-ui-verificacion.md`.
+> Numeración propia del backlog del rediseño (§1 de `git show 38fdf03:docs/backlog-ux-ui.md`):
+> **no son las D1 y D2 de arriba**. El dueño del sitio delegó las catorce el 2026-10-08; la
+> última columna dice cómo quedaron, con lo que él cambió al ver cada paso. La verificación
+> está en `git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`.
 
 | # | Decisión | Porqué | Cómo quedó |
 |---|---|---|---|
@@ -101,7 +105,7 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 | D13 | Títulos de sección en Syne con cejilla | Un título no puede medir menos que su texto | En todo el sitio; en el dossier desde el paso 22 |
 | D14 | Estados por color, radios y filetes en tokens | Acabado consistente; WCAG 1.4.11 | `--r-1`, `--line` y `--edge` (paso 6) |
 | D15 | La cabecera al bajar: opción C (2026-10-15) | Una primera vista limpia de la portada, camino a una portada más estética | Arriba, la cabecera sin filete; en la portada, nada. Al bajar 64 px (56 en el teléfono), una cápsula «Objeto» con el velo (menos en la portada; el velo se quitó en D34). Cambia, solo para la cabecera, «nada de revelado al scroll» y la navegación a la vista arriba de la portada; el «Ver el dossier» vuelve al titular. Sin JavaScript, la cabecera fija de siempre |
-| D16 | El buscador en la barra (2026-10-15) | El panel bajo la cabecera se veía genérico | La lupa abre el campo dentro de la fila, en el lugar de los enlaces (en la cápsula, la cápsula se vuelve el buscador); los resultados, en una tarjeta con el acabado de la cápsula. Sin `:has()`, el panel de antes |
+| D16 | El buscador en la barra (2026-10-15) | El panel bajo la cabecera se veía genérico | La lupa abre el campo dentro de la fila, en el lugar de los enlaces (en la cápsula, la cápsula se vuelve el buscador); los resultados, en una tarjeta con el acabado de la cápsula. Sin `:has()`, el panel de antes (C26 lo retira, 2026-10-28) |
 | D17 | Bricolage Grotesque en lugar de Syne (2026-10-20) | Una grotesca con más carácter; sus muescas de imprenta conversan con lo risográfico | Titulares, nombre de la portada, barra, botones y sello. Autoalojada (`static/fonts/bricolage-grotesque.woff2`, peso 400–700 y tamaño óptico), con reserva métrica. La lectura sigue en RdV Serif; las cubiertas de demostración son imágenes y conservan Syne |
 | D18 | La portada como obra: mancheta de afiche con telón (2026-10-20) | La primera vista parecía la de cualquier landing; se pidió una de sitio de arte y diseño | Una obra a sangre y, al pie, el logo horizontal en tinta y multiplicado (en el teléfono, el apilado). La hoja que sigue (cejilla, manifiesto en letra grande, botones y sello) asoma 88 px a 951 y 72 en el teléfono; la cubierta del titular ya no va. Telón: la obra queda quieta y la hoja sube encima, solo sin «reducir movimiento» y si la obra cabe en la ventana; cambia, solo para esto, «nada de revelado al scroll». La obra se elige en el perfil (`hero_image` y `hero_image_phone`, migración showcase 0008) y sale en AVIF y WebP hasta 2560 px, sin servir el original; sin ella, la lámina de `static/img/portada/`. El logo es un redibujo en vector, en línea en la plantilla, hasta que llegue el original |
 | D19 | La tirada de registros (2026-10-21) | El registro destacado era uno solo, como la tarjeta de una plataforma | Los registros que el colectivo marca como destacados, en su orden y hasta cinco, son pliegos de una tirada en un carril que sangra por la derecha: el del frente a dos tintas (título en `--t7`, el décimo paso de la escala, con corrimiento magenta como estado), los demás como pruebas en trama, hoja de contactos con títulos y colofón. Cada pliego lleva a su ficha: la portada no reproduce (el click-to-play queda en la ficha). Nada avanza solo; las tintas cambian solo de color (`@property`). El póster queda a una tinta también al señalarlo. Imagen: el póster o la primera foto del evento. Sin ninguno marcado, el registro destacado del perfil hace de respaldo; sin registros, vuelve el poema destacado. Sin migración (`Recording.featured` y `position` ya existían) |
@@ -121,6 +125,45 @@ y los accionables de P3 completos, CI verde**; lo que sigue es lo que resta.
 | D33 | La hoja, lámina a dos tintas (2026-10-27) | La presentación era una columna de unos 440 px pegada a la izquierda, en letra mediana: a 1900 px dejaba más de 900 px vacíos y se leía como una nota al pie de la obra, no como la presentación del colectivo. Y el manifiesto se cortaba en la palabra 28, a media frase («donde no suelen …») | Entre cuatro opciones (tablero «La presentación, al frente»: protagonista, centrada y dos en risografía), el dueño eligió la C. Desde 900 px, a la izquierda la cejilla, el manifiesto en letra de cartel (`--t5`; `--t6` desde 1600 px) y tinta azul con grano, y los botones; a la derecha, un círculo de trama magenta que recoge el de la obra, con el sello de la convocatoria estampado encima (sin convocatoria, la trama queda sola). El azul como texto sobre el papel da 3,89:1: no sirve en letra corriente (sigue prohibido), sí en letra de cartel, donde AA pide 3:1. El grano se quita cuando «Conócenos» tiene el foco. El grano de la risografía pasa a `:root` y lo comparten los sellos del cierre. En todas las anchuras, el manifiesto termina en su primera pausa (filtro `primera_pausa`: punto, dos puntos o punto y coma —cerrados con punto—, o cierre de pregunta o exclamación); si llega después de 36 palabras, la palabra 28, como antes. Por debajo de 900 px, la columna de siempre. `tests/test_portada.py` |
 | D34 | La cápsula sin velo, en todas las páginas (2026-10-27) | Fuera de la portada, al bajar, una franja de papel de lado a lado (el «velo» de D15) tapaba lo que pasaba a la altura de la cápsula y cortaba el contenido legible; en la portada no estaba, y ahí la cápsula se ve como un objeto sobre la página | El dueño pidió que en todas las páginas la barra deje ver lo que hay a su altura. Se quitó el velo: con la cápsula, la franja de la cabecera es transparente y no recibe el puntero en todas las páginas, así que lo de los lados se lee y se pulsa; solo la cápsula tapa lo que tiene detrás. Arriba de las demás páginas la cabecera abierta sigue con su papel, y sin JavaScript queda la cabecera fija de siempre. Una prueba impide que vuelva: ninguna regla de la cápsula puede darle fondo a la franja (ni a sus pseudoelementos), para todas las páginas o para algunas. `tests/test_cabecera_capsula.py` |
 
+### Decisiones de la auditoría de código (C1 a C29, 2026-10-28)
+
+> Las tomó el dueño el 2026-10-28, al pasar `docs/auditoria-codigo.md` (commit `38fdf03`) a
+> `docs/backlog-codigo.md`. Entre paréntesis, la ficha de la auditoría; en la última columna, los
+> tickets del backlog que aplican cada decisión (su estado se sigue allí). Lo que se decidió
+> diferir o no hacer está en §3.
+
+| # | Decisión | Porqué | Se aplica en |
+|---|---|---|---|
+| C1 | Aún no hay producción: lo que fija direcciones, identificadores o permisos se corrige antes del lanzamiento y sin compatibilidad hacia atrás | Ningún enlace, suscriptor ni buscador depende todavía de ellos | B15, B28 |
+| C2 | Rol editor: todo el contenido (textos, poemas, catálogo, medios, colectivo, propuestas, boletín, agenda, publicaciones, prensa y aliados), salvo el perfil del sitio y las cuentas. Rol autor: sus textos y sus poemas; puede añadir obras al catálogo, pero no editar las existentes. La matriz de roles vive en un módulo y se sincroniza de forma aditiva en cada release | Los permisos quedaron congelados en el primer commit, antes de que existieran la agenda, el escaparate y los poemas (AGE-2) | B15, B16 |
+| C3 | Idioma del código: identificadores nuevos de Python (y de JavaScript) en inglés; castellano en los textos visibles y en el vocabulario del diseño, es decir, las clases CSS y los nombres de componentes como tirada, estante, pliego o cápsula, que se usan tal cual también dentro de nombres en inglés. Lo existente no se renombra, salvo los nombres trampa | No había regla, y ya había nombres gemelos con significados distintos (MAN-1) | B02, B77 |
+| C4 | Copia de desarrollo: solo lo publicado, más una lista explícita de piezas de demostración del flujo editorial; solo los medios que algo usa; nombres ficticios evidentes en lugar de medios, fondos, librerías y editoriales reales. El historial de git no se reescribe | Va a un repositorio público y llevaba borradores y citas inventadas atribuidas a medios reales (HER-1, HER-2) | B07, B64 |
+| C5 | La ficha de cada texto pasa de `/articulo/<slug>/` a `/texto/<slug>/`, sin redirección. Desde el lanzamiento, las rutas públicas son permanentes: renombrar una exige dejar la vieja con una redirección permanente | El sitio los llama «textos» y, antes de lanzar, renombrar no rompe nada (COM-12) | B02, B28 |
+| C6 | El slug se puede editar mientras la pieza no es pública; una vez pública, es de solo lectura en el panel | Cambiarlo dejaba la dirección vieja en 404 y cambiaba el GUID de los feeds (COM-5) | B02, B28 |
+| C7 | Subidas: audio hasta 50 MB, PDF hasta 20 MB e imágenes hasta 12 MB (JPEG, PNG o WebP). Los vídeos se publican solo con un enlace a YouTube o Vimeo | Caddy rechazaba todo lo que pasara de 12 MB, también en el panel, y un vídeo alojado ocupa disco, respaldo y un proceso del servidor mientras sube (OPE-5) | B08, B33 |
+| C8 | Avisos: Sentry (plan gratuito) para los errores y un monitor externo tipo healthchecks.io para la caída del sitio y el latido de las tareas. Antes de definir `SENTRY_DSN`, la redacción de datos personales y secretos tiene que estar probada | Nadie se enteraba de un fallo, y la página de error prometía lo contrario (RES-6, RES-3) | B30, B31, B32 |
+| C9 | Registros: un campo «Transcripción», visible junto al reproductor; el panel avisa, sin bloquear, si se publica un audio sin poema enlazado ni transcripción. Un poema sigue enlazando un solo registro | Alternativa en texto para el audio (WCAG 1.2.1) sin volverla una obligación para el equipo (COM-3) | B51 |
+| C10 | Flujo editorial: vista previa de borradores para el equipo, «Desprogramar» (programada → aprobada) y «Reabrir» (rechazada → borrador). Programar exige una fecha, y publicar una pieza programada fija su fecha en el momento de publicar | Había que publicar para ver una pieza, una programada no se podía retirar y una rechazada no tenía salida (DOM-1, DOM-3) | B17, B18 |
+| C11 | Se quitan los campos sin efecto: `featured` de Article, Poem, Event y PressMention, `ReviewedWork.is_primary`, `Work.language` y `nav_sections`. `Article.og_image` se conecta como imagen para compartir | El panel ofrecía controles que no cambiaban nada en el sitio (DAT-5, ARQ-5) | B25 |
+| C12 | Una obra, una editorial o un autor de libro solo tienen ficha pública si algo publicado los respalda; una persona, si es integrante o tiene obra publicada. Lo demás responde 404 | Cualquier obra creada en el panel publicaba sus datos y la intención de reseñarla (WEB-1) | B14 |
+| C13 | El original de cada imagen se reescribe siempre sin metadatos; si no se puede, la subida se rechaza con un mensaje claro | El control fallaba abierto y publicaba el GPS del original (RES-1) | B08 |
+| C14 | En el panel, el estado y las fechas de consentimiento de un suscriptor no se editan a mano, y agregar a alguien a mano le envía la confirmación. Los envíos cambian de estado con acciones que registran la fecha | El doble opt-in es la base del consentimiento (D2 de producto), y el panel permitía saltárselo (DOM-5) | B39 |
+| C15 | Cada transición editorial guarda el título de la pieza y el nombre de quien la hizo, y no se puede editar ni borrar | El «rastro inmutable» se borraba junto con la pieza (DOM-6) | B48 |
+| C16 | El audio y los PDF de lo que no está publicado dejan de servirse: pasan por Django, que comprueba el estado | Despublicar no retiraba los archivos (DOM-4) | B37 |
+| C17 | Con Redis caído, las vistas con límite de tasa siguen cerradas, pero con un mensaje veraz («no está disponible en este momento») | Fallar cerrado protege los formularios; el mensaje de «demasiados intentos» confundía (TAR-8, RES-9) | B36 |
+| C18 | `SITE_URL` fijo y obligatorio en producción, sin `www` (si existe el DNS de `www`, redirige) | Las URL absolutas salían del Host de cada petición (COM-6) | B29 |
+| C19 | Un servicio `release` del compose migra, sincroniza los roles y recoge los estáticos antes de arrancar web, worker y beat | El procedimiento arrancaba el código nuevo antes de migrar (OPE-1) | B06 |
+| C20 | restic respalda los volúmenes directamente, sin tar.gz, y el CI prueba la restauración desde restic de punta a punta | La retención no borraba nada y no existía la restauración desde restic (OPE-3) | B05 |
+| C21 | La galería se pagina como los demás índices | Cargaba todos los eventos con todas sus fotos (REN-6) | B76 |
+| C22 | «Las voces» no lleva control de pausa (siguen D1 y D23 del rediseño); solo se corrige que el relevo reordene el DOM bajo el lector de pantalla | La decisión del dueño sigue en pie; el reordenamiento no lo cubría (COM-4) | B54 |
+| C23 | Reabre «FTS por trigger de Postgres, no `GeneratedField`» y D3 (técnicas): una configuración de búsqueda sin tildes al indexar y al buscar, con un solo plegado de acentos. `GeneratedField` se prueba en una rama; si no sirve, el trigger se queda, con una prueba que lo ate al modelo | El motivo del trigger tiene un rodeo conocido, y D3 sumó un segundo plegado con otra semántica (DAT-3) | B50 |
+| C24 | Reabre qa-21: la redacción de los eventos de Sentry se prueba con un transporte de prueba del SDK | Con `send_default_pii=False`, el SDK igual envía cuerpos, variables locales y cabeceras (RES-3) | B31 |
+| C25 | Reabre «`CACHES` → Redis»: la caché va en un Redis aparte con `allkeys-lru`; `noeviction` queda solo para el broker | Ya hay una clave sin caducidad (D28 del rediseño), y el camino más probable a un Redis lleno es el propio broker (RES-5) | B36 |
+| C26 | Modifica D16 del rediseño: se retira el panel del buscador para navegadores sin `:has()` (Firefox anterior a la versión 121, de diciembre de 2023) | Era peso muerto que complicaba la cascada de la cabecera (FRO-4) | B72 |
+| C27 | Reabre en parte #33: prueba de humo en navegador y axe en el CI. Lighthouse y k6 siguen diferidos | Sin navegador en el CI, el JavaScript no se ejecutaba nunca y las garantías visuales eran búsquedas de texto (PRU-2, COM-2) | B11, B55 |
+| C28 | Reabre «Extracción `SiteProfile` → app `siteconfig`» como una app del sitio para lo transversal, por etapas. Mover `SiteProfile` sigue diferido | El problema era más ancho que `SiteProfile`: `content` se había vuelto el núcleo implícito (ARQ-4) | B67 |
+| C29 | «CD real» sigue diferido, con la premisa corregida: el VPS reconstruye la imagen y el CI no cargaba el compose de producción. El CI pasa a cargarlo | Lo que el CI probaba no era lo que se desplegaba (OPE-4) | B41 |
+
 ---
 
 ## 2. Diferidos que dependen de INFRAESTRUCTURA del usuario
@@ -132,7 +175,7 @@ infra ya se hicieron (se indican).
 |---|---|---|
 | **Correo SMTP / deliverability** | Servidor SMTP real + **SPF/DKIM/DMARC** en DNS. La estructura MIME (`EmailMessage`) y la cabecera `List-Unsubscribe` **ya están** (`community/tasks.py`). | Configurar `EMAIL_HOST/PORT/USER/PASSWORD/USE_TLS` y `DEFAULT_FROM_EMAIL`; publicar SPF/DKIM/DMARC; smoke de entrega contra un buzón real. |
 | **Respaldo off-site (restic)** | Un repo restic (S3/BackBlaze/rclone) + `RESTIC_REPOSITORY`/`RESTIC_PASSWORD`. El **roundtrip `pg_dump`/`pg_restore` ya se verifica en CI** (job `backup-restore`). | Definir el repo y las credenciales; `infra/backup/backup.sh` ya tiene la rama restic. Probar un `restic restore` real en staging (RTO/RPO). |
-| **CD real** | Registry de contenedores + target de despliegue + rollback. | Job de release que taggee la imagen (`docker build --target prod`), la publique y despliegue con estrategia de rollback. El `build-prod` de CI ya construye y valida la imagen. |
+| **CD real** | Registry de contenedores + target de despliegue + rollback. | Job de release que taggee la imagen (`docker build --target prod`), la publique y despliegue con estrategia de rollback. El `build-prod` de CI construye y valida una imagen, pero el VPS reconstruye la suya y el CI no cargaba el compose de producción (C29). |
 | **Alerta de fallo de respaldo (dead-man's-switch)** | `BACKUP_PING_URL` (healthchecks.io o similar). El script ya hace el ping OK/fail. | Definir la URL y probar que un fallo dispara la alerta. |
 
 ---
@@ -146,7 +189,8 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   extraerla a una función (`init_sentry`) y mockear `sentry_sdk.init`; para algo que es
   opt-in estándar y bien entendido, el refactor no se justifica ahora. *Si se retoma:*
   extraer `init_sentry(dsn, debug)` y afirmar `send_default_pii=False` y
-  `traces_sample_rate` por defecto (guardas de privacidad/costo).
+  `traces_sample_rate` por defecto (guardas de privacidad/costo). **Reabierto el
+  2026-10-28 (C24).**
 
 - **qa-23 — Test de DST + higiene de beat.** El `celerybeat-schedule` **ya está en
   `.gitignore`**. `publish_due_items` ya es **DST-safe por diseño** (compara `published_at`
@@ -157,17 +201,49 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
   un servidor corriendo en CI (setup propio). La a11y ya mejoró (qa-9) y hay aserciones
   estructurales con BeautifulSoup (qa-11). *Si se retoma:* `pa11y-ci` o `axe-core` sobre
   las páginas clave levantando la app; k6 nocturno con presupuesto p95 (empezar sin
-  umbral bloqueante — D4).
+  umbral bloqueante — D4). **Reabierto en parte el 2026-10-28 (C27):** la prueba de humo
+  en navegador y axe; Lighthouse y k6 siguen aquí.
 
 - **#27 — Restringir `/readyz` al monitor.** El endpoint está **diseñado para monitoreo
   externo de uptime**, así que restringirlo bien depende de la capa de monitoreo que se
   elija (token compartido, allowlist de IPs, o restricción en el proxy). Se aborda cuando
-  se defina esa capa; hoy expone solo estado BD/broker (fuga menor, info).
+  se defina esa capa; hoy expone solo estado BD/broker (fuga menor, info). La capa quedó
+  definida el 2026-10-28 (C8); restringir el endpoint sigue valiendo poco (RES-6 de la
+  auditoría de código).
 
 - **mypy + type hints incremental.** Bajo valor/alto esfuerzo a esta escala.
 
 - **Extracción `SiteProfile` → app `siteconfig`.** Migración cross-app de 2 modelos + FKs;
-  severidad baja (cohesión). Hacer aparte si el proyecto crece.
+  severidad baja (cohesión). Hacer aparte si el proyecto crece. **Reabierta en parte el
+  2026-10-28 (C28):** la app del sitio se hace por etapas; mover `SiteProfile` sigue
+  diferido hasta después de sus dos primeras etapas.
+
+### De la auditoría de código (2026-10-28)
+
+Lo que `docs/auditoria-codigo.md` recomendaba y el dueño decidió diferir o no hacer. Entre
+paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` que deja el resto hecho.
+
+- **Fiabilidad del envío masivo del boletín.** Límites y `acks_late` por tarea, idempotencia de
+  cada envío y reencolado tras un timeout. No hay envío masivo (D2 de producto). *Si se
+  retoma:* al construirlo, con el punto 4 de TAR-1.
+- **Sacar los tokens del boletín de la ruta** (que el enlace los canjee y redirija a una URL sin
+  secreto). Con `Referrer-Policy: no-referrer` en esas páginas y la redacción probada (B30, B31),
+  el token ya no sale por las cabeceras ni por Sentry. *Si se retoma:* con el envío masivo (RES-3).
+- **Sustituir django-ratelimit.** El proyecto sigue en Django 5.2 LTS y una prueba de
+  comportamiento lo protege. *Si se retoma:* antes de subir a Django 6 (OPE-8).
+- **Segundo factor para entrar al panel (django-otp).** Hay pocas cuentas de staff, y axes
+  bloqueará por usuario e IP (B34). *Si se retoma:* cuando crezcan las cuentas de autor (SEG-3).
+- **Anonimizar a una persona con obra publicada.** El panel impedirá borrarla y pedirá
+  reasignar sus textos (B46). *Si se retoma:* con el primer pedido real de supresión de datos o
+  con la revisión legal (DAT-2).
+- **Git LFS para los medios de desarrollo.** Hoy son 84 archivos y 5,7 MB. *Si se retoma:*
+  cuando crezcan (HER-8).
+- **Subtítulos `.vtt` y varias lecturas por poema.** Los vídeos se publican por enlace (C7) y un
+  poema enlaza un solo registro (C9) (COM-3).
+- **No se añade autoheal.** Reiniciar los contenedores enfermos exige montar el socket de
+  Docker, que equivale a ser root en el anfitrión; el monitor externo (C8) avisa en su lugar
+  (RES-6).
+- **No se parte `settings.py` en módulos.** Basta un settings de pruebas explícito (B57; OPE-2).
 
 ---
 
@@ -188,7 +264,8 @@ Decisiones conscientes de no hacer (aún); documentadas para no re-descubrir el 
 
 ### Del rediseño UX/UI (cierre, 2026-10-14)
 
-Lo que la verificación (`docs/auditoria-ux-ui-verificacion.md`) deja sin cumplir, con su causa.
+Lo que la verificación (`git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`) deja sin
+cumplir, con su causa.
 Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin preguntarle.
 
 - **La portada mide 4092 px a 1440** (meta: 3300). Eligió conservar las publicaciones (paso 20).

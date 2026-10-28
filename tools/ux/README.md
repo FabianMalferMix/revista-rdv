@@ -1,7 +1,8 @@
 # tools/ux — capturas y métricas de la interfaz
 
-Instrumento de la auditoría UX/UI (`docs/auditoria-ux-ui.md`) y de su backlog
-(`docs/backlog-ux-ui.md`). Mide lo que cada ticket promete: cuánto del ancho usa el texto,
+Nació como instrumento de la auditoría UX/UI de octubre de 2026 y de su backlog, que se
+retiraron del árbol y siguen en git (`git show 38fdf03:docs/auditoria-ux-ui.md` y
+`git show 38fdf03:docs/backlog-ux-ui.md`). Mide lo que se ve: cuánto del ancho usa el texto,
 tamaños reales, imágenes deformadas, objetivos pulsables, scroll horizontal. No forma parte
 del despliegue: `tools/` está fuera de la imagen de Docker.
 
@@ -53,8 +54,9 @@ Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`).
 
 ## Lo demás que hay en esta carpeta
 
-Ayudantes del plan de ejecución (`docs/plan-ejecucion-ux.md`). Nacieron como guiones sueltos
-durante los primeros pasos; están aquí para que el plan se pueda seguir desde cualquier máquina.
+Ayudantes que nacieron como guiones sueltos durante el rediseño (su plan sigue en git:
+`git show 38fdf03:docs/plan-ejecucion-ux.md`); están aquí para poder rehacer ese trabajo desde
+cualquier máquina.
 
 | Archivo | Para qué | Uso |
 |---|---|---|
@@ -90,7 +92,8 @@ sembrado la portada y `/agenda/` miden distinto por los datos, no por el diseño
 
 `final/` guarda lo mismo **después** del backlog: las métricas de las 21 páginas (capturadas el
 2026-10-14, al cerrar el paso 25) y las ocho capturas equivalentes en `final/capturas/`. La tabla
-de §10 de la auditoría, criterio a criterio, está en `docs/auditoria-ux-ui-verificacion.md`.
+de §10 de la auditoría, criterio a criterio, sigue en git:
+`git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`.
 Para ver si algo empeora desde entonces:
 
 ```bash

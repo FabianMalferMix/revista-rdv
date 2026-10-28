@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# preparar-entorno.sh — deja una máquina nueva lista para seguir el plan de UX/UI
-# (docs/plan-ejecucion-ux.md, sección «Preparar un entorno nuevo»).
+# preparar-entorno.sh — deja una máquina nueva lista para trabajar sobre el diseño:
+# demostración, identidad del colectivo, integrantes y material genérico.
 #
 #   tools/ux/preparar-entorno.sh
 #
@@ -145,5 +145,5 @@ python3 tools/ux/smoke.py "$BASE"
 cat <<FIN
 
 Entorno listo en $BASE.
-Siguiente: abre docs/plan-ejecucion-ux.md y empieza por «Dónde estamos».
+Siguiente: el trabajo pendiente está en docs/backlog-codigo.md.
 FIN

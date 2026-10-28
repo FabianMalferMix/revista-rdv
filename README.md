@@ -151,8 +151,8 @@ docker compose run --rm --entrypoint ruff web format .
 ## Interfaz: capturas y métricas
 
 `tools/ux/` mide lo que se ve: cuánto del ancho usa el texto, tamaños reales, imágenes
-deformadas, objetivos pulsables y scroll horizontal, en 1440, 390 y 1920 px. Es el instrumento
-de la auditoría UX/UI ([docs/auditoria-ux-ui.md](docs/auditoria-ux-ui.md)) y de su backlog.
+deformadas, objetivos pulsables y scroll horizontal, en 1440, 390 y 1920 px. Nació como
+instrumento del rediseño UX/UI de octubre de 2026, que se cuenta más abajo.
 
 ```bash
 npm --prefix tools/ux install                 # una vez; usa el Chrome del sistema
@@ -163,11 +163,12 @@ python3 tools/ux/smoke.py                     # todos los enlaces internos respo
 
 Detalle en [tools/ux/README.md](tools/ux/README.md). No forma parte del despliegue.
 
-El rediseño que salió de esa auditoría se hizo en 25 pasos, del 2026-10-08 al 2026-10-14: cómo
-se hizo, en [docs/plan-ejecucion-ux.md](docs/plan-ejecucion-ux.md), y lo que se midió al cerrarlo,
-criterio a criterio y con capturas de antes y después, en
-[docs/auditoria-ux-ui-verificacion.md](docs/auditoria-ux-ui-verificacion.md). Las métricas de
-antes y de después están versionadas en `tools/ux/linea-base/` y `tools/ux/final/`. Para
+El rediseño se hizo en 25 pasos, del 2026-10-08 al 2026-10-14. Su plan y la verificación del
+cierre (criterio a criterio, con capturas de antes y después) se retiraron del árbol el
+2026-10-27 y siguen en git: `git show 38fdf03:docs/plan-ejecucion-ux.md` y
+`git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`. Sus decisiones están en
+[docs/deferidos-y-decisiones.md](docs/deferidos-y-decisiones.md), y las métricas de antes y de
+después, versionadas en `tools/ux/linea-base/` y `tools/ux/final/`. Para
 trabajar sobre el diseño en una máquina nueva, un solo guion reconstruye el entorno (demostración,
 identidad del colectivo, doce integrantes y material genérico):
 
