@@ -1,25 +1,22 @@
-"""Redacción de secretos que viajan en la URL (hallazgo S-20).
+"""Redacción de los tokens del boletín, que viajan en la URL.
 
 Los enlaces de confirmación y baja del boletín llevan el token en la RUTA:
 
     /novedades/confirmar/<token>/
     /novedades/baja/<token>/
 
-Una ruta acaba en sitios que no controlamos ni auditamos: el log de acceso de gunicorn,
-el log JSON de `django.request`, la cabecera `Referer` si la página enlazase fuera y —lo
-más serio— el nombre de la transacción y las trazas que se envían a Sentry, es decir a
-un tercero. Quien lea cualquiera de esos registros puede dar de baja (o, antes de
-sec-11, confirmar) suscripciones ajenas.
+Quien lea un registro que contenga una de esas rutas puede dar de baja una suscripción
+ajena. Aquí se redacta el token en dos salidas de Python:
 
-Se redacta en los dos puntos de salida que Python controla: el logging de Django y lo
-que se envía a Sentry.
+- el logging: `RedactTokensFilter`, en el handler de consola, reescribe el mensaje ya
+  formateado;
+- Sentry: `sentry_before_send` redacta la URL, la query y el nombre de la transacción de
+  cada evento, y `sentry_before_breadcrumb`, las migas de pan.
 
-RESIDUO CONOCIDO: el log de acceso de **gunicorn** (`--access-logfile -`) sigue
-escribiendo la ruta completa, porque lo emite su propio logger y no admite un formato
-que redacte. Mitigarlo exige una de tres: mover el log de acceso al borde (Caddy) y
-quitar el de gunicorn, sustituir el `logger-class` de gunicorn, o —solución de fondo—
-sacar el secreto de la ruta y pasarlo en el cuerpo del POST. Queda anotado en el
-informe de seguridad.
+Lo demás que Sentry adjunta a un evento (cabeceras como `Referer`, variables locales,
+textos de excepción) no pasa por esta redacción. Los logs de acceso y de errores del
+borde los escribe Caddy, que redacta la ruta con su propio filtro
+(`infra/caddy/Caddyfile`); gunicorn no escribe log de acceso.
 """
 
 import re

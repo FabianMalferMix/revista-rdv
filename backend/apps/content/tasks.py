@@ -4,7 +4,7 @@ from django.utils import timezone
 
 
 @shared_task(
-    acks_late=True,  # el ack va tras completar: si el worker muere, se re-encola
+    acks_late=True,  # confirma al terminar: si cae el worker entero, Redis la reentrega
     autoretry_for=(OperationalError,),  # reintenta errores transitorios de BD
     retry_backoff=True,
     retry_kwargs={"max_retries": 3},
@@ -13,8 +13,8 @@ def publish_due_items():
     """Publica artículos y poemas programados cuya fecha ya venció. Corre cada minuto.
 
     Idempotente: re-lee cada pieza bajo lock de fila y solo publica si sigue
-    SCHEDULED, así un doble beat, un reintento (acks_late) o una acción manual
-    concurrente no duplican la publicación ni la bitácora.
+    SCHEDULED, así un doble beat, un reintento, una reentrega tras caer el worker o una
+    acción manual concurrente no duplican la publicación ni la bitácora.
     """
     from .models import Article, EditorialStatus, EditorialTransition, Poem
 

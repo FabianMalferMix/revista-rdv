@@ -2,7 +2,7 @@
 
 import pytest
 from django.core import mail
-from django.test import override_settings
+from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -65,6 +65,27 @@ def test_unsubscribe_sets_unsubscribed(client):
     assert resp.status_code == 200
     sub = NewsletterSubscriber.objects.get(email="y@example.com")
     assert sub.status == S.UNSUBSCRIBED
+
+
+def test_one_click_unsubscribe_skips_csrf():
+    """Gmail y Outlook envían el POST de RFC 8058 sin sesión ni token CSRF: si la vista
+    dejara de estar exenta, su botón de baja recibiría un 403. El cliente de pruebas no
+    exige CSRF salvo que se le pida, y aquí se le pide."""
+    NewsletterSubscriber.objects.create(
+        email="w@example.com", token="tok-1clic", status=S.CONFIRMED
+    )
+    csrf_client = Client(enforce_csrf_checks=True)
+    resp = csrf_client.post(
+        reverse("community:unsubscribe", args=["tok-1clic"]),
+        data="List-Unsubscribe=One-Click",
+        content_type="application/x-www-form-urlencoded",
+    )
+    assert resp.status_code == 200
+    assert NewsletterSubscriber.objects.get(email="w@example.com").status == S.UNSUBSCRIBED
+    # Control: el mismo cliente sí choca con el CSRF en un formulario que lo exige.
+    resp = csrf_client.post(reverse("community:subscribe"), {"email": "v@example.com", "apodo": ""})
+    assert resp.status_code == 403
+    assert b"CSRF" in resp.content
 
 
 def test_confirm_bad_token_404(client):

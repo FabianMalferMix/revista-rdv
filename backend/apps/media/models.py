@@ -356,9 +356,9 @@ class MediaAsset(models.Model):
 class Recording(models.Model):
     """Registro de audio o video de una lectura/recital.
 
-    La fuente es un archivo subido (`file`) **o** un embed externo (`embed_url`,
-    YouTube/Vimeo/SoundCloud/Bandcamp); se exige al menos uno. Alimenta la portada
-    (destacado) y, más adelante, el feed podcast de audio.
+    La fuente es un archivo subido (`file`) **o** un enlace de YouTube o Vimeo
+    (`embed_url`); se exige al menos uno. Alimenta la portada (destacado) y, si es de
+    audio, el feed de podcast (`feed/registros/`).
     """
 
     class Kind(models.TextChoices):
@@ -380,7 +380,7 @@ class Recording(models.Model):
     embed_url = models.URLField(
         blank=True,
         verbose_name="enlace para incrustar",
-        help_text="URL de YouTube/Vimeo/SoundCloud/Bandcamp (alternativa al archivo).",
+        help_text="Un enlace de YouTube o Vimeo (alternativa al archivo).",
     )
     poster = models.ForeignKey(
         MediaAsset,

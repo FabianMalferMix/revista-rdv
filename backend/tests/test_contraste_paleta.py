@@ -1,11 +1,9 @@
 """Contraste WCAG de la paleta, recalculado desde el propio CSS.
 
-El sitio documenta sus ratios en comentarios. Eso se desincroniza en cuanto
-alguien cambia un color: al sustituir la paleta por la de los carteles, el
-comentario del sello siguió anunciando 5,12:1 cuando el valor real pasó a ser
-6,39:1 —y 5,12 era, además, el contraste de otro par—. Aquí los números no se
-leen de los comentarios: se calculan de los colores que el CSS declara de
-verdad, así que cambiar un color obliga a seguir cumpliendo AA.
+Los comentarios de site.css no llevan cifras de contraste, porque se
+desincronizan en cuanto alguien cambia un color. Los números se calculan aquí,
+de los colores que el CSS declara de verdad, así que cambiar un color obliga a
+seguir cumpliendo AA.
 """
 
 import re
@@ -65,7 +63,7 @@ PARES = [
     ("enlace magenta sobre las bandas", "accent", "surface", AA_NORMAL),
     # La carátula del reproductor lleva el aviso de privacidad en blanco encima,
     # y el botón es blanco sólido. Al azul original del cartel (luminosidad 61%)
-    # ese blanco daba 2,90:1; por eso la carátula va hundida a 45%.
+    # ese blanco no llegaba a AA; por eso la carátula va hundida a 45%.
     ("aviso en blanco sobre la carátula", "surface", "caratula", AA_NORMAL),
     ("rótulo del botón sobre su fondo blanco", "caratula-rotulo", "surface", AA_NORMAL),
     # Botón primario y bandas de tinta: el papel como texto sobre la tinta.
@@ -85,9 +83,10 @@ PARES = [
     # El amarillo del cartel entra como SUPERFICIE. Lo que se escribe encima sí debe leerse.
     ("tinta sobre el amarillo del cartel", "ink", "riso-amarillo", AA_NORMAL),
     ("magenta sobre el amarillo del cartel", "accent", "riso-amarillo", AA_NORMAL),
-    # Sobre la tinta el acento no puede ser el magenta (2,78:1): es este rosa.
+    # Sobre la tinta el acento no puede ser el magenta (está en PROHIBIDOS): es este rosa.
     ("acento sobre la tinta del pie", "accent-on-ink", "ink", AA_NORMAL),
-    # Y el gris de los datos tampoco (2,98:1): el de la tinta es otro, del mismo tono.
+    # Y el gris de los datos tampoco (también en PROHIBIDOS): el de la tinta es otro, del
+    # mismo tono.
     ("datos sobre la tinta del pie", "muted-on-ink", "ink", AA_NORMAL),
     # La V del monograma, en celeste dentro del sello magenta: un dibujo, no un texto.
     ("V celeste del monograma sobre el sello", "celeste", "accent", AA_GRANDE),

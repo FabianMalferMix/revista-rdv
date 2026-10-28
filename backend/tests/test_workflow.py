@@ -82,7 +82,7 @@ def test_publish_due_items_task(make_article):
 
 def test_publish_due_items_is_idempotent(make_article):
     # Una pieza vencida se publica una vez; una segunda corrida no la re-publica
-    # ni duplica la bitácora (idempotencia contra doble beat / reintento acks_late).
+    # ni duplica la bitácora (idempotencia contra un doble beat, un reintento o una reentrega).
     article = make_article(status=S.SCHEDULED)
     article.published_at = timezone.now() - timedelta(minutes=1)
     article.save(update_fields=["published_at"])
@@ -130,7 +130,8 @@ def test_perform_transition_rechecks_state_under_lock(editor, make_article):
 
 def test_publish_due_items_declares_resilience_policy():
     """La tarea de publicación programada reintenta ante errores transitorios de BD y
-    usa acks_late (si el worker muere, la tarea se re-encola en vez de perderse)."""
+    confirma el mensaje al terminar (acks_late): si cae el worker entero a mitad de la
+    tarea, Redis la reentrega, y como es idempotente no publica dos veces."""
     from django.db import OperationalError
 
     assert OperationalError in publish_due_items.autoretry_for

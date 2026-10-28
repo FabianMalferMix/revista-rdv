@@ -8,10 +8,10 @@
      saturación en vez de 20%. Esa era toda la diferencia entre «corporativo» y
      «impreso» — el azul nunca fue el problema, lo era su palidez.
      El magenta #B8086B es el del cartel oscurecido hasta superar el mínimo de 4,5:1
-     sobre el papel: da 5,12:1. El magenta literal (#E40C9C) se queda en 3,48:1, que
-     solo alcanza para texto grande.
-     Los ratios de esta paleta los recalcula test_contraste_de_la_paleta desde estos
-     mismos valores; si cambias un color y baja de AA, esa prueba falla.
+     sobre el papel; el magenta literal (#E40C9C) solo alcanza para texto grande.
+     Los contrastes de esta paleta los calcula test_contraste_de_la_paleta desde estos
+     mismos valores; si cambias un color y baja de AA, esa prueba falla. Por eso aquí no
+     se escriben cifras.
 
      REPARTO. El magenta era «el color de los enlaces»: 27 reglas lo usaban como color
      de texto, y en la primera pantalla de la portada había nueve piezas magenta. Un
@@ -22,28 +22,28 @@
        · --muted   los datos y los rótulos. */
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
-  /* El amarillo del cartel. Estaba fuera de la paleta porque como TEXTO no sirve
-     (1,03:1 sobre el papel). Pero el contraste se mide por pares: como FONDO, con
-     tinta encima, da 13,81:1, y con magenta 4,96:1. Entra solo como superficie. */
+  /* El amarillo del cartel. Como TEXTO no sirve: sobre el papel casi no se distingue.
+     Pero el contraste se mide por pares: como FONDO, con tinta o con magenta encima,
+     cumple AA. Entra solo como superficie. */
   --riso-amarillo:#fce43c;
   /* El grano de la risografía: una máscara de ruido, para que la tinta no cubra pareja. La
      usan los sellos del cierre (D31) y el manifiesto de la hoja (D33). */
   --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
-  /* El magenta sobre la tinta del pie da 2,78:1: ahí el acento es este rosa (7,31:1).
-     Sobre el papel no sirve (1,95:1): es solo para fondo oscuro. */
+  /* El magenta sobre la tinta del pie no llega a AA: ahí el acento es este rosa. Sobre
+     el papel no se lee: es solo para fondo oscuro. */
   --accent-on-ink:#f77cc3;
   /* El celeste de la V del monograma, dentro del sello magenta: un dibujo, no un texto,
-     así que le basta 3:1 (da 3,40:1). Es el azul del cartel aclarado. */
+     así que le basta 3:1. Es el azul del cartel aclarado. */
   --celeste:#9cc3ea;
-  /* El alto de la cabecera fija: 56 px en el teléfono y 64 desde 720 px (ver «Masthead»).
+  /* El alto de la cabecera fija: 56 px en el teléfono y 64 desde 900 px (ver «Masthead»).
      Lo usan los elementos fijos de la página para quedar debajo de ella. */
   --alto-cabecera:56px;
-  /* Y el gris de los datos, que sobre la tinta se queda en 2,98:1: este, del mismo tono,
-     da 7,80:1. Es el texto secundario del pie. */
+  /* Y el gris de los datos, que sobre la tinta no llega a AA: este, del mismo tono, sí.
+     Es el texto secundario del pie. */
   --muted-on-ink:#9fadbf;
-  /* Carátula del reproductor: el azul del cartel (tono 210°, saturación 73%,
-     igual que --paper) hundido a luminosidad 45%. A la luminosidad original
-     del cartel, 61%, el blanco encima solo daba 2,90:1; aquí da 4,84:1. */
+  /* Carátula del reproductor: el azul del cartel (tono 210°, el de --paper, y
+     saturación 73%) hundido a luminosidad 45%. A la luminosidad original del
+     cartel, 61%, el blanco encima no llegaba a AA; a 45%, sí. */
   --caratula:#1f73c7; --caratula-rotulo:#0e3358;
   /* Serif de lectura: Source Serif 4 de Adobe, autoalojada. Es una versión recortada (solo
      el alfabeto latino, tamaño óptico fijo, pesos de 400 a 700) y la licencia OFL reserva
@@ -62,11 +62,11 @@
      Había cuatro transiciones sueltas para treinta estados :hover. */
   --r-1:3px;
   --dur-fast:140ms; --dur-base:220ms; --ease:cubic-bezier(.22,.61,.36,1);
-  /* --border (1,17:1 sobre el papel) solo SEPARA. Lo que delimita un control —el
-     borde de un campo de formulario— necesita 3:1 (WCAG 1.4.11): --edge da 3,35:1
-     sobre el papel y 4,18:1 sobre el blanco del campo. */
+  /* --border solo SEPARA: sobre el papel apenas se distingue. Lo que delimita un
+     control —el borde de un campo de formulario— necesita 3:1 (WCAG 1.4.11), sobre el
+     papel y sobre el blanco del campo: para eso está --edge. */
   --edge:#5e7ea7;
-  /* Una hoja más clara que el papel (1,13:1). Es la segunda superficie del sitio: las
+  /* Una hoja más clara que el papel. Es la segunda superficie del sitio: las
      bandas claras de la portada y los avisos que antes eran cajas blancas con borde
      (la fecha de la agenda, la próxima actividad, el contacto del dossier, la obra
      reseñada, los mensajes). El blanco (--surface) queda para los campos de formulario
@@ -76,8 +76,8 @@
   /* Filete decorativo: SEPARA, no delimita (para eso está --edge). Es tinta al 22 %, y
      por eso se adapta a lo que tenga debajo: papel, hoja clara o amarillo. Este valor
      es el que resulta sobre el papel, para los navegadores que no conocen color-mix();
-     los demás reciben el de más abajo. Sustituye a --border (1,17:1) allí donde la línea
-     tiene que verse: da 1,58:1. */
+     los demás reciben el de más abajo. Sustituye a --border allí donde la línea tiene
+     que verse. */
   --line:#adbac8;
 
   /* LIENZO. El sitio tenía un solo contenedor de 820 px para todo: cabecera, pie,
@@ -294,9 +294,8 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .masthead-cta{flex:none}
 .brand{font-weight:700; font-size:var(--t3); line-height:1.2; text-decoration:none; letter-spacing:-.01em;
   /* Sello: el nombre vive dentro de un bloque de color, como un timbre impreso. Blanco
-     sobre el magenta da 6,39:1, por encima del mínimo incluso para texto normal.
-     (Decía 5,12:1, que es el contraste del enlace magenta SOBRE el papel: el número
-     estaba bien calculado pero puesto en el par equivocado.) */
+     sobre el magenta cumple el mínimo incluso para texto normal
+     (test_contraste_del_sello_de_la_cabecera). */
   display:inline-flex; align-items:center; gap:10px; background:var(--accent); color:#fff;
   padding:6px 14px 8px; border-radius:2px}
 /* Dentro del sello, el monograma del colectivo: la R en blanco y la V en celeste, que se
@@ -913,9 +912,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   transition:background-color var(--dur-base) var(--ease)}
 .embed-play:hover{background:var(--accent); border-color:var(--accent)}
 .embed-play:hover::after{background-color:#fff}
-/* El anillo de foco del sitio es magenta, que sobre el azul de la placa da 1,32:1: no
-   se veía. En la placa el foco va en blanco (4,84:1 sobre el azul; WCAG 1.4.11 pide 3:1)
-   y, en el botón, por dentro y en azul oscuro: así se ve sobre cualquier póster. */
+/* El anillo de foco del sitio es magenta, que sobre el azul de la placa no se ve. En la
+   placa el foco va en blanco, que sobre el azul cumple el 3:1 de WCAG 1.4.11, y en el
+   botón, por dentro y en azul oscuro: así se ve sobre cualquier póster. */
 .player-consent :focus-visible{outline-color:#fff}
 .player-consent .embed-play:focus-visible{outline:3px solid var(--caratula-rotulo); outline-offset:-9px}
 /* La placa fija el blanco de sus datos: el gris de `.meta` no se lee sobre el azul. Sin
@@ -1129,8 +1128,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    círculo de trama magenta que recoge el de la obra de arriba, con el sello de la
    convocatoria estampado encima (sin convocatoria, la trama queda sola). Antes era una
    columna de 440 px pegada a la izquierda: a 1900 px dejaba más de 900 vacíos y se leía como
-   una nota al pie. El azul como texto sobre el papel no llega a AA en letra corriente
-   (3,89:1); en letra de cartel, sí (pide 3:1). Por debajo de 900 px, la columna de siempre. */
+   una nota al pie. El azul como texto sobre el papel no llega a AA en letra corriente; en
+   letra de cartel, sí (pide 3:1). Por debajo de 900 px, la columna de siempre. */
 @media (min-width:900px){
   .hero{grid-template-columns:minmax(0,7fr) minmax(0,5fr); column-gap:var(--s4); padding:var(--s5) 0 var(--s6);
     position:relative; isolation:isolate}
@@ -1295,8 +1294,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .band{background:var(--paper-2)}
 /* Dos bandas seguidas son una sola superficie: sin esto el aire entre ellas se duplica. */
 .band + .band{padding-top:0}
-/* Una fila señalada sobre la hoja clara pasa al papel: el mismo salto (1,13:1) que da la
-   hoja clara sobre el papel, en sentido contrario. */
+/* Una fila señalada sobre la hoja clara pasa al papel: el mismo salto que da la hoja clara
+   sobre el papel, en sentido contrario. */
 .band .fila:has(.fila-titulo a):hover::before,
 .band .fila:focus-within::before{background-color:var(--paper)}
 
@@ -1312,8 +1311,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    en un carril que sangra por la derecha. El del frente va a dos tintas (la placa azul y el
    título en tinta con su corrimiento magenta, marcas de corte y fechador de goma); los demás
    esperan como pruebas a una tinta, en trama, y el siguiente asoma. Nada avanza solo: se pasa
-   con las flechas, la hoja de contactos, el teclado o deslizando (static/js/registros.js). Cada
-   pliego lleva a la ficha del registro, donde se reproduce.
+   con la hoja de contactos, el teclado o deslizando (static/js/registros.js). Cada pliego lleva
+   a la ficha del registro, donde se reproduce.
    Las tintas del pliego van registradas para que el navegador pueda pasar de una a otra (el
    entintado): sin @property, una variable cambia de golpe. Solo colores. */
 @property --tinta{syntax:'<color>'; inherits:true; initial-value:transparent}

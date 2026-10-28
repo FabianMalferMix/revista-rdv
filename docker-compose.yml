@@ -22,7 +22,8 @@ services:
   redis:
     image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     # noeviction: como broker de Celery, Redis NUNCA debe descartar tareas encoladas
-    # bajo presión de memoria (rechaza escrituras en su lugar). No se usa como caché.
+    # bajo presión de memoria (rechaza escrituras en su lugar). En producción guarda
+    # también la caché de Django, en la base 2 (CACHES, en settings.py).
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
     volumes:
       - redisdata:/data
@@ -78,7 +79,7 @@ services:
       release:
         condition: service_completed_successfully
 
-  # Planificador de Celery (dispara publish_due_articles cada minuto).
+  # Planificador de Celery: dispara las tareas de CELERY_BEAT_SCHEDULE (settings.py).
   beat:
     build: ./backend
     entrypoint: ["celery", "-A", "config", "beat", "-l", "info"]

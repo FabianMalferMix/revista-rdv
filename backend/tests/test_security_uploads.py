@@ -25,9 +25,6 @@ EJECUTABLES = [
 
 
 def _recording_form(upload):
-    # Sin `embed_url` a propósito: es un URLField y construir su form field emite el
-    # RemovedInDjango60Warning de `assume_scheme`, que `filterwarnings = error` de
-    # pytest.ini convierte en error. Es deuda real, ajena a este lote (ver informe).
     form_cls = modelform_factory(Recording, fields=["slug", "title", "kind", "file"])
     return form_cls(
         data={"slug": "x", "title": "x", "kind": "audio"},

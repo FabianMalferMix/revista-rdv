@@ -1,7 +1,7 @@
 """Servicios de dominio de la agenda: lógica reutilizable entre apps.
 
-Se importa desde otras apps (portada, dossier) en vez de la capa de vistas, para no
-acoplar `content`/`showcase` al módulo de vistas de `agenda`.
+Los usan /trayectoria/ y el dossier de `showcase`, que los importa de aquí y no de
+`agenda.views`, para no depender de la capa de vistas de otra app.
 """
 
 from django.db.models import Count, Q
@@ -13,12 +13,12 @@ from .models import Event
 
 
 def stats(perfil=None):
-    """Números de trayectoria (para /trayectoria/, la portada y el dossier).
+    """Números de trayectoria, para /trayectoria/ y el dossier.
 
-    Actividades, festivales y ferias salen de una sola consulta (eran dos). `festivals`
-    suma festivales y ferias, como los rotulan la trayectoria y el dossier; la portada los
-    nombra por separado, porque «1 festival» no puede ser una feria. `perfil`: el que la
-    vista ya cargó, para no pedirlo dos veces."""
+    Actividades, festivales y ferias salen de una sola consulta. `festivals` suma
+    festivales y ferias, como los rotula la trayectoria; el dossier los nombra por
+    separado (`festivales`, `ferias`), porque «1 festival» no puede ser una feria.
+    `perfil`: el que la vista ya cargó, para no pedirlo dos veces."""
     profile = perfil or SiteProfile.load()
     years = None
     if profile.founded_year:

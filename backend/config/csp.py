@@ -1,11 +1,12 @@
 """Content-Security-Policy con nonce por petición.
 
 Sin dependencias externas: una CSP restrictiva declarada en un único lugar y
-aplicada a todas las respuestas dinámicas. El único script inline propio (JSON-LD
-en el detalle de artículo) lleva el nonce; el resto del JS (htmx, TinyMCE, admin)
-va auto-hospedado y entra por 'self'. Los estilos permiten 'unsafe-inline' porque
-el admin de Django y TinyMCE inyectan estilos en línea; el riesgo de XSS por estilo
-es bajo y el saneo nh3 ya recorta el HTML autoral.
+aplicada a todas las respuestas dinámicas. Los scripts en línea propios son tres
+bloques JSON-LD (el de `base.html`, en todas las páginas, y los de las fichas de
+artículo y de evento), y llevan el nonce; el resto del JS (htmx, TinyMCE, admin) va
+auto-hospedado y entra por 'self'. Los estilos son 'self' en el sitio público; solo
+bajo /admin/, donde el admin de Django y TinyMCE inyectan estilos en línea, admiten
+además 'unsafe-inline' (`_STYLE_ADMIN`).
 
 Con DJANGO_CSP_REPORT_ONLY=1 se emite en modo Report-Only (observa violaciones sin
 bloquear), útil como red de seguridad antes de forzar la política en producción.
