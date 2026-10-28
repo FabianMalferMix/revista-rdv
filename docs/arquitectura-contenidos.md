@@ -27,7 +27,7 @@ ser **evidencia de actividad**, no el motor del sitio.
    estado editorial de 8 estados; el resto usa visibilidad simple (`published` + `published_at`).
 4. **Una sola fuente de verdad.** El dossier PDF se **genera** desde el contenido del sitio; no se
    mantiene un documento paralelo a mano.
-5. **Ejecución por lotes**, igual que `docs/plan-mejoras.md`: rama desde `main` → PR → merge `--no-ff`.
+5. **Ejecución por lotes**, con el flujo de `CONTRIBUTING.md`: rama desde `main` → PR → merge `--no-ff`.
 
 ## 3. Inventario actual (punto de partida)
 

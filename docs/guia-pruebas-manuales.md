@@ -171,7 +171,7 @@ no una plantilla vacía.
 
 ### 1.5 Cabecera, menú, «El colectivo» e índices
 
-> Llegaron con el rediseño UX (octubre de 2026, `docs/plan-ejecucion-ux.md`).
+> Llegaron con el rediseño UX de octubre de 2026 (sus decisiones, en `docs/deferidos-y-decisiones.md`).
 
 - [ ] **Cabecera, en escritorio.** Una fila sin línea debajo: el sello, «Poemas · Textos ·
       Registros · Publicaciones · Colectivo», la lupa y el botón «Dossier». La página actual va

@@ -28,8 +28,8 @@ conocido del §4 (un ZIP renombrado a `.docx` pasaba como manuscrito), y la cerr
 prueba automática podía ver, entre ellos `admin-acciones-por-rol`, `fix-dimensiones-nulas`,
 `feed-identidad-del-sitio` y el propio `fix-firma-zip`.
 
-**Después, el rediseño UX/UI** (`docs/plan-ejecucion-ux.md`, 25 pasos, del 2026-10-08 al
-2026-10-14) cambió el sitio público. La guía tiene ahora **112 casillas: 100 comprobadas y
+**Después, el rediseño UX/UI** (25 pasos, del 2026-10-08 al 2026-10-14; su plan sigue en git:
+`git show 38fdf03:docs/plan-ejecucion-ux.md`) cambió el sitio público. La guía tiene ahora **112 casillas: 100 comprobadas y
 12 por comprobar**, que son las que describen lo que cambió:
 
 | Bloque | Estado |
@@ -39,8 +39,8 @@ prueba automática podía ver, entre ellos `admin-acciones-por-rol`, `fix-dimens
 | §3 a §11 | completos; el rediseño no los tocó |
 
 **Lo siguiente** es comprobar esas doce a mano, en desarrollo y a 951 px de ancho, que es
-como revisa el dueño del sitio. La verificación medida del rediseño está en
-`docs/auditoria-ux-ui-verificacion.md`.
+como revisa el dueño del sitio. La verificación medida del rediseño sigue en git:
+`git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`.
 
 ---
 

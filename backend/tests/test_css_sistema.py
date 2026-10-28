@@ -1,8 +1,8 @@
 """Reglas del sistema visual que solo fallan al pintar.
 
 La suite no tiene navegador. Estas pruebas fijan sobre la hoja de estilos las decisiones
-del backlog UX (docs/backlog-ux-ui.md) cuyo incumplimiento no rompe nada salvo lo que se
-ve: una cubierta deformada, un título con las líneas sueltas, una columna de lectura de
+del rediseño UX (docs/deferidos-y-decisiones.md) cuyo incumplimiento no rompe nada salvo lo
+que se ve: una cubierta deformada, un título con las líneas sueltas, una columna de lectura de
 cien letras. Las cifras en pantalla se miden aparte, con tools/ux.
 """
 
