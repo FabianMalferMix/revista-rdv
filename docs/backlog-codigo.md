@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 12 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 13 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -79,7 +79,7 @@
 | --- | --- | --- | --- | --- | --- |
 | B11 | Navegador en el CI: prueba de humo | — | M | no | hecho (#183) |
 | B12 | Matriz de pruebas del flujo editorial y de la visibilidad | — | M | sí | hecho (#186) |
-| B13 | «Publicado», definido en un solo lugar | B12 | M | sí | pendiente |
+| B13 | «Publicado», definido en un solo lugar | B12 | M | sí | hecho (#187) |
 | B14 | Fichas secundarias solo si algo publicado las respalda | B13 | M | sí | pendiente |
 | B15 | Roles declarados y sincronizados | B06 | M | sí | pendiente |
 | B16 | Permisos de Django en el flujo y en los envíos | B15 | S | sí | pendiente |
@@ -393,6 +393,8 @@ Va antes de B13: primero la red y después centralizar el filtro.
 La base abstracta común (punto 5) entra solo si no exige migraciones de datos; si no entra, se dice en el ticket.
 
 **Hecho cuando.** La matriz de B12 y el canario pasan, y la prueba que busca filtros escritos a mano no encuentra ninguno.
+
+**Nota (#187).** La base abstracta común no entró: unificar el estado y la casilla, y los valores por defecto (prensa y aliados nacen públicos; lo demás, oculto), exige migrar datos y decidir esos valores.
 
 #### B14 · Fichas secundarias solo si algo publicado las respalda
 
