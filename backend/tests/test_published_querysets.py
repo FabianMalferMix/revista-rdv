@@ -97,7 +97,9 @@ def test_published_leaves_out_every_hidden_state(label):
         shown = BUILDERS[label](True)
         hidden = [BUILDERS[label](False)]
     assert hidden, "el canario no tiene nada oculto que dejar fuera"
-    assert list(model.objects.published()) == [shown]
+    # Solo los objetos del canario: las migraciones siembran páginas legales publicadas.
+    mine = model.objects.filter(pk__in=[shown.pk, *(item.pk for item in hidden)])
+    assert list(mine.published()) == [shown]
 
 
 @pytest.mark.django_db
