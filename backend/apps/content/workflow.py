@@ -9,37 +9,41 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 
-from apps.people import roles
-
 from .models import EditorialStatus, EditorialTransition
-from .permissions import is_editor, is_owner
+from .permissions import is_owner
 
 S = EditorialStatus
 
-# Quién puede cada transición: el rol editor (también el admin) o la dueña de la pieza.
-EDITOR = roles.EDITOR
+# Quién puede cada transición: la dueña de la pieza, o quien tenga el permiso de Django de
+# revisar o de publicar ese tipo de pieza (`review_article`, `publish_poem`…). Los reparte
+# la matriz de roles (apps/people/roles.py); el panel los pide en cada acción.
 OWNER = "owner"
+REVIEW = "review"
+PUBLISH = "publish"
 
 # nombre -> (estados_origen, estado_destino, quién)
 TRANSITIONS = {
-    "submit": ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW, (OWNER, EDITOR)),
-    "request_changes": ({S.IN_REVIEW}, S.CHANGES_REQUESTED, (EDITOR,)),
-    "accept": ({S.IN_REVIEW}, S.APPROVED, (EDITOR,)),
-    "reject": ({S.IN_REVIEW}, S.REJECTED, (EDITOR,)),
-    "schedule": ({S.APPROVED}, S.SCHEDULED, (EDITOR,)),
-    "publish": ({S.APPROVED, S.SCHEDULED}, S.PUBLISHED, (EDITOR,)),
-    "unpublish": ({S.PUBLISHED}, S.DRAFT, (EDITOR,)),
-    "archive": ({S.PUBLISHED}, S.ARCHIVED, (EDITOR,)),
-    "restore": ({S.ARCHIVED}, S.PUBLISHED, (EDITOR,)),
+    "submit": ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW, (OWNER, REVIEW)),
+    "request_changes": ({S.IN_REVIEW}, S.CHANGES_REQUESTED, (REVIEW,)),
+    "accept": ({S.IN_REVIEW}, S.APPROVED, (REVIEW,)),
+    "reject": ({S.IN_REVIEW}, S.REJECTED, (REVIEW,)),
+    "schedule": ({S.APPROVED}, S.SCHEDULED, (PUBLISH,)),
+    "publish": ({S.APPROVED, S.SCHEDULED}, S.PUBLISHED, (PUBLISH,)),
+    "unpublish": ({S.PUBLISHED}, S.DRAFT, (PUBLISH,)),
+    "archive": ({S.PUBLISHED}, S.ARCHIVED, (PUBLISH,)),
+    "restore": ({S.ARCHIVED}, S.PUBLISHED, (PUBLISH,)),
 }
 
 
+def permission_for(piece, action):
+    """El permiso de Django de una acción del flujo sobre un tipo de pieza (modelo o instancia)."""
+    return f"{piece._meta.app_label}.{action}_{piece._meta.model_name}"
+
+
 def _allowed(user, item, who):
-    if EDITOR in who and is_editor(user):
-        return True
     if OWNER in who and is_owner(user, item):
         return True
-    return False
+    return any(user.has_perm(permission_for(item, action)) for action in who if action != OWNER)
 
 
 def available_transitions(user, item):

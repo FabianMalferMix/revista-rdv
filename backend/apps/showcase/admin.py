@@ -27,8 +27,8 @@ class SiteProfileAdmin(admin.ModelAdmin):
     ]
 
     def has_add_permission(self, request):
-        # Singleton: solo se puede crear si aún no existe.
-        return not SiteProfile.objects.exists()
+        # Fila única: solo se crea si aún no existe, y con el permiso de crearla.
+        return super().has_add_permission(request) and not SiteProfile.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
         return False
