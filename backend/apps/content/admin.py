@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin import helpers
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
+from django.utils import timezone
+from django.utils.formats import date_format
 
 from . import workflow
 from .models import (
@@ -116,8 +120,23 @@ class EditorialTransitionInline(GenericTabularInline):
 def _action_permission(transition):
     """El permiso del panel que pide una acción: el de cambiar la pieza si la transición es de la
     dueña (enviar a revisión) y, si no, el de revisar o publicar."""
-    who = workflow.TRANSITIONS[transition][2]
+    who = workflow.TRANSITIONS[transition].who
     return "change" if workflow.OWNER in who else who[0]
+
+
+class ScheduleForm(forms.Form):
+    """La fecha que pide «Programar»: sin ella una pieza programada no saldría nunca."""
+
+    published_at = forms.DateTimeField(
+        label="Fecha de publicación",
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+    )
+
+    def clean_published_at(self):
+        when = self.cleaned_data["published_at"]
+        if when <= timezone.now():
+            raise forms.ValidationError("La fecha tiene que ser futura.")
+        return when
 
 
 class EditorialItemAdmin(admin.ModelAdmin):
@@ -134,7 +153,9 @@ class EditorialItemAdmin(admin.ModelAdmin):
         "do_request_changes",
         "do_accept",
         "do_reject",
+        "do_reopen",
         "do_schedule",
+        "do_unschedule",
         "do_publish",
         "do_unpublish",
         "do_archive",
@@ -185,11 +206,11 @@ class EditorialItemAdmin(admin.ModelAdmin):
             ro += ["published_at", "owner"]
         return ro
 
-    def _run(self, request, queryset, name):
+    def _run(self, request, queryset, name, **kwargs):
         ok = 0
         for item in queryset:
             try:
-                workflow.perform_transition(item, name, request.user)
+                workflow.perform_transition(item, name, request.user, **kwargs)
                 ok += 1
             except (PermissionDenied, ValueError) as exc:
                 self.message_user(request, f"{item}: {exc}", level=messages.WARNING)
@@ -214,11 +235,43 @@ class EditorialItemAdmin(admin.ModelAdmin):
         self._run(request, queryset, "reject")
 
     @admin.action(
-        description="Programar (usa la fecha de publicación indicada)",
-        permissions=[_action_permission("schedule")],
+        description="Rechazada: reabrir (vuelve a borrador)",
+        permissions=[_action_permission("reopen")],
     )
+    def do_reopen(self, request, queryset):
+        self._run(request, queryset, "reopen")
+
+    @admin.action(description="Programar…", permissions=[_action_permission("schedule")])
     def do_schedule(self, request, queryset):
-        self._run(request, queryset, "schedule")
+        """Una página intermedia pide la fecha; al confirmarla, programa con ella."""
+        form = ScheduleForm(request.POST if "apply" in request.POST else None)
+        if form.is_valid():
+            when = form.cleaned_data["published_at"]
+            self._run(request, queryset, "schedule", when=when)
+            self.message_user(
+                request,
+                f"Fecha de publicación: {date_format(timezone.localtime(when), 'j F Y, H:i')}.",
+            )
+            return None
+        return TemplateResponse(
+            request,
+            "admin/content/schedule.html",
+            {
+                **self.admin_site.each_context(request),
+                "title": "Programar la publicación",
+                "opts": self.model._meta,
+                "queryset": queryset,
+                "form": form,
+                "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            },
+        )
+
+    @admin.action(
+        description="Programada: desprogramar (vuelve a aprobada)",
+        permissions=[_action_permission("unschedule")],
+    )
+    def do_unschedule(self, request, queryset):
+        self._run(request, queryset, "unschedule")
 
     @admin.action(description="Publicar", permissions=[_action_permission("publish")])
     def do_publish(self, request, queryset):

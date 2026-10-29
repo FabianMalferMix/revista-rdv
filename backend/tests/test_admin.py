@@ -2,6 +2,7 @@ import pytest
 from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory
 
+from apps.content import workflow
 from apps.content.admin import ArticleAdmin
 from apps.content.models import Article, EditorialStatus
 
@@ -72,19 +73,10 @@ def test_status_always_readonly_published_at_author_only(autor, editor):
 
 
 def test_all_transition_actions_registered():
+    """Cada transición de la tabla tiene su acción en el panel."""
     ma = _admin()
-    for name in [
-        "do_submit",
-        "do_request_changes",
-        "do_accept",
-        "do_reject",
-        "do_schedule",
-        "do_publish",
-        "do_unpublish",
-        "do_archive",
-        "do_restore",
-    ]:
-        assert callable(getattr(ma, name, None)), name
+    for name in [f"do_{transition}" for transition in workflow.TRANSITIONS]:
+        assert name in ma.actions and callable(getattr(ma, name, None)), name
 
 
 def test_publish_action_transitions_and_logs(editor, autor, make_article):

@@ -10,6 +10,7 @@ Poem, Event, Publication y Recording ya lo tenían; estos tres se habían quedad
 import pytest
 from django.contrib.admin.sites import AdminSite
 from django.test import Client
+from django.utils import timezone
 
 from apps.content.models import Article, Collection, EditorialStatus, Page, PublishStatus
 
@@ -18,7 +19,11 @@ pytestmark = pytest.mark.django_db
 
 def _articulo(**extra):
     return Article.objects.create(
-        title="Un texto", slug="un-texto", status=EditorialStatus.PUBLISHED, **extra
+        title="Un texto",
+        slug="un-texto",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+        **extra,
     )
 
 
@@ -81,6 +86,7 @@ def test_tambien_para_las_piezas_sin_publicar(borrador):
         title="Otro",
         slug="otro",
         status=EditorialStatus.DRAFT if borrador else EditorialStatus.PUBLISHED,
+        published_at=None if borrador else timezone.now(),
     )
     assert a.get_absolute_url() == "/articulo/otro/"
     esperado = 404 if borrador else 200

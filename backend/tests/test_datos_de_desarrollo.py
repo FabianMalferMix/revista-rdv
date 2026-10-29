@@ -15,6 +15,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import models
+from django.utils import timezone
 
 from apps.content.management.commands import datos_de_desarrollo as comando
 from apps.content.models import Article, EditorialStatus
@@ -143,7 +144,12 @@ def test_de_ida_y_vuelta_sin_la_cuenta(settings, carpeta, django_user_model):
 @pytest.mark.django_db
 def test_lo_no_publicado_y_lo_que_nadie_usa_no_viajan(carpeta):
     DevelopmentMarker.mark()
-    Article.objects.create(slug="a-la-vista", title="Publicado", status=EditorialStatus.PUBLISHED)
+    Article.objects.create(
+        slug="a-la-vista",
+        title="Publicado",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+    )
     Article.objects.create(slug="borrador-secreto", title="Borrador", status=EditorialStatus.DRAFT)
     make_publication(slug="sin-publicar", published=False)
     make_image("suelta", alt="Imagen que nada usa")
