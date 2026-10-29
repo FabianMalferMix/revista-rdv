@@ -283,6 +283,38 @@ const CHECKS = [
       expect((await page.evaluate(() => window.printed)) === 1, 'el botón no abre el diálogo de impresión');
     },
   },
+  {
+    name: 'Lo que lleva hidden no se ve, con los guiones y sin ellos',
+    widths: [951, 375],
+    async run({ page, context }, width) {
+      // Se mide cada elemento con el atributo: si un `display` del autor le gana a `hidden`, se ve.
+      // `components` son los que tienen que estar entre los medidos, para que no pase en vacío.
+      const expectHidden = async (tab, route, components) => {
+        await visit(tab, route);
+        const shown = await tab.evaluate(() =>
+          [...document.querySelectorAll('[hidden]')]
+            .filter((e) => getComputedStyle(e).display !== 'none')
+            .map((e) => e.className || e.tagName)
+        );
+        expect(!shown.length, `${route}: se ven aunque llevan hidden: ${shown.join(', ')}`);
+        for (const selector of components) {
+          const count = await tab.locator(`${selector}[hidden]`).count();
+          expect(count > 0, `${route}: no hay ningún ${selector} oculto que medir`);
+        }
+      };
+      // Con los guiones: las fichas del estante que no están al frente y las voces que esperan turno.
+      await expectHidden(page, '/', ['.estante-ficha', '.integrante']);
+      // Sin ellos: la hoja de contactos de la tirada y el botón de imprimir del dossier.
+      const noScripts = await context.browser().newContext({ ...WINDOWS[width], javaScriptEnabled: false });
+      try {
+        const bare = await noScripts.newPage();
+        await expectHidden(bare, '/', ['.tirada-contactos']);
+        await expectHidden(bare, '/dossier/', ['[data-print]']);
+      } finally {
+        await noScripts.close();
+      }
+    },
+  },
 ];
 
 (async () => {
