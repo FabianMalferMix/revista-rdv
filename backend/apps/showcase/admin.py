@@ -52,8 +52,8 @@ class PublicationAdmin(admin.ModelAdmin):
 
 @admin.register(PressMention)
 class PressMentionAdmin(admin.ModelAdmin):
-    list_display = ["outlet", "title", "kind", "published_on", "published", "featured"]
-    list_filter = ["published", "featured", "kind"]
+    list_display = ["outlet", "title", "kind", "published_on", "published"]
+    list_filter = ["published", "kind"]
     search_fields = ["title", "outlet", "author", "quote"]
     autocomplete_fields = ["logo"]
 

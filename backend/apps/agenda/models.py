@@ -59,7 +59,6 @@ class Event(models.Model):
     )
     registration_url = models.URLField(blank=True, help_text="Inscripción o entradas.")
     published = models.BooleanField(default=False)
-    featured = models.BooleanField(default=False)
 
     objects = EventQuerySet.as_manager()
 
@@ -81,6 +80,10 @@ class Event(models.Model):
 
     def get_absolute_url(self):
         return reverse("agenda:event_detail", args=[self.slug])
+
+    def social_image(self):
+        """La imagen para compartir la actividad: su afiche (ver `{% social_meta %}`)."""
+        return self.poster
 
     @property
     def is_past(self):

@@ -323,10 +323,8 @@ class Command(BaseCommand):
                 )
             articulo.tags.set(self._etiqueta(nombre) for nombre in datos["etiquetas"])
             ReviewedWork.objects.filter(article=articulo).delete()
-            for posicion, obra in enumerate(datos.get("obras", ())):
-                ReviewedWork.objects.create(
-                    article=articulo, work=self._obra(obra), is_primary=posicion == 0
-                )
+            for obra in datos.get("obras", ()):
+                ReviewedWork.objects.create(article=articulo, work=self._obra(obra))
             self.stdout.write(f"texto: {articulo.get_absolute_url()}")
         for datos in POEMAS:
             poema, _ = Poem.objects.update_or_create(

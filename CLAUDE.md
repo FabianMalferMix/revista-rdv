@@ -36,7 +36,7 @@ Sitio del colectivo de poesía Repitentes del Verso: Django 5.2 LTS, htmx, Postg
 9. **Tareas y migraciones.**
    - Cada tarea declara sus límites y su política de reintento, y se encola con `delay_on_commit`.
    - Toda migración de datos lleva su prueba.
-   - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código anterior siga funcionando mientras se despliega.
+   - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código anterior siga funcionando mientras se despliega. Hasta el lanzamiento pueden ir en uno (C30).
    - Los permisos de un modelo nuevo se reparten a los roles de forma explícita (`apps/people/roles.py`).
 10. **Pruebas.**
     - Comprueban lo que ve o hace una persona.

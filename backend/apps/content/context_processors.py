@@ -1,7 +1,5 @@
 from django.urls import reverse
 
-from .models import Section
-
 # La barra principal: cinco enlaces (D9, decidido por el dueño del sitio). Cada uno marca
 # como suyas las vistas de su territorio: en la ficha de un poema queda marcado «Poemas»,
 # y en la agenda, «Colectivo», que es el centro de todo lo del colectivo. Las fichas de una
@@ -72,7 +70,6 @@ def nav(request):
             for rotulo, nombre in SUBNAV_COLECTIVO
         ]
     return {
-        "nav_sections": Section.objects.all(),
         "nav_principal": principal,
         "subnav_colectivo": subnav,
         "dossier_actual": vista == "showcase:dossier",

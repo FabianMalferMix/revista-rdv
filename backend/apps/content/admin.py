@@ -304,8 +304,8 @@ class EditorialItemAdmin(admin.ModelAdmin):
 @admin.register(Article)
 class ArticleAdmin(EditorialItemAdmin):
     form = ArticleAdminForm
-    list_display = ["title", "type", "status", "featured", "published_at"]
-    list_filter = ["status", "type", "featured", "section"]
+    list_display = ["title", "type", "status", "published_at"]
+    list_filter = ["status", "type", "section"]
     search_fields = ["title", "subtitle", "body"]
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ["section", "owner", "cover_image", "og_image"]
@@ -322,8 +322,8 @@ class ArticleAdmin(EditorialItemAdmin):
 @admin.register(Poem)
 class PoemAdmin(EditorialItemAdmin):
     form = PoemAdminForm
-    list_display = ["title", "status", "featured", "published_at"]
-    list_filter = ["status", "featured"]
+    list_display = ["title", "status", "published_at"]
+    list_filter = ["status"]
     search_fields = ["title", "body"]
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ["owner", "recording", "og_image"]

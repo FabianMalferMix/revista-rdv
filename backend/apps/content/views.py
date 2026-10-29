@@ -15,7 +15,7 @@ from django.views.decorators.http import require_safe
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event, EventPhoto
-from apps.media.models import Recording
+from apps.media.models import TIRADA_SIZE, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
@@ -68,14 +68,13 @@ A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
 # El estante de la portada (D24, más largo en D25): una publicación de frente y hasta siete de
-# lomo, lo que cabe a 951 px junto a la ficha. Al frente va la marcada «Featured» en el panel y,
+# lomo, lo que cabe a 951 px junto a la ficha. Al frente va la marcada «Destacada» en el panel y,
 # si no hay, la primera según su orden («Position»).
 ESTANTE = 8
 
 
-# La tirada de la portada (D19): como mucho cinco registros. Las buenas prácticas de
-# carruseles piden de 2 a 5, para llegar al último en pocos pasos.
-TOPE_TIRADA = 5
+# La tirada de la portada (D19): como mucho TIRADA_SIZE registros, el tope que valida el panel.
+TOPE_TIRADA = TIRADA_SIZE
 NUMERALES = {2: "dos", 3: "tres", 4: "cuatro", 5: "cinco"}
 # Un título más largo se compone un paso más chico, para que no pase de dos líneas.
 TITULO_LARGO = 34

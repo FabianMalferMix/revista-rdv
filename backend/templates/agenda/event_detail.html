@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images %}
+{% load images social %}
 
 {% block title %}{{ event.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ event.description|truncatechars:200|default:event.title }}{% endblock %}
@@ -8,8 +8,7 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="{{ event.title }}">
   <meta property="og:description" content="{{ event.description|truncatechars:200|default:event.title }}">
-  {% if event.poster %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.poster.file.url }}">{% elif site_profile.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}">{% endif %}
-  <meta name="twitter:card" content="{% if event.poster %}summary_large_image{% else %}summary{% endif %}">
+  {% social_meta event %}
 {% endblock %}
 
 {% block head_extra %}
@@ -27,7 +26,7 @@
       "name": "{{ event.venue_name|default:event.city|default:'—'|escapejs }}"{% if event.address or event.city %},
       "address": "{{ event.address|escapejs }}{% if event.address and event.city %}, {% endif %}{{ event.city|escapejs }}"{% endif %}
     },{% endif %}
-    {% if event.poster %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ event.poster.file.url }}",{% endif %}
+    {% social_image_url event as imagen %}{% if imagen %}"image": "{{ imagen|escapejs }}",{% endif %}
     {% if event.description %}"description": "{{ event.description|truncatechars:300|escapejs }}",{% endif %}
     "organizer": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"},
     "url": "{{ request.build_absolute_uri }}"

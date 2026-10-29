@@ -356,12 +356,22 @@ class MediaAsset(models.Model):
         return ", ".join(derivatives)
 
 
+# Los registros que caben en la tirada de la portada. Las buenas prácticas de carruseles
+# piden de 2 a 5, para llegar al último en pocos pasos; el panel no deja destacar más.
+TIRADA_SIZE = 5
+
+
 class Recording(models.Model):
     """Registro de audio o video de una lectura/recital.
 
     La fuente es un archivo subido (`file`) **o** un enlace de YouTube o Vimeo
-    (`embed_url`); se exige al menos uno. Alimenta la portada (destacado) y, si es de
-    audio, el feed de podcast (`feed/registros/`).
+    (`embed_url`); se exige al menos uno. Si es de audio, alimenta el feed de podcast
+    (`feed/registros/`).
+
+    Destacado: los registros publicados con `featured` forman la tirada de la portada, en
+    el orden de `position` y como mucho TIRADA_SIZE (`clean()` no deja marcar más). Sin
+    ninguno marcado, hace de respaldo `SiteProfile.featured_recording`; sin registros,
+    la portada enseña `SiteProfile.featured_poem`.
     """
 
     class Kind(models.TextChoices):
@@ -461,6 +471,10 @@ class Recording(models.Model):
 
         return reverse("media:recording_detail", args=[self.slug])
 
+    def social_image(self):
+        """La imagen para compartir el registro: su póster (ver `{% social_meta %}`)."""
+        return self.poster
+
     @property
     def public_event(self):
         """El evento del registro, solo si está publicado: un registro publicado no puede enseñar
@@ -479,3 +493,10 @@ class Recording(models.Model):
     def clean(self):
         if not self.file and not self.embed_url:
             raise ValidationError("Indica un archivo o una URL de embed para el registro.")
+        if self.featured:
+            otros = Recording.objects.filter(featured=True).exclude(pk=self.pk).count()
+            if otros >= TIRADA_SIZE:
+                raise ValidationError(
+                    f"La tirada de la portada ya tiene sus {TIRADA_SIZE} registros destacados: "
+                    "quita uno antes de destacar este."
+                )

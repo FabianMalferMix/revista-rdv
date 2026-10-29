@@ -155,7 +155,7 @@ vigente más cercano y no se agrava la deuda.
      encola con `delay_on_commit`.
    - Toda migración de datos usa `apps.get_model` y lleva su prueba.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
-     anterior siga funcionando mientras se despliega.
+     anterior siga funcionando mientras se despliega. Hasta el lanzamiento pueden ir en uno (C30).
    - Los permisos de un modelo nuevo se reparten a los roles de forma explícita, en la matriz de
      `apps/people/roles.py`: `tests/test_roles.py` falla si un modelo queda sin clasificar.
 
