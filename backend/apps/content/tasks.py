@@ -1,5 +1,5 @@
 from celery import shared_task
-from django.db import OperationalError, transaction
+from django.db import OperationalError
 from django.utils import timezone
 
 
@@ -10,38 +10,26 @@ from django.utils import timezone
     retry_kwargs={"max_retries": 3},
 )
 def publish_due_items():
-    """Publica artículos y poemas programados cuya fecha ya venció. Corre cada minuto.
+    """Publica las piezas programadas cuya fecha ya venció. Corre cada minuto.
 
-    Idempotente: re-lee cada pieza bajo lock de fila y solo publica si sigue
-    SCHEDULED, así un doble beat, un reintento, una reentrega tras caer el worker o una
-    acción manual concurrente no duplican la publicación ni la bitácora.
+    Pasa por `perform_transition`, como la publicación manual, con el actor de sistema: misma
+    bitácora, mismas reglas de fecha y mismo bloqueo de fila. Es idempotente: la transición
+    vuelve a leer cada pieza bajo bloqueo y no hace nada si ya dejó de estar programada, así
+    que un doble beat, un reintento, una reentrega tras caer el worker o una acción manual
+    concurrente no duplican la publicación ni la bitácora.
     """
-    from .models import Article, EditorialStatus, EditorialTransition, Poem
+    from .models import EditorialStatus, editorial_models
+    from .workflow import SYSTEM, perform_transition
 
     published = 0
-    for model in (Article, Poem):
-        due_ids = list(
-            model.objects.filter(
-                status=EditorialStatus.SCHEDULED, published_at__lte=timezone.now()
-            ).values_list("pk", flat=True)
+    for model in editorial_models():
+        due = model.objects.filter(
+            status=EditorialStatus.SCHEDULED, published_at__lte=timezone.now()
         )
-        for pk in due_ids:
-            with transaction.atomic():
-                # Lock por fila + re-verificación del estado: cierra el TOCTOU.
-                item = (
-                    model.objects.select_for_update()
-                    .filter(pk=pk, status=EditorialStatus.SCHEDULED)
-                    .first()
-                )
-                if item is None:
-                    continue  # ya lo publicó otra corrida/acción: nada que hacer
-                item.status = EditorialStatus.PUBLISHED
-                item.save(update_fields=["status", "updated_at"])
-                EditorialTransition.objects.create(
-                    item=item,
-                    from_status=EditorialStatus.SCHEDULED,
-                    to_status=EditorialStatus.PUBLISHED,
-                    note="Publicación automática programada",
-                )
-                published += 1
+        for item in due:
+            try:
+                perform_transition(item, "publish", SYSTEM, note="Publicación programada.")
+            except ValueError:
+                continue  # ya la movió otra corrida o una acción manual
+            published += 1
     return published

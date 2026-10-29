@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models, transaction
+from django.utils import timezone
 from PIL import Image, ImageOps
 
 from config import publishing
@@ -447,6 +448,13 @@ class Recording(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        # Lo publicado lleva fecha: la del momento en que se publica, si no se dio otra. La
+        # leen el pódcast y «Actualizado el…».
+        if self.published and self.published_at is None:
+            self.published_at = timezone.now()
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse

@@ -191,12 +191,6 @@ def test_la_fila_tiene_un_solo_enlace_al_texto(client, make_article):
     assert fila.find_parent("a") is None
 
 
-def test_sin_fecha_de_publicacion_no_se_emite_un_time_vacio(client, make_article):
-    make_article(slug="sin-fecha", status=EditorialStatus.PUBLISHED, published_at=None)
-    fila = _sopa(client, "content:text_archive").select_one("li.fila")
-    assert fila is not None and fila.select_one("time") is None
-
-
 # ── Trayectoria ───────────────────────────────────────────────────────────
 
 

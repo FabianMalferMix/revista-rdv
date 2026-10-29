@@ -110,6 +110,24 @@ def legal_pages(db):
         getattr(importlib.import_module(module), func)(django_apps, None)
 
 
+def _dated(fields):
+    """Lo publicado, programado o archivado necesita fecha (la restricción de EditorialItem): si
+    la prueba no da una, la pieza se publicó ahora o sale mañana."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.content.models import EditorialStatus as S
+
+    if "published_at" not in fields and fields.get("status") in {
+        S.PUBLISHED,
+        S.ARCHIVED,
+        S.SCHEDULED,
+    }:
+        tomorrow = fields["status"] == S.SCHEDULED
+        fields["published_at"] = timezone.now() + timedelta(days=1 if tomorrow else 0)
+
+
 @pytest.fixture
 def make_article(db):
     """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
@@ -124,6 +142,7 @@ def make_article(db):
             "status": EditorialStatus.DRAFT,
         }
         defaults.update(kwargs)
+        _dated(defaults)
         return Article.objects.create(**defaults)
 
     return _make
@@ -143,6 +162,7 @@ def make_poem(db):
             "status": EditorialStatus.DRAFT,
         }
         defaults.update(kwargs)
+        _dated(defaults)
         return Poem.objects.create(**defaults)
 
     return _make

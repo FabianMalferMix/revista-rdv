@@ -9,6 +9,7 @@ pensada para arreglarlo. Y quien lee un RSS es prensa y gestores, la audiencia d
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from apps.showcase.models import SiteProfile
 
@@ -62,6 +63,11 @@ def test_el_feed_sigue_sirviendo_los_articulos():
     """Contra-prueba: cambiar el encabezado no debe romper el contenido."""
     from apps.content.models import Article, EditorialStatus
 
-    Article.objects.create(slug="uno", title="Un texto publicado", status=EditorialStatus.PUBLISHED)
+    Article.objects.create(
+        slug="uno",
+        title="Un texto publicado",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+    )
     xml = Client().get("/feed/").content.decode()
     assert "Un texto publicado" in xml
