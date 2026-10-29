@@ -279,7 +279,7 @@ def tag_detail(request, slug):
 
 
 def contributor_detail(request, slug):
-    contributor = get_object_or_404(Contributor, slug=slug)
+    contributor = get_object_or_404(Contributor.objects.visible(), slug=slug)
     if contributor.is_member:
         # URL canónica única por persona: el integrante vive en su perfil rico.
         return redirect("people:member_detail", slug=slug)
@@ -288,6 +288,7 @@ def contributor_detail(request, slug):
         "content/contributor_detail.html",
         {
             "contributor": contributor,
+            "poems": _published_poems().filter(authors=contributor),
             "articles": _paginate(request, _published().filter(authors=contributor)),
         },
     )

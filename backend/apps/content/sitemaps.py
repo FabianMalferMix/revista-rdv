@@ -161,21 +161,21 @@ class WorkSitemap(_ReviewsSitemap):
     url_name = "reviews:work_detail"
 
     def items(self):
-        return Work.objects.all()
+        return Work.objects.visible()
 
 
 class PublisherSitemap(_ReviewsSitemap):
     url_name = "reviews:publisher_detail"
 
     def items(self):
-        return Publisher.objects.all()
+        return Publisher.objects.visible()
 
 
 class BookAuthorSitemap(_ReviewsSitemap):
     url_name = "reviews:bookauthor_detail"
 
     def items(self):
-        return BookAuthor.objects.all()
+        return BookAuthor.objects.visible()
 
 
 SITEMAPS = {

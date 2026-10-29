@@ -3,8 +3,9 @@
 import pytest
 from django.db import IntegrityError, transaction
 from django.urls import reverse
+from django.utils import timezone
 
-from apps.content.models import EditorialStatus
+from apps.content.models import EditorialStatus, ReviewedWork
 from apps.reviews.models import BookAuthor, Work
 
 pytestmark = pytest.mark.django_db
@@ -48,10 +49,13 @@ def test_work_detail_404_for_unknown_slug(client):
     assert client.get(reverse("reviews:work_detail", args=["no-existe"])).status_code == 404
 
 
-def test_bookauthor_detail_renders_with_its_works(client):
+def test_bookauthor_detail_renders_with_its_works(client, make_article):
+    # La ficha existe porque una reseña publicada respalda la obra.
     author = BookAuthor.objects.create(slug="autora-x", name="Autora X")
     work = Work.objects.create(slug="obra-de-autora", title="Obra De Autora")
     work.authors.add(author)
+    review = make_article(status=EditorialStatus.PUBLISHED, published_at=timezone.now())
+    ReviewedWork.objects.create(article=review, work=work)
     resp = client.get(reverse("reviews:bookauthor_detail", args=[author.slug]))
     assert resp.status_code == 200
     content = resp.content.decode()

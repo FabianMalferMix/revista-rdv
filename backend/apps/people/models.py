@@ -1,9 +1,22 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Exists, OuterRef, Q
 from django.urls import reverse
+
+from apps.content.models import Article, Poem
 
 
 class ContributorQuerySet(models.QuerySet):
+    def visible(self):
+        """Quien tiene ficha pública: las integrantes, también las históricas, y quien firma
+        algo publicado. Una firma sin nada publicado no tiene qué enseñar, y responde 404."""
+        signs = OuterRef("pk")
+        return self.filter(
+            Q(is_member=True)
+            | Exists(Article.objects.published().filter(authors=signs))
+            | Exists(Poem.objects.published().filter(authors=signs))
+        )
+
     def members(self):
         """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
         # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).

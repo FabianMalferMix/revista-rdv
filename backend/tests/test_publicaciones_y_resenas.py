@@ -93,9 +93,10 @@ def test_las_resenas_de_una_publicacion_cuestan_una_consulta_fija(client, make_a
     assert len(tres) == len(una), "una consulta más por cada reseña"
 
 
-def test_la_cabecera_de_una_obra_sin_autores_no_empieza_por_un_separador(client):
+def test_la_cabecera_de_una_obra_sin_autores_no_empieza_por_un_separador(client, make_article):
     """«· Overol · 2024»: el punto medio iba delante de la editorial aunque no hubiera autores."""
     obra = Work.objects.create(slug="sin-autores", title="Sin autores", publication_year=2024)
+    _resena(make_article, obra, "Su reseña", dias=1)  # la ficha existe si una reseña la respalda
     sopa = _sopa(client, reverse("reviews:work_detail", args=[obra.slug]))
     linea = " ".join(sopa.select_one(".index-head .meta").get_text().split())
     assert linea == "2024"

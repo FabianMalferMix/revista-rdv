@@ -16,6 +16,18 @@
       {% endif %}
     {% endwith %}
   </header>
-  <h2 class="subhead">Publicaciones</h2>
-  {% include "content/partials/_article_list.html" %}
+  {# La ficha existe porque firma algo publicado: cada sección sale solo si tiene qué enseñar. #}
+  {% if poems %}
+    <h2 class="subhead">Poemas</h2>
+    <ul class="filas">
+      {% for p in poems %}
+        {% include "content/partials/_poem_card.html" with sin_cejilla=True sin_firma_de=contributor %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if articles %}
+    <h2 class="subhead">Textos</h2>
+    {% include "content/partials/_article_list.html" %}
+  {% endif %}
 {% endblock %}

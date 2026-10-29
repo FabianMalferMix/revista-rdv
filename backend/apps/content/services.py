@@ -1,11 +1,11 @@
 """Consultas de contenido que usan varias apps (la portada, el dossier, la búsqueda)."""
 
-from django.db.models import DateTimeField, Exists, F, IntegerField, OuterRef, Q, Value
+from django.db.models import DateTimeField, F, IntegerField, Value
 from django.db.models.functions import Cast, ExtractYear
 
 from apps.media.models import Recording
 
-from .models import Article, Poem, editorial_models
+from .models import editorial_models
 
 
 def ultima_publicacion():
@@ -70,13 +70,8 @@ def coincidencias_por_nombre(termino, tope):
     from apps.people.models import Contributor
     from apps.showcase.models import Publication
 
-    firma = OuterRef("pk")
     personas = _columnas(
-        Contributor.objects.filter(display_name__unaccent__icontains=termino).filter(
-            Q(is_member=True)
-            | Exists(Article.objects.published().filter(authors=firma))
-            | Exists(Poem.objects.published().filter(authors=firma))
-        ),
+        Contributor.objects.visible().filter(display_name__unaccent__icontains=termino),
         "persona",
         "display_name",
         dato="role",
