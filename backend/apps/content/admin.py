@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin import helpers
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
+from django.utils import timezone
+from django.utils.formats import date_format
 
 from . import workflow
 from .models import (
@@ -113,6 +117,28 @@ class EditorialTransitionInline(GenericTabularInline):
         return False
 
 
+def _action_permission(transition):
+    """El permiso del panel que pide una acción: el de cambiar la pieza si la transición es de la
+    dueña (enviar a revisión) y, si no, el de revisar o publicar."""
+    who = workflow.TRANSITIONS[transition].who
+    return "change" if workflow.OWNER in who else who[0]
+
+
+class ScheduleForm(forms.Form):
+    """La fecha que pide «Programar»: sin ella una pieza programada no saldría nunca."""
+
+    published_at = forms.DateTimeField(
+        label="Fecha de publicación",
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+    )
+
+    def clean_published_at(self):
+        when = self.cleaned_data["published_at"]
+        if when <= timezone.now():
+            raise forms.ValidationError("La fecha tiene que ser futura.")
+        return when
+
+
 class EditorialItemAdmin(admin.ModelAdmin):
     """Base para piezas del flujo editorial (Article, Poem).
 
@@ -121,47 +147,28 @@ class EditorialItemAdmin(admin.ModelAdmin):
     """
 
     # Todo cambio de estado pasa por estas acciones (perform_transition, con guardas
-    # de rol/estado y bitácora). El desplegable `status` es readonly (ver get_readonly_fields).
+    # de permiso y de estado, y bitácora). El desplegable `status` es readonly (ver get_readonly_fields).
     actions = [
         "do_submit",
         "do_request_changes",
         "do_accept",
         "do_reject",
+        "do_reopen",
         "do_schedule",
+        "do_unschedule",
         "do_publish",
         "do_unpublish",
         "do_archive",
         "do_restore",
     ]
 
-    # Nombre de acción del panel -> nombre de transición en workflow.TRANSITIONS.
-    _TRANSICION_DE = {f"do_{nombre}": nombre for nombre in workflow.TRANSITIONS}
+    # Las acciones de revisar y publicar piden su permiso de Django (`allowed_permissions`):
+    # quien no lo tiene no las ve en el desplegable, y perform_transition vuelve a mirarlo.
+    def has_review_permission(self, request):
+        return request.user.has_perm(workflow.permission_for(self.model, workflow.REVIEW))
 
-    def get_actions(self, request):
-        """Retira del desplegable las transiciones que este ROL no podrá ejecutar nunca.
-
-        Es comodidad, no control: la guarda está en `workflow.perform_transition` y sigue
-        ahí para cualquier otro camino (shell, importación, una vista futura). Si algún
-        día se quita este filtro, no se abre nada; solo vuelven los avisos de rechazo.
-
-        Se filtra por ROL y jamás por estado. Que 'accept' no aplique a un borrador
-        depende del objeto, y la selección puede ser mixta —piezas donde la transición
-        vale junto a otras donde no—: esconder la acción por el estado de una dejaría a
-        quien corresponde sin manera de moverlas. Un autor, en cambio, tiene vedadas
-        ocho de las nueve contra cualquier pieza y en cualquier estado; eso sí se sabe
-        sin mirar ninguna.
-        """
-        acciones = super().get_actions(request)
-        if is_editor(request.user):
-            return acciones
-        return {
-            nombre: accion
-            for nombre, accion in acciones.items()
-            # Lo que no es una transición (p. ej. delete_selected) se queda: lo rige su
-            # propio permiso de modelo, que ya resolvió has_delete_permission.
-            if nombre not in self._TRANSICION_DE
-            or "owner" in workflow.TRANSITIONS[self._TRANSICION_DE[nombre]][2]
-        }
+    def has_publish_permission(self, request):
+        return request.user.has_perm(workflow.permission_for(self.model, workflow.PUBLISH))
 
     # ── Permisos por objeto y estado ─────────────────────────
     def save_model(self, request, obj, form, change):
@@ -199,11 +206,11 @@ class EditorialItemAdmin(admin.ModelAdmin):
             ro += ["published_at", "owner"]
         return ro
 
-    def _run(self, request, queryset, name):
+    def _run(self, request, queryset, name, **kwargs):
         ok = 0
         for item in queryset:
             try:
-                workflow.perform_transition(item, name, request.user)
+                workflow.perform_transition(item, name, request.user, **kwargs)
                 ok += 1
             except (PermissionDenied, ValueError) as exc:
                 self.message_user(request, f"{item}: {exc}", level=messages.WARNING)
@@ -211,39 +218,78 @@ class EditorialItemAdmin(admin.ModelAdmin):
             label = self.model._meta.verbose_name_plural
             self.message_user(request, f"{ok} {label} → '{name}'.", level=messages.SUCCESS)
 
-    @admin.action(description="Enviar a revisión")
+    @admin.action(description="Enviar a revisión", permissions=[_action_permission("submit")])
     def do_submit(self, request, queryset):
         self._run(request, queryset, "submit")
 
-    @admin.action(description="Pedir cambios")
+    @admin.action(description="Pedir cambios", permissions=[_action_permission("request_changes")])
     def do_request_changes(self, request, queryset):
         self._run(request, queryset, "request_changes")
 
-    @admin.action(description="Aceptar")
+    @admin.action(description="Aceptar", permissions=[_action_permission("accept")])
     def do_accept(self, request, queryset):
         self._run(request, queryset, "accept")
 
-    @admin.action(description="Rechazar")
+    @admin.action(description="Rechazar", permissions=[_action_permission("reject")])
     def do_reject(self, request, queryset):
         self._run(request, queryset, "reject")
 
-    @admin.action(description="Programar (usa la fecha de publicación indicada)")
-    def do_schedule(self, request, queryset):
-        self._run(request, queryset, "schedule")
+    @admin.action(
+        description="Rechazada: reabrir (vuelve a borrador)",
+        permissions=[_action_permission("reopen")],
+    )
+    def do_reopen(self, request, queryset):
+        self._run(request, queryset, "reopen")
 
-    @admin.action(description="Publicar")
+    @admin.action(description="Programar…", permissions=[_action_permission("schedule")])
+    def do_schedule(self, request, queryset):
+        """Una página intermedia pide la fecha; al confirmarla, programa con ella."""
+        form = ScheduleForm(request.POST if "apply" in request.POST else None)
+        if form.is_valid():
+            when = form.cleaned_data["published_at"]
+            self._run(request, queryset, "schedule", when=when)
+            self.message_user(
+                request,
+                f"Fecha de publicación: {date_format(timezone.localtime(when), 'j F Y, H:i')}.",
+            )
+            return None
+        return TemplateResponse(
+            request,
+            "admin/content/schedule.html",
+            {
+                **self.admin_site.each_context(request),
+                "title": "Programar la publicación",
+                "opts": self.model._meta,
+                "queryset": queryset,
+                "form": form,
+                "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            },
+        )
+
+    @admin.action(
+        description="Programada: desprogramar (vuelve a aprobada)",
+        permissions=[_action_permission("unschedule")],
+    )
+    def do_unschedule(self, request, queryset):
+        self._run(request, queryset, "unschedule")
+
+    @admin.action(description="Publicar", permissions=[_action_permission("publish")])
     def do_publish(self, request, queryset):
         self._run(request, queryset, "publish")
 
-    @admin.action(description="Despublicar (volver a borrador)")
+    @admin.action(
+        description="Despublicar (volver a borrador)", permissions=[_action_permission("unpublish")]
+    )
     def do_unpublish(self, request, queryset):
         self._run(request, queryset, "unpublish")
 
-    @admin.action(description="Archivar")
+    @admin.action(description="Archivar", permissions=[_action_permission("archive")])
     def do_archive(self, request, queryset):
         self._run(request, queryset, "archive")
 
-    @admin.action(description="Restaurar (archivado → publicado)")
+    @admin.action(
+        description="Restaurar (archivado → publicado)", permissions=[_action_permission("restore")]
+    )
     def do_restore(self, request, queryset):
         self._run(request, queryset, "restore")
 

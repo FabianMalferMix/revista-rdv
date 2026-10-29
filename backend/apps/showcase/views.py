@@ -1,8 +1,9 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 
 from apps.content.models import Article
 from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
+from config import publishing
 
 from .models import Partner, PressMention, Publication, SiteProfile
 
@@ -20,8 +21,12 @@ def publication_index(request):
 
 
 def publication_detail(request, slug):
-    publication = get_object_or_404(
-        _published().prefetch_related("participants", "where_to_buy"), slug=slug
+    publication, preview = publishing.piece_for(
+        request,
+        Publication.objects.select_related("publisher", "cover").prefetch_related(
+            "participants", "where_to_buy"
+        ),
+        slug=slug,
     )
     pie = [puerta("Índice", "Todas las publicaciones", reverse("showcase:publication_index"))]
     if publication.publisher:
@@ -54,11 +59,12 @@ def publication_detail(request, slug):
         .order_by("-published_at")
         .distinct()
     )
-    return render(
+    response = render(
         request,
         "showcase/publication_detail.html",
-        {"publication": publication, "pie": pie, "resenas": resenas},
+        {"publication": publication, "pie": pie, "resenas": resenas, "preview": preview},
     )
+    return publishing.marked_as_preview(response, preview)
 
 
 def press_index(request):

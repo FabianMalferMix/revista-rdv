@@ -68,10 +68,10 @@ def _isolated_media(settings, tmp_path):
 def groups(db):
     """Los tres grupos CON sus permisos, como en producción.
 
-    Antes se creaban vacíos, así que los tests del admin trabajaban con un editor sin
-    `content.change_article`: una situación que no se da en ningún despliegue, porque el
-    entrypoint ejecuta `setup_groups`. La diferencia dejó de ser inocua al hacer que las
-    comprobaciones por rol COMPONGAN con los permisos de modelo de Django (S-20).
+    Son los de la matriz de roles (apps/people/roles.py), que el release reparte con
+    `setup_groups`: las comprobaciones por rol del panel componen con los permisos de modelo
+    de Django, así que un grupo vacío no se parece a ningún despliegue. Las pruebas que
+    necesitan quitar un permiso lo quitan de forma explícita.
     """
     from django.core.management import call_command
 
@@ -110,6 +110,24 @@ def legal_pages(db):
         getattr(importlib.import_module(module), func)(django_apps, None)
 
 
+def _dated(fields):
+    """Lo publicado, programado o archivado necesita fecha (la restricción de EditorialItem): si
+    la prueba no da una, la pieza se publicó ahora o sale mañana."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.content.models import EditorialStatus as S
+
+    if "published_at" not in fields and fields.get("status") in {
+        S.PUBLISHED,
+        S.ARCHIVED,
+        S.SCHEDULED,
+    }:
+        tomorrow = fields["status"] == S.SCHEDULED
+        fields["published_at"] = timezone.now() + timedelta(days=1 if tomorrow else 0)
+
+
 @pytest.fixture
 def make_article(db):
     """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
@@ -124,6 +142,7 @@ def make_article(db):
             "status": EditorialStatus.DRAFT,
         }
         defaults.update(kwargs)
+        _dated(defaults)
         return Article.objects.create(**defaults)
 
     return _make
@@ -143,6 +162,7 @@ def make_poem(db):
             "status": EditorialStatus.DRAFT,
         }
         defaults.update(kwargs)
+        _dated(defaults)
         return Poem.objects.create(**defaults)
 
     return _make

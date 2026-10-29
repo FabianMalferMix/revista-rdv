@@ -67,6 +67,14 @@ class Event(models.Model):
         ordering = ["-starts_at"]
         verbose_name = "evento"
         verbose_name_plural = "eventos"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(ends_at__isnull=True)
+                | models.Q(ends_at__gte=models.F("starts_at")),
+                name="event_ends_after_it_starts",
+                violation_error_message="Una actividad no puede terminar antes de empezar.",
+            )
+        ]
 
     def __str__(self):
         return self.title

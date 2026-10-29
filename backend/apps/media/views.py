@@ -1,9 +1,10 @@
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 
 from apps.content.models import Poem
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
+from config import publishing
 
 from .models import Recording
 
@@ -19,7 +20,11 @@ def recording_index(request):
 
 
 def recording_detail(request, slug):
-    recording = get_object_or_404(_published().prefetch_related("participants"), slug=slug)
+    recording, preview = publishing.piece_for(
+        request,
+        Recording.objects.select_related("poster", "event").prefetch_related("participants"),
+        slug=slug,
+    )
     pie = [puerta("Índice", "Todos los registros", reverse("media:recording_index"))]
     pie += [
         puerta("Poema registrado", p.title, p.get_absolute_url())
@@ -30,4 +35,9 @@ def recording_detail(request, slug):
     pie += puertas_vecinas(
         *vecinos_en_lista(_published(), recording), "Registro", lambda r: r.title
     )
-    return render(request, "media/recording_detail.html", {"recording": recording, "pie": pie})
+    response = render(
+        request,
+        "media/recording_detail.html",
+        {"recording": recording, "pie": pie, "preview": preview},
+    )
+    return publishing.marked_as_preview(response, preview)

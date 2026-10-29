@@ -1,5 +1,7 @@
 """Autorización a nivel de objeto y estado para el flujo editorial."""
 
+from apps.people import roles
+
 from .models import EditorialStatus
 
 # El autor solo puede editar su pieza (artículo o poema) en estos estados.
@@ -9,7 +11,7 @@ EDITABLE_BY_OWNER = {EditorialStatus.DRAFT, EditorialStatus.CHANGES_REQUESTED}
 def is_editor(user):
     """Editor o superior (grupos editor/admin, o superusuario)."""
     return user.is_authenticated and (
-        user.is_superuser or user.groups.filter(name__in=["admin", "editor"]).exists()
+        user.is_superuser or user.groups.filter(name__in=[roles.ADMIN, roles.EDITOR]).exists()
     )
 
 

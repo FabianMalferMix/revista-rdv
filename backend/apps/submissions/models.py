@@ -31,6 +31,13 @@ class Call(models.Model):
         ordering = ["-opens_at"]
         verbose_name = "convocatoria"
         verbose_name_plural = "convocatorias"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(closes_at__gt=models.F("opens_at")),
+                name="call_closes_after_it_opens",
+                violation_error_message="Una convocatoria tiene que cerrar después de abrir.",
+            )
+        ]
 
     def __str__(self):
         return self.title

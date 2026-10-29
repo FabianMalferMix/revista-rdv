@@ -9,6 +9,7 @@ Apple Podcasts falta `itunes:image` con URL ABSOLUTA a una portada cuadrada
 import mimetypes
 
 from django.contrib.syndication.views import Feed
+from django.db.models import F
 from django.utils.feedgenerator import Rss201rev2Feed
 
 from .models import Recording
@@ -78,7 +79,7 @@ class RecordingsFeed(Feed):
         return (
             Recording.objects.published()
             .filter(kind=Recording.Kind.AUDIO)
-            .order_by("-published_at", "-created_at")[:20]
+            .order_by(F("published_at").desc(nulls_last=True), "-created_at")[:20]
         )
 
     def item_title(self, item):

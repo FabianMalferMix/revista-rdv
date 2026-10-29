@@ -330,7 +330,8 @@ def test_vecinos_desempata_por_clave_las_piezas_de_la_misma_fecha():
 
 
 def test_vecinos_sin_fecha_no_tiene_vecinos():
-    poema = Poem.objects.create(slug="s", title="S", body="x", status=EditorialStatus.PUBLISHED)
+    # Un borrador: lo publicado siempre tiene fecha (la restricción de EditorialItem).
+    poema = Poem.objects.create(slug="s", title="S", body="x", status=EditorialStatus.DRAFT)
     assert vecinos(Poem.objects.all(), poema) == (None, None)
 
 

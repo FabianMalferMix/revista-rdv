@@ -9,6 +9,7 @@ página indexada —sin necesidad de adivinar nombres de archivo— y hacía que
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.content.models import EditorialStatus, Poem
 from apps.media.models import Recording
@@ -29,6 +30,7 @@ def _poema_con_registro(*, publicado):
         title="Umbral",
         body="verso",
         status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
         recording=recording,
     )
     return poem, recording
@@ -76,6 +78,10 @@ def test_la_tarjeta_del_listado_no_anuncia_registros_ineditos(client):
 
 def test_published_recording_es_none_sin_grabacion():
     poem = Poem.objects.create(
-        slug="sin-registro", title="Sin registro", body="x", status=EditorialStatus.PUBLISHED
+        slug="sin-registro",
+        title="Sin registro",
+        body="x",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
     )
     assert poem.published_recording is None

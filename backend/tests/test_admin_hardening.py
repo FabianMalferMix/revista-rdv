@@ -22,16 +22,13 @@ pytestmark = pytest.mark.django_db
 User = get_user_model()
 
 
-def _usuario(username, grupo=None, permisos=()):
-    user = User.objects.create_user(username=username, password="x", is_staff=True)
-    if grupo:
-        g, _ = Group.objects.get_or_create(name=grupo)
-        user.groups.add(g)
-    for dotted in permisos:
-        app_label, codename = dotted.split(".")
-        perm = Permission.objects.get(content_type__app_label=app_label, codename=codename)
-        user.user_permissions.add(perm)
-    return User.objects.get(pk=user.pk)  # recarga la caché de permisos
+def _permission(dotted):
+    app_label, codename = dotted.split(".")
+    return Permission.objects.get(content_type__app_label=app_label, codename=codename)
+
+
+def _reloaded(user):
+    return User.objects.get(pk=user.pk)  # vacía la caché de permisos
 
 
 def _peticion(user):
@@ -43,57 +40,54 @@ def _peticion(user):
 # ── S-11: uploaded_by no es editable ni enumera cuentas ───
 
 
-def test_uploaded_by_es_readonly():
+def test_uploaded_by_es_readonly(editor):
     admin_obj = MediaAssetAdmin(MediaAsset, AdminSite())
-    editor = _usuario("editora", grupo="editor")
     assert "uploaded_by" in admin_obj.get_readonly_fields(_peticion(editor))
 
 
-def test_uploaded_by_se_asigna_solo_a_quien_sube():
+def test_uploaded_by_se_asigna_solo_a_quien_sube(autor):
     admin_obj = MediaAssetAdmin(MediaAsset, AdminSite())
-    autor = _usuario("autor1", grupo="autor")
     asset = MediaAsset(alt_text="foto")
     admin_obj.save_model(_peticion(autor), asset, form=None, change=False)
     assert asset.uploaded_by == autor
 
 
-def test_no_se_reasigna_la_autoria_existente():
+def test_no_se_reasigna_la_autoria_existente(autor, editor):
     admin_obj = MediaAssetAdmin(MediaAsset, AdminSite())
-    primera = _usuario("primera", grupo="autor")
-    segunda = _usuario("segunda", grupo="editor")
-    asset = MediaAsset(alt_text="foto", uploaded_by=primera)
-    admin_obj.save_model(_peticion(segunda), asset, form=None, change=True)
-    assert asset.uploaded_by == primera
+    asset = MediaAsset(alt_text="foto", uploaded_by=autor)
+    admin_obj.save_model(_peticion(editor), asset, form=None, change=True)
+    assert asset.uploaded_by == autor
 
 
 # ── Los permisos del panel COMPONEN con los de Django ─────
 
 
-def test_revocar_el_permiso_de_modelo_surte_efecto():
+def test_revocar_el_permiso_de_modelo_surte_efecto(groups, editor):
     """Antes, `has_change_permission` decidía solo por pertenencia al grupo: quitarle
     `content.change_article` a alguien del grupo editor no cambiaba nada."""
     admin_obj = ArticleAdmin(Article, AdminSite())
-    editor = _usuario("editor_sin_permiso", grupo="editor")  # sin permisos de modelo
+    groups["editor"].permissions.remove(
+        _permission("content.change_article"), _permission("content.delete_article")
+    )
+    editor = _reloaded(editor)
     art = Article.objects.create(slug="a", title="A", owner=editor)
     assert admin_obj.has_change_permission(_peticion(editor), art) is False
     assert admin_obj.has_delete_permission(_peticion(editor), art) is False
 
 
-def test_un_editor_con_su_permiso_sigue_pudiendo():
+def test_un_editor_con_su_permiso_sigue_pudiendo(editor):
     """La composición no puede romper el caso normal."""
     admin_obj = ArticleAdmin(Article, AdminSite())
-    editor = _usuario(
-        "editora_ok", grupo="editor", permisos=["content.change_article", "content.delete_article"]
-    )
     art = Article.objects.create(slug="b", title="B")
     assert admin_obj.has_change_permission(_peticion(editor), art) is True
     assert admin_obj.has_delete_permission(_peticion(editor), art) is True
 
 
-def test_un_autor_con_permiso_no_puede_borrar():
+def test_un_autor_con_permiso_no_puede_borrar(autor):
     """El borrado sigue reservado a editores aunque tenga el permiso de modelo."""
     admin_obj = ArticleAdmin(Article, AdminSite())
-    autor = _usuario("autor_x", grupo="autor", permisos=["content.delete_article"])
+    autor.user_permissions.add(_permission("content.delete_article"))
+    autor = _reloaded(autor)
     art = Article.objects.create(slug="c", title="C", owner=autor)
     assert admin_obj.has_delete_permission(_peticion(autor), art) is False
 

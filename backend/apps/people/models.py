@@ -113,3 +113,25 @@ class SocialLink(models.Model):
 
     def __str__(self):
         return f"{self.contributor} · {self.platform}"
+
+
+class RoleGrant(models.Model):
+    """Lo que `setup_groups` ya repartió a cada grupo según la matriz de roles (roles.py).
+
+    Un permiso de la matriz que figura aquí y ya no está en el grupo lo retiró el operador: las
+    sincronizaciones siguientes lo respetan. Uno que no figura es nuevo en la matriz, y se añade.
+    """
+
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE, related_name="+")
+    permission = models.ForeignKey("auth.Permission", on_delete=models.CASCADE, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "permiso repartido"
+        verbose_name_plural = "permisos repartidos"
+        constraints = [
+            models.UniqueConstraint(fields=["group", "permission"], name="uniq_role_grant")
+        ]
+
+    def __str__(self):
+        return f"{self.group} · {self.permission.codename}"

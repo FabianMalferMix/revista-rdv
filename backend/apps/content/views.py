@@ -19,6 +19,7 @@ from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
 from apps.submissions.models import Call
+from config import publishing
 
 from .models import (
     Article,
@@ -228,10 +229,9 @@ def _firmas_con_retrato():
 
 
 def article_detail(request, slug):
-    article = get_object_or_404(
-        Article.objects.published()
-        .select_related("section", "cover_image")
-        .prefetch_related(
+    article, preview = publishing.piece_for(
+        request,
+        Article.objects.select_related("section", "cover_image").prefetch_related(
             _firmas_con_retrato(),
             Prefetch(
                 "reviewed_works", queryset=Work.objects.select_related("publisher", "cover_image")
@@ -252,7 +252,12 @@ def article_detail(request, slug):
     pie += firmas(article.authors.all())
     anterior, siguiente = vecinos(Article.objects.published(), article)
     pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
-    return render(request, "content/article_detail.html", {"article": article, "pie": pie})
+    response = render(
+        request,
+        "content/article_detail.html",
+        {"article": article, "pie": pie, "preview": preview},
+    )
+    return publishing.marked_as_preview(response, preview)
 
 
 def section_detail(request, slug):
@@ -301,10 +306,9 @@ def poem_index(request):
 
 
 def poem_detail(request, slug):
-    poem = get_object_or_404(
-        Poem.objects.published()
-        .select_related("recording")
-        .prefetch_related(_firmas_con_retrato()),
+    poem, preview = publishing.piece_for(
+        request,
+        Poem.objects.select_related("recording").prefetch_related(_firmas_con_retrato()),
         slug=slug,
     )
     anterior, siguiente = vecinos(Poem.objects.published(), poem)
@@ -313,11 +317,14 @@ def poem_detail(request, slug):
     pie += firmas(poem.authors.all())
     pie += [puerta("En la colección", c.title, c.get_absolute_url()) for c in colecciones]
     pie += puertas_vecinas(anterior, siguiente, "Poema", lambda p: p.title)
-    return render(request, "content/poem_detail.html", {"poem": poem, "pie": pie})
+    response = render(
+        request, "content/poem_detail.html", {"poem": poem, "pie": pie, "preview": preview}
+    )
+    return publishing.marked_as_preview(response, preview)
 
 
 def collection_detail(request, slug):
-    collection = get_object_or_404(Collection.objects.published(), slug=slug)
+    collection, preview = publishing.piece_for(request, Collection.objects.all(), slug=slug)
     # Secuencia curada única: artículos y poemas publicados, mezclados por `position`.
     article_links = (
         CollectionArticle.objects.filter(
@@ -332,16 +339,18 @@ def collection_detail(request, slug):
     entries = [("article", link.position, link.article) for link in article_links]
     entries += [("poem", link.position, link.poem) for link in poem_links]
     items = [{"kind": kind, "object": obj} for kind, _, obj in sorted(entries, key=lambda e: e[1])]
-    return render(
+    response = render(
         request,
         "content/collection_detail.html",
-        {"collection": collection, "items": items},
+        {"collection": collection, "items": items, "preview": preview},
     )
+    return publishing.marked_as_preview(response, preview)
 
 
 def page_detail(request, slug):
-    page = get_object_or_404(Page.objects.published(), slug=slug)
-    return render(request, "content/page_detail.html", {"page": page})
+    page, preview = publishing.piece_for(request, Page.objects.all(), slug=slug)
+    response = render(request, "content/page_detail.html", {"page": page, "preview": preview})
+    return publishing.marked_as_preview(response, preview)
 
 
 def _strip_accents(text):

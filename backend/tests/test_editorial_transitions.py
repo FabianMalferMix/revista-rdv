@@ -24,19 +24,20 @@ MODELS = ["article", "poem"]
 def make_piece(make_article, make_poem):
     def _make(model, owner, status, transition):
         make = make_article if model == "article" else make_poem
-        # Programar exige una fecha futura.
-        when = timezone.now() + timedelta(days=1) if transition == "schedule" else None
-        return make(owner=owner, status=status, published_at=when)
+        # Sin fecha propia: la de la fábrica, si su estado la pide.
+        return make(owner=owner, status=status)
 
     return _make
 
 
 def _run_action(client, user, model, transition, *pieces):
     client.force_login(user)
-    return client.post(
-        reverse(f"admin:content_{model}_changelist"),
-        {"action": f"do_{transition}", "_selected_action": [piece.pk for piece in pieces]},
-    )
+    data = {"action": f"do_{transition}", "_selected_action": [piece.pk for piece in pieces]}
+    if transition == "schedule":
+        # «Programar» pide la fecha en su página intermedia: se confirma con una futura.
+        tomorrow = timezone.localtime() + timedelta(days=1)
+        data.update(apply="1", published_at=tomorrow.strftime("%Y-%m-%dT%H:%M"))
+    return client.post(reverse(f"admin:content_{model}_changelist"), data)
 
 
 def _log(piece):
@@ -66,16 +67,8 @@ def test_the_editor_moves_pieces_only_along_the_table(
 @pytest.mark.parametrize("model", MODELS)
 @pytest.mark.parametrize("transition", TRANSITIONS)
 def test_the_role_the_table_leaves_out_cannot_run_it(
-    client, groups, editor, autor, make_piece, model, transition, request
+    client, groups, editor, autor, make_piece, model, transition
 ):
-    if (model, transition) == ("poem", "submit"):
-        # strict: cuando el grupo autor reciba los permisos de poemas, esta marca falla y se quita.
-        request.applymarker(
-            pytest.mark.xfail(
-                reason="el grupo autor todavía no tiene permisos de poemas en el panel",
-                strict=True,
-            )
-        )
     sources, target, roles = TRANSITIONS[transition]
     origin = sorted(sources)[0]
     piece = make_piece(model, autor, origin, transition)
