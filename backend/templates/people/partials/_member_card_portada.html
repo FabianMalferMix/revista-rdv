@@ -3,9 +3,10 @@
    Tarjeta de «Las voces» en la portada (D23): el retrato y, debajo, el nombre y el rol. Toda la
    tarjeta es el enlace a la ficha, así que al señalarla solo su retrato pasa a color (la regla
    de .riso-duo en site.css). El retrato es decorativo: el nombre ya va en el enlace.
-   `escondida`: espera su turno en el relevo (static/js/integrantes.js).
+   `escondida`: espera su turno en el relevo (static/js/integrantes.js). `solo_ancho`: se ve
+   en la fila ancha pero no en el teléfono, cuando no corre el guion.
 {% endcomment %}
-<li class="integrante"{% if escondida %} hidden{% endif %}>
+<li class="integrante{% if solo_ancho %} integrante--solo-ancho{% endif %}"{% if escondida %} hidden{% endif %}>
   <a class="integrante-enlace" href="{% url 'people:member_detail' m.slug %}">
     {% if m.photo %}
       <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 719px) 31vw, 210px" decorativa=True %}</span>

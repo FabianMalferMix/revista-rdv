@@ -100,12 +100,26 @@ def test_vienen_todas_y_las_que_no_caben_esperan_su_turno(client):
     assert sopa.select_one('script[src*="js/integrantes.js"]').has_attr("defer")
 
 
-def test_cinco_en_la_fila_y_tres_en_el_telefono():
+def test_five_in_the_row_and_three_on_the_phone(client):
+    """Cinco en la fila y tres en el teléfono, decididos solo en Python: la sección los
+    lleva en atributos data- para el guion, y sin el guion las que no caben en el teléfono
+    van marcadas. Cuántos ve el navegador lo mide la prueba de humo."""
     assert A_LA_VISTA == 5 and A_LA_VISTA_TELEFONO == 3
-    assert "repeat(5, minmax(0, 1fr))" in SITE_CSS
-    telefono = SITE_CSS[SITE_CSS.index("@media (max-width:719px){\n  .integrantes-fila") :]
-    assert ".integrantes-retratos > li:nth-child(n+4){display:none}" in telefono
-    assert "movil.matches ? 3 : 5" in INTEGRANTES_JS
+    _integrantes(8)
+    _, seccion = _seccion(client)
+    assert seccion["data-a-la-vista"] == str(A_LA_VISTA)
+    assert seccion["data-a-la-vista-telefono"] == str(A_LA_VISTA_TELEFONO)
+    visibles = [li for li in seccion.select(".integrante") if not li.has_attr("hidden")]
+    solo_ancho = ["integrante--solo-ancho" in li["class"] for li in visibles]
+    assert solo_ancho == [False] * A_LA_VISTA_TELEFONO + [True] * (A_LA_VISTA - A_LA_VISTA_TELEFONO)
+
+
+def test_the_stylesheet_does_not_repeat_how_many_are_shown():
+    """La fila tiene una columna por retrato visible: la hoja no fija cuántos son."""
+    reglas = re.findall(r"\.integrantes-retratos[^{]*\{([^}]*)\}", SITE_CSS)
+    assert reglas, "no hay reglas de la fila"
+    assert not any("repeat(" in r or "nth-child(n+" in r for r in reglas)
+    assert not re.search(r"\.integrantes-retratos > li:nth-child\(n\+\d", SITE_CSS)
 
 
 def test_el_relevo_corre_solo_con_puntero_y_se_detiene_al_senalar():

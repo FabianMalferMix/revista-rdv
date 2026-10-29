@@ -284,6 +284,40 @@ const CHECKS = [
     },
   },
   {
+    name: 'Las voces enseñan en una fila las que dice la portada, con el guion y sin él',
+    widths: [951, 375],
+    async run({ page, context }, width) {
+      // Cuántas se ven lo deciden A_LA_VISTA y A_LA_VISTA_TELEFONO en Python, que llegan en los
+      // atributos data- de la sección: ni la hoja ni el guion repiten el número.
+      const expectRow = async (tab, label) => {
+        await visit(tab, '/');
+        const row = await tab.evaluate(() => {
+          const section = document.querySelector('[data-integrantes]');
+          const phone = window.matchMedia('(max-width: 719px)').matches;
+          const shown = [...section.querySelectorAll('.integrante')]
+            .filter((li) => getComputedStyle(li).display !== 'none')
+            .map((li) => li.getBoundingClientRect());
+          return {
+            expected: Number(phone ? section.dataset.aLaVistaTelefono : section.dataset.aLaVista),
+            shown: shown.length,
+            columns: new Set(shown.map((r) => Math.round(r.left))).size,
+            oneRow: shown.every((r) => r.top < shown[0].bottom && r.bottom > shown[0].top),
+          };
+        });
+        expect(row.expected > 0, `${label}: la sección no dice cuántas se ven`);
+        expect(row.shown === row.expected, `${label}: se ven ${row.shown} y la portada dice ${row.expected}`);
+        expect(row.columns === row.shown && row.oneRow, `${label}: las que se ven no van en una fila`);
+      };
+      await expectRow(page, 'con el guion');
+      const noScripts = await context.browser().newContext({ ...WINDOWS[width], javaScriptEnabled: false });
+      try {
+        await expectRow(await noScripts.newPage(), 'sin el guion');
+      } finally {
+        await noScripts.close();
+      }
+    },
+  },
+  {
     name: 'Lo que lleva hidden no se ve, con los guiones y sin ellos',
     widths: [951, 375],
     async run({ page, context }, width) {

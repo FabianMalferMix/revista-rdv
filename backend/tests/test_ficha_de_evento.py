@@ -130,3 +130,26 @@ def test_la_ficha_cuesta_lo_mismo_con_dos_fotos_que_con_ocho(client):
     assert len(ocho) == len(dos), "una consulta más por foto"
     registros = [q for q in ocho.captured_queries if 'FROM "media_recording"' in q["sql"]]
     assert len(registros) == 1, "los registros se piden dos veces"
+
+
+@pytest.mark.parametrize(
+    "total,first,rest",
+    [
+        (1, "100vw, 1320px", None),
+        (2, "50vw, 660px", "50vw, 660px"),
+        (3, "66vw, 880px", "33vw, 440px"),
+        (4, "50vw, 660px", "50vw, 660px"),
+        (5, "50vw, 660px", "33vw, 440px"),
+        (6, "66vw, 880px", "33vw, 440px"),
+        (8, "66vw, 880px", "33vw, 440px"),
+    ],
+)
+def test_each_photo_asks_for_the_size_it_takes_in_the_mosaic(total, first, rest):
+    """Cada miniatura pide el ancho que ocupa en el mosaico: con una foto, todo; con dos,
+    cuatro o cinco, la primera va a medias; con tres o seis, a doble tamaño. Antes la
+    primera pedía siempre 880 px, aunque ocupara todo el ancho o la mitad."""
+    from apps.agenda.templatetags.gallery import photo_sizes
+
+    assert photo_sizes(1, total) == f"(max-width: 720px) {first}"
+    if rest:
+        assert photo_sizes(total, total) == f"(max-width: 720px) {rest}"

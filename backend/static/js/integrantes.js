@@ -1,9 +1,10 @@
-// «Las voces» en la portada (D23): una fila de cinco retratos (tres en el teléfono) y las demás
-// esperando su turno, escondidas al final de la lista. Cada 1,8 s llega otra a uno de los
+// «Las voces» en la portada (D23): una fila de retratos y las demás esperando su turno,
+// escondidas al final de la lista. Cuántos se ven lo dicen `data-a-la-vista` y
+// `data-a-la-vista-telefono`, que la plantilla pone desde A_LA_VISTA (apps/content/views.py). Cada 1,8 s llega otra a uno de los
 // lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de una risógrafo.
 // Corre solo donde hay un puntero que pueda posarse y no se pidió menos movimiento (como la
 // cinta, D1), y se detiene con el puntero encima o el foco dentro, fuera de la vista y con la
-// pestaña oculta. En el teléfono, deslizar el dedo trae a otras tres. Sin este guion se ven las
+// pestaña oculta. En el teléfono, deslizar el dedo trae a otras. Sin este guion se ven las
 // primeras y el botón a /integrantes/. Aquí solo se cambian `hidden` y el orden de la lista; la
 // tinta es una capa con su clase en site.css (la CSP no admite estilos en línea).
 (() => {
@@ -11,8 +12,18 @@
   const CUBRE = 240;
   const DESTAPA = 300;
   const CURVA = 'cubic-bezier(.65,0,.35,1)';
-  // A qué lugar llega cada relevo: salteado, para que no parezca una cola.
-  const ORDEN = { 5: [2, 0, 4, 1, 3], 3: [1, 0, 2] };
+  // A qué lugar llega cada relevo: salteado, para que no parezca una cola. Primero el del medio
+  // y después los de los extremos, hacia dentro: con cinco, 2, 0, 4, 1, 3; con tres, 1, 0, 2.
+  const salteado = (v) => {
+    const medio = Math.floor(v / 2);
+    const orden = [medio];
+    for (let i = 0; orden.length < v; i += 1) {
+      if (i !== medio) orden.push(i);
+      const espejo = v - 1 - i;
+      if (espejo !== medio && espejo !== i && orden.length < v) orden.push(espejo);
+    }
+    return orden;
+  };
   const solo = window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
   const movil = window.matchMedia('(max-width: 719px)');
@@ -24,6 +35,8 @@
   function montar(seccion) {
     const lista = seccion.querySelector('.integrantes-retratos');
     const n = lista.children.length;
+    const aLaVista = Number(seccion.dataset.aLaVista);
+    const enTelefono = Number(seccion.dataset.aLaVistaTelefono);
     let V = 0;
     let ocupado = 0;
     let turno = 0;
@@ -31,7 +44,7 @@
 
     // Las que se ven son siempre las primeras de la lista.
     function ajustar() {
-      V = Math.min(movil.matches ? 3 : 5, n);
+      V = Math.min(movil.matches ? enTelefono : aLaVista, n);
       [...lista.children].forEach((li, k) => { li.hidden = k >= V; });
     }
     ajustar();
@@ -79,7 +92,7 @@
     setInterval(() => {
       if (!solo.matches || !enVista || document.hidden || ocupado || n <= V) return;
       if (seccion.matches(':hover, :focus-within')) return;
-      const orden = ORDEN[V];
+      const orden = salteado(V);
       relevar(lista.children[orden[turno % orden.length]], 0, false);
       turno += 1;
     }, CADA);
