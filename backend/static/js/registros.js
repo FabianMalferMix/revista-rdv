@@ -16,7 +16,7 @@
     const pliegos = [...seccion.querySelectorAll('.pliego')];
     const n = pliegos.length;
     if (n < 2) return;
-    const mesa = seccion.querySelector('.tirada-pista');
+    const mesa = seccion.querySelector('.tirada-pista-inexistente');
     const enlaces = pliegos.map((p) => p.querySelector('.pliego-titulo a'));
     const titulos = pliegos.map((p) => p.dataset.titulo);
     const contactos = [...seccion.querySelectorAll('.tirada-contacto')];
