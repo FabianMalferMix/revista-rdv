@@ -1715,6 +1715,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .foot-legal{margin:0; font-size:var(--t-1)}
 .flash{padding:10px 16px; border-left:3px solid var(--ink); background:var(--paper-2); margin:14px 0 0}
 .flash-error{border-left-color:#b3392f}
+/* La vista previa del equipo: una franja en la hoja clara, con el filete magenta de las marcas, sobre
+   la cabecera. Solo la ve quien puede ver la pieza en el panel. */
+.vista-previa{margin:0; padding:8px 16px; background:var(--paper-2); color:var(--ink);
+  border-bottom:3px solid var(--accent); text-align:center; font-weight:600}
 
 @media print{
   .masthead, .site-foot, #search-results, .no-print{display:none !important}
