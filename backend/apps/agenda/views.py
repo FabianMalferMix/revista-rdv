@@ -1,9 +1,10 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.pie import puerta, puertas_vecinas, vecinos
 from apps.showcase.models import Publication
+from config import publishing
 
 from .models import Event, Milestone
 from .services import cronologia, stats
@@ -31,10 +32,11 @@ def trayectoria(request):
 
 
 def event_detail(request, slug):
-    event = get_object_or_404(
-        Event.objects.published()
-        .select_related("poster")
-        .prefetch_related("participants", "photos__asset", "recordings"),
+    event, preview = publishing.piece_for(
+        request,
+        Event.objects.select_related("poster").prefetch_related(
+            "participants", "photos__asset", "recordings"
+        ),
         slug=slug,
     )
     # Los registros publicados salen de la caché del prefetch: un `.filter()` la saltaba y
@@ -60,11 +62,18 @@ def event_detail(request, slug):
     # Quién hizo las fotos, una vez bajo el álbum; cada foto lo repite en su vista ampliada.
     # Sale de la caché del prefetch (photos__asset): no añade consultas.
     creditos = sorted({p.asset.credit for p in event.photos.all() if p.asset.credit})
-    return render(
+    response = render(
         request,
         "agenda/event_detail.html",
-        {"event": event, "recordings": recordings, "pie": pie, "creditos": creditos},
+        {
+            "event": event,
+            "recordings": recordings,
+            "pie": pie,
+            "creditos": creditos,
+            "preview": preview,
+        },
     )
+    return publishing.marked_as_preview(response, preview)
 
 
 def gallery(request):
