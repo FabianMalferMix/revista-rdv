@@ -9,6 +9,7 @@ from django.utils.formats import date_format
 
 from . import workflow
 from .models import (
+    LEGAL_PAGES,
     Article,
     ArticleContributor,
     Collection,
@@ -74,6 +75,12 @@ class PoemAdminForm(forms.ModelForm):
         model = Poem
         fields = "__all__"
         widgets = {"body": forms.Textarea(attrs={"rows": 24, "class": "poem-source"})}
+
+
+LEGAL_PAGE_NOTICE = (
+    "Página legal: el pie de todas las páginas y los formularios enlazan a ella. Se puede "
+    "editar su título y su texto, pero no cambiar su dirección, despublicarla ni borrarla."
+)
 
 
 class PageAdminForm(SanitizedBodyMixin, forms.ModelForm):
@@ -369,3 +376,32 @@ class PageAdmin(admin.ModelAdmin):
     list_filter = ["status"]
     search_fields = ["title"]
     prepopulated_fields = {"slug": ("title",)}
+    # El orden del modelo también en las legales, donde el slug y el estado son de solo
+    # lectura: sin él, Django los manda al final del formulario.
+    fields = ["slug", "title", "body", "status", "seo_title", "seo_description"]
+
+    # Las legales: el texto sigue editable (lo revisa un abogado desde aquí); el slug, el
+    # estado y el borrado, no. `has_delete_permission` con la página también frena la
+    # acción «Eliminar seleccionados», que la consulta objeto por objeto.
+    def get_readonly_fields(self, request, obj=None):
+        campos = list(super().get_readonly_fields(request, obj))
+        if obj is not None and obj.slug in LEGAL_PAGES:
+            campos += ["slug", "status"]
+        return campos
+
+    def get_prepopulated_fields(self, request, obj=None):
+        if obj is not None and obj.slug in LEGAL_PAGES:
+            return {}
+        return super().get_prepopulated_fields(request, obj)
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj is not None and obj.slug in LEGAL_PAGES:
+            nombre, opciones = fieldsets[0]
+            fieldsets = [(nombre, {**opciones, "description": LEGAL_PAGE_NOTICE}), *fieldsets[1:]]
+        return fieldsets
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.slug in LEGAL_PAGES:
+            return False
+        return super().has_delete_permission(request, obj)

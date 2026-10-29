@@ -462,8 +462,14 @@ class CollectionPoem(models.Model):
         ]
 
 
+# Las páginas de sistema: el pie de todas las páginas y el consentimiento del boletín y de
+# los envíos enlazan a ellas por su slug. Su texto se edita en el panel; su dirección y su
+# estado, no.
+LEGAL_PAGES = ("privacidad", "cookies", "terminos")
+
+
 class Page(models.Model):
-    """Página estática: Quiénes somos, Bases, Contacto."""
+    """Página estática: Quiénes somos, Bases, Contacto, y las legales (LEGAL_PAGES)."""
 
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
@@ -486,6 +492,22 @@ class Page(models.Model):
 
     def get_absolute_url(self):
         return reverse("content:page_detail", args=[self.slug])
+
+    def clean(self):
+        """Una página legal no cambia de slug ni deja de estar publicada.
+
+        Compara con lo guardado, no con lo que trae el formulario. El error no va a un
+        campo: el panel enseña esos dos como solo lectura, y un error de campo que el
+        formulario no tiene lo rompe.
+        """
+        super().clean()
+        guardada = Page.objects.filter(pk=self.pk).values("slug").first() if self.pk else None
+        if guardada and guardada["slug"] in LEGAL_PAGES:
+            if self.slug != guardada["slug"] or self.status != PublishStatus.PUBLISHED:
+                raise ValidationError(
+                    "Es una página legal: el pie y los formularios enlazan a ella. Se puede "
+                    "editar su texto, pero no cambiar su dirección ni despublicarla."
+                )
 
     def save(self, *args, **kwargs):
         self.body = clean_html(self.body)

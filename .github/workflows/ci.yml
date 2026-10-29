@@ -27,7 +27,9 @@ jobs:
         env:
           POSTGRES_DB: resenas
           POSTGRES_USER: resenas
-          POSTGRES_PASSWORD: resenas
+          # La misma que usa `check --deploy`: las guardas de producción rechazan la de
+          # desarrollo, y ese paso consulta la base (las páginas legales).
+          POSTGRES_PASSWORD: ci-strong-db-password
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U resenas"
@@ -44,6 +46,7 @@ jobs:
       DJANGO_DEBUG: "1" # los tests corren en modo desarrollo; la config prod se valida aparte
       POSTGRES_HOST: localhost
       POSTGRES_PORT: "5432"
+      POSTGRES_PASSWORD: ci-strong-db-password
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/1
 
