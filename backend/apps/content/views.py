@@ -68,7 +68,7 @@ A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
 # El estante de la portada (D24, más largo en D25): una publicación de frente y hasta siete de
-# lomo, lo que cabe a 951 px junto a la ficha. Al frente va la marcada «Featured» en el panel y,
+# lomo, lo que cabe a 951 px junto a la ficha. Al frente va la marcada «Destacada» en el panel y,
 # si no hay, la primera según su orden («Position»).
 ESTANTE = 8
 
