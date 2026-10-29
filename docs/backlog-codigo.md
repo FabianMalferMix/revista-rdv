@@ -98,7 +98,7 @@
 | B23 | `[hidden]` en una sola regla | B11 | S | no | hecho (#198) |
 | B24 | Dos fallos de la capa HTTP: HEAD y `next` | — | S | no | hecho (#199) |
 | B25 | Campos sin efecto fuera e imagen para compartir conectada | — | S | no | hecho (#201) |
-| B26 | Medidas de la portada: lo que hoy falla | B11 | S | no | hecho (#202) |
+| B26 | Medidas de la portada: lo que hoy falla | B11 | S | no | hecho (#203) |
 
 **Tanda 4 — Antes de lanzar: configuración, identidad pública y canales**
 
