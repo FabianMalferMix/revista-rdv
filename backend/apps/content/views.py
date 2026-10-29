@@ -63,7 +63,8 @@ def _paginate(request, queryset, per_page=12):
 
 
 # «Las voces» en la portada (D23): cinco retratos a la vez, en una fila; en el teléfono, tres.
-# Las demás vienen en la página, escondidas, y el relevo las trae de a una.
+# Las demás vienen en la página, escondidas, y el relevo las trae de a una. Es la única fuente:
+# la plantilla los pasa a integrantes.js por atributos data-, y la hoja no repite el número.
 A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
@@ -197,6 +198,8 @@ def home(request):
             "members": _members,
             "integrantes_vista": _members[:A_LA_VISTA],
             "integrantes_resto": _members[A_LA_VISTA:],
+            "a_la_vista": A_LA_VISTA,
+            "a_la_vista_telefono": A_LA_VISTA_TELEFONO,
             # En el teléfono se ven tres: con cuatro o más ya hay a quién traer deslizando.
             "relevo_integrantes": len(_members) > A_LA_VISTA_TELEFONO,
             "featured": featured,

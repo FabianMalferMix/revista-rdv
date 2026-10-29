@@ -1,4 +1,4 @@
-{% load images %}
+{% load gallery images %}
 {% comment %}
    Una foto del álbum de un evento: la miniatura y su vista ampliada. Se incluye con
    `only`: foto, numero (de 1 a total), total y slug (el del evento). Las fotos que no
@@ -11,13 +11,8 @@
 <li>
   <a href="#lb-{{ slug }}-{{ numero }}" aria-label="Ampliar foto {{ numero }} de {{ total }}">
     {% comment %} El tamaño que pide cada miniatura es el que ocupa en el mosaico (ver site.css). {% endcomment %}
-    {% if numero == 1 %}
-      {% responsive_img foto.asset sizes="(max-width: 720px) 66vw, 880px" alt=foto.caption %}
-    {% elif total == 2 or total == 4 or total == 5 and numero <= 2 %}
-      {% responsive_img foto.asset sizes="(max-width: 720px) 50vw, 660px" alt=foto.caption %}
-    {% else %}
-      {% responsive_img foto.asset sizes="(max-width: 720px) 33vw, 440px" alt=foto.caption %}
-    {% endif %}
+    {% photo_sizes numero total as sizes %}
+    {% responsive_img foto.asset sizes=sizes alt=foto.caption %}
   </a>
   <figure class="lightbox" id="lb-{{ slug }}-{{ numero }}">
     <a class="lightbox-back" href="#galeria-{{ slug }}" tabindex="-1" aria-label="Cerrar"></a>

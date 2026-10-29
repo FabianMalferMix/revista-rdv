@@ -147,11 +147,12 @@
   {% if members %}
     {% comment %}
        «Las voces» (D23): la opción 3 del tablero «Las voces en relevo», con la pasada de tinta
-       de la 2. La cabeza a la izquierda, con el botón; a la derecha, una fila de cinco retratos
-       (tres en el teléfono) con el nombre debajo. Las demás vienen escondidas y el relevo las
+       de la 2. La cabeza a la izquierda, con el botón; a la derecha, una fila de retratos con el
+       nombre debajo: tantos como dicen `a_la_vista` y `a_la_vista_telefono`, que el guion lee
+       de los atributos data-. Las demás vienen escondidas y el relevo las
        trae de a una (static/js/integrantes.js). Sin JavaScript, las primeras y el botón.
     {% endcomment %}
-    <section class="home-block sangre home-integrantes" data-integrantes>
+    <section class="home-block sangre home-integrantes" data-integrantes data-a-la-vista="{{ a_la_vista }}" data-a-la-vista-telefono="{{ a_la_vista_telefono }}">
       <div class="band-in integrantes-fila">
         <div class="integrantes-cabeza">
           {% include "content/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo="Las voces" territorio="colectivo" only %}
@@ -159,7 +160,7 @@
           <p class="integrantes-cta"><a class="btn" href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
         </div>
         <ul class="integrantes-retratos">
-          {% for m in integrantes_vista %}{% include "people/partials/_member_card_portada.html" %}{% endfor %}
+          {% for m in integrantes_vista %}{% if forloop.counter > a_la_vista_telefono %}{% include "people/partials/_member_card_portada.html" with solo_ancho=True %}{% else %}{% include "people/partials/_member_card_portada.html" %}{% endif %}{% endfor %}
           {% for m in integrantes_resto %}{% include "people/partials/_member_card_portada.html" with escondida=True %}{% endfor %}
         </ul>
       </div>

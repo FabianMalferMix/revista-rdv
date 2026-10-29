@@ -1223,7 +1223,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .estante-fichas{display:grid}
 .estante-ficha{grid-area:1 / 1; display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
 .estante-dato{margin:0}
-.estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t5); line-height:1.05;
+.estante-titulo{margin:0; font-family:var(--display); font-weight:700; font-size:var(--t5); line-height:1.05;
   letter-spacing:var(--tr-titulo)}
 .estante-sinopsis{margin:0; font-size:var(--t0); color:var(--muted); max-width:36ch;
   display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden}
@@ -1283,7 +1283,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .home-cierre .pie-entidad li:nth-child(3){--otra:var(--riso-amarillo); color:var(--caratula); rotate:-1.5deg}
 .home-cierre .pie-entidad li:nth-child(4){--otra:var(--riso-amarillo); rotate:3deg}
 .home-cierre .pie-entidad .rotulo{color:inherit; letter-spacing:.18em}
-.home-cierre .pie-entidad a{color:inherit; font-family:var(--display); font-size:var(--t5); font-weight:800;
+.home-cierre .pie-entidad a{color:inherit; font-family:var(--display); font-size:var(--t5); font-weight:700;
   text-transform:uppercase; letter-spacing:.02em; text-shadow:3px 2px 0 color-mix(in srgb, var(--otra) 85%, transparent)}
 @media (prefers-reduced-motion:no-preference){
   .home-cierre .pie-entidad li{transition:rotate var(--dur-base) var(--ease), scale var(--dur-base) var(--ease)}
@@ -1936,11 +1936,13 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    «Las voces» en la portada (D23), que reemplazó a la cinta y a los pliegos de D22.
 
    La cabeza a la izquierda, angosta y a 40 px de los retratos; a la derecha, una fila de
-   cinco con el nombre debajo, los pares un poco más abajo. En el teléfono, tres. Toda la
-   tarjeta es el enlace, así que al señalarla solo su retrato pasa a color.
+   retratos con el nombre debajo, los pares un poco más abajo. Cuántos se ven lo decide
+   A_LA_VISTA (y A_LA_VISTA_TELEFONO) en apps/content/views.py: la fila tiene una columna por
+   retrato visible, y la hoja no repite el número. Toda la tarjeta es el enlace, así que al
+   señalarla solo su retrato pasa a color.
 
    El relevo (static/js/integrantes.js): cada 1,8 s llega otra integrante a uno de los
-   cinco, bajo una pasada de tinta azul con el filo magenta, como el tambor de una
+   lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de una
    risógrafo. Las que se ven van siempre primero en la lista: los pares (`nth-child`) son
    siempre los mismos lugares.
    ────────────────────────────────────────────────────────────────────────── */
@@ -1951,7 +1953,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .integrantes-cta{margin:0}
 .integrantes-cta .btn{gap:8px}
 .integrantes-retratos{list-style:none; margin:0; padding:0 0 var(--s3); display:grid;
-  grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px}
+  grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:12px}
 .integrantes-retratos > li:nth-child(2n){translate:0 var(--s3)}
 .integrante{position:relative}
 .integrante-enlace{display:block; color:var(--ink); text-decoration:none}
@@ -1970,6 +1972,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .home-integrantes.con-js .integrantes-retratos{touch-action:pan-y pinch-zoom}
 @media (max-width:719px){
   .integrantes-fila{grid-template-columns:minmax(0, 1fr); row-gap:var(--s4)}
-  .integrantes-retratos{grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px}
-  .integrantes-retratos > li:nth-child(n+4){display:none}
+  .integrantes-retratos{gap:10px}
+  /* Sin el guion, las que no caben en el teléfono las marca la plantilla; con él, `hidden`. */
+  .home-integrantes:not(.con-js) .integrante--solo-ancho{display:none}
 }

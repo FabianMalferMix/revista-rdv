@@ -8,6 +8,7 @@ Nada avanza solo: static/js/registros.js solo cambia atributos. El aspecto está
 test_css_sistema.py.
 """
 
+import re
 from datetime import date
 from pathlib import Path
 
@@ -27,6 +28,7 @@ pytestmark = pytest.mark.django_db
 REGISTROS_JS = (
     Path(__file__).resolve().parent.parent / "static" / "js" / "registros.js"
 ).read_text()
+SITE_CSS = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
 
 
 def _registro(slug, **kw):
@@ -242,3 +244,19 @@ def test_desde_1100_px_la_hoja_de_contactos_es_un_indice_al_lado():
     assert ".tirada.con-js .tirada-contactos{flex-direction:column;" in indice
     assert "--x:min(360px, var(--libre))" in indice
     assert "tirada-flecha" not in css and "data-siguiente" not in REGISTROS_JS
+
+
+def test_the_pile_has_a_place_for_every_recording_in_the_tirada():
+    """Cada pliego tiene su lugar en la pila: TOPE_TIRADA − 1 niveles detrás del de arriba y
+    otros tantos delante, cada uno con su desplazamiento y su `z-index`. Si sube el tope y la
+    hoja no, el pliego que sobra queda tapado bajo el de arriba en el estado inicial."""
+    from apps.content.views import TOPE_TIRADA
+
+    hoja = re.sub(r"/\*.*?\*/", "", SITE_CSS, flags=re.S)
+    detras = re.findall(r"\.pliego\[aria-current\]((?: \+ \.pliego)+)\{[^}]*z-index", hoja)
+    delante = re.findall(
+        r"\.pliego:has\(((?:\+ \.pliego ?)+)\[aria-current\]\)\{[^}]*z-index", hoja
+    )
+    niveles = set(range(1, TOPE_TIRADA))
+    assert {nivel.count("+ .pliego") for nivel in detras} == niveles
+    assert {nivel.count("+ .pliego") for nivel in delante} == niveles
