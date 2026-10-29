@@ -228,6 +228,48 @@ jobs:
           python -m pip install "pre-commit==4.7.0"
           pre-commit run --all-files --show-diff-on-failure
 
+  # Los guiones del sitio, ejecutados en un navegador: la suite de Python solo lee su texto.
+  # Levanta el stack de desarrollo con la copia de backend/datos_de_desarrollo/ y corre
+  # tools/ux/browser-smoke.js a 951 y a 375 px, con el Chrome que trae el runner.
+  navegador:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: tools/ux/package-lock.json
+
+      - name: Herramientas de Node (playwright-core y ESLint, del lockfile de tools/ux)
+        run: npm ci --prefix tools/ux
+
+      - name: ESLint de los guiones (ES2020, sin módulos)
+        run: tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js
+
+      - name: Levantar el sitio con los datos de desarrollo
+        run: |
+          cp .env.example .env
+          # `up` espera a que el release migre antes de arrancar web.
+          docker compose up -d --build web
+          docker compose exec -T web python manage.py datos_de_desarrollo cargar
+          for i in $(seq 1 30); do
+            curl -fsS -o /dev/null http://127.0.0.1:8000/healthz/ && break
+            sleep 2
+          done
+          curl -fsS -o /dev/null http://127.0.0.1:8000/
+
+      - name: Prueba de humo en navegador (951 y 375 px)
+        run: |
+          google-chrome --version
+          node tools/ux/browser-smoke.js --base http://127.0.0.1:8000
+
+      - name: Registro del sitio, si algo falló
+        if: failure()
+        run: docker compose logs --no-color release web
+
   security:
     runs-on: ubuntu-latest
     # dependency-review-action necesita leer el PR además del contenido; se le concede

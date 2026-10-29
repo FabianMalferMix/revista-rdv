@@ -73,3 +73,14 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "caddy"
         update-types: ["version-update:semver-major"]
+
+  # Las herramientas de Node de tools/ux/ (playwright-core y ESLint), que corren en el job
+  # `navegador` del CI. Las minor/patch se agrupan en un PR; los saltos MAJOR llegan sueltos.
+  - package-ecosystem: npm
+    directory: /tools/ux
+    schedule:
+      interval: weekly
+    groups:
+      node-minor:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
