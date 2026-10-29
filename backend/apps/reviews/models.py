@@ -1,4 +1,33 @@
 from django.db import models
+from django.db.models import Exists, OuterRef
+
+from apps.content.models import Article
+from apps.showcase.models import Publication
+
+# Obras, editoriales y autoras de obra no tienen estado propio: tienen ficha y van al sitemap
+# solo si algo publicado las respalda. Lo demás responde 404.
+
+
+class PublisherQuerySet(models.QuerySet):
+    def visible(self):
+        """Las editoriales con alguna obra visible o alguna publicación del colectivo."""
+        works = Work.objects.visible().filter(publisher=OuterRef("pk"))
+        publications = Publication.objects.published().filter(publisher=OuterRef("pk"))
+        return self.filter(Exists(works) | Exists(publications))
+
+
+class BookAuthorQuerySet(models.QuerySet):
+    def visible(self):
+        """Las autoras de alguna obra visible."""
+        return self.filter(Exists(Work.objects.visible().filter(authors=OuterRef("pk"))))
+
+
+class WorkQuerySet(models.QuerySet):
+    def visible(self):
+        """Las obras con una reseña publicada o que son una publicación del colectivo."""
+        reviews = Article.objects.published().filter(reviewed_works=OuterRef("pk"))
+        own = Publication.objects.published().filter(pk=OuterRef("publicacion"))
+        return self.filter(Exists(reviews) | Exists(own))
 
 
 class Publisher(models.Model):
@@ -8,6 +37,8 @@ class Publisher(models.Model):
     name = models.CharField(max_length=255)
     country = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
+
+    objects = PublisherQuerySet.as_manager()
 
     class Meta:
         ordering = ["name"]
@@ -24,6 +55,8 @@ class BookAuthor(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     bio = models.TextField(blank=True)
+
+    objects = BookAuthorQuerySet.as_manager()
 
     class Meta:
         ordering = ["name"]
@@ -83,6 +116,8 @@ class Work(models.Model):
         help_text="Si la obra reseñada es una publicación del colectivo, cuál: su ficha enseñará "
         "las reseñas.",
     )
+
+    objects = WorkQuerySet.as_manager()
 
     class Meta:
         ordering = ["title"]

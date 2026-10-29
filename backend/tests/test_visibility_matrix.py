@@ -317,6 +317,13 @@ def _publication_world():
     # Dos obras del catálogo: una es la publicación oculta y otra la vecina.
     w.work_of_hidden = Work.objects.create(slug="obra-oculta", title="Obra", publicacion=w.hidden)
     w.work_of_other = Work.objects.create(slug="obra-vecina", title="Obra", publicacion=w.other)
+    # La obra de la publicación oculta tiene ficha por una reseña publicada: la ficha existe, y
+    # aun así no puede enseñar la publicación.
+    review = Article.objects.create(
+        slug="resena-de-la-obra", title="Reseña", body="Texto", status=S.PUBLISHED,
+        published_at=timezone.now(),
+    )  # fmt: skip
+    ReviewedWork.objects.create(article=review, work=w.work_of_hidden)
     w.hidden = [w.hidden]
     return w
 

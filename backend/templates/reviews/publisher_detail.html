@@ -13,9 +13,23 @@
     </p>
   </header>
 
-  <h2 class="subhead">Catálogo reseñado</h2>
-  {% include "reviews/_work_list.html" %}
+  {# La ficha existe porque algo publicado la respalda: cada sección sale solo si tiene qué enseñar. #}
+  {% if publications %}
+    <h2 class="subhead">Publicaciones del colectivo</h2>
+    <ul class="pub-grid">
+      {% for pub in publications %}
+        {% include "showcase/partials/_publication_card.html" %}
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-  <h2 class="subhead">Reseñas de esta editorial</h2>
-  {% include "content/partials/_article_list.html" %}
+  {% if works %}
+    <h2 class="subhead">Catálogo reseñado</h2>
+    {% include "reviews/_work_list.html" %}
+  {% endif %}
+
+  {% if articles %}
+    <h2 class="subhead">Reseñas de esta editorial</h2>
+    {% include "content/partials/_article_list.html" %}
+  {% endif %}
 {% endblock %}
