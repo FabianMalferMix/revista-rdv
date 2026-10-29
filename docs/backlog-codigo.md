@@ -93,7 +93,7 @@
 | B19 | Las firmas salen en el orden de la coautoría | — | S | sí | hecho (#194) |
 | B20 | La búsqueda ordena por relevancia | — | S | sí | hecho (#195) |
 | B21 | El poema destacado conserva sus versos | — | S | no | hecho (#196) |
-| B22 | Las páginas legales no se rompen desde el panel | — | S | sí | hecho (#197) |
+| B22 | Las páginas legales no se rompen desde el panel | — | S | sí | hecho (#197, #200) |
 | B23 | `[hidden]` en una sola regla | B11 | S | no | hecho (#198) |
 | B24 | Dos fallos de la capa HTTP: HEAD y `next` | — | S | no | hecho (#199) |
 | B25 | Campos sin efecto fuera e imagen para compartir conectada | — | S | no | pendiente |
