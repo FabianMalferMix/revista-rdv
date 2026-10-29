@@ -67,7 +67,7 @@ def test_publisher_page_aggregates_reviews(client, make_article):
     publisher = Publisher.objects.create(slug="editorial-x", name="Editorial X")
     work = Work.objects.create(slug="obra-x", title="Obra X", publisher=publisher)
     article = _publish(make_article(slug="resena-x", title="Reseña Agregada"))
-    ReviewedWork.objects.create(article=article, work=work, is_primary=True)
+    ReviewedWork.objects.create(article=article, work=work)
     resp = client.get(reverse("reviews:publisher_detail", args=[publisher.slug]))
     assert resp.status_code == 200
     assert b"Rese\xc3\xb1a Agregada" in resp.content

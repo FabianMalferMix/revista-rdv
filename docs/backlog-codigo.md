@@ -1,7 +1,7 @@
 # Backlog de la auditoría de código
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
-> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
+> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
 > **Avance:** 23 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
@@ -48,6 +48,7 @@
 | C27 | Reabre en parte #33: prueba de humo en navegador y axe en el CI | B11, B55 |
 | C28 | Reabre la extracción de `SiteProfile` como una app del sitio, por etapas | B67 |
 | C29 | «CD real» sigue diferido, con la premisa corregida | B41 |
+| C30 | Hasta el lanzamiento, un cambio de esquema puede ir en un solo paso; desde el lanzamiento, siempre en dos | B25 |
 
 **Decisiones visuales pendientes**, que se le muestran al dueño al llegar al ticket: el contraste de dos sellos de «Prensa y gestión» (B55) y dónde van Prensa y Aliados en la navegación (B73).
 
@@ -531,7 +532,7 @@ Los permisos nuevos entran en la matriz de B15.
 
 #### B25 · Campos sin efecto fuera e imagen para compartir conectada
 
-**Hallazgos:** DAT-5, ARQ-5 (puntos 3 y 4) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C3, C11
+**Hallazgos:** DAT-5, ARQ-5 (puntos 3 y 4) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C3, C11, C30
 
 **Alcance.** Con C11:
 

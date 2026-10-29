@@ -145,7 +145,7 @@ PUBLIC_FIELDS = {
     "reviews.Publisher": {"slug", "name", "country", "website"},
     "reviews.BookAuthor": {"slug", "name", "bio"},
     "reviews.Work": {
-        "slug", "title", "kind", "publisher", "publication_year", "isbn", "language",
+        "slug", "title", "kind", "publisher", "publication_year", "isbn",
         "cover_image", "description", "publicacion", "authors",
     },
     "media.MediaAsset": {"file", "alt_text", "caption", "credit", "width", "height", "created_at"},
@@ -158,14 +158,14 @@ PUBLIC_FIELDS = {
     "content.Tag": {"slug", "name"},
     "content.Article": {
         "status", "published_at", "created_at", "updated_at", "slug", "title", "subtitle", "body",
-        "excerpt", "type", "section", "cover_image", "og_image", "reading_time", "featured",
+        "excerpt", "type", "section", "cover_image", "og_image", "reading_time",
         "seo_title", "seo_description", "tags",
     },
     "content.ArticleContributor": {"article", "contributor", "position"},
-    "content.ReviewedWork": {"article", "work", "is_primary"},
+    "content.ReviewedWork": {"article", "work"},
     "content.Poem": {
         "status", "published_at", "created_at", "updated_at", "slug", "title", "epigraph", "body",
-        "recording", "featured", "og_image", "seo_title", "seo_description",
+        "recording", "og_image", "seo_title", "seo_description",
     },
     "content.PoemContributor": {"poem", "contributor", "position"},
     "content.Collection": {
@@ -177,7 +177,7 @@ PUBLIC_FIELDS = {
     "agenda.Event": {
         "slug", "title", "type", "starts_at", "ends_at", "venue_name", "address", "city",
         "description", "poster", "is_external", "host", "registration_url", "published",
-        "featured", "participants",
+        "participants",
     },
     "agenda.EventPhoto": {"event", "asset", "caption", "position"},
     "agenda.Milestone": {"year", "title", "description"},
@@ -193,7 +193,7 @@ PUBLIC_FIELDS = {
     },
     "showcase.WhereToBuy": {"publication", "label", "url", "position"},
     "showcase.PressMention": {
-        "title", "outlet", "author", "kind", "published_on", "url", "quote", "logo", "featured",
+        "title", "outlet", "author", "kind", "published_on", "url", "quote", "logo",
         "published", "position",
     },
     "showcase.Partner": {"name", "kind", "logo", "url", "description", "active", "position"},

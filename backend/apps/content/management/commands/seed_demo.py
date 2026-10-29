@@ -387,7 +387,6 @@ class Command(BaseCommand):
                     "epigraph": spec.get("epigraph", ""),
                     "body": spec["body"],
                     "status": spec["status"],
-                    "featured": spec.get("featured", False),
                     "owner": autor_user,
                     "published_at": spec["published"],
                 },
@@ -445,7 +444,6 @@ class Command(BaseCommand):
                 "city": "Santiago",
                 "description": "Taller abierto de escritura poética, cupos limitados.",
                 "registration_url": "https://example.com/inscripcion",
-                "featured": True,
                 "participants": ["Paula Miranda"],
             },
             {
@@ -472,7 +470,6 @@ class Command(BaseCommand):
                     "is_external": spec.get("is_external", False),
                     "host": spec.get("host", ""),
                     "registration_url": spec.get("registration_url", ""),
-                    "featured": spec.get("featured", False),
                     "published": True,
                 },
             )
@@ -589,7 +586,6 @@ class Command(BaseCommand):
                 "kind": PressMention.Kind.NOTA,
                 "published_on": (now - timedelta(days=200)).date(),
                 "quote": "Uno de los colectivos más activos de la escena joven.",
-                "featured": True,
             },
             {
                 "title": "Entrevista al colectivo tras su plaquette",
@@ -608,7 +604,6 @@ class Command(BaseCommand):
                     "published_on": spec["published_on"],
                     "quote": spec["quote"],
                     "author": spec.get("author", ""),
-                    "featured": spec.get("featured", False),
                     "published": True,
                 },
             )
@@ -709,7 +704,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=2),
-                "featured": True,
                 "author": "Fernanda Soto",
                 "work": "El invierno de las cosas",
                 "tags": ["poesía", "novedad"],
@@ -728,7 +722,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=6),
-                "featured": False,
                 "author": "Andrés Cáceres",
                 "work": "Territorio en fuga",
                 "tags": ["narrativa"],
@@ -747,7 +740,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=12),
-                "featured": False,
                 "author": "Paula Miranda",
                 "work": "Cuadernos del sur",
                 "tags": ["ensayo"],
@@ -765,7 +757,6 @@ class Command(BaseCommand):
                 "section": "Ensayos",
                 "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=4),
-                "featured": True,
                 "author": "Paula Miranda",
                 "work": None,
                 "tags": ["ensayo"],
@@ -784,7 +775,6 @@ class Command(BaseCommand):
                 "section": "Entrevistas",
                 "status": EditorialStatus.PUBLISHED,
                 "published": now - timedelta(days=8),
-                "featured": False,
                 "author": "Diego Salinas",
                 "work": None,
                 "tags": ["entrevista"],
@@ -803,7 +793,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.SCHEDULED,
                 "published": now + timedelta(minutes=2),
-                "featured": False,
                 "author": "Fernanda Soto",
                 "work": "La casa vacía",
                 "tags": ["narrativa"],
@@ -821,7 +810,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.DRAFT,
                 "published": None,
-                "featured": False,
                 "author": "Andrés Cáceres",
                 "work": "Antología del margen",
                 "tags": ["poesía"],
@@ -835,7 +823,6 @@ class Command(BaseCommand):
                 "section": "Reseñas",
                 "status": EditorialStatus.IN_REVIEW,
                 "published": None,
-                "featured": False,
                 "author": "Andrés Cáceres",
                 "work": None,
                 "tags": ["narrativa"],
@@ -852,7 +839,6 @@ class Command(BaseCommand):
                 "body": spec["body"],
                 "type": spec["type"],
                 "status": spec["status"],
-                "featured": spec["featured"],
                 "section": sections[spec["section"]],
                 "owner": autor_user,
                 "published_at": spec["published"],
@@ -865,9 +851,7 @@ class Command(BaseCommand):
             defaults={"position": 0},
         )
         if spec["work"]:
-            ReviewedWork.objects.get_or_create(
-                article=article, work=works[spec["work"]], defaults={"is_primary": True}
-            )
+            ReviewedWork.objects.get_or_create(article=article, work=works[spec["work"]])
         article.tags.add(*[tags[t] for t in spec["tags"]])
         return article
 

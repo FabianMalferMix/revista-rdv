@@ -93,7 +93,6 @@ class Work(models.Model):
     # ISBN reales vía UniqueConstraint parcial (ver Meta), no con unique=True plano
     # (que hacía chocar dos "" en el admin: IntegrityError/500).
     isbn = models.CharField(max_length=20, null=True, blank=True)
-    language = models.CharField(max_length=8, blank=True)
     cover_image = models.ForeignKey(
         "media.MediaAsset",
         null=True,

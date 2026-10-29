@@ -150,7 +150,6 @@ def test_la_portada_no_lleva_cita_de_prensa_ni_aliados(client):
         title="b",
         outlet="Radio Dos",
         quote="Destacada.",
-        featured=True,
         published_on=date(2025, 1, 1),
     )
     Partner.objects.create(name="Casa del Libro")

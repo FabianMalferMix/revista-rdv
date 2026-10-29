@@ -124,7 +124,7 @@ def _editorial_world(model, hidden_status):
             ArticleContributor.objects.create(article=piece, contributor=w.member, position=0)
             ArticleContributor.objects.create(article=piece, contributor=w.guest, position=1)
             piece.tags.add(w.tag)
-            ReviewedWork.objects.create(article=piece, work=w.work, is_primary=True)
+            ReviewedWork.objects.create(article=piece, work=w.work)
             CollectionArticle.objects.create(collection=w.collection, article=piece)
             if key == "hidden":
                 ArticleContributor.objects.create(
@@ -374,7 +374,6 @@ def _press_world():
             title=f"Mención {label}",
             outlet="Gaceta de Prueba",
             quote=f"Una cita {label}",
-            featured=True,
             published=key != "hidden",
             position=position,
         )

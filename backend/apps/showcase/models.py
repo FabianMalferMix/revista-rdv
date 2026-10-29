@@ -181,7 +181,10 @@ class SiteSocialLink(models.Model):
 
 class Publication(models.Model):
     """Publicación del catálogo vitrina (libro, plaquette, fanzine…). Sin pagos:
-    la compra se deriva a enlaces externos (WhereToBuy) o a un PDF de descarga."""
+    la compra se deriva a enlaces externos (WhereToBuy) o a un PDF de descarga.
+
+    Destacado: el estante de la portada pone primero las publicadas con `featured` y,
+    dentro de cada grupo, sigue `position`."""
 
     class Kind(models.TextChoices):
         LIBRO = "libro", "Libro"
@@ -215,7 +218,11 @@ class Publication(models.Model):
         validators=[validate_pdf_extension],
         help_text="PDF de descarga gratuita (plaquettes/fanzines digitales).",
     )
-    featured = models.BooleanField(default=False)
+    featured = models.BooleanField(
+        default=False,
+        verbose_name="destacada",
+        help_text="Va primero en el estante de la portada; entre las destacadas manda «Posición».",
+    )
     published = models.BooleanField(default=False)
     position = models.PositiveSmallIntegerField(default=0)
 
@@ -233,6 +240,10 @@ class Publication(models.Model):
         from django.urls import reverse
 
         return reverse("showcase:publication_detail", args=[self.slug])
+
+    def social_image(self):
+        """La imagen para compartir la publicación: su cubierta (ver `{% social_meta %}`)."""
+        return self.cover
 
     @cached_property
     def lomo(self):
@@ -298,7 +309,6 @@ class PressMention(models.Model):
     logo = models.ForeignKey(
         "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
-    featured = models.BooleanField(default=False)
     published = models.BooleanField(default=True)
     position = models.PositiveSmallIntegerField(default=0)
 

@@ -415,7 +415,6 @@
    "publisher": 1,
    "publication_year": 2023,
    "isbn": null,
-   "language": "",
    "cover_image": 74,
    "description": "",
    "publicacion": null,
@@ -434,7 +433,6 @@
    "publisher": 2,
    "publication_year": 2022,
    "isbn": null,
-   "language": "",
    "cover_image": 76,
    "description": "",
    "publicacion": null,
@@ -453,7 +451,6 @@
    "publisher": 3,
    "publication_year": 2024,
    "isbn": null,
-   "language": "",
    "cover_image": 73,
    "description": "",
    "publicacion": null,
@@ -472,7 +469,6 @@
    "publisher": 4,
    "publication_year": 2021,
    "isbn": null,
-   "language": "",
    "cover_image": 75,
    "description": "",
    "publicacion": null,
@@ -491,7 +487,6 @@
    "publisher": 5,
    "publication_year": 2023,
    "isbn": null,
-   "language": "",
    "cover_image": 72,
    "description": "",
    "publicacion": null,
@@ -510,7 +505,6 @@
    "publisher": 2,
    "publication_year": 2024,
    "isbn": null,
-   "language": "",
    "cover_image": 52,
    "description": "",
    "publicacion": 2,
@@ -527,7 +521,6 @@
    "publisher": 7,
    "publication_year": 2025,
    "isbn": null,
-   "language": "",
    "cover_image": null,
    "description": "",
    "publicacion": null,
@@ -546,7 +539,6 @@
    "publisher": 8,
    "publication_year": 2026,
    "isbn": null,
-   "language": "",
    "cover_image": null,
    "description": "",
    "publicacion": null,
@@ -565,7 +557,6 @@
    "publisher": 9,
    "publication_year": 2026,
    "isbn": null,
-   "language": "",
    "cover_image": null,
    "description": "",
    "publicacion": null,
@@ -1839,7 +1830,6 @@
    "cover_image": 67,
    "og_image": null,
    "reading_time": 1,
-   "featured": true,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1866,7 +1856,6 @@
    "cover_image": 69,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1892,7 +1881,6 @@
    "cover_image": 71,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1918,7 +1906,6 @@
    "cover_image": 68,
    "og_image": null,
    "reading_time": 1,
-   "featured": true,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1944,7 +1931,6 @@
    "cover_image": 70,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1970,7 +1956,6 @@
    "cover_image": 66,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -1996,7 +1981,6 @@
    "cover_image": 65,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2022,7 +2006,6 @@
    "cover_image": 64,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2048,7 +2031,6 @@
    "cover_image": null,
    "og_image": null,
    "reading_time": 1,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": []
@@ -2072,7 +2054,6 @@
    "cover_image": null,
    "og_image": null,
    "reading_time": 11,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2100,7 +2081,6 @@
    "cover_image": 1,
    "og_image": null,
    "reading_time": 15,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2129,7 +2109,6 @@
    "cover_image": null,
    "og_image": null,
    "reading_time": 10,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2156,7 +2135,6 @@
    "cover_image": 2,
    "og_image": null,
    "reading_time": 6,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2183,7 +2161,6 @@
    "cover_image": null,
    "og_image": null,
    "reading_time": 7,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2216,7 +2193,6 @@
    "cover_image": null,
    "og_image": null,
    "reading_time": 3,
-   "featured": false,
    "seo_title": "",
    "seo_description": "",
    "tags": [
@@ -2392,8 +2368,7 @@
   "pk": 1,
   "fields": {
    "article": 2,
-   "work": 1,
-   "is_primary": true
+   "work": 1
   }
  },
  {
@@ -2401,8 +2376,7 @@
   "pk": 2,
   "fields": {
    "article": 3,
-   "work": 2,
-   "is_primary": true
+   "work": 2
   }
  },
  {
@@ -2410,8 +2384,7 @@
   "pk": 3,
   "fields": {
    "article": 4,
-   "work": 3,
-   "is_primary": true
+   "work": 3
   }
  },
  {
@@ -2419,8 +2392,7 @@
   "pk": 4,
   "fields": {
    "article": 7,
-   "work": 4,
-   "is_primary": true
+   "work": 4
   }
  },
  {
@@ -2428,8 +2400,7 @@
   "pk": 5,
   "fields": {
    "article": 8,
-   "work": 5,
-   "is_primary": true
+   "work": 5
   }
  },
  {
@@ -2437,8 +2408,7 @@
   "pk": 6,
   "fields": {
    "article": 11,
-   "work": 6,
-   "is_primary": true
+   "work": 6
   }
  },
  {
@@ -2446,8 +2416,7 @@
   "pk": 8,
   "fields": {
    "article": 16,
-   "work": 8,
-   "is_primary": true
+   "work": 8
   }
  },
  {
@@ -2455,8 +2424,7 @@
   "pk": 9,
   "fields": {
    "article": 21,
-   "work": 9,
-   "is_primary": true
+   "work": 9
   }
  },
  {
@@ -2464,8 +2432,7 @@
   "pk": 10,
   "fields": {
    "article": 21,
-   "work": 10,
-   "is_primary": false
+   "work": 10
   }
  },
  {
@@ -2481,7 +2448,6 @@
    "epigraph": "a los que llegan tarde",
    "body": "La casa guarda un idioma\nque nadie termina de hablar:\n\n    la llave que gira,\n    el agua que sube,\n    la luz que se apaga sola.\n\nEntrar es aprender de nuevo\ndónde duelen las paredes.",
    "recording": 1,
-   "featured": true,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2500,7 +2466,6 @@
    "epigraph": "",
    "body": "Llueve como corrige un editor:\nsin apuro,\n        tachando lo que sobra,\ndejando en pie\nlo que de verdad moja.",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2519,7 +2484,6 @@
    "epigraph": "",
    "body": "Primer verso en frío.\n(aún en trabajo)",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2538,7 +2502,6 @@
    "epigraph": "",
    "body": "Alguien está aprendiendo a tocar la trompeta\nen el departamento de al lado\ny lleva tres semanas\ncon la misma nota.\n\nNo sé su nombre.\nSé que practica a las siete,\nque se cansa a las siete y veinte,\nque el viernes casi le salió la segunda nota\ny que después no volvió a intentarlo.\n\nYo estoy tratando de terminar un poema\ndesde hace tres semanas.\n\nNos parecemos más de lo que él cree.\n",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2557,7 +2520,6 @@
    "epigraph": "",
    "body": "subo\n   la escalera\n      del edificio\n         donde vivía\n            mi primera\n               casa propia\n\n\ny en cada\n   peldaño\n      me quito\n         un año\n\nhasta llegar\narriba\nsin edad\n     sin llaves\n          sin nombre en el buzón\n\n\n\nla puerta\n                                        está pintada de otro color\npero la manilla\nes la misma\n\n        la toco\n\ny la manilla recuerda\nmi mano\nmejor que yo\n\n                    (desmemoriadamente, diría mi madre,\n                     que inventaba palabras cuando las que había no le alcanzaban)\n\n\nbajo\n   la escalera\n      con todos\n         los años\n            de vuelta\n               puestos\n\ny ninguno me queda\n",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2576,7 +2538,6 @@
    "epigraph": "Para quienes llegaron a la lectura de otoño cuando ya estábamos en el tercer poema, empapados, pidiendo disculpas con la mirada, y se quedaron de pie junto a la puerta hasta el final.",
    "body": "Oda a los que llegan tarde a la lectura con el paraguas goteando y el abrigo abierto y la disculpa ya preparada en la boca, que se quedan de pie junto a la puerta porque les da vergüenza cruzar la sala mientras alguien lee,\na los que llegan cuando el primer poema ya terminó y aplauden igual, por si acaso, con la cara de quien entiende que se perdió algo importante y no sabe qué,\na los que vienen directo del trabajo con la credencial todavía colgada del cuello y el olor de la oficina en la ropa y el cansancio de ocho horas de pantalla en los ojos, y que sin embargo vinieron,\na los que se equivocaron de micro, de calle, de día, y llegaron igual, a la lectura equivocada, y se quedaron porque ya estaban ahí y porque alguien les ofreció una silla,\na las madres que llegan con la guagua dormida en el coche y se sientan atrás para poder salir si se despierta, y que escuchan cada poema con un oído en el poema y el otro en la respiración de la guagua,\na los estudiantes que llegan con la mochila llena de cuadernos y una prueba al día siguiente y la culpa de no estar estudiando, y que no se arrepienten,\na los que llegan tarde porque se quedaron leyendo en el metro y se pasaron de estación, y tuvieron que devolverse, y llegaron con el libro todavía abierto entre las manos,\na los que llegan a la mitad de un poema y se quedan quietos en el umbral, sin saber si entrar o esperar, como quien llega a una misa empezada y no sabe si persignarse,\na los que llegan cuando ya está terminando, para el vino, para el pan amasado, para la conversación de después, y que dicen que la próxima vez llegan temprano, y no llegan,\na los que no llegan nunca pero preguntan siempre cómo estuvo, y escuchan con atención el resumen, y dicen qué lástima habérmelo perdido, y lo dicen en serio,\na todos ellos, que con su tardanza le recuerdan a la lectura que hay un afuera, que la ciudad sigue andando mientras alguien lee un poema en una sala con olor a café,\nque la poesía no es un lugar al que se llega a la hora sino un lugar al que se llega como se puede, con lo que se tiene, cuando se tiene,\nesta oda que también llega tarde, como todas las odas, cuando la gente ya se fue y las sillas están apiladas y alguien está barriendo,\ny que se lee igual, en voz baja, para el que barre.\n",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2595,7 +2556,6 @@
    "epigraph": "",
    "body": "En el patio de la casa de mi abuela había un limonero, una batea de cemento, una cuerda de colgar ropa que iba del limonero a un clavo en la pared de la cocina, y un perro que se llamaba Capitán aunque nunca había visto el mar. Eso es lo que recuerdo con certeza. Lo demás —la bicicleta oxidada, la jaula sin pájaro, las macetas con cardenales que mi abuela regaba con el agua de lavar las verduras— puede que haya estado ahí o puede que lo haya puesto yo después, como se ponen los muebles en una casa de muñecas, para que el recuerdo no se vea tan vacío.\n\nMi primo dice que el limonero no daba limones sino unas cosas verdes y duras que nadie se comía, y que la batea estaba rota desde siempre y por eso mi abuela lavaba en la cocina. Mi tía dice que el perro no se llamaba Capitán sino Capitán Garfio, por una película, y que no era de la abuela sino del vecino, que lo dejaba pasar por un hoyo en la reja. Cada uno tiene su patio. Ninguno de los patios coincide. Si algún día nos juntamos todos a recordar, vamos a necesitar un patio más grande que el que hubo.\n\nLo que sí coincide es la luz. Todos recordamos la luz de las cuatro de la tarde en verano, cuando el sol bajaba por detrás de la cocina y el patio quedaba partido en dos: una mitad blanca, que quemaba los pies, y una mitad en sombra, bajo el limonero, donde la abuela ponía una silla de mimbre y se quedaba dormida con la radio encendida. Esa línea entre la luz y la sombra iba avanzando a lo largo de la tarde, y nosotros jugábamos a no pisarla, como si fuera un río que había que saltar.\n\nHoy el patio es un estacionamiento. Lo vi en una foto satelital, buscando la casa por curiosidad una noche en que no podía dormir: un rectángulo gris con dos autos y una mancha verde que podría ser el limonero o podría ser cualquier cosa. Amplié la imagen hasta que se volvió cuadritos y me quedé mirando los cuadritos un buen rato, tratando de encontrar la línea entre la luz y la sombra. No estaba. Las fotos satelitales se toman a mediodía, cuando no hay sombras, y ese es, quizás, el mejor resumen de lo que hace la memoria cuando la miramos desde demasiado lejos.\n",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2614,7 +2574,6 @@
    "epigraph": "Toda casa es un idioma que se olvida al mudarse. (Lo decía mi abuela.)",
    "body": "Por la casa que se vende con la luz encendida\nporque nadie se acordó de apagarla al salir,\npor la llave que se queda en la puerta del lado de adentro,\npor el timbre que suena todavía cuando pasa el camión de la basura,\nrueguen por ella.\n\nPor la cocina que aprendió el olor de cuatro generaciones\ny no sabe cocinar para desconocidos,\npor la olla grande que nadie quiso llevarse\nporque ya no somos tantos,\npor el reloj que atrasa diez minutos desde 1998\ny que nadie arregló porque así lo entendíamos,\nrueguen por ella.\n\nPor el living donde mi padre miraba las noticias\ncon el volumen muy alto,\npor el sillón que todavía tiene la forma de su espalda,\npor la planta que se secó en marzo\ny que seguimos regando por costumbre hasta junio,\npor la mesa de centro con el vidrio trizado\ndel que nunca se habló,\nrueguen por ella.\n\nPor el pasillo donde aprendimos a escuchar\nlo que no estaba dirigido a nosotros,\npor la tabla del suelo que crujía\njusto frente a la pieza de los papás,\npor las fotos que dejaron una marca más clara en la pared\ncuando las descolgamos,\nrueguen por ella.\n\nPor la pieza del fondo,\nque fue de la abuela\ny después fue de nadie\ny después fue la pieza de las cosas\ny ahora es solamente una pieza,\nrueguen por ella.\n\nPor el baño con su azulejo verde agua\nque mi madre odiaba y nunca cambió,\npor la llave que gotea en la noche,\npor el espejo que nos vio crecer\ny no reconoce a nadie,\nrueguen por ella.\n\nPor el patio,\npor el limonero que da limones que nadie come,\npor la cuerda de colgar ropa\nque se cortó el invierno pasado\ny que nadie amarró de nuevo,\npor el perro que está enterrado debajo del jazmín\ny que no sabe que la casa se vende,\nrueguen por ella.\n\nPor los vecinos que miran desde la ventana\ncuando llega el corredor con los compradores,\npor la señora de enfrente que nos vio nacer\ny que pregunta si es cierto,\npor el almacén de la esquina que va a cerrar igual,\ncon o sin nosotros,\nrueguen por ella.\n\nPor los compradores que no saben\nque la tercera ventana del living no cierra bien,\nque en agosto entra agua por el techo de la cocina,\nque la casa hace ruidos de noche\nque no son ladrones sino la madera,\npor ellos, que van a aprender todo eso solos,\nrueguen por ella.\n\nPor los muebles que se van a remate,\npor la enciclopedia a la que le falta el tomo siete,\npor las cartas que encontramos en un cajón\ny que decidimos no leer,\npor las que leímos,\nrueguen por ella.\n\nPor mi madre, que firma la venta\ncon la misma letra con que firmaba mis libretas de notas,\npor mi hermano, que no vino\nporque dijo que no le importaba\ny que llamó tres veces esa tarde,\npor mí, que escribo esto\npara no tener que decirlo,\nrueguen por ella.\n\nPor el idioma de esta casa,\nque nadie va a volver a hablar:\nel «ya, bueno» que cerraba las discusiones,\nel «después vemos» que significaba nunca,\nel «estoy bien» que significaba otra cosa,\nel silencio de las once de la noche\nque todos entendíamos,\nrueguen por él.\n\nPor la casa que se vende con todo adentro,\ncon todo lo que no cabe en las cajas,\ncon el eco de nuestros nombres\ndichos desde la cocina a la hora de almuerzo,\ncon la luz encendida,\ncon la llave puesta,\ncon el perro debajo del jazmín,\nrueguen por ella,\nrueguen por nosotros,\nrueguen por lo que fuimos\nmientras todavía teníamos dónde serlo.\n",
    "recording": null,
-   "featured": false,
    "og_image": null,
    "seo_title": "",
    "seo_description": ""
@@ -2828,7 +2787,6 @@
    "host": "",
    "registration_url": "",
    "published": true,
-   "featured": false,
    "participants": [
     2,
     1,
@@ -2854,7 +2812,6 @@
    "host": "Festival de Poesía Joven",
    "registration_url": "",
    "published": true,
-   "featured": false,
    "participants": [
     2,
     1
@@ -2879,7 +2836,6 @@
    "host": "",
    "registration_url": "https://example.com/inscripcion",
    "published": true,
-   "featured": true,
    "participants": [
     3
    ]
@@ -2903,7 +2859,6 @@
    "host": "",
    "registration_url": "",
    "published": true,
-   "featured": false,
    "participants": [
     2,
     1,
@@ -3461,7 +3416,6 @@
    "url": "",
    "quote": "Uno de los colectivos más activos de la escena joven.",
    "logo": 63,
-   "featured": true,
    "published": true,
    "position": 0
   }
@@ -3478,7 +3432,6 @@
    "url": "",
    "quote": "Leen como quien conversa: cerca, sin solemnidad.",
    "logo": 62,
-   "featured": false,
    "published": true,
    "position": 0
   }

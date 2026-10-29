@@ -191,7 +191,6 @@ class Article(EditorialItem):
     reading_time = models.PositiveIntegerField(
         default=0, editable=False, help_text="Minutos estimados (derivado del cuerpo)"
     )
-    featured = models.BooleanField(default=False)
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
     search_vector = SearchVectorField(null=True, editable=False)
@@ -215,6 +214,11 @@ class Article(EditorialItem):
 
     def get_absolute_url(self):
         return reverse("content:article_detail", args=[self.slug])
+
+    def social_image(self):
+        """La imagen para compartir el texto: la elegida para eso o, si falta, la portada.
+        Sin ninguna, `{% social_meta %}` recurre a la del perfil del sitio."""
+        return self.og_image or self.cover_image
 
     @property
     def seccion_aporta(self):
@@ -268,13 +272,12 @@ class ArticleContributor(models.Model):
 
 
 class ReviewedWork(models.Model):
-    """Puente Reseña ↔ Obra. `is_primary` marca la obra principal de la reseña."""
+    """Puente Reseña ↔ Obra."""
 
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name="reviewed_work_links"
     )
     work = models.ForeignKey("reviews.Work", on_delete=models.CASCADE, related_name="review_links")
-    is_primary = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "obra reseñada"
@@ -287,9 +290,12 @@ class ReviewedWork(models.Model):
 class Poem(EditorialItem):
     """Poema de un integrante (obra propia del colectivo).
 
-    A diferencia de Article.body (HTML saneado), el cuerpo se guarda como texto plano
-    y la plantilla lo escapa y renderiza con `white-space: pre-wrap`: se preservan
-    versos, sangrías y espacios tal como se escribieron.
+    A diferencia de Article.body (HTML saneado), el cuerpo se guarda como texto plano y
+    la plantilla lo compone verso a verso con el filtro `versos`, que lo escapa: se
+    preservan versos, sangrías y estrofas tal como se escribieron.
+
+    Destacado: no tiene casilla propia. La portada enseña `SiteProfile.featured_poem`
+    cuando no hay registros destacados.
     """
 
     slug = models.SlugField(max_length=255, unique=True)
@@ -309,7 +315,6 @@ class Poem(EditorialItem):
         related_name="poems",
         help_text="Registro del poema leído por su autor/a (opcional).",
     )
-    featured = models.BooleanField(default=False)
     og_image = models.ForeignKey(
         "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
@@ -337,6 +342,10 @@ class Poem(EditorialItem):
 
     def get_absolute_url(self):
         return reverse("content:poem_detail", args=[self.slug])
+
+    def social_image(self):
+        """La imagen para compartir el poema, si tiene una (ver `{% social_meta %}`)."""
+        return self.og_image
 
     @property
     def published_recording(self):

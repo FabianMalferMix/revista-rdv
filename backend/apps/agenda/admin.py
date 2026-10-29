@@ -11,8 +11,8 @@ class EventPhotoInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ["title", "type", "starts_at", "city", "published", "featured"]
-    list_filter = ["published", "featured", "type", "is_external"]
+    list_display = ["title", "type", "starts_at", "city", "published"]
+    list_filter = ["published", "type", "is_external"]
     search_fields = ["title", "venue_name", "city", "description"]
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ["poster"]
