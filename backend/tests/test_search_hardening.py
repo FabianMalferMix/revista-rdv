@@ -6,6 +6,8 @@ que casaban, con el cuerpo entero de cada pieza), sin rate limit y con un 500 p�
 alcanzable con `?q=%00`.
 """
 
+import time
+
 import pytest
 from django.test import override_settings
 from django.urls import reverse
@@ -94,9 +96,17 @@ def test_el_coste_no_crece_con_el_tamano_del_archivo(client, make_article):
 
 
 @override_settings(RATELIMIT_ENABLE=True)
-def test_el_buscador_limita_por_ip(client, make_article):
+def test_el_buscador_limita_por_ip(client, make_article, monkeypatch):
     """Supera el cupo (60/m) y comprueba que degrada con un aviso, no con un 500 ni
-    sirviendo consultas ilimitadas."""
+    sirviendo consultas ilimitadas.
+
+    django-ratelimit cuenta por ventanas fijas de un minuto, y el fin de la ventana entra en
+    la clave: si las 65 búsquedas cruzan un corte, la cuenta vuelve a cero y la última no se
+    limita. La ventana queda fija durante la prueba para que no dependa del reloj."""
+    from django_ratelimit import core
+
+    window = int(time.time()) + 3600
+    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
     make_article(title="Umbral", status="published")
     ultima = None
     for i in range(65):
