@@ -156,7 +156,8 @@ vigente más cercano y no se agrava la deuda.
    - Toda migración de datos usa `apps.get_model` y lleva su prueba.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
      anterior siga funcionando mientras se despliega.
-   - Los permisos de un modelo nuevo se reparten a los roles de forma explícita.
+   - Los permisos de un modelo nuevo se reparten a los roles de forma explícita, en la matriz de
+     `apps/people/roles.py`: `tests/test_roles.py` falla si un modelo queda sin clasificar.
 
    Bien: `publish_due_items` (`apps/content/tasks.py`) es idempotente ante un doble beat o un
    reintento.

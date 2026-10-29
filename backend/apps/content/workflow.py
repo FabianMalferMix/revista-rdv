@@ -9,30 +9,35 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 
+from apps.people import roles
+
 from .models import EditorialStatus, EditorialTransition
 from .permissions import is_editor, is_owner
 
 S = EditorialStatus
 
-# nombre -> (estados_origen, estado_destino, roles_permitidos)
-#   "editor" = editor o admin ; "owner" = dueño de la pieza
+# Quién puede cada transición: el rol editor (también el admin) o la dueña de la pieza.
+EDITOR = roles.EDITOR
+OWNER = "owner"
+
+# nombre -> (estados_origen, estado_destino, quién)
 TRANSITIONS = {
-    "submit": ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW, ("owner", "editor")),
-    "request_changes": ({S.IN_REVIEW}, S.CHANGES_REQUESTED, ("editor",)),
-    "accept": ({S.IN_REVIEW}, S.APPROVED, ("editor",)),
-    "reject": ({S.IN_REVIEW}, S.REJECTED, ("editor",)),
-    "schedule": ({S.APPROVED}, S.SCHEDULED, ("editor",)),
-    "publish": ({S.APPROVED, S.SCHEDULED}, S.PUBLISHED, ("editor",)),
-    "unpublish": ({S.PUBLISHED}, S.DRAFT, ("editor",)),
-    "archive": ({S.PUBLISHED}, S.ARCHIVED, ("editor",)),
-    "restore": ({S.ARCHIVED}, S.PUBLISHED, ("editor",)),
+    "submit": ({S.DRAFT, S.CHANGES_REQUESTED}, S.IN_REVIEW, (OWNER, EDITOR)),
+    "request_changes": ({S.IN_REVIEW}, S.CHANGES_REQUESTED, (EDITOR,)),
+    "accept": ({S.IN_REVIEW}, S.APPROVED, (EDITOR,)),
+    "reject": ({S.IN_REVIEW}, S.REJECTED, (EDITOR,)),
+    "schedule": ({S.APPROVED}, S.SCHEDULED, (EDITOR,)),
+    "publish": ({S.APPROVED, S.SCHEDULED}, S.PUBLISHED, (EDITOR,)),
+    "unpublish": ({S.PUBLISHED}, S.DRAFT, (EDITOR,)),
+    "archive": ({S.PUBLISHED}, S.ARCHIVED, (EDITOR,)),
+    "restore": ({S.ARCHIVED}, S.PUBLISHED, (EDITOR,)),
 }
 
 
-def _allowed(user, item, roles):
-    if "editor" in roles and is_editor(user):
+def _allowed(user, item, who):
+    if EDITOR in who and is_editor(user):
         return True
-    if "owner" in roles and is_owner(user, item):
+    if OWNER in who and is_owner(user, item):
         return True
     return False
 
@@ -41,8 +46,8 @@ def available_transitions(user, item):
     """Transiciones que este usuario puede disparar sobre esta pieza ahora."""
     return [
         name
-        for name, (froms, _to, roles) in TRANSITIONS.items()
-        if item.status in froms and _allowed(user, item, roles)
+        for name, (froms, _to, who) in TRANSITIONS.items()
+        if item.status in froms and _allowed(user, item, who)
     ]
 
 
@@ -50,11 +55,11 @@ def perform_transition(item, name, user, note=""):
     if name not in TRANSITIONS:
         raise ValueError(f"Transición desconocida: {name!r}")
 
-    froms, to_state, roles = TRANSITIONS[name]
+    froms, to_state, who = TRANSITIONS[name]
     # Chequeos rápidos (mensajes claros para el caso común, con el estado en memoria).
     if item.status not in froms:
         raise ValueError(f"No se puede '{name}' desde el estado '{item.status}'.")
-    if not _allowed(user, item, roles):
+    if not _allowed(user, item, who):
         raise PermissionDenied(f"Sin permiso para '{name}'.")
 
     with transaction.atomic():
