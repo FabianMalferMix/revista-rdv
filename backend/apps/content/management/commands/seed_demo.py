@@ -34,6 +34,7 @@ from apps.content.models import (
 )
 from apps.devtools.models import DevelopmentMarker
 from apps.media.models import MediaAsset, Recording
+from apps.people import roles
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import (
@@ -85,8 +86,8 @@ class Command(BaseCommand):
         self._credentials = []
 
         # ── Usuarios con rol ─────────────────────────────────
-        editora = self._user(User, "editora", "editor")
-        autor_user = self._user(User, "autor1", "autor")
+        editora = self._user(User, "editora", roles.EDITOR)
+        autor_user = self._user(User, "autor1", roles.AUTHOR)
 
         # ── Taxonomía ────────────────────────────────────────
         sections = {}

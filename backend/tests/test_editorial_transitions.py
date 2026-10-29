@@ -66,16 +66,8 @@ def test_the_editor_moves_pieces_only_along_the_table(
 @pytest.mark.parametrize("model", MODELS)
 @pytest.mark.parametrize("transition", TRANSITIONS)
 def test_the_role_the_table_leaves_out_cannot_run_it(
-    client, groups, editor, autor, make_piece, model, transition, request
+    client, groups, editor, autor, make_piece, model, transition
 ):
-    if (model, transition) == ("poem", "submit"):
-        # strict: cuando el grupo autor reciba los permisos de poemas, esta marca falla y se quita.
-        request.applymarker(
-            pytest.mark.xfail(
-                reason="el grupo autor todavía no tiene permisos de poemas en el panel",
-                strict=True,
-            )
-        )
     sources, target, roles = TRANSITIONS[transition]
     origin = sorted(sources)[0]
     piece = make_piece(model, autor, origin, transition)

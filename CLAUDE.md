@@ -37,7 +37,7 @@ Sitio del colectivo de poesía Repitentes del Verso: Django 5.2 LTS, htmx, Postg
    - Cada tarea declara sus límites y su política de reintento, y se encola con `delay_on_commit`.
    - Toda migración de datos lleva su prueba.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código anterior siga funcionando mientras se despliega.
-   - Los permisos de un modelo nuevo se reparten a los roles de forma explícita.
+   - Los permisos de un modelo nuevo se reparten a los roles de forma explícita (`apps/people/roles.py`).
 10. **Pruebas.**
     - Comprueban lo que ve o hace una persona.
     - Un `.css` o un `.js` solo se lee para afirmar una invariante, nunca para buscar el literal que se acaba de escribir.

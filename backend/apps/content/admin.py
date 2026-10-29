@@ -160,7 +160,7 @@ class EditorialItemAdmin(admin.ModelAdmin):
             # Lo que no es una transición (p. ej. delete_selected) se queda: lo rige su
             # propio permiso de modelo, que ya resolvió has_delete_permission.
             if nombre not in self._TRANSICION_DE
-            or "owner" in workflow.TRANSITIONS[self._TRANSICION_DE[nombre]][2]
+            or workflow.OWNER in workflow.TRANSITIONS[self._TRANSICION_DE[nombre]][2]
         }
 
     # ── Permisos por objeto y estado ─────────────────────────

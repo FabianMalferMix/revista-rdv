@@ -557,7 +557,8 @@ docker compose exec web python manage.py generate_image_derivatives
 ```
 
 - [x] **`setup_groups`** — Correrlo dos veces no cambia nada. **Si le quitas un permiso a
-      mano a un grupo, no debe restaurarlo.** Con `--reset` sí lo reemplaza.
+      mano a un grupo, no debe restaurarlo.** Un permiso nuevo de la matriz (`apps/people/roles.py`)
+      sí llega a un grupo ya configurado. Con `--reset` el grupo queda como dice la matriz.
 - [x] **`purge_stale_data`** — Con `--dry-run` solo informa. Purga suscriptores nunca
       confirmados, **los dados de baja**, envíos resueltos (con su adjunto) y los intentos
       de acceso de más de 90 días.
