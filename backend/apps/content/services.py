@@ -5,7 +5,7 @@ from django.db.models.functions import Cast, ExtractYear
 
 from apps.media.models import Recording
 
-from .models import Article, EditorialStatus, Poem
+from .models import Article, Poem
 
 
 def ultima_publicacion():
@@ -14,14 +14,17 @@ def ultima_publicacion():
     Cuenta la fecha de publicación y no la de edición: corregir una errata no hace más reciente
     la portada."""
     fechas = (
-        Article.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
+        Article.objects.published()
+        .filter(published_at__isnull=False)
         .order_by()
         .values_list("published_at", flat=True)
         .union(
-            Poem.objects.filter(status=EditorialStatus.PUBLISHED, published_at__isnull=False)
+            Poem.objects.published()
+            .filter(published_at__isnull=False)
             .order_by()
             .values_list("published_at", flat=True),
-            Recording.objects.filter(published=True, published_at__isnull=False)
+            Recording.objects.published()
+            .filter(published_at__isnull=False)
             .order_by()
             .values_list("published_at", flat=True),
         )
@@ -76,12 +79,12 @@ def coincidencias_por_nombre(termino, tope):
     from apps.people.models import Contributor
     from apps.showcase.models import Publication
 
-    publicado = Q(status=EditorialStatus.PUBLISHED, authors=OuterRef("pk"))
+    firma = OuterRef("pk")
     personas = _columnas(
         Contributor.objects.filter(display_name__unaccent__icontains=termino).filter(
             Q(is_member=True)
-            | Exists(Article.objects.filter(publicado))
-            | Exists(Poem.objects.filter(publicado))
+            | Exists(Article.objects.published().filter(authors=firma))
+            | Exists(Poem.objects.published().filter(authors=firma))
         ),
         "persona",
         "display_name",
@@ -89,21 +92,21 @@ def coincidencias_por_nombre(termino, tope):
         integrante="is_member",
     ).order_by("-is_member", "display_name")[:tope]
     registros = _columnas(
-        Recording.objects.filter(published=True, title__unaccent__icontains=termino),
+        Recording.objects.published().filter(title__unaccent__icontains=termino),
         "registro",
         "title",
         dato="kind",
         anio=ExtractYear("recorded_on"),
     ).order_by("-recorded_on", "-created_at")[:tope]
     publicaciones = _columnas(
-        Publication.objects.filter(published=True, title__unaccent__icontains=termino),
+        Publication.objects.published().filter(title__unaccent__icontains=termino),
         "publicacion",
         "title",
         dato="kind",
         anio=F("year"),
     ).order_by("position", "-year", "title")[:tope]
     actividades = _columnas(
-        Event.objects.filter(published=True, title__unaccent__icontains=termino),
+        Event.objects.published().filter(title__unaccent__icontains=termino),
         "actividad",
         "title",
         dato="type",

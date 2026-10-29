@@ -2,14 +2,14 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from apps.content.models import EditorialStatus, Poem
+from apps.content.models import Poem
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Recording
 
 
 def _published():
-    return Recording.objects.filter(published=True).select_related("poster", "event")
+    return Recording.objects.published().select_related("poster", "event")
 
 
 def recording_index(request):
@@ -23,7 +23,7 @@ def recording_detail(request, slug):
     pie = [puerta("Índice", "Todos los registros", reverse("media:recording_index"))]
     pie += [
         puerta("Poema registrado", p.title, p.get_absolute_url())
-        for p in Poem.objects.filter(recording=recording, status=EditorialStatus.PUBLISHED)
+        for p in Poem.objects.published().filter(recording=recording)
     ]
     if evento := recording.public_event:
         pie.append(puerta("Evento", evento.title, evento.get_absolute_url()))

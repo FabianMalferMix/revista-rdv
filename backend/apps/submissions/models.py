@@ -9,6 +9,13 @@ def private_storage():
     return FileSystemStorage(location=settings.PRIVATE_MEDIA_ROOT)
 
 
+class CallQuerySet(models.QuerySet):
+    def open_now(self):
+        """Convocatorias abiertas en este momento (formulario de envío, sello de la portada)."""
+        now = timezone.now()
+        return self.filter(opens_at__lte=now, closes_at__gte=now)
+
+
 class Call(models.Model):
     """Convocatoria. `is_open` es derivado (se calcula, no se almacena)."""
 
@@ -17,6 +24,8 @@ class Call(models.Model):
     description = models.TextField(blank=True)
     opens_at = models.DateTimeField()
     closes_at = models.DateTimeField()
+
+    objects = CallQuerySet.as_manager()
 
     class Meta:
         ordering = ["-opens_at"]
@@ -29,12 +38,6 @@ class Call(models.Model):
     @property
     def is_open(self):
         return self.opens_at <= timezone.now() <= self.closes_at
-
-    @classmethod
-    def open_now(cls):
-        """Convocatorias abiertas en este momento (formulario de envío, sello de la portada)."""
-        now = timezone.now()
-        return cls.objects.filter(opens_at__lte=now, closes_at__gte=now)
 
 
 class Submission(models.Model):

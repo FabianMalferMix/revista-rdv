@@ -871,7 +871,7 @@ class Command(BaseCommand):
         return article
 
     def _summary(self):
-        pub = Article.objects.filter(status=EditorialStatus.PUBLISHED).count()
+        pub = Article.objects.published().count()
         sched = Article.objects.filter(status=EditorialStatus.SCHEDULED).count()
         members = Contributor.objects.filter(is_member=True).count()
         self.stdout.write(

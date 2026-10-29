@@ -342,7 +342,7 @@ def test_vecinos_en_lista_sigue_el_orden_del_indice():
         for i in (1, 2, 3)
     )
     historica = Contributor.objects.create(slug="h", display_name="H", is_member=True, active=False)
-    lista = Contributor.members()
+    lista = Contributor.objects.members()
     assert vecinos_en_lista(lista, dos) == (uno, tres)
     assert vecinos_en_lista(lista, uno) == (None, dos)
     assert vecinos_en_lista(lista, historica) == (None, None), "fuera de la lista no hay vecinos"

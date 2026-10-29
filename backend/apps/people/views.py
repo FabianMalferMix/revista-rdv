@@ -2,14 +2,13 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from apps.content.models import EditorialStatus
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Contributor
 
 
 def member_index(request):
-    return render(request, "people/member_index.html", {"members": Contributor.members()})
+    return render(request, "people/member_index.html", {"members": Contributor.objects.members()})
 
 
 def member_detail(request, slug):
@@ -18,22 +17,22 @@ def member_detail(request, slug):
         Contributor.objects.select_related("photo"), slug=slug, is_member=True
     )
     articles = (
-        member.articles.filter(status=EditorialStatus.PUBLISHED)
+        member.articles.published()
         .select_related("section")
         .prefetch_related("authors")
         .order_by("-published_at")
     )
     # select_related("recording"): la fila del poema avisa «con registro».
     poems = (
-        member.poems.filter(status=EditorialStatus.PUBLISHED)
+        member.poems.published()
         .select_related("recording")
         .prefetch_related("authors")
         .order_by("-published_at")
     )
-    recordings = member.recordings.filter(published=True)
+    recordings = member.recordings.published()
     # Las actividades en que participó (ticket 4.5): la ficha enseñaba lo que escribe y lo
     # que grabó, pero no dónde ha leído. Las doce más recientes; el resto, en la trayectoria.
-    actividades = member.events.filter(published=True).order_by("-starts_at")[:12]
+    actividades = member.events.published().order_by("-starts_at")[:12]
     return render(
         request,
         "people/member_detail.html",
@@ -46,7 +45,7 @@ def member_detail(request, slug):
             "pie": [
                 puerta("Índice", "Todo el colectivo", reverse("people:member_index")),
                 *puertas_vecinas(
-                    *vecinos_en_lista(Contributor.members(), member),
+                    *vecinos_en_lista(Contributor.objects.members(), member),
                     "Integrante",
                     lambda c: c.display_name,
                 ),

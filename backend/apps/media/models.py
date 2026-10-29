@@ -9,6 +9,8 @@ from django.core.files.base import ContentFile
 from django.db import models, transaction
 from PIL import Image, ImageOps
 
+from config import publishing
+
 from .validators import validate_audio_video_extension, validate_image
 
 logger = logging.getLogger(__name__)
@@ -427,6 +429,8 @@ class Recording(models.Model):
         help_text="Orden en la tirada de la portada y en el índice: primero el número más bajo.",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="creado el")
+
+    objects = publishing.PublishableQuerySet.as_manager()
 
     class Meta:
         ordering = ["position", "-recorded_on", "-created_at"]

@@ -114,10 +114,12 @@ vigente más cercano y no se agrava la deuda.
    Bien: `perform_transition` (`apps/content/workflow.py`) concentra los cambios de estado
    editorial, con su bloqueo y su bitácora. Mal: el alta, la confirmación y la baja del boletín
    viven en `apps/community/views.py`.
-2. **Lo publicable.** La regla de visibilidad vive en el modelo, y no se reescribe en cada vista,
-   sitemap o feed; toda relación hacia algo publicable la respeta. Bien: `Poem.published_recording`
-   (`apps/content/models.py`) devuelve el registro solo si está publicado. Mal: `Recording.event` se
-   muestra sin mirar si el evento está publicado.
+2. **Lo publicable.** La regla de visibilidad vive en el QuerySet de cada modelo
+   (`config/publishing.py`). Las vistas, el sitemap y los feeds piden `Modelo.objects.published()`,
+   también desde las relaciones (`member.events.published()`), y no escriben el filtro a mano:
+   `tests/test_published_querysets.py` lo vigila. Toda relación hacia algo publicable la respeta.
+   Bien: `Poem.published_recording` (`apps/content/models.py`) devuelve el registro solo si está
+   publicado. Mal: un `.filter(published=True)` en una vista.
 3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas, se decide en un lugar y
    viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la
    relación entre la fuente y la copia. Mal: el número de integrantes que se ven en la portada está

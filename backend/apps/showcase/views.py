@@ -1,14 +1,14 @@
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from apps.content.models import Article, EditorialStatus
+from apps.content.models import Article
 from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Partner, PressMention, Publication, SiteProfile
 
 
 def _published():
-    return Publication.objects.filter(published=True).select_related("publisher", "cover")
+    return Publication.objects.published().select_related("publisher", "cover")
 
 
 def publication_index(request):
@@ -47,9 +47,8 @@ def publication_detail(request, slug):
     # Las reseñas de la publicación: los textos que reseñan la obra que la representa
     # (`Work.publicacion`). Lo pidió el dueño del sitio después del paso 21 del plan.
     resenas = list(
-        Article.objects.filter(
-            status=EditorialStatus.PUBLISHED, reviewed_works__publicacion=publication
-        )
+        Article.objects.published()
+        .filter(reviewed_works__publicacion=publication)
         .select_related("section", "cover_image")
         .prefetch_related("authors")
         .order_by("-published_at")
@@ -63,7 +62,7 @@ def publication_detail(request, slug):
 
 
 def press_index(request):
-    mentions = PressMention.objects.filter(published=True).select_related("logo")
+    mentions = PressMention.objects.published().select_related("logo")
     return render(request, "showcase/press_index.html", {"mentions": mentions})
 
 
@@ -81,7 +80,7 @@ GRUPOS_DE_ALIADOS = {
 def partner_index(request):
     """Aliados agrupados por tipo, en el orden de los tipos: un fondo y una sala no son lo
     mismo para quien programa. Se agrupan en Python: una sola consulta."""
-    partners = list(Partner.objects.filter(active=True).select_related("logo"))
+    partners = list(Partner.objects.published().select_related("logo"))
     grupos = [
         (rotulo, [p for p in partners if p.kind == kind])
         for kind, rotulo in GRUPOS_DE_ALIADOS.items()
@@ -114,11 +113,13 @@ def dossier(request):
         {
             "profile": profile,
             "stats": stats(profile),
-            "members": list(Contributor.members()),
-            "cronologia": cronologia(Event.past()[:8], Milestone.objects.all(), publicaciones),
+            "members": list(Contributor.objects.members()),
+            "cronologia": cronologia(
+                Event.objects.past()[:8], Milestone.objects.all(), publicaciones
+            ),
             "publications": publicaciones,
-            "mentions": PressMention.objects.filter(published=True).exclude(quote=""),
-            "partners": Partner.objects.filter(active=True).select_related("logo"),
+            "mentions": PressMention.objects.published().exclude(quote=""),
+            "partners": Partner.objects.published().select_related("logo"),
             "ultima_publicacion": ultima_publicacion(),
         },
     )

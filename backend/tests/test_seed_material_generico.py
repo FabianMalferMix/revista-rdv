@@ -68,7 +68,7 @@ def test_asigna_marcadores_sin_pisar_material_real_y_es_idempotente(
     # Material REAL simulado: una integrante con retrato cuyo crédito no es de marcador.
     real = MediaAsset(alt_text="Retrato de Fernanda Soto", credit="Foto: Alguien Real")
     real.file.save("real.png", ContentFile(_png_diminuto()), save=True)
-    fernanda = Contributor.members().first()
+    fernanda = Contributor.objects.members().first()
     fernanda.photo = real
     fernanda.save(update_fields=["photo"])
     libro = Publication.objects.first()
@@ -85,7 +85,7 @@ def test_asigna_marcadores_sin_pisar_material_real_y_es_idempotente(
     libro.refresh_from_db()
     assert libro.cover_id == real.pk, "pisó una cubierta real"
     assert not MediaAsset.objects.filter(alt_text=f"Cubierta provisional · {libro.title}").exists()
-    assert not Contributor.members().filter(photo=None).exists()
+    assert not Contributor.objects.members().filter(photo=None).exists()
     assert not Event.objects.filter(poster=None).exists()
     assert all(e.photos.count() >= 1 for e in Event.objects.all())
     # El cupo se completa, no se excede: un evento que ya trae fotos (aquí, las tres de la
