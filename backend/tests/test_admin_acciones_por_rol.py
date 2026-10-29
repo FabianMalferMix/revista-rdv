@@ -20,14 +20,9 @@ pytestmark = pytest.mark.django_db
 
 # Las que un autor no podrá disparar jamás, sea cual sea la pieza o su estado.
 SOLO_EDITOR = {
-    "do_request_changes",
-    "do_accept",
-    "do_reject",
-    "do_schedule",
-    "do_publish",
-    "do_unpublish",
-    "do_archive",
-    "do_restore",
+    f"do_{name}"
+    for name, transition in workflow.TRANSITIONS.items()
+    if workflow.OWNER not in transition.who
 }
 
 
@@ -47,7 +42,7 @@ def test_al_autor_solo_le_queda_enviar_a_revision(autor):
     assert acciones & SOLO_EDITOR == set()
 
 
-def test_la_editora_conserva_las_nueve(editor):
+def test_la_editora_conserva_todas(editor):
     acciones = _acciones(ArticleAdmin(Article, AdminSite()), editor)
     assert {f"do_{nombre}" for nombre in workflow.TRANSITIONS} <= acciones
 

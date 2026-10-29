@@ -1,13 +1,16 @@
 import re
 import unicodedata
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from config import publishing
 
@@ -63,6 +66,12 @@ class EditorialStatus(models.TextChoices):
     REJECTED = "rejected", "Rechazado"
 
 
+# Lo publicado, lo programado y lo archivado tienen fecha: la de publicación, la de la cola o la
+# que tenía al archivarse. Sin ella, una programada no saldría nunca.
+DATED_STATUSES = (EditorialStatus.PUBLISHED, EditorialStatus.SCHEDULED, EditorialStatus.ARCHIVED)
+DATED_MESSAGE = "Lo publicado, programado o archivado necesita fecha de publicación."
+
+
 class EditorialItem(models.Model):
     """Base abstracta del flujo editorial: estado + dueño + fecha de publicación.
 
@@ -101,10 +110,31 @@ class EditorialItem(models.Model):
 
     class Meta:
         abstract = True
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(status__in=DATED_STATUSES)
+                | models.Q(published_at__isnull=False),
+                name="%(app_label)s_%(class)s_dated_if_public",
+                violation_error_message=DATED_MESSAGE,
+            )
+        ]
 
     @property
     def is_published(self):
         return self.status == publishing.PUBLISHED
+
+    def clean(self):
+        super().clean()
+        # La misma regla que la restricción, para que el panel la diga en el formulario: Django
+        # no valida en un ModelForm las restricciones con campos que el formulario no edita, y
+        # `status` nunca se edita a mano. Va sin campo, porque `published_at` no siempre está.
+        if self.status in DATED_STATUSES and self.published_at is None:
+            raise ValidationError(DATED_MESSAGE, code="dated_if_public")
+
+
+def editorial_models():
+    """Las piezas del flujo editorial: cada modelo que hereda de EditorialItem."""
+    return [model for model in apps.get_models() if issubclass(model, EditorialItem)]
 
 
 class Article(EditorialItem):
@@ -143,7 +173,7 @@ class Article(EditorialItem):
     seo_description = models.CharField(max_length=320, blank=True)
     search_vector = SearchVectorField(null=True, editable=False)
 
-    class Meta:
+    class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
         indexes = [
             GinIndex(fields=["search_vector"], name="article_search_gin"),
@@ -265,7 +295,7 @@ class Poem(EditorialItem):
     # Mantenido por un trigger de Postgres (ver migración): los poemas son buscables.
     search_vector = SearchVectorField(null=True, editable=False)
 
-    class Meta:
+    class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
         indexes = [
             GinIndex(fields=["search_vector"], name="poem_search_gin"),
@@ -348,12 +378,19 @@ class Collection(models.Model):
     objects = publishing.EditorialQuerySet.as_manager()
 
     class Meta:
-        ordering = ["-published_at"]
+        # Las que aún no tienen fecha, al final.
+        ordering = [models.F("published_at").desc(nulls_last=True)]
         verbose_name = "colección"
         verbose_name_plural = "colecciones"
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        # Lo publicado lleva fecha: la del momento en que se publica, si no se dio otra.
+        if self.status == PublishStatus.PUBLISHED and self.published_at is None:
+            self.published_at = timezone.now()
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("content:collection_detail", args=[self.slug])

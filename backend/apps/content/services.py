@@ -5,7 +5,7 @@ from django.db.models.functions import Cast, ExtractYear
 
 from apps.media.models import Recording
 
-from .models import Article, Poem
+from .models import Article, Poem, editorial_models
 
 
 def ultima_publicacion():
@@ -13,24 +13,15 @@ def ultima_publicacion():
     «Actualizado el…» del cierre de la portada y de la ficha del dossier, en una sola consulta.
     Cuenta la fecha de publicación y no la de edición: corregir una errata no hace más reciente
     la portada."""
-    fechas = (
-        Article.objects.published()
+    # Las piezas del flujo editorial, cualquiera que sea su tipo, y los registros.
+    fechas = [
+        model.objects.published()
         .filter(published_at__isnull=False)
         .order_by()
         .values_list("published_at", flat=True)
-        .union(
-            Poem.objects.published()
-            .filter(published_at__isnull=False)
-            .order_by()
-            .values_list("published_at", flat=True),
-            Recording.objects.published()
-            .filter(published_at__isnull=False)
-            .order_by()
-            .values_list("published_at", flat=True),
-        )
-        .order_by("-published_at")
-    )
-    return next(iter(fechas[:1]), None)
+        for model in [*editorial_models(), Recording]
+    ]
+    return next(iter(fechas[0].union(*fechas[1:]).order_by("-published_at")[:1]), None)
 
 
 # Las columnas de cada fila de `coincidencias_por_nombre`, en este orden.

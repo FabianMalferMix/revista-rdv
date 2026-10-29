@@ -8,11 +8,11 @@
     "capturar": "node capture.js"
   },
   "dependencies": {
-    "playwright-core": "1.64.0"
+    "playwright-core": "1.64.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "eslint": "10.12.0",
+    "eslint": "10.13.0",
     "globals": "17.13.0"
   }
 }
