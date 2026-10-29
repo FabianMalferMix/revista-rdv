@@ -9,10 +9,10 @@ del despliegue: `tools/` está fuera de la imagen de Docker.
 ## Preparación (una vez)
 
 ```bash
-npm --prefix tools/ux install        # playwright-core; usa el Chrome del sistema
+npm ci --prefix tools/ux             # playwright-core y ESLint, del lockfile; usa el Chrome del sistema
 ```
 
-Requiere Node 20 o superior y Chrome en `/usr/bin/google-chrome` (otra ruta: variable
+Requiere Node 20.19 o superior (el CI usa el 24) y Chrome en `/usr/bin/google-chrome` (otra ruta: variable
 `CHROME`). El sitio debe estar arriba en `http://localhost:8000` (otra base: `--base` o `UX_BASE`).
 
 ## Uso
@@ -50,7 +50,42 @@ está en `linea-base/` (ver más abajo).
 | `<24` | objetivos pulsables de menos de 24 px | WCAG 2.5.8 |
 | `desb` | scroll horizontal (en móvil se prueba además a 320 px) | WCAG 1.4.10 |
 
-Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`).
+Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`). La prueba de humo también
+la recorre.
+
+## Prueba de humo en navegador
+
+`browser-smoke.js` carga el sitio a 951 px (la ventana del dueño) y a 375 px (un teléfono) con los
+guiones ejecutándose de verdad. Son 15 comprobaciones:
+
+- las páginas de `pages.txt` no desbordan a lo ancho;
+- los controles de la cabecera miden 44 px o más;
+- «Menú» abre y cierra, y la lupa busca en vivo;
+- la cabecera pasa a cápsula al bajar;
+- el estante y la tirada responden al teclado;
+- el reproductor externo solo se carga al pulsar;
+- el dossier imprime.
+
+Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
+no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre
+el stack de desarrollo con los datos de `backend/datos_de_desarrollo/`.
+
+```bash
+node tools/ux/browser-smoke.js                              # contra http://localhost:8000
+node tools/ux/browser-smoke.js --base http://127.0.0.1:8096 # otra base
+```
+
+Sale con 1 si falla alguna. Si una falla después de un cambio de diseño, antes de ajustarla hay
+que preguntarse qué vigilaba.
+
+## ESLint de los guiones
+
+`eslint.config.mjs` fija el dialecto de `backend/static/js/`: ES2020, en guiones clásicos sin
+módulos. Desde la raíz del repositorio:
+
+```bash
+tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js
+```
 
 ## Lo demás que hay en esta carpeta
 

@@ -158,7 +158,8 @@ docker compose run --rm --entrypoint pytest web
 Cubren el flujo editorial, los permisos por rol y estado, el formulario de envíos y las
 vistas públicas. El pipeline de CI ([.github/workflows/ci.yml](.github/workflows/ci.yml))
 los corre en cada push y pull request, junto con lint (ruff), auditoría de dependencias
-(pip-audit) y una comprobación de migraciones al día.
+(pip-audit), una comprobación de migraciones al día y, en el job `navegador`, ESLint y una
+prueba de humo que ejecuta los guiones del sitio en Chrome a 951 y a 375 px.
 
 ## Calidad de código
 
@@ -176,8 +177,9 @@ deformadas, objetivos pulsables y scroll horizontal, en 1440, 390 y 1920 px. Nac
 instrumento del rediseño UX/UI de octubre de 2026, que se cuenta más abajo.
 
 ```bash
-npm --prefix tools/ux install                 # una vez; usa el Chrome del sistema
+npm ci --prefix tools/ux                      # una vez; usa el Chrome del sistema
 node tools/ux/capture.js tools/ux/out/prueba  # capturas + métricas de las páginas de pages.txt
+node tools/ux/browser-smoke.js                # prueba de humo: los guiones, a 951 y a 375 px
 python3 tools/ux/metrics.py tabla tools/ux/out/prueba
 python3 tools/ux/smoke.py                     # todos los enlaces internos responden
 ```

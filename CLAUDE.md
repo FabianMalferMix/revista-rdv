@@ -50,7 +50,7 @@ Sitio del colectivo de poesía Repitentes del Verso: Django 5.2 LTS, htmx, Postg
 
 - **Rama y commit.** Una rama desde `main` por ticket, en kebab-case descriptivo. Commit: `rama: qué cambia (Bxx)`.
 - **Título del PR:** `rama — qué cambia (Bxx)`, con la lista de `.github/pull_request_template.md` en el cuerpo.
-- **Antes de abrir el PR**, dentro del contenedor `web`, en verde: `ruff check .`, `ruff format --check .`, `pytest`, `python manage.py makemigrations --check --dry-run` y `python manage.py check`. Después, el CI de GitHub Actions: pip-audit y gitleaks solo corren allí.
+- **Antes de abrir el PR**, dentro del contenedor `web`, en verde: `ruff check .`, `ruff format --check .`, `pytest`, `python manage.py makemigrations --check --dry-run` y `python manage.py check`. Si el cambio toca guiones, estilos o plantillas, también ESLint y `node tools/ux/browser-smoke.js` (ver `tools/ux/README.md`). Después, el CI de GitHub Actions: pip-audit y gitleaks solo corren allí.
 - **Fusión** con commit de fusión (no squash), con el CI en verde, y se borra la rama. «Estado» y el avance del backlog se actualizan en el mismo PR.
 - **Archivos uno por uno.** Nunca `git add` de carpetas enteras: en `docs/` hay un documento personal que no es del repositorio.
 - **Lo visual.** Lo que cambia algo a la vista se le muestra al dueño antes de fusionar: a 951 px, que es su ventana, y en el teléfono, con alternativas si hay más de una manera. Lo que él aprueba manda.

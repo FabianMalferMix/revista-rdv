@@ -89,8 +89,10 @@ identificadores se corre con `python3 tools/ci/decision_refs.py`: su línea base
 5. **Pull Request** contra `main`, titulado `rama — qué cambia (Bxx)`, con la lista de
    [.github/pull_request_template.md](.github/pull_request_template.md) en el cuerpo. El CI corre
    ruff, `pip-audit` (bloqueante), migraciones, tests con cobertura (`--cov-fail-under=80`),
-   `check --deploy` y gitleaks. pip-audit y gitleaks solo corren allí: el PR está listo cuando el
-   CI está en verde, no cuando pasan las pruebas locales.
+   `check --deploy`, gitleaks y, en el job `navegador`, ESLint y la prueba de humo en navegador.
+   pip-audit y gitleaks solo corren allí; ESLint y la prueba de humo también se corren en local
+   ([tools/ux/README.md](tools/ux/README.md)). El PR está listo cuando el CI está en verde, no
+   cuando pasan las pruebas locales.
 6. **Lo visual.** Si el cambio se ve, el dueño lo revisa antes de fusionar: a 951 px, que es su
    ventana, y en el teléfono, con alternativas si hay más de una manera.
 7. **Fusión** con commit de fusión (no squash) y se borra la rama. En el mismo PR se actualizan

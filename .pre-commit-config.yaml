@@ -36,8 +36,9 @@ repos:
     hooks:
       - id: gitleaks
 
-  # Ganchos propios (tools/ci/): la sintaxis de los guiones, que ninguna prueba ejecuta, y
-  # la regla de que la historia va en el commit y no en los comentarios del código.
+  # Ganchos propios (tools/ci/): la sintaxis de los guiones, en local y antes de que el job
+  # `navegador` del CI los ejecute, y la regla de que la historia va en el commit y no en los
+  # comentarios del código.
   - repo: local
     hooks:
       - id: js-syntax

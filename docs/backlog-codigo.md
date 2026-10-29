@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 10 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 11 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -77,7 +77,7 @@
 
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
-| B11 | Navegador en el CI: prueba de humo | — | M | no | pendiente |
+| B11 | Navegador en el CI: prueba de humo | — | M | no | hecho (#183) |
 | B12 | Matriz de pruebas del flujo editorial y de la visibilidad | — | M | sí | pendiente |
 | B13 | «Publicado», definido en un solo lugar | B12 | M | sí | pendiente |
 | B14 | Fichas secundarias solo si algo publicado las respalda | B13 | M | sí | pendiente |
