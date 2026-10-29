@@ -2,6 +2,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from apps.content.models import Article, Poem
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Contributor
@@ -19,14 +20,14 @@ def member_detail(request, slug):
     articles = (
         member.articles.published()
         .select_related("section")
-        .prefetch_related("authors")
+        .prefetch_related(Article.bylines_prefetch())
         .order_by("-published_at")
     )
     # select_related("recording"): la fila del poema avisa «con registro».
     poems = (
         member.poems.published()
         .select_related("recording")
-        .prefetch_related("authors")
+        .prefetch_related(Poem.bylines_prefetch())
         .order_by("-published_at")
     )
     recordings = member.recordings.published()

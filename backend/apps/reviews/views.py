@@ -11,7 +11,7 @@ def _reviews_of(work_ids):
         Article.objects.published()
         .filter(reviewed_works__in=work_ids)
         .select_related("section")
-        .prefetch_related("authors")
+        .prefetch_related(Article.bylines_prefetch())
         .distinct()
     )
 
