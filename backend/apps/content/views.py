@@ -43,14 +43,18 @@ def _published():
     return (
         Article.objects.published()
         .select_related("section", "cover_image")
-        .prefetch_related("authors")
+        .prefetch_related(Article.bylines_prefetch())
     )
 
 
 def _published_poems():
     # select_related("recording"): `published_recording` lo consulta en las fichas y en
     # las tarjetas de los listados; sin esto sería una consulta por poema.
-    return Poem.objects.published().select_related("recording").prefetch_related("authors")
+    return (
+        Poem.objects.published()
+        .select_related("recording")
+        .prefetch_related(Poem.bylines_prefetch())
+    )
 
 
 def _paginate(request, queryset, per_page=12):
@@ -107,7 +111,7 @@ def _registros_destacados(profile):
     for poema in (
         Poem.objects.published()
         .filter(recording__in=registros)
-        .prefetch_related("authors")
+        .prefetch_related(Poem.bylines_prefetch())
         .order_by("-published_at")
     ):
         poemas.setdefault(poema.recording_id, poema)
@@ -116,7 +120,7 @@ def _registros_destacados(profile):
         evento = registro.public_event
         fotos = list(evento.photos.all()) if evento else []
         poema = poemas.get(registro.pk)
-        autores = ", ".join(c.display_name for c in poema.authors.all()) if poema else ""
+        autores = ", ".join(c.display_name for c in poema.bylines) if poema else ""
         if evento and evento.starts_at:
             cuando = registro.recorded_on or timezone.localtime(evento.starts_at).date()
         else:
@@ -223,16 +227,11 @@ def text_archive(request):
     )
 
 
-def _firmas_con_retrato():
-    """Las firmas con su retrato en la misma consulta: la sala de lectura lo enseña."""
-    return Prefetch("authors", queryset=Contributor.objects.select_related("photo"))
-
-
 def article_detail(request, slug):
     article, preview = publishing.piece_for(
         request,
         Article.objects.select_related("section", "cover_image").prefetch_related(
-            _firmas_con_retrato(),
+            Article.bylines_prefetch(),
             Prefetch(
                 "reviewed_works", queryset=Work.objects.select_related("publisher", "cover_image")
             ),
@@ -249,7 +248,7 @@ def article_detail(request, slug):
                 reverse("content:section_detail", args=[article.section.slug]),
             )
         )
-    pie += firmas(article.authors.all())
+    pie += firmas(article.bylines)
     anterior, siguiente = vecinos(Article.objects.published(), article)
     pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
     response = render(
@@ -308,13 +307,13 @@ def poem_index(request):
 def poem_detail(request, slug):
     poem, preview = publishing.piece_for(
         request,
-        Poem.objects.select_related("recording").prefetch_related(_firmas_con_retrato()),
+        Poem.objects.select_related("recording").prefetch_related(Poem.bylines_prefetch()),
         slug=slug,
     )
     anterior, siguiente = vecinos(Poem.objects.published(), poem)
     colecciones = Collection.objects.published().filter(poems=poem).order_by("title")
     pie = [puerta("Índice", "Todos los poemas", reverse("content:poem_index"))]
-    pie += firmas(poem.authors.all())
+    pie += firmas(poem.bylines)
     pie += [puerta("En la colección", c.title, c.get_absolute_url()) for c in colecciones]
     pie += puertas_vecinas(anterior, siguiente, "Poema", lambda p: p.title)
     response = render(
@@ -331,11 +330,11 @@ def collection_detail(request, slug):
             collection=collection, article__in=Article.objects.published()
         )
         .select_related("article", "article__section")
-        .prefetch_related("article__authors")
+        .prefetch_related(Article.bylines_prefetch("article__"))
     )
     poem_links = CollectionPoem.objects.filter(
         collection=collection, poem__in=Poem.objects.published()
-    ).prefetch_related("poem__authors")
+    ).prefetch_related(Poem.bylines_prefetch("poem__"))
     entries = [("article", link.position, link.article) for link in article_links]
     entries += [("poem", link.position, link.poem) for link in poem_links]
     items = [{"kind": kind, "object": obj} for kind, _, obj in sorted(entries, key=lambda e: e[1])]
