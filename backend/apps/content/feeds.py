@@ -34,7 +34,9 @@ class LatestArticlesFeed(Feed):
 
     def items(self):
         return (
-            Article.objects.published().select_related("section").prefetch_related("authors")[:20]
+            Article.objects.published()
+            .select_related("section")
+            .prefetch_related(Article.bylines_prefetch())[:20]
         )
 
     def item_title(self, item):
@@ -50,7 +52,7 @@ class LatestArticlesFeed(Feed):
         return item.published_at
 
     def item_author_name(self, item):
-        names = [a.display_name for a in item.authors.all()]
+        names = [a.display_name for a in item.bylines]
         return ", ".join(names) if names else None
 
     def item_categories(self, item):

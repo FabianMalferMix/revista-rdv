@@ -126,6 +126,11 @@
   --lh-titulo:1.1; --lh-ui:1.35; --lh-lectura:1.55; --lh-verso:1.5;
   --tr-rotulo:.1em; --tr-meta:.02em; --tr-titulo:-.015em;
 }
+
+/* `hidden` oculta siempre. Sin esta regla, cualquier `display` del autor (flex, grid, el de
+   `.btn`) le gana al del navegador y el elemento queda a la vista. */
+[hidden]{display:none !important}
+
 @supports (color:color-mix(in srgb, #000 50%, transparent)){
   :root{--line:color-mix(in srgb, var(--ink) 22%, transparent)}
 }
@@ -1217,7 +1222,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    llega la nueva, sin que la columna salte. */
 .estante-fichas{display:grid}
 .estante-ficha{grid-area:1 / 1; display:flex; flex-direction:column; gap:var(--s2); align-items:flex-start; padding-bottom:var(--s3)}
-.estante-ficha[hidden]{display:none}
 .estante-dato{margin:0}
 .estante-titulo{margin:0; font-family:var(--display); font-weight:800; font-size:var(--t5); line-height:1.05;
   letter-spacing:var(--tr-titulo)}
@@ -1337,7 +1341,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .tirada-h{grid-area:h; margin:0; font-family:var(--display); font-weight:700; font-size:var(--t5);
   line-height:var(--lh-titulo); letter-spacing:var(--tr-titulo); color:var(--ink)}
 .tirada-todos{grid-area:todos; margin:0}
-.tirada-contactos[hidden]{display:none}
 @media (max-width:719px){
   .tirada-cabeza{grid-template-columns:minmax(0, 1fr); grid-template-areas:"h" "todos"; row-gap:2px}
   .tirada-todos{justify-self:start}
@@ -1569,8 +1572,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .dossier-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0}
 .dossier-head .dek{font-size:var(--t2); margin:var(--s1) 0 0}
 .dossier-toolbar{display:flex; flex-wrap:wrap; gap:10px}
-/* `.btn` fija su `display`, y eso pesa más que el `hidden` del navegador. */
-.dossier-toolbar [hidden]{display:none}
 .dossier-section{margin:var(--s5) 0 0}
 .dossier-doc .subhead{margin:0 0 var(--s3)}
 .dossier-doc h3{margin:0}

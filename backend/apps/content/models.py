@@ -123,6 +123,29 @@ class EditorialItem(models.Model):
     def is_published(self):
         return self.status == publishing.PUBLISHED
 
+    @classmethod
+    def bylines_prefetch(cls, prefix=""):
+        """La precarga de `bylines`. Con `prefix` va sobre una relación: «article__»."""
+        through = cls.authors.through
+        return models.Prefetch(
+            f"{prefix}{through._meta.model_name}_set",
+            queryset=through.objects.select_related("contributor__photo").order_by(
+                "position", "pk"
+            ),
+        )
+
+    @property
+    def bylines(self):
+        """Quienes firman, en el orden de la coautoría: `position` y, a igualdad, el alta.
+
+        Django no aplica el orden del puente al M2M `authors`, que sale por nombre: las
+        firmas se leen siempre de aquí. El desempate por `pk` cuenta, porque el inline del
+        panel crea todas las filas en la posición 0. Sin precarga, la hace en el momento.
+        """
+        models.prefetch_related_objects([self], self.bylines_prefetch())
+        through = type(self).authors.through
+        return [row.contributor for row in getattr(self, f"{through._meta.model_name}_set").all()]
+
     def clean(self):
         super().clean()
         # La misma regla que la restricción, para que el panel la diga en el formulario: Django

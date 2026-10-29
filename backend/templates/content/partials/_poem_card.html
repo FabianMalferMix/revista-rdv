@@ -20,6 +20,6 @@
     {% endif %}
   </div>
   <p class="meta fila-pie">
-    {% firmas_sin p.authors.all sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if firmas %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
+    {% firmas_sin p.bylines sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if firmas %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
   </p>
 </li>

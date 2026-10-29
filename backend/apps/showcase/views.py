@@ -55,7 +55,7 @@ def publication_detail(request, slug):
         Article.objects.published()
         .filter(reviewed_works__publicacion=publication)
         .select_related("section", "cover_image")
-        .prefetch_related("authors")
+        .prefetch_related(Article.bylines_prefetch())
         .order_by("-published_at")
         .distinct()
     )
