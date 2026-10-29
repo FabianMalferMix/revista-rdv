@@ -3,6 +3,17 @@ from django.db import models
 from django.urls import reverse
 
 
+class ContributorQuerySet(models.QuerySet):
+    def members(self):
+        """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
+        # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).
+        return (
+            self.filter(is_member=True, active=True)
+            .select_related("photo")
+            .order_by("position", "display_name")
+        )
+
+
 class Contributor(models.Model):
     """Perfil público de colaborador. Distinto de la cuenta del sistema (User).
 
@@ -50,6 +61,8 @@ class Contributor(models.Model):
         default=0, help_text="Orden en la grilla de integrantes."
     )
 
+    objects = ContributorQuerySet.as_manager()
+
     class Meta:
         ordering = ["display_name"]
         verbose_name = "colaborador"
@@ -57,16 +70,6 @@ class Contributor(models.Model):
 
     def __str__(self):
         return self.display_name
-
-    @classmethod
-    def members(cls):
-        """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
-        # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).
-        return (
-            cls.objects.filter(is_member=True, active=True)
-            .select_related("photo")
-            .order_by("position", "display_name")
-        )
 
     def get_absolute_url(self):
         # Integrante → perfil rico; colaborador externo → página de byline.

@@ -25,10 +25,8 @@ from .models import (
     Collection,
     CollectionArticle,
     CollectionPoem,
-    EditorialStatus,
     Page,
     Poem,
-    PublishStatus,
     Section,
     Tag,
 )
@@ -42,7 +40,7 @@ logger = logging.getLogger(__name__)
 def _published():
     # cover_image: la fila de cada texto enseña su imagen en miniatura.
     return (
-        Article.objects.filter(status=EditorialStatus.PUBLISHED)
+        Article.objects.published()
         .select_related("section", "cover_image")
         .prefetch_related("authors")
     )
@@ -51,11 +49,7 @@ def _published():
 def _published_poems():
     # select_related("recording"): `published_recording` lo consulta en las fichas y en
     # las tarjetas de los listados; sin esto sería una consulta por poema.
-    return (
-        Poem.objects.filter(status=EditorialStatus.PUBLISHED)
-        .select_related("recording")
-        .prefetch_related("authors")
-    )
+    return Poem.objects.published().select_related("recording").prefetch_related("authors")
 
 
 def _paginate(request, queryset, per_page=12):
@@ -89,14 +83,16 @@ def _registros_destacados(profile):
     impreso, que ya va en grande), el primer verso del poema que se lee, quién lee, dónde
     y cuándo."""
     consulta = (
-        Recording.objects.filter(published=True)
+        Recording.objects.published()
         .select_related("poster", "event")
         .prefetch_related(
             "participants",
             # Solo las fotos de eventos publicados: las de uno oculto nunca llegan al pliego.
             Prefetch(
                 "event__photos",
-                queryset=EventPhoto.objects.filter(event__published=True).select_related("asset"),
+                queryset=EventPhoto.objects.filter(
+                    event__in=Event.objects.published()
+                ).select_related("asset"),
             ),
         )
     )
@@ -108,7 +104,8 @@ def _registros_destacados(profile):
     # El poema que se lee en cada registro: el último publicado que lo enlaza.
     poemas = {}
     for poema in (
-        Poem.objects.filter(recording__in=registros, status=EditorialStatus.PUBLISHED)
+        Poem.objects.published()
+        .filter(recording__in=registros)
         .prefetch_related("authors")
         .order_by("-published_at")
     ):
@@ -150,7 +147,7 @@ def home(request):
     # la tirada se piden aparte, con lo que cada pliego enseña.
     profile = SiteProfile.load("featured_poem", "hero_image", "hero_image_phone")
     featured_poem = profile.featured_poem
-    if featured_poem and featured_poem.status != EditorialStatus.PUBLISHED:
+    if featured_poem and not featured_poem.is_published:
         featured_poem = None  # el destacado solo se muestra si está publicado
     # La tirada de registros (D19). Sin ningún registro, el poema destacado, como antes:
     # nunca los dos a la vez.
@@ -160,16 +157,16 @@ def home(request):
     )
     # Todas, sin tope: a cada una le llega su turno en el relevo. Las escondidas solo cuestan
     # su marcado; sus retratos se piden cuando les toca. Se materializa para contarlas.
-    _members = list(Contributor.members())
+    _members = list(Contributor.objects.members())
     integrantes = len(_members)
     # Las destacadas primero: la primera del estante es la que va de frente. Con su editorial:
     # la ficha la nombra, y sin esto era una consulta por publicación.
     publicaciones = list(
-        Publication.objects.filter(published=True)
+        Publication.objects.published()
         .select_related("cover", "publisher")
         .order_by("-featured", "position", "-year", "title")[:ESTANTE]
     )
-    proximo = Event.upcoming().first()
+    proximo = Event.objects.upcoming().first()
     # La cejilla del titular: el lema, el lugar, el año y cuántas son. El Instagram lo
     # añade la plantilla, con las redes que ya trae el procesador del perfil.
     cejilla = profile.presentacion
@@ -203,7 +200,7 @@ def home(request):
             "next_event": proximo,
             "publications": publicaciones,
             # El sello del titular: solo mientras haya una convocatoria abierta.
-            "convocatoria": Call.open_now().first(),
+            "convocatoria": Call.objects.open_now().first(),
             "integrantes": integrantes,
             "puertas": puertas,
             "cejilla": cejilla,
@@ -212,7 +209,7 @@ def home(request):
             "portada_telefono": profile.hero_image_phone,
             # El cierre para programadores y jurados: lo último que hicieron y cuándo
             # publicaron por última vez.
-            "ultima_actividad": Event.past().first(),
+            "ultima_actividad": Event.objects.past().first(),
             "ultima_publicacion": ultima_publicacion(),
         },
     )
@@ -232,7 +229,7 @@ def _firmas_con_retrato():
 
 def article_detail(request, slug):
     article = get_object_or_404(
-        Article.objects.filter(status=EditorialStatus.PUBLISHED)
+        Article.objects.published()
         .select_related("section", "cover_image")
         .prefetch_related(
             _firmas_con_retrato(),
@@ -253,7 +250,7 @@ def article_detail(request, slug):
             )
         )
     pie += firmas(article.authors.all())
-    anterior, siguiente = vecinos(Article.objects.filter(status=EditorialStatus.PUBLISHED), article)
+    anterior, siguiente = vecinos(Article.objects.published(), article)
     pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
     return render(request, "content/article_detail.html", {"article": article, "pie": pie})
 
@@ -292,7 +289,7 @@ def contributor_detail(request, slug):
 
 
 def collection_index(request):
-    collections = Collection.objects.filter(status=PublishStatus.PUBLISHED)
+    collections = Collection.objects.published()
     return render(request, "content/collection_index.html", {"collections": collections})
 
 
@@ -304,15 +301,13 @@ def poem_index(request):
 
 def poem_detail(request, slug):
     poem = get_object_or_404(
-        Poem.objects.filter(status=EditorialStatus.PUBLISHED)
+        Poem.objects.published()
         .select_related("recording")
         .prefetch_related(_firmas_con_retrato()),
         slug=slug,
     )
-    anterior, siguiente = vecinos(Poem.objects.filter(status=EditorialStatus.PUBLISHED), poem)
-    colecciones = Collection.objects.filter(poems=poem, status=PublishStatus.PUBLISHED).order_by(
-        "title"
-    )
+    anterior, siguiente = vecinos(Poem.objects.published(), poem)
+    colecciones = Collection.objects.published().filter(poems=poem).order_by("title")
     pie = [puerta("Índice", "Todos los poemas", reverse("content:poem_index"))]
     pie += firmas(poem.authors.all())
     pie += [puerta("En la colección", c.title, c.get_absolute_url()) for c in colecciones]
@@ -321,17 +316,17 @@ def poem_detail(request, slug):
 
 
 def collection_detail(request, slug):
-    collection = get_object_or_404(Collection, slug=slug, status=PublishStatus.PUBLISHED)
+    collection = get_object_or_404(Collection.objects.published(), slug=slug)
     # Secuencia curada única: artículos y poemas publicados, mezclados por `position`.
     article_links = (
         CollectionArticle.objects.filter(
-            collection=collection, article__status=EditorialStatus.PUBLISHED
+            collection=collection, article__in=Article.objects.published()
         )
         .select_related("article", "article__section")
         .prefetch_related("article__authors")
     )
     poem_links = CollectionPoem.objects.filter(
-        collection=collection, poem__status=EditorialStatus.PUBLISHED
+        collection=collection, poem__in=Poem.objects.published()
     ).prefetch_related("poem__authors")
     entries = [("article", link.position, link.article) for link in article_links]
     entries += [("poem", link.position, link.poem) for link in poem_links]
@@ -344,7 +339,7 @@ def collection_detail(request, slug):
 
 
 def page_detail(request, slug):
-    page = get_object_or_404(Page, slug=slug, status=PublishStatus.PUBLISHED)
+    page = get_object_or_404(Page.objects.published(), slug=slug)
     return render(request, "content/page_detail.html", {"page": page})
 
 
@@ -430,13 +425,15 @@ def search(request):
         # `[:tope]` en cada queryset hace que el LIMIT viaje al SQL, y `only()` evita
         # traer el texto completo de cada pieza para nada.
         articles = (
-            Article.objects.filter(status=EditorialStatus.PUBLISHED, search_vector=query)
+            Article.objects.published()
+            .filter(search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
             .only("slug", "title", "type")
             .order_by("-rank")[:tope]
         )
         poems = (
-            Poem.objects.filter(status=EditorialStatus.PUBLISHED, search_vector=query)
+            Poem.objects.published()
+            .filter(search_vector=query)
             .annotate(rank=SearchRank("search_vector", query))
             .only("slug", "title")
             .order_by("-rank")[:tope]

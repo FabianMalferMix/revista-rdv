@@ -351,7 +351,7 @@ class Command(BaseCommand):
         fotos_por_evento = max(0, options["fotos_por_evento"])
 
         # Integrantes: retrato 4:5.
-        for m in Contributor.members():
+        for m in Contributor.objects.members():
             self._colocar(
                 m,
                 "photo",
@@ -447,7 +447,7 @@ class Command(BaseCommand):
 
         # Perfil del sitio: foto de grupo (og_image) y manifiesto si aún es el de la siembra.
         perfil = SiteProfile.load()
-        nombres = [m.display_name for m in Contributor.members()]
+        nombres = [m.display_name for m in Contributor.objects.members()]
         self._colocar(
             perfil,
             "og_image",

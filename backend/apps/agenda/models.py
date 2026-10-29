@@ -2,6 +2,25 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
+from config import publishing
+
+
+class EventQuerySet(publishing.PublishableQuerySet):
+    def upcoming(self):
+        """Eventos publicados futuros, del más próximo al más lejano (Agenda). Con su afiche
+        en la misma consulta: la agenda y la portada lo enseñan."""
+        return (
+            self.published()
+            .filter(starts_at__gte=timezone.now())
+            .select_related("poster")
+            .order_by("starts_at")
+        )
+
+    def past(self):
+        """Eventos publicados ya realizados, del más reciente al más antiguo (Trayectoria).
+        Con su afiche en la misma consulta: la trayectoria lo enseña en cada fila."""
+        return self.published().filter(starts_at__lt=timezone.now()).select_related("poster")
+
 
 class Event(models.Model):
     """Actividad del colectivo: recital, lanzamiento, taller, festival…
@@ -42,6 +61,8 @@ class Event(models.Model):
     published = models.BooleanField(default=False)
     featured = models.BooleanField(default=False)
 
+    objects = EventQuerySet.as_manager()
+
     class Meta:
         ordering = ["-starts_at"]
         verbose_name = "evento"
@@ -56,24 +77,6 @@ class Event(models.Model):
     @property
     def is_past(self):
         return self.starts_at < timezone.now()
-
-    @classmethod
-    def upcoming(cls):
-        """Eventos publicados futuros, del más próximo al más lejano (Agenda). Con su afiche
-        en la misma consulta: la agenda y la portada lo enseñan."""
-        return (
-            cls.objects.filter(published=True, starts_at__gte=timezone.now())
-            .select_related("poster")
-            .order_by("starts_at")
-        )
-
-    @classmethod
-    def past(cls):
-        """Eventos publicados ya realizados, del más reciente al más antiguo (Trayectoria).
-        Con su afiche en la misma consulta: la trayectoria lo enseña en cada fila."""
-        return cls.objects.filter(published=True, starts_at__lt=timezone.now()).select_related(
-            "poster"
-        )
 
 
 class EventPhoto(models.Model):

@@ -75,9 +75,11 @@ class RecordingsFeed(Feed):
         return super().get_feed(obj, request)
 
     def items(self):
-        return Recording.objects.filter(published=True, kind=Recording.Kind.AUDIO).order_by(
-            "-published_at", "-created_at"
-        )[:20]
+        return (
+            Recording.objects.published()
+            .filter(kind=Recording.Kind.AUDIO)
+            .order_by("-published_at", "-created_at")[:20]
+        )
 
     def item_title(self, item):
         return item.title

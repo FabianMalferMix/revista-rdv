@@ -4,6 +4,12 @@ from urllib.parse import urlsplit
 from django.db import models
 
 from apps.media.validators import validate_pdf_extension
+from config import publishing
+
+
+class PartnerQuerySet(publishing.PublishableQuerySet):
+    # Un aliado se enseña mientras la alianza sigue en pie.
+    published_field = "active"
 
 
 class SiteProfile(models.Model):
@@ -213,6 +219,8 @@ class Publication(models.Model):
     published = models.BooleanField(default=False)
     position = models.PositiveSmallIntegerField(default=0)
 
+    objects = publishing.PublishableQuerySet.as_manager()
+
     class Meta:
         ordering = ["position", "-year", "title"]
         verbose_name = "publicación"
@@ -294,6 +302,8 @@ class PressMention(models.Model):
     published = models.BooleanField(default=True)
     position = models.PositiveSmallIntegerField(default=0)
 
+    objects = publishing.PublishableQuerySet.as_manager()
+
     class Meta:
         ordering = ["position", "-published_on"]
         verbose_name = "mención en prensa"
@@ -323,6 +333,8 @@ class Partner(models.Model):
     description = models.TextField(blank=True)
     active = models.BooleanField(default=True)
     position = models.PositiveSmallIntegerField(default=0)
+
+    objects = PartnerQuerySet.as_manager()
 
     class Meta:
         ordering = ["position", "name"]

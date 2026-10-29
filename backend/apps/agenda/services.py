@@ -23,7 +23,7 @@ def stats(perfil=None):
     years = None
     if profile.founded_year:
         years = max(timezone.now().year - profile.founded_year, 1)
-    cuentas = Event.past().aggregate(
+    cuentas = Event.objects.past().aggregate(
         events=Count("pk"),
         festivales=Count("pk", filter=Q(type=Event.Type.FESTIVAL)),
         ferias=Count("pk", filter=Q(type=Event.Type.FERIA)),
@@ -34,7 +34,7 @@ def stats(perfil=None):
         "festivals": cuentas["festivales"] + cuentas["ferias"],
         "festivales": cuentas["festivales"],
         "ferias": cuentas["ferias"],
-        "publications": Publication.objects.filter(published=True).count(),
+        "publications": Publication.objects.published().count(),
     }
 
 

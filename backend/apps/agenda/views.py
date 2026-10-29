@@ -15,7 +15,7 @@ def agenda(request):
     return render(
         request,
         "agenda/agenda.html",
-        {"events": Event.upcoming(), "recientes": Event.past()[:3]},
+        {"events": Event.objects.upcoming(), "recientes": Event.objects.past()[:3]},
     )
 
 
@@ -23,16 +23,16 @@ def trayectoria(request):
     # Línea de tiempo agrupada por año, del más reciente al más antiguo. La editorial de
     # cada publicación viene en la misma consulta: la fila la nombra.
     timeline = cronologia(
-        Event.past(),
+        Event.objects.past(),
         Milestone.objects.all(),
-        Publication.objects.filter(published=True, year__isnull=False).select_related("publisher"),
+        Publication.objects.published().filter(year__isnull=False).select_related("publisher"),
     )
     return render(request, "agenda/trayectoria.html", {"timeline": timeline, "stats": stats()})
 
 
 def event_detail(request, slug):
     event = get_object_or_404(
-        Event.objects.filter(published=True)
+        Event.objects.published()
         .select_related("poster")
         .prefetch_related("participants", "photos__asset", "recordings"),
         slug=slug,
@@ -55,7 +55,7 @@ def event_detail(request, slug):
     pie.append(puerta("Para programar", "Dossier", reverse("showcase:dossier")))
     # Las actividades van por fecha: «anterior» es la de antes en el tiempo. `vecinos`
     # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.
-    mas_reciente, mas_antigua = vecinos(Event.objects.filter(published=True), event, "starts_at")
+    mas_reciente, mas_antigua = vecinos(Event.objects.published(), event, "starts_at")
     pie += puertas_vecinas(mas_antigua, mas_reciente, "Actividad", lambda e: e.title)
     # Quién hizo las fotos, una vez bajo el álbum; cada foto lo repite en su vista ampliada.
     # Sale de la caché del prefetch (photos__asset): no añade consultas.
@@ -69,7 +69,8 @@ def event_detail(request, slug):
 
 def gallery(request):
     events = (
-        Event.objects.filter(published=True, photos__isnull=False)
+        Event.objects.published()
+        .filter(photos__isnull=False)
         .distinct()
         .prefetch_related("photos__asset")
         .order_by("-starts_at")

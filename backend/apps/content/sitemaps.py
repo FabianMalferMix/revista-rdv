@@ -7,7 +7,7 @@ from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Publication
 
-from .models import Article, Collection, EditorialStatus, Page, Poem, PublishStatus, Section
+from .models import Article, Collection, Page, Poem, Section
 
 
 class StaticViewSitemap(Sitemap):
@@ -48,7 +48,7 @@ class ArticleSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Article.objects.filter(status=EditorialStatus.PUBLISHED)
+        return Article.objects.published()
 
     def lastmod(self, obj):
         return obj.updated_at
@@ -73,7 +73,7 @@ class PoemSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Poem.objects.filter(status=EditorialStatus.PUBLISHED)
+        return Poem.objects.published()
 
     def lastmod(self, obj):
         return obj.updated_at
@@ -87,7 +87,7 @@ class CollectionSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Collection.objects.filter(status=PublishStatus.PUBLISHED)
+        return Collection.objects.published()
 
     def location(self, obj):
         return reverse("content:collection_detail", args=[obj.slug])
@@ -98,7 +98,7 @@ class PageSitemap(Sitemap):
     priority = 0.3
 
     def items(self):
-        return Page.objects.filter(status=PublishStatus.PUBLISHED)
+        return Page.objects.published()
 
     def location(self, obj):
         return reverse("content:page_detail", args=[obj.slug])
@@ -109,7 +109,7 @@ class EventSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Event.objects.filter(published=True)
+        return Event.objects.published()
 
     def location(self, obj):
         return obj.get_absolute_url()
@@ -120,7 +120,7 @@ class PublicationSitemap(Sitemap):
     priority = 0.7
 
     def items(self):
-        return Publication.objects.filter(published=True)
+        return Publication.objects.published()
 
     def location(self, obj):
         return obj.get_absolute_url()
@@ -131,7 +131,7 @@ class RecordingSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Recording.objects.filter(published=True)
+        return Recording.objects.published()
 
     def location(self, obj):
         return obj.get_absolute_url()
@@ -142,7 +142,7 @@ class MemberSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Contributor.members()
+        return Contributor.objects.members()
 
     def location(self, obj):
         return reverse("people:member_detail", args=[obj.slug])

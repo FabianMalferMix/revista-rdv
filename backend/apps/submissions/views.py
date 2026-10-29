@@ -11,7 +11,7 @@ from .models import Call, Submission
 
 
 def _open_call():
-    return Call.open_now().first()
+    return Call.objects.open_now().first()
 
 
 @ratelimit(key="ip", rate="10/h", method="POST", block=False)

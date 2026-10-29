@@ -14,7 +14,7 @@ Sitio del colectivo de poesía Repitentes del Verso: Django 5.2 LTS, htmx, Postg
    - Los cálculos visuales, en templatetags.
    - Las señales, en `signals.py`.
    - Lo transversal, en `config/`, nunca en la app que se está tocando.
-2. **Lo publicable.** La regla de visibilidad vive en el modelo y no se reescribe a mano. Toda relación hacia algo publicable respeta su estado.
+2. **Lo publicable.** La regla de visibilidad vive en el QuerySet del modelo (`Modelo.objects.published()`, ver `config/publishing.py`) y no se reescribe a mano. Toda relación hacia algo publicable respeta su estado.
 3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas (Python, CSS, JS, plantillas, Caddy), se decide en un lugar y viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la relación entre la fuente y la copia.
 4. **Idioma.**
    - Los identificadores nuevos de Python y de JavaScript, en inglés.

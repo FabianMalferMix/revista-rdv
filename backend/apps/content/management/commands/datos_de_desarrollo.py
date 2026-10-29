@@ -34,7 +34,6 @@ from django.core.files.storage import default_storage
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import models
-from django.db.models import Q
 from django.db.models.functions import Now
 
 from apps.devtools.models import DevelopmentMarker
@@ -76,22 +75,25 @@ MODELOS = [
 # Si alguno tiene filas, la base ya tiene contenido y `cargar` no la toca.
 CON_CONTENIDO = ["content.Poem", "content.Article", "media.MediaAsset", "showcase.Publication"]
 
-# Las filas que el sitio muestra por sí mismas.
+# Las filas que el sitio muestra por sí mismas, a partir del manager de cada modelo. Qué está
+# publicado lo decide su QuerySet (config/publishing.py), el mismo que usan las vistas.
 PUBLIC_ROWS = {
-    "content.Article": Q(status="published"),
-    "content.Poem": Q(status="published"),
-    "content.Collection": Q(status="published"),
-    "content.Page": Q(status="published"),
-    "media.Recording": Q(published=True) & ~Q(slug__startswith="test-"),
-    "agenda.Event": Q(published=True),
-    "agenda.Milestone": Q(),
-    "showcase.SiteProfile": Q(),
-    "showcase.Publication": Q(published=True),
-    "showcase.PressMention": Q(published=True),
-    "showcase.Partner": Q(active=True),
-    "submissions.Call": Q(opens_at__lte=Now()),
-    "people.Contributor": Q(is_member=True),
-    "reviews.Work": Q(publicacion__published=True),
+    "content.Article": lambda rows: rows.published(),
+    "content.Poem": lambda rows: rows.published(),
+    "content.Collection": lambda rows: rows.published(),
+    "content.Page": lambda rows: rows.published(),
+    "media.Recording": lambda rows: rows.published().exclude(slug__startswith="test-"),
+    "agenda.Event": lambda rows: rows.published(),
+    "agenda.Milestone": lambda rows: rows.all(),
+    "showcase.SiteProfile": lambda rows: rows.all(),
+    "showcase.Publication": lambda rows: rows.published(),
+    "showcase.PressMention": lambda rows: rows.published(),
+    "showcase.Partner": lambda rows: rows.published(),
+    "submissions.Call": lambda rows: rows.filter(opens_at__lte=Now()),
+    "people.Contributor": lambda rows: rows.filter(is_member=True),
+    "reviews.Work": lambda rows: rows.filter(
+        publicacion__in=apps.get_model("showcase.Publication").objects.published()
+    ),
 }
 
 # Las piezas sin publicar que viajan igual, para enseñar el flujo editorial en el panel.
@@ -227,11 +229,12 @@ def unclassified():
 def exported_pks():
     """Las claves de las filas que viajan, por modelo."""
     included = {label: set() for label in MODELOS}
-    for label, condition in PUBLIC_ROWS.items():
+    for label, public in PUBLIC_ROWS.items():
+        objects = apps.get_model(label).objects
+        rows = public(objects)
         demo = DEMO_UNPUBLISHED.get(label)
-        rows = apps.get_model(label).objects.filter(
-            (condition | Q(slug__in=demo)) if demo else condition
-        )
+        if demo:
+            rows = rows | objects.filter(slug__in=demo)
         included[label] |= set(rows.values_list("pk", flat=True))
     changed = True
     while changed:

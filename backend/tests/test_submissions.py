@@ -176,4 +176,4 @@ def test_open_now_solo_devuelve_las_convocatorias_abiertas():
         opens_at=ahora + timedelta(days=1),
         closes_at=ahora + timedelta(days=9),
     )
-    assert list(Call.open_now()) == [abierta]
+    assert list(Call.objects.open_now()) == [abierta]

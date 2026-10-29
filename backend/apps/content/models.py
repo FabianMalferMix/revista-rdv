@@ -9,6 +9,8 @@ from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.urls import reverse
 
+from config import publishing
+
 from .sanitize import clean_html
 
 
@@ -56,7 +58,7 @@ class EditorialStatus(models.TextChoices):
     CHANGES_REQUESTED = "changes_requested", "Cambios pedidos"
     APPROVED = "approved", "Aprobado"
     SCHEDULED = "scheduled", "Programado"
-    PUBLISHED = "published", "Publicado"
+    PUBLISHED = publishing.PUBLISHED, "Publicado"
     ARCHIVED = "archived", "Archivado"
     REJECTED = "rejected", "Rechazado"
 
@@ -95,8 +97,14 @@ class EditorialItem(models.Model):
     transitions = GenericRelation("content.EditorialTransition", related_query_name="%(class)s")
     editorial_notes = GenericRelation("content.EditorialNote", related_query_name="%(class)s")
 
+    objects = publishing.EditorialQuerySet.as_manager()
+
     class Meta:
         abstract = True
+
+    @property
+    def is_published(self):
+        return self.status == publishing.PUBLISHED
 
 
 class Article(EditorialItem):
@@ -299,7 +307,7 @@ class PoemContributor(models.Model):
 
 class PublishStatus(models.TextChoices):
     DRAFT = "draft", "Borrador"
-    PUBLISHED = "published", "Publicado"
+    PUBLISHED = publishing.PUBLISHED, "Publicado"
 
 
 class Collection(models.Model):
@@ -326,6 +334,8 @@ class Collection(models.Model):
     poems = models.ManyToManyField(
         Poem, through="content.CollectionPoem", blank=True, related_name="collections"
     )
+
+    objects = publishing.EditorialQuerySet.as_manager()
 
     class Meta:
         ordering = ["-published_at"]
@@ -384,6 +394,8 @@ class Page(models.Model):
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
+
+    objects = publishing.EditorialQuerySet.as_manager()
 
     class Meta:
         ordering = ["title"]

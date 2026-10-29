@@ -90,5 +90,5 @@ def test_members_photo_has_no_n_plus_one(django_assert_num_queries):
         )
     # 1 sola query (con JOIN a photo); acceder a .photo no añade consultas.
     with django_assert_num_queries(1):
-        for m in Contributor.members():
+        for m in Contributor.objects.members():
             _ = m.photo.file.name if m.photo else None
