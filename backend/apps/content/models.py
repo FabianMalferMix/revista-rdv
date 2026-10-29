@@ -151,6 +151,11 @@ class Article(EditorialItem):
         ]
         verbose_name = "artículo"
         verbose_name_plural = "artículos"
+        # Los dos pasos del flujo que no son de la autora (workflow.TRANSITIONS).
+        permissions = [
+            ("review_article", "Puede revisar textos"),
+            ("publish_article", "Puede publicar textos"),
+        ]
 
     def __str__(self):
         return self.title
@@ -268,6 +273,11 @@ class Poem(EditorialItem):
         ]
         verbose_name = "poema"
         verbose_name_plural = "poemas"
+        # Los dos pasos del flujo que no son de la autora (workflow.TRANSITIONS).
+        permissions = [
+            ("review_poem", "Puede revisar poemas"),
+            ("publish_poem", "Puede publicar poemas"),
+        ]
 
     def __str__(self):
         return self.title

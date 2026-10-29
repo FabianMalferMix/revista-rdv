@@ -21,6 +21,8 @@ AUTHOR = "autor"
 
 ALL = frozenset({"add", "change", "delete", "view"})
 READ = frozenset({"view"})
+# Las piezas del flujo editorial suman revisar y publicar (Meta.permissions de Article y Poem).
+EDITORIAL = ALL | {"review", "publish"}
 
 # Lo que solo gestiona el admin (además de las cuentas, que no son de ninguna app del proyecto).
 ADMIN_ONLY = frozenset(
@@ -44,10 +46,10 @@ EDITOR_PERMISSIONS = {
     "reviews.Work": ALL,
     "content.Section": ALL,
     "content.Tag": ALL,
-    "content.Article": ALL,
+    "content.Article": EDITORIAL,
     "content.ArticleContributor": ALL,
     "content.ReviewedWork": ALL,
-    "content.Poem": ALL,
+    "content.Poem": EDITORIAL,
     "content.PoemContributor": ALL,
     "content.Collection": ALL,
     "content.CollectionArticle": ALL,

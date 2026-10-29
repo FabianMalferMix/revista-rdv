@@ -4,8 +4,6 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django_ratelimit.decorators import ratelimit
 
-from apps.content.permissions import is_editor
-
 from .forms import SubmissionForm
 from .models import Call, Submission
 
@@ -47,8 +45,9 @@ def submit_thanks(request):
 
 @staff_member_required
 def submission_file(request, pk):
-    """Descarga del adjunto, solo para editores. Los envíos no son públicos."""
-    if not is_editor(request.user):
+    """Descarga del adjunto, para quien puede ver los envíos en el panel. No son públicos: sin el
+    permiso responde 404, sin decir si el envío existe."""
+    if not request.user.has_perm("submissions.view_submission"):
         raise Http404
     submission = get_object_or_404(Submission, pk=pk)
     if not submission.file:
