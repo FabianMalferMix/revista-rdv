@@ -1,6 +1,6 @@
 """La matriz de roles (apps/people/roles.py), con los grupos reales y por el panel.
 
-Cada modelo del proyecto está clasificado de forma explícita. Los grupos cumplen la regla C2: el
+Cada modelo del proyecto está clasificado de forma explícita. Los grupos cumplen lo decidido: el
 editor, todo salvo el perfil del sitio y las cuentas; la autora, sus textos y sus poemas, sin
 editar el catálogo ni ver datos personales. Se comprueba con invariantes y por HTTP, no contra una
 lista exacta. Y `setup_groups` sincroniza de forma aditiva.
