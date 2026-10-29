@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 15 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 16 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -84,7 +84,7 @@
 | B15 | Roles declarados y sincronizados | B06 | M | sí | hecho (#189) |
 | B16 | Permisos de Django en el flujo y en los envíos | B15 | S | sí | hecho (#190) |
 | B17 | Una sola forma de publicar y un flujo sin puertas laterales | B12 | M | sí | pendiente |
-| B18 | Vista previa para el equipo | B13, B15 | M | no | pendiente |
+| B18 | Vista previa para el equipo | B13, B15 | M | no | hecho (#192) |
 
 **Tanda 3 — Correcciones pequeñas con efecto visible**
 
