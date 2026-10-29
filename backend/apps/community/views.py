@@ -2,8 +2,8 @@ import logging
 import secrets
 
 from django.contrib import messages
-from django.http import Http404
-from django.shortcuts import redirect, render
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -36,14 +36,19 @@ def _por_token(campo, token):
 
 
 def _safe_next(request):
-    """Destino de redirección validado: solo rutas del propio sitio. Evita el open
-    redirect (CWE-601) de un `next` arbitrario (p. ej. //evil.com) — hallazgo #07."""
-    nxt = request.POST.get("next")
-    if nxt and url_has_allowed_host_and_scheme(
+    """La ruta del propio sitio adonde volver tras el alta; si no hay una válida, la portada.
+
+    Devuelve siempre una URL, nunca un nombre de vista. Solo vale una ruta que empieza por
+    «/»: `url_has_allowed_host_and_scheme` acepta también una palabra suelta («agenda»), que
+    `redirect()` intentaba resolver como nombre de vista (un 500), y rechaza `//evil.com`
+    (redirección abierta, CWE-601).
+    """
+    nxt = request.POST.get("next", "")
+    if nxt.startswith("/") and url_has_allowed_host_and_scheme(
         nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()
     ):
         return nxt
-    return "content:home"
+    return reverse("content:home")
 
 
 @require_POST
@@ -58,14 +63,14 @@ def subscribe(request):
     nxt = _safe_next(request)
     if getattr(request, "limited", False):  # rate-limit por IP superado
         messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
-        return redirect(nxt)
+        return HttpResponseRedirect(nxt)
     form = SubscribeForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Revisa el correo ingresado.")
-        return redirect(nxt)
+        return HttpResponseRedirect(nxt)
     if form.cleaned_data["apodo"]:  # honeypot
         messages.success(request, ALTA_NEUTRA)
-        return redirect(nxt)
+        return HttpResponseRedirect(nxt)
 
     sub, _ = NewsletterSubscriber.objects.get_or_create(email=form.cleaned_data["email"])
     # A quien ya confirmó no se le reenvía nada, pero la respuesta es idéntica.
@@ -79,7 +84,7 @@ def subscribe(request):
         sub.save(update_fields=["token", "confirm_token", "confirm_token_at", "status"])
         _send_confirmation(request, sub)
     messages.success(request, ALTA_NEUTRA)
-    return redirect(nxt)
+    return HttpResponseRedirect(nxt)
 
 
 def _send_confirmation(request, sub):

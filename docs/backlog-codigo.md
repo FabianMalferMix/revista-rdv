@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 20 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 21 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -95,7 +95,7 @@
 | B21 | El poema destacado conserva sus versos | — | S | no | pendiente |
 | B22 | Las páginas legales no se rompen desde el panel | — | S | sí | pendiente |
 | B23 | `[hidden]` en una sola regla | B11 | S | no | hecho (#198) |
-| B24 | Dos fallos de la capa HTTP: HEAD y `next` | — | S | no | pendiente |
+| B24 | Dos fallos de la capa HTTP: HEAD y `next` | — | S | no | hecho (#199) |
 | B25 | Campos sin efecto fuera e imagen para compartir conectada | — | S | no | pendiente |
 | B26 | Medidas de la portada: lo que hoy falla | B11 | S | no | pendiente |
 

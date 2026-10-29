@@ -11,6 +11,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
+from django.views.decorators.http import require_safe
 from django_ratelimit.decorators import ratelimit
 
 from apps.agenda.models import Event, EventPhoto
@@ -402,7 +403,10 @@ def _resultado_por_nombre(fila):
     return reverse("agenda:event_detail", args=[slug]), _dato(clase, cuando, fila["lugar"])
 
 
-@ratelimit(key="ip", rate="60/m", method="GET", block=False)
+# HEAD ejecuta la vista entera (Django solo descarta el cuerpo): cuenta para el límite como
+# un GET. Los demás métodos no tienen nada que hacer aquí.
+@require_safe
+@ratelimit(key="ip", rate="60/m", method=["GET", "HEAD"], block=False)
 def search(request):
     """Buscador en vivo (htmx) y página de búsqueda: textos y poemas publicados (FTS) y,
     por nombre o título, personas, registros, publicaciones y actividades (ticket 5.4).

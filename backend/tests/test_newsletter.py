@@ -142,6 +142,18 @@ def test_subscribe_next_same_site_is_honored(client):
     assert resp["Location"] == "/textos/"
 
 
+@override_settings(EMAIL_BACKEND=LOCMEM)
+@pytest.mark.parametrize("email", ["no-es-un-correo", "valido@example.com"])
+@pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
+def test_subscribe_with_a_bogus_next_returns_home(client, nxt, email):
+    """Una palabra suelta en `next` era un nombre de vista para `redirect()`: «agenda» daba
+    un 500 y «feed» llevaba a /feed/. Ahora todo lo que no es una ruta local lleva a la
+    portada; el control de que una ruta local sí se respeta es la prueba anterior."""
+    resp = client.post(reverse("community:subscribe"), {"email": email, "apodo": "", "next": nxt})
+    assert resp.status_code == 302
+    assert resp["Location"] == reverse("content:home")
+
+
 def test_subscribe_degrades_gracefully_when_broker_is_down(client):
     """Si el broker está caído al encolar el correo, el alta NO revienta con 500: el
     suscriptor queda guardado y el fallo se registra (hallazgo: degradación Celery)."""
