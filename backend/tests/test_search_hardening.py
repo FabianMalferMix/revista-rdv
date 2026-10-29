@@ -9,7 +9,9 @@ alcanzable con `?q=%00`.
 import time
 
 import pytest
+from django.db import connection
 from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 pytestmark = pytest.mark.django_db
@@ -123,3 +125,30 @@ def test_el_limite_no_estorba_al_uso_normal(client, make_article):
     for _ in range(20):
         resp = client.get(BUSCAR, {"q": "umbral"})
     assert "Demasiadas búsquedas".encode() not in resp.content
+
+
+def _search_queries(client, method):
+    with CaptureQueriesContext(connection) as consultas:
+        respuesta = getattr(client, method)(BUSCAR, {"q": "umbral"})
+    assert respuesta.status_code == 200
+    return [c["sql"] for c in consultas.captured_queries if "plainto_tsquery" in c["sql"]]
+
+
+def test_head_counts_towards_the_search_limit(client, make_article, monkeypatch):
+    """Tras 61 GET, un HEAD no ejecuta ninguna búsqueda: Django corre la vista entera también
+    en HEAD, y antes el límite solo contaba los GET. Control: antes del límite, el mismo
+    HEAD sí busca."""
+    from django_ratelimit import core
+
+    window = int(time.time()) + 3600
+    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
+    make_article(title="Umbral", status="published")
+    assert _search_queries(client, "head")
+    for i in range(61):
+        client.get(BUSCAR, {"q": f"umbral {i}"})
+    assert _search_queries(client, "head") == []
+
+
+def test_search_only_answers_safe_methods(client):
+    assert client.get(BUSCAR, {"q": "umbral"}).status_code == 200
+    assert client.post(BUSCAR, {"q": "umbral"}).status_code == 405

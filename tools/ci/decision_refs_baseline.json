@@ -5,7 +5,7 @@
   ".gitleaksignore": 1,
   "backend/apps/community/forms.py": 1,
   "backend/apps/community/models.py": 3,
-  "backend/apps/community/views.py": 6,
+  "backend/apps/community/views.py": 5,
   "backend/apps/content/context_processors.py": 3,
   "backend/apps/content/management/commands/seed_demo.py": 2,
   "backend/apps/content/management/commands/textos_largos/resena-inventario.html": 1,

@@ -3,7 +3,9 @@
 import re
 
 import pytest
+from bs4 import BeautifulSoup
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.content.models import Article, EditorialStatus, Poem
 from tests.factories import publish as _publish
@@ -299,3 +301,37 @@ def test_los_cuatro_tipos_por_nombre_son_una_sola_consulta(client):
     assert len(pocas) == len(muchas) == 1
     assert muchas[0].count("UNION ALL") == 3
     assert muchas[0].count("LIMIT 10") == 4, "cada tipo lleva su tope en el SQL"
+
+
+def _result_titles(resp):
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    return [a.get_text() for a in sopa.select(".search-list li > a")]
+
+
+def test_search_puts_the_most_relevant_text_first(client, make_article):
+    """El que nombra el término en el título y lo repite sale antes que el que lo menciona
+    una vez, aunque este se publicara antes y la base lo devuelva primero."""
+    _publish(
+        make_article(
+            slug="mencion", title="Diario de costa", body="Vimos una ballena. " + "mar " * 80
+        )
+    )
+    _publish(
+        make_article(
+            slug="tema", title="La ballena", body="La ballena canta. La ballena vuelve. " * 5
+        )
+    )
+    titles = _result_titles(client.get(reverse("content:search"), {"q": "ballena"}))
+    assert titles == ["La ballena", "Diario de costa"]
+
+
+def test_search_puts_the_most_relevant_poem_first(client):
+    for slug, title, body in [
+        ("mencion", "Orilla", "Pasó una ballena\n" + "agua\n" * 40),
+        ("tema", "Ballena", "ballena de sal\nballena de sombra\nballena\n" * 3),
+    ]:
+        Poem.objects.create(
+            slug=slug, title=title, body=body, status=S.PUBLISHED, published_at=timezone.now()
+        )
+    titles = _result_titles(client.get(reverse("content:search"), {"q": "ballena"}))
+    assert titles == ["Ballena", "Orilla"]
