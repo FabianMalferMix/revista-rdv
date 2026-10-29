@@ -757,18 +757,19 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .member-about{max-width:var(--medida)}
 .member-about p{margin:10px 0}
 
-/* Poemas: tipografía fiel (pre-wrap preserva versos, sangrías y espacios) */
+/* Poemas: la ficha (`.poem-body`) y el extracto del poema destacado (`.poem-excerpt`) */
 .poem h1{font-size:var(--t6); line-height:1.15; margin:10px 0 6px; text-wrap:balance}
 /* El poema llega marcado verso a verso (filtro `versos`): cada verso es un bloque con
    sangría francesa —si no cabe, la continuación entra 1,5 em y se lee como continuación,
-   no como un verso nuevo— y conserva sus espacios iniciales. Entre estrofas, una línea en
-   blanco: el salto que el autor dejó, ni más ni menos. */
+   no como un verso nuevo— y conserva sus espacios iniciales: el `white-space:pre-wrap` va
+   en `.verso`, no en el contenedor. Entre estrofas, una línea en blanco: el salto que el
+   autor dejó, ni más ni menos. */
 .poem-body{font-size:var(--t2); line-height:var(--lh-verso); margin:0; overflow-x:auto}
 .estrofa{margin:0}
 .estrofa + .estrofa{margin-top:calc(var(--lh-verso) * 1em)}
 .verso{display:block; white-space:pre-wrap; padding-left:1.5em; text-indent:-1.5em}
 .poem-epigraph{font-style:italic}
-.poem-excerpt{font-size:var(--t1); margin:14px 0}
+.poem-excerpt{font-size:var(--t1); line-height:var(--lh-verso); margin:14px 0}
 
 /* Agenda, trayectoria y galería */
 /* Botón. Un componente con dos vestidos, donde había cinco botones distintos (el del

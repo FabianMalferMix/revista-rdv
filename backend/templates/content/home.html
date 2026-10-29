@@ -92,7 +92,7 @@
     <section class="home-block featured">
       <span class="kicker">Poema destacado</span>
       <h2><a href="{{ featured.object.get_absolute_url }}">{{ featured.object.title }}</a></h2>
-      <div class="poem-body poem-excerpt">{{ featured.object.body|truncatechars:280 }}</div>
+      <div class="poem-excerpt">{{ featured.object.body|opening_stanzas|versos }}</div>
       <p class="meta">
         {% for c in featured.object.bylines %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
         · <a href="{{ featured.object.get_absolute_url }}">Leer completo →</a>

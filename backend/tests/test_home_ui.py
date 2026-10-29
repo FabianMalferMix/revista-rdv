@@ -81,6 +81,46 @@ def test_sin_registros_destacados_vuelve_el_poema_destacado(client, make_poem):
     assert sopa.select_one(".featured h2").get_text() == "Poema Destacado"
 
 
+def _featured_excerpt(client, make_poem, body):
+    profile = SiteProfile.load()
+    profile.featured_poem = make_poem(
+        slug="p-dest",
+        title="Poema Destacado",
+        body=body,
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+    )
+    profile.save()
+    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    assert sopa.select_one(".tirada") is None
+    return sopa.select_one(".featured .poem-excerpt")
+
+
+def test_featured_poem_excerpt_keeps_its_verses_and_stanzas(client, make_poem):
+    """Sin registros destacados, la portada cita el poema verso a verso, con su sangría y
+    sus estrofas enteras: la tercera no cabe en los seis versos y no se parte."""
+    extracto = _featured_excerpt(
+        client, make_poem, "Uno\ndos\n\n    tres\n    cuatro\n    cinco\n\nseis\nsiete"
+    )
+    versos = [v.get_text() for v in extracto.select(".estrofa > .verso")]
+    assert versos == ["Uno", "dos", "    tres", "    cuatro", "    cinco"]
+    assert len(extracto.select(".estrofa")) == 2
+    assert "seis" not in extracto.get_text()
+
+
+def test_featured_prose_poem_is_cut_at_a_word(client, make_poem):
+    extracto = _featured_excerpt(client, make_poem, "palabra " * 100)
+    (verso,) = extracto.select(".verso")
+    assert verso.get_text().endswith("palabra…")
+    assert len(verso.get_text()) <= 281
+
+
+def test_featured_poem_long_first_stanza_stops_at_six_verses(client, make_poem):
+    cuerpo = "\n".join(f"verso {n}" for n in range(1, 10))
+    extracto = _featured_excerpt(client, make_poem, cuerpo)
+    assert [v.get_text() for v in extracto.select(".verso")] == [f"verso {n}" for n in range(1, 7)]
+
+
 def test_home_texts_appear_before_members(client, make_article):
     """La obra (poemas y textos) va antes que las integrantes. Desde julio iba al revés,
     porque las integrantes son lo primero que buscan los programadores; el 2026-10-14 el

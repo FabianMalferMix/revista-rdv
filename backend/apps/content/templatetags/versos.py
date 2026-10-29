@@ -47,12 +47,70 @@ def adelanto(cuerpo, cuantos=3):
             quedan -= len(verso)
             continue
         if not citados or quedan >= 40:
-            corte = (
-                verso[: quedan + 1].rsplit(" ", 1)[0] if " " in verso[:quedan] else verso[:quedan]
-            )
-            citados.append(corte.rstrip(" ,;:.—") + "…")
+            citados.append(_cut_at_word(verso, quedan))
         break
     return citados
+
+
+def _cut_at_word(verso, letras):
+    """El verso cortado en la última palabra que cabe en `letras`, con puntos suspensivos."""
+    corte = verso[: letras + 1].rsplit(" ", 1)[0] if " " in verso[:letras] else verso[:letras]
+    return corte.rstrip(" ,;:.—") + "…"
+
+
+# Lo que la portada cita del poema destacado, como mucho.
+FEATURED_VERSES = 6
+FEATURED_LETTERS = 280
+
+
+def _stanzas(cuerpo):
+    """Las estrofas del poema: grupos de líneas, con su sangría, separados por líneas en
+    blanco (varias seguidas cuentan como un solo salto)."""
+    estrofas, actual = [], []
+    for linea in (cuerpo or "").splitlines():
+        if linea.strip():
+            actual.append(linea.rstrip())
+        elif actual:
+            estrofas.append(actual)
+            actual = []
+    if actual:
+        estrofas.append(actual)
+    return estrofas
+
+
+@register.filter
+def opening_stanzas(cuerpo, cuantos=FEATURED_VERSES):
+    """El comienzo del poema tal como está escrito, para componerlo con `versos`.
+
+    Entran estrofas enteras mientras sumen hasta `cuantos` versos y FEATURED_LETTERS
+    letras: el extracto no corta una estrofa si puede evitarlo. Si ya la primera no cabe,
+    se corta en el verso, y el verso que no cabe, en una palabra con puntos suspensivos
+    (un poema en prosa es un solo verso largo); si para él quedan menos de cuarenta letras,
+    no se cita. Conserva la sangría y los saltos de estrofa, que `adelanto` descarta.
+    """
+    citadas, versos_citados, letras = [], 0, 0
+    for estrofa in _stanzas(cuerpo):
+        largo = sum(len(linea.strip()) for linea in estrofa)
+        if versos_citados + len(estrofa) <= cuantos and letras + largo <= FEATURED_LETTERS:
+            citadas.append(estrofa)
+            versos_citados += len(estrofa)
+            letras += largo
+            continue
+        if not citadas:
+            cortada = []
+            for linea in estrofa:
+                quedan = FEATURED_LETTERS - letras
+                if len(cortada) < cuantos and len(linea.strip()) <= quedan:
+                    cortada.append(linea)
+                    letras += len(linea.strip())
+                    continue
+                if len(cortada) < cuantos and (not cortada or quedan >= 40):
+                    sangria = linea[: len(linea) - len(linea.lstrip())]
+                    cortada.append(sangria + _cut_at_word(linea.strip(), quedan))
+                break
+            citadas.append(cortada)
+        break
+    return "\n\n".join("\n".join(estrofa) for estrofa in citadas)
 
 
 # El manifiesto en la portada (D33): hasta su primera pausa, si llega antes de estas palabras.
@@ -100,15 +158,7 @@ def versos(cuerpo):
     tal cual (el CSS la respeta con `white-space:pre-wrap`); varias líneas en blanco
     seguidas cuentan como un solo salto de estrofa.
     """
-    estrofas, actual = [], []
-    for linea in (cuerpo or "").splitlines():
-        if linea.strip():
-            actual.append(linea.rstrip())
-        elif actual:
-            estrofas.append(actual)
-            actual = []
-    if actual:
-        estrofas.append(actual)
+    estrofas = _stanzas(cuerpo)
     return format_html_join(
         "",
         '<p class="estrofa">{}</p>',
