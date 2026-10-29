@@ -1249,3 +1249,10 @@ def test_las_puertas_del_cierre_van_en_una_fila_sin_huecos():
         "@media (min-width:900px){\n  .home-cierre .pie-entidad ul"
     )
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in _regla(".home-cierre.pie-entidadul")
+
+
+def test_hidden_attribute_beats_any_author_display():
+    """`hidden` oculta siempre: sin `!important`, el `display` de un componente (flex, grid,
+    el de `.btn`) le gana al del navegador. La prueba de humo mide en el navegador que los
+    componentes ocultos con el atributo no se ven."""
+    assert _regla("[hidden]") == "display:none!important"
