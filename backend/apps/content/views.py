@@ -4,7 +4,7 @@ import unicodedata
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.db import DatabaseError
-from django.db.models import Prefetch
+from django.db.models import F, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
@@ -437,14 +437,14 @@ def search(request):
         articles = (
             Article.objects.published()
             .filter(search_vector=query)
-            .annotate(rank=SearchRank("search_vector", query))
+            .annotate(rank=SearchRank(F("search_vector"), query))
             .only("slug", "title", "type")
             .order_by("-rank")[:tope]
         )
         poems = (
             Poem.objects.published()
             .filter(search_vector=query)
-            .annotate(rank=SearchRank("search_vector", query))
+            .annotate(rank=SearchRank(F("search_vector"), query))
             .only("slug", "title")
             .order_by("-rank")[:tope]
         )
