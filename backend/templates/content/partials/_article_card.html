@@ -16,7 +16,7 @@
     {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
   </div>
   <p class="meta fila-pie">
-    {% firmas_sin a.authors.all sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if firmas %} · {% endif %}{{ a.reading_time }} min
+    {% firmas_sin a.bylines sin_firma_de as firmas %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if firmas %} · {% endif %}{{ a.reading_time }} min
   </p>
   {% if a.cover_image %}<span class="fila-miniatura riso-duo">{% responsive_img a.cover_image sizes="(max-width: 720px) 64px, 96px" decorativa=True %}</span>{% endif %}
 </li>
