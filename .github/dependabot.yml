@@ -18,6 +18,14 @@ updates:
       - dependency-name: "django"
         update-types: ["version-update:semver-major"]
 
+  # Lo vendorizado (htmx y TinyMCE): el package.json no se instala, solo le da el radar a
+  # Dependabot. Su PR cambia la versión y la prueba del manifiesto falla hasta que alguien
+  # corre `python3 tools/vendor/update.py update <librería> <versión>`.
+  - package-ecosystem: npm
+    directory: /backend/static/vendor
+    schedule:
+      interval: weekly
+
   # Acciones usadas en los workflows (checkout, setup-python, etc.).
   - package-ecosystem: github-actions
     directory: /
