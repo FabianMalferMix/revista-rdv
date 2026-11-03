@@ -15,7 +15,7 @@
   <article>
     <header class="index-head" data-territorio="obra">
       <span class="kicker">Registro · {{ recording.get_kind_display }}{% if recording.duracion %} · {{ recording.duracion }}{% endif %}</span>
-      <h1>{{ recording.title }}</h1>
+      <h1 id="registro-titulo">{{ recording.title }}</h1>
       <p class="meta">
         {% if recording.recorded_on %}{{ recording.recorded_on|date:"j M Y" }}{% endif %}
         {# el · va ENTRE fecha y evento: sin fecha abría la línea con un separador suelto #}
@@ -23,7 +23,18 @@
       </p>
     </header>
 
-    {% include "media/partials/_player.html" with r=recording %}
+    {% include "media/partials/_player.html" with r=recording titulo_id="registro-titulo" %}
+
+    {# El texto de lo que se oye, justo después del reproductor: el poema, o la transcripción, plegada. #}
+    {% for poem in poems %}
+      <p class="registro-poema"><a href="{{ poem.get_absolute_url }}">Leer el poema{% if poems|length > 1 %} «{{ poem.title }}»{% endif %} →</a></p>
+    {% endfor %}
+    {% if recording.transcript %}
+      <details class="registro-transcripcion">
+        <summary class="btn">Transcripción</summary>
+        <div class="member-about">{{ recording.transcript|linebreaks }}</div>
+      </details>
+    {% endif %}
 
     {% if recording.description %}<div class="member-about">{{ recording.description|linebreaks }}</div>{% endif %}
 
