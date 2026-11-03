@@ -13,6 +13,8 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from kombu.exceptions import OperationalError as BrokerError
 
+from config.cache import SERVICE_UNAVAILABLE, counters_available
+
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 from .tasks import send_confirmation_email
@@ -62,8 +64,11 @@ def subscribe(request):
     Todas las ramas responden lo mismo y hacen el mismo trabajo observable, para no
     filtrar si una dirección ya estaba en la lista (S-17)."""
     nxt = _safe_next(request)
-    if getattr(request, "limited", False):  # rate-limit por IP superado
-        messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+    if getattr(request, "limited", False):  # rate-limit por IP superado, o la caché caída
+        if counters_available():
+            messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+        else:
+            messages.error(request, SERVICE_UNAVAILABLE)
         return HttpResponseRedirect(nxt)
     form = SubscribeForm(request.POST)
     if not form.is_valid():

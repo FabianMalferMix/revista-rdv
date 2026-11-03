@@ -124,6 +124,9 @@ jobs:
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
           SITE_URL: https://ci.example.com
           DJANGO_ALLOW_WEAKENED: SENTRY_DSN
+          # El guard exige contraseña en las URL efectivas de Redis; este paso no se conecta.
+          CELERY_BROKER_URL: redis://:ci-check-password@localhost:6379/0
+          CACHE_URL: redis://:ci-check-password@localhost:6379/2
         # --deploy corre las security.W*; --fail-level WARNING las hace bloqueantes.
         run: python manage.py check --deploy --fail-level WARNING
 
@@ -342,7 +345,8 @@ jobs:
           docker run -d --name qa13-db --network qa13net \
             -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
             -e POSTGRES_PASSWORD=ci-strong-db-password postgres:16
-          docker run -d --name qa13-redis --network qa13net redis:7
+          docker run -d --name qa13-redis --network qa13net redis:7 \
+            redis-server --requirepass ci-strong-redis-password
           for i in $(seq 1 30); do
             docker exec qa13-db pg_isready -U resenas >/dev/null 2>&1 && break
             sleep 2
@@ -352,8 +356,9 @@ jobs:
             -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
             -e POSTGRES_HOST=qa13-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
             -e POSTGRES_PASSWORD=ci-strong-db-password \
-            -e CELERY_BROKER_URL=redis://qa13-redis:6379/0 \
-            -e CELERY_RESULT_BACKEND=redis://qa13-redis:6379/1 \
+            -e CELERY_BROKER_URL=redis://:ci-strong-redis-password@qa13-redis:6379/0 \
+            -e CELERY_RESULT_BACKEND=redis://:ci-strong-redis-password@qa13-redis:6379/1 \
+            -e CACHE_URL=redis://:ci-strong-redis-password@qa13-redis:6379/2 \
             -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
             -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
             -e SITE_URL=https://localhost \

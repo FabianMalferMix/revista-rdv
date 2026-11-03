@@ -26,7 +26,7 @@
   "backend/config/cache.py": 2,
   "backend/config/clientip.py": 1,
   "backend/config/context_processors.py": 1,
-  "backend/config/settings.py": 2,
+  "backend/config/settings.py": 1,
   "backend/conftest.py": 1,
   "backend/static/css/site.css": 41,
   "backend/static/js/embeds.js": 2,

@@ -3,7 +3,9 @@
    sola lista de textos y poemas, cada uno con su tipo al lado; ahora el tipo es el grupo y
    al lado va el dato que distingue a cada resultado (el cargo, la fecha, el lugar).
 {% endcomment %}
-{% if limited %}
+{% if unavailable %}
+  <p class="empty">{{ unavailable }}</p>
+{% elif limited %}
   <p class="empty">Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo.</p>
 {% elif q %}
   {% if grupos %}

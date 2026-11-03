@@ -217,15 +217,22 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Celery / Redis ────────────────────────────────────────
-# La URL se deriva de REDIS_PASSWORD (única fuente): con contraseña incluye la auth.
-_REDIS_HOST = env_str("REDIS_HOST", "redis")
+# Dos Redis, cada uno con su política de memoria: el broker (servicio redis, noeviction) y,
+# en producción, la caché (servicio cache, allkeys-lru). Las tres URL siguen la misma regla:
+# se derivan de REDIS_PASSWORD y del host de cada servicio, y cada una se puede fijar entera
+# por entorno. El guard de producción comprueba las URL efectivas.
 _REDIS_PORT = env_str("REDIS_PORT", "6379")
 _REDIS_PASSWORD = env_str("REDIS_PASSWORD")
 _REDIS_AUTH = f":{_REDIS_PASSWORD}@" if _REDIS_PASSWORD else ""
-_REDIS_BASE = f"redis://{_REDIS_AUTH}{_REDIS_HOST}:{_REDIS_PORT}"
-_BROKER_URL_FROM_ENV = env_str("CELERY_BROKER_URL")
-CELERY_BROKER_URL = _BROKER_URL_FROM_ENV or f"{_REDIS_BASE}/0"
-CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", f"{_REDIS_BASE}/1")
+_BROKER_BASE = f"redis://{_REDIS_AUTH}{env_str('REDIS_HOST', 'redis')}:{_REDIS_PORT}"
+_CACHE_BASE = f"redis://{_REDIS_AUTH}{env_str('CACHE_REDIS_HOST', 'cache')}:{_REDIS_PORT}"
+CELERY_BROKER_URL = env_str("CELERY_BROKER_URL", f"{_BROKER_BASE}/0")
+CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", f"{_BROKER_BASE}/1")
+CACHE_URL = env_str("CACHE_URL", f"{_CACHE_BASE}/0")
+# Nadie lee el resultado de una tarea: no se guarda.
+CELERY_TASK_IGNORE_RESULT = True
+# kombu no pone plazos al socket del broker: con Redis colgado, encolar retenía el proceso.
+CELERY_BROKER_TRANSPORT_OPTIONS = {"socket_timeout": 5, "socket_connect_timeout": 3}
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
     "publicar-piezas-programadas": {
@@ -263,24 +270,27 @@ CELERY_WORKER_CONCURRENCY = env_int("CELERY_CONCURRENCY", 2)
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
 
 # ── Caché ─────────────────────────────────────────────────
-# Redis en producción: los contadores de django-ratelimit se comparten entre los
-# workers de gunicorn y persisten entre recargas (db 2, distinta del broker/resultados).
-# En dev/tests, LocMem (hermético, sin dependencia externa; conftest limpia por test).
+# Redis en producción, en su propio servicio: los contadores de django-ratelimit se
+# comparten entre los workers de gunicorn y persisten entre recargas. En dev/tests, LocMem
+# (hermético, sin dependencia externa; conftest limpia por test).
 if DEBUG:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 else:
     CACHES = {
         "default": {
             # Backend tolerante: con Redis caído, django-ratelimit propagaba
-            # ConnectionError y los formularios públicos devolvían 500 (S-22).
+            # ConnectionError y los formularios públicos devolvían 500.
             "BACKEND": "config.cache.ResilientRedisCache",
-            "LOCATION": f"{_REDIS_BASE}/2",
+            "LOCATION": CACHE_URL,
+            # La caché es prescindible: mejor fallar en un segundo que retener un hilo.
+            "OPTIONS": {"socket_timeout": 1, "socket_connect_timeout": 1},
         }
     }
 
 # Política explícita cuando el contador de rate limit no está disponible: limitar
 # (fail-closed). Quedarse sin control anti-abuso es peor que rechazar temporalmente un
-# envío, y con Redis caído el sitio ya está degradado (Celery tampoco encola).
+# envío. Las vistas dicen entonces que el servicio no está disponible, no que hubo
+# demasiados intentos (config/cache.py).
 RATELIMIT_FAIL_OPEN = False
 
 # ── Cabeceras de seguridad ────────────────────────────────
@@ -350,8 +360,8 @@ if not DEBUG:
     _effective = {
         "DJANGO_SECRET_KEY": SECRET_KEY,
         "POSTGRES_PASSWORD": DATABASES["default"]["PASSWORD"],
-        "REDIS_PASSWORD": _REDIS_PASSWORD,
-        "CELERY_BROKER_URL": _BROKER_URL_FROM_ENV,
+        "CELERY_BROKER_URL": CELERY_BROKER_URL,
+        "CACHE_URL": CACHE_URL,
         "DJANGO_ALLOWED_HOSTS": _ALLOWED_HOSTS_FROM_ENV,
         "DJANGO_CSRF_TRUSTED_ORIGINS": CSRF_TRUSTED_ORIGINS,
         "SITE_URL": SITE_URL,

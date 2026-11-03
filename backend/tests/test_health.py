@@ -129,3 +129,21 @@ def test_readyz_real_infra_returns_ready(client, heartbeat_key):
     resp = client.get(reverse("readyz"))
     assert resp.status_code == 200, resp.json()
     assert resp.json()["status"] == "ready"
+
+
+def test_a_cache_that_does_not_answer_turns_readyz_red(client, monkeypatch, settings):
+    real = dict(health.CHECKS)
+    _all_up(monkeypatch)
+    # La comprobación de la caché, la de verdad, si /readyz/ la tiene en su lista.
+    if "cache" in real:
+        monkeypatch.setitem(health.CHECKS, "cache", real["cache"])
+    assert client.get(reverse("readyz")).status_code == 200  # LocMem: nada que consultar
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "config.cache.ResilientRedisCache",
+            "LOCATION": "redis://127.0.0.1:6399/0",
+        }
+    }
+    resp = client.get(reverse("readyz"))
+    assert resp.status_code == 503
+    assert resp.json()["checks"]["cache"] is False

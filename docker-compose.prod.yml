@@ -151,6 +151,23 @@ services:
     security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 
+  # La caché de Django, aparte del broker: con allkeys-lru descarta lo menos usado al
+  # llenarse, cosa que el broker no puede hacer sin perder tareas, y un broker lleno ya no
+  # deja sin caché al sitio. Sin persistencia: todo lo que guarda se puede recalcular.
+  cache:
+    logging: *logging
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    command: "redis-server --save '' --appendonly no --maxmemory 64mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requerido en produccion}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    mem_limit: ${CACHE_MEM_LIMIT:-128m}
+    cpus: ${CACHE_CPUS:-0.25}
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
   # Proxy inverso con TLS automático. Sirve /static/ y /media/ directo desde sus volúmenes; el
   # resto va a gunicorn. web NO se publica al host: solo el proxy es accesible.
   proxy:
