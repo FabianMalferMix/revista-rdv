@@ -109,6 +109,22 @@ DATABASES = {
         "HOST": env_str("POSTGRES_HOST", "db"),
         "PORT": env_str("POSTGRES_PORT", "5432"),
         "CONN_MAX_AGE": env_int("DJANGO_CONN_MAX_AGE", 60),
+        # Una conexión reutilizada se comprueba antes de usarla: si la base se reinició, la
+        # petición abre otra en vez de responder 500.
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": {
+            # Sin plazo, psycopg espera hasta 130 s a una base que no contesta.
+            "connect_timeout": env_int("DB_CONNECT_TIMEOUT", 5),
+            # Una consulta que pasa de este plazo se cancela con un error, en vez de retener un
+            # hilo de gunicorn mientras dure: con gthread, --timeout no corta una petición
+            # colgada. libpq usa estas `options` en lugar de PGOPTIONS, así que lo que el
+            # entorno ponga ahí se suma detrás y manda: el release lo usa para migrar con
+            # lock_timeout y sin este plazo (release.sh).
+            "options": (
+                f"-c statement_timeout={env_int('DB_STATEMENT_TIMEOUT_MS', 15000)} "
+                f"{env_str('PGOPTIONS')}"
+            ).strip(),
+        },
     }
 }
 
@@ -236,6 +252,11 @@ CELERY_TASK_TIME_LIMIT = env_int("CELERY_TASK_TIME_LIMIT", 60)
 # prefetch 1 evita que un worker acapare tareas que no va a poder atender.
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Sin esto, el worker abre un proceso por CPU del servidor, sin relación con su carga (una
+# tarea por minuto y algún correo) ni con su límite de memoria (WORKER_MEM_LIMIT): con
+# muchas CPU, superaba el límite en reposo. Cada proceso se renueva tras 200 tareas.
+CELERY_WORKER_CONCURRENCY = env_int("CELERY_CONCURRENCY", 2)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
 
 # ── Caché ─────────────────────────────────────────────────
 # Redis en producción: los contadores de django-ratelimit se comparten entre los
