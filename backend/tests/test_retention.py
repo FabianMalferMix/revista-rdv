@@ -15,7 +15,16 @@ SS = Submission.Status
 
 
 def _age(obj, days):
-    type(obj).objects.filter(pk=obj.pk).update(created_at=timezone.now() - timedelta(days=days))
+    """Envejece la fila: su alta y, que es desde donde mide la purga, su último cambio de
+    estado (suscriptores) o su resolución (envíos resueltos)."""
+    moment = timezone.now() - timedelta(days=days)
+    fields = {"created_at": moment}
+    names = {field.name for field in type(obj)._meta.fields}
+    if "status_changed_at" in names:
+        fields["status_changed_at"] = moment
+    if "resolved_at" in names and obj.resolved_at:
+        fields["resolved_at"] = moment
+    type(obj).objects.filter(pk=obj.pk).update(**fields)
 
 
 def _submission(**kw):

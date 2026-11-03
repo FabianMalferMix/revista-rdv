@@ -1,23 +1,21 @@
 import logging
-import secrets
 from functools import wraps
 
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from kombu.exceptions import OperationalError as BrokerError
 
+from . import services
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 from .tasks import send_confirmation_email
 
-S = NewsletterSubscriber.Status
 logger = logging.getLogger(__name__)
 
 # Respuesta única para TODAS las ramas del alta. Antes el mensaje distinguía a quien ya
@@ -73,16 +71,10 @@ def subscribe(request):
         messages.success(request, ALTA_NEUTRA)
         return HttpResponseRedirect(nxt)
 
-    sub, _ = NewsletterSubscriber.objects.get_or_create(email=form.cleaned_data["email"])
-    # A quien ya confirmó no se le reenvía nada, pero la respuesta es idéntica.
-    if sub.status != S.CONFIRMED:
-        if not sub.token:
-            sub.token = secrets.token_urlsafe(32)  # baja: estable de por vida
-        # Confirmación: token NUEVO en cada alta, con marca de tiempo para caducar.
-        sub.confirm_token = secrets.token_urlsafe(32)
-        sub.confirm_token_at = timezone.now()
-        sub.status = S.PENDING
-        sub.save(update_fields=["token", "confirm_token", "confirm_token_at", "status"])
+    # A quien ya confirmó, o recibió la confirmación hace poco, no se le reenvía nada, pero
+    # la respuesta es idéntica.
+    sub = services.subscribe(form.cleaned_data["email"])
+    if sub is not None:
         _send_confirmation(sub)
     messages.success(request, ALTA_NEUTRA)
     return HttpResponseRedirect(nxt)
@@ -133,12 +125,7 @@ def confirm(request, token):
 
     if not sub.confirm_token_is_valid():
         raise Http404("Enlace no válido o expirado.")
-    sub.status = S.CONFIRMED
-    sub.confirmed_at = timezone.now()
-    # De un solo uso: el token se consume al confirmar.
-    sub.confirm_token = ""
-    sub.confirm_token_at = None
-    sub.save(update_fields=["status", "confirmed_at", "confirm_token", "confirm_token_at"])
+    sub.confirm()
     return render(
         request,
         "community/newsletter_message.html",
@@ -166,9 +153,7 @@ def unsubscribe(request, token):
     if request.method != "POST":
         return render(request, "community/newsletter_unsubscribe.html", {"token": token})
 
-    if sub.status != S.UNSUBSCRIBED:
-        sub.status = S.UNSUBSCRIBED
-        sub.save(update_fields=["status"])
+    sub.unsubscribe()
     return render(
         request,
         "community/newsletter_message.html",

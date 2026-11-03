@@ -36,18 +36,15 @@ class Command(BaseCommand):
         cutoff = timezone.now() - timedelta(days=options["days"])
         axes_cutoff = timezone.now() - timedelta(days=AXES_RETENTION_DAYS)
 
+        # Cada uno, desde su último cambio de estado: quien vuelve a suscribirse empieza de
+        # nuevo, y un envío rechazado hoy no se borra por haber llegado hace meses.
         pending = NewsletterSubscriber.objects.filter(
-            status=NewsletterSubscriber.Status.PENDING, created_at__lt=cutoff
+            status=NewsletterSubscriber.Status.PENDING, status_changed_at__lt=cutoff
         )
-        # La baja fija `status`, no una marca de tiempo propia: se usa `created_at` como
-        # referencia conservadora (nunca borra antes de lo debido).
         unsubscribed = NewsletterSubscriber.objects.filter(
-            status=NewsletterSubscriber.Status.UNSUBSCRIBED, created_at__lt=cutoff
+            status=NewsletterSubscriber.Status.UNSUBSCRIBED, status_changed_at__lt=cutoff
         )
-        resolved = Submission.objects.filter(
-            status__in=[Submission.Status.REJECTED, Submission.Status.WITHDRAWN],
-            created_at__lt=cutoff,
-        )
+        resolved = Submission.objects.filter(status__in=Submission.RESOLVED, resolved_at__lt=cutoff)
         n_pending, n_unsub, n_subm = pending.count(), unsubscribed.count(), resolved.count()
         n_axes = self._axes_queryset(axes_cutoff)
 
