@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, render
+from django.http import Http404
+from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from apps.content.models import Article, Poem
@@ -14,9 +15,14 @@ def member_index(request):
 
 def member_detail(request, slug):
     # Los integrantes históricos (active=False) conservan su perfil accesible.
-    member = get_object_or_404(
-        Contributor.objects.select_related("photo"), slug=slug, is_member=True
-    )
+    member = Contributor.objects.select_related("photo").filter(slug=slug, is_member=True).first()
+    if member is None:
+        # Quien deja de figurar como integrante sigue en /colaborador/ si tiene ficha pública,
+        # y la dirección que ya circula lleva hasta ella. Con un 302 y no un 301: la membresía
+        # puede volver a cambiar, y dos 301 guardados en el navegador acabarían en un bucle.
+        if Contributor.objects.visible().filter(slug=slug).exists():
+            return redirect("content:contributor_detail", slug=slug)
+        raise Http404
     articles = (
         member.articles.published()
         .select_related("section")

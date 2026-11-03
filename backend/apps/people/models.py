@@ -55,10 +55,16 @@ class Contributor(models.Model):
     )
     # ── Membresía del colectivo ──────────────────────────────
     is_member = models.BooleanField(
-        default=False, help_text="Integrante del colectivo (aparece en /integrantes/)."
+        "integrante del colectivo",
+        default=False,
+        help_text="Tiene ficha de integrante y aparece en /integrantes/. Si deja el colectivo, "
+        "desmarca «En activo», no esta casilla: así conserva su ficha.",
     )
     active = models.BooleanField(
-        default=True, help_text="Integrante activo; desmarcado = histórico."
+        "en activo",
+        default=True,
+        help_text="Desmarcada, deja de aparecer en las listas del colectivo, pero conserva su "
+        "ficha de integrante.",
     )
     role = models.CharField(
         max_length=100, blank=True, help_text="Rol en el colectivo (p. ej. «fundadora», «gestión»)."

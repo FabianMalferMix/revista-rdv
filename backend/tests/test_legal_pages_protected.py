@@ -62,10 +62,16 @@ def test_legal_page_form_keeps_text_editable_and_locks_slug_and_status(panel, sl
 
 
 def test_ordinary_page_form_offers_slug_and_status(panel, corriente):
+    # El candado de las legales no alcanza a una página corriente: su estado se edita. Su
+    # dirección, una vez publicada, queda fija como la de toda pieza pública.
     formulario = _formulario(panel, corriente)
-    assert formulario.select_one('[name="slug"]') is not None
+    assert formulario.select_one('[name="slug"]') is None
     assert formulario.select_one('[name="status"]') is not None
     assert "Página legal" not in formulario.get_text()
+    # En borrador, también la dirección se puede editar.
+    corriente.status = "draft"
+    corriente.save()
+    assert _formulario(panel, corriente).select_one('[name="slug"]') is not None
 
 
 @pytest.mark.parametrize("slug", LEGAL_PAGES)

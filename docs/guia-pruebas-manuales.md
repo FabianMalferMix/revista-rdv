@@ -123,7 +123,7 @@ no una plantilla vacía.
 
 ### 1.2 Fichas de contenido
 
-- [x] **`/articulo/<slug>/`** — Entra desde la portada. Debe mostrar cuerpo, autoría,
+- [x] **`/texto/<slug>/`** — Entra desde la portada. Debe mostrar cuerpo, autoría,
       tiempo de lectura y datos estructurados JSON-LD. Desde 840 px de ancho, título, firma,
       fecha y obra reseñada van en una columna a la izquierda y el texto a la derecha.
 - [x] **`/poema/<slug>/`** — Ojo a la tipografía: cada verso conserva su sangría, y entre

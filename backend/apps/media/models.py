@@ -379,7 +379,13 @@ class Recording(models.Model):
         VIDEO = "video", "Video"
 
     # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        help_text="Lo que va tras /registro/ en la dirección pública. Al publicar el registro "
+        "queda fija, porque los enlaces que ya circulan no se pueden cambiar.",
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     kind = models.CharField(
         max_length=10, choices=Kind.choices, default=Kind.VIDEO, verbose_name="tipo"

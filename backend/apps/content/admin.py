@@ -7,6 +7,8 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.formats import date_format
 
+from config.publishing import FrozenSlugAdminMixin
+
 from . import workflow
 from .models import (
     LEGAL_PAGES,
@@ -146,7 +148,7 @@ class ScheduleForm(forms.Form):
         return when
 
 
-class EditorialItemAdmin(admin.ModelAdmin):
+class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     """Base para piezas del flujo editorial (Article, Poem).
 
     Concentra los permisos por objeto y estado, el dueño automático y las
@@ -207,7 +209,7 @@ class EditorialItemAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         # `status` es readonly SIEMPRE (también para editores): solo cambia por las
         # acciones de transición, que aplican guardas y dejan rastro en la bitácora.
-        ro = [*self.readonly_fields, "status"]
+        ro = [*super().get_readonly_fields(request, obj), "status"]
         if not is_editor(request.user):
             # El autor tampoco toca la fecha de publicación ni el dueño.
             ro += ["published_at", "owner"]
@@ -336,14 +338,14 @@ class PoemAdmin(EditorialItemAdmin):
 
 
 @admin.register(Section)
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["name", "position"]
     search_fields = ["name"]
     prepopulated_fields = {"slug": ("name",)}
 
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     search_fields = ["name"]
     prepopulated_fields = {"slug": ("name",)}
 
@@ -361,7 +363,7 @@ class CollectionPoemInline(admin.TabularInline):
 
 
 @admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin):
+class CollectionAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["title", "status", "published_at"]
     list_filter = ["status"]
     search_fields = ["title"]
@@ -370,7 +372,7 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Page)
-class PageAdmin(admin.ModelAdmin):
+class PageAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     form = PageAdminForm
     list_display = ["title", "status"]
     list_filter = ["status"]
@@ -386,7 +388,7 @@ class PageAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         campos = list(super().get_readonly_fields(request, obj))
         if obj is not None and obj.slug in LEGAL_PAGES:
-            campos += ["slug", "status"]
+            campos += [campo for campo in ("slug", "status") if campo not in campos]
         return campos
 
     def get_prepopulated_fields(self, request, obj=None):

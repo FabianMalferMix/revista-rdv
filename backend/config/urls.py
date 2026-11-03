@@ -11,7 +11,8 @@ from apps.media.feeds import RecordingsFeed
 
 # Las rutas públicas son permanentes: las URL ya difundidas (prensa, dossiers, buscadores,
 # lectores de feeds) no se pueden corregir desde aquí. Renombrar una ruta exige dejar la
-# vieja con RedirectView(permanent=True) hacia la nueva.
+# vieja con RedirectView(permanent=True) hacia la nueva. La lista congelada de
+# tests/test_get_absolute_url.py falla si una deja de resolver.
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz/", healthz, name="healthz"),

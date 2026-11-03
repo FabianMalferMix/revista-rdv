@@ -1,6 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.urls import reverse
 
+from config.feeds import stable_guid
 from config.origin import absolute_url
 
 from .models import Article
@@ -54,6 +55,12 @@ class LatestArticlesFeed(Feed):
     def item_link(self, item):
         # Absoluta desde SITE_URL: así Django no le añade el Host de la petición.
         return absolute_url(item.get_absolute_url())
+
+    # El GUID no es la dirección: no cambia con el slug ni con el dominio.
+    item_guid_is_permalink = False
+
+    def item_guid(self, item):
+        return stable_guid("article", item.pk)
 
     def item_pubdate(self, item):
         return item.published_at
