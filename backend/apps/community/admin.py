@@ -14,15 +14,24 @@ class NewsletterSubscriberAdmin(admin.ModelAdmin):
     acción que deja constancia en el historial.
     """
 
-    list_display = ["email", "status", "confirmed_at", "status_changed_at", "created_at"]
+    list_display = [
+        "email",
+        "status",
+        "confirmation_sent_at",
+        "confirmation_error",
+        "confirmed_at",
+        "created_at",
+    ]
     list_filter = ["status"]
     search_fields = ["email"]
-    actions = ["do_unsubscribe"]
+    actions = ["do_resend", "do_unsubscribe"]
     readonly_fields = [
         "status",
         "confirmed_at",
         "confirm_token_at",
         "status_changed_at",
+        "confirmation_sent_at",
+        "confirmation_error",
         "created_at",
     ]
 
@@ -45,7 +54,20 @@ class NewsletterSubscriberAdmin(admin.ModelAdmin):
             send_confirmation_email.delay_on_commit(sub.pk)
             self.message_user(request, f"Se envió la confirmación a {sub.email}.")
 
-    @admin.action(description="Dar de baja")
+    @admin.action(description="Reenviar la confirmación", permissions=["change"])
+    def do_resend(self, request, queryset):
+        # Solo a quien sigue pendiente: reenviar a quien se dio de baja lo volvería a apuntar.
+        resent = 0
+        for sub in queryset.filter(status=NewsletterSubscriber.Status.PENDING):
+            sub.request_confirmation()
+            send_confirmation_email.delay_on_commit(sub.pk)
+            self.log_change(request, sub, "Se reenvió la confirmación.")
+            resent += 1
+        self.message_user(
+            request, f"Se reenvió la confirmación a {resent} suscripción(es) pendiente(s)."
+        )
+
+    @admin.action(description="Dar de baja", permissions=["change"])
     def do_unsubscribe(self, request, queryset):
         for sub in queryset:
             if sub.status != NewsletterSubscriber.Status.UNSUBSCRIBED:

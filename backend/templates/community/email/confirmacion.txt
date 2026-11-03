@@ -1,0 +1,8 @@
+{% autoescape off %}Gracias por suscribirte a las novedades de {{ name }}.
+
+Confirma tu suscripción aquí:
+{{ confirm_url }}
+
+Si no fuiste tú, ignora este correo o date de baja:
+{{ unsub_url }}
+{% endautoescape %}

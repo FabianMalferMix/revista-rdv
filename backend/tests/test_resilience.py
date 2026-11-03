@@ -124,6 +124,8 @@ def test_hay_limites_de_tiempo_en_celery_y_en_el_correo(settings):
     worker indefinidamente."""
     assert settings.EMAIL_TIMEOUT > 0
     assert settings.CELERY_TASK_SOFT_TIME_LIMIT > 0
+    # Un servidor que calla tiene que fallar por el socket antes que por el límite blando.
+    assert settings.EMAIL_TIMEOUT < settings.CELERY_TASK_SOFT_TIME_LIMIT
     assert settings.CELERY_TASK_TIME_LIMIT > settings.CELERY_TASK_SOFT_TIME_LIMIT
     assert settings.CELERY_WORKER_PREFETCH_MULTIPLIER == 1
 

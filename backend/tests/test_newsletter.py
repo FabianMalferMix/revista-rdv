@@ -195,9 +195,11 @@ def test_email_task_declares_retry_policy():
 
     from apps.community.tasks import send_confirmation_email
 
-    assert smtplib.SMTPException in send_confirmation_email.autoretry_for
+    # SMTPException hereda de OSError: lo transitorio se reintenta, lo permanente no.
+    assert issubclass(smtplib.SMTPException, OSError)
     assert OSError in send_confirmation_email.autoretry_for
-    assert send_confirmation_email.retry_kwargs["max_retries"] == 3
+    assert smtplib.SMTPRecipientsRefused in send_confirmation_email.dont_autoretry_for
+    assert send_confirmation_email.retry_kwargs["max_retries"] == 8
 
 
 def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
