@@ -14,6 +14,7 @@ from datetime import timedelta
 
 import pytest
 from django.core.management import call_command
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.community.models import NewsletterSubscriber
@@ -93,11 +94,12 @@ def test_dry_run_no_borra_nada():
 
 
 def test_se_redacta_el_token_de_las_rutas_del_boletin():
-    assert redact_path("/novedades/baja/SECRETO-123/") == "/novedades/baja/<redactado>/"
-    assert redact_path("/novedades/confirmar/SECRETO-123/") == "/novedades/confirmar/<redactado>/"
-    assert redact_path("https://sitio.cl/novedades/baja/abc/") == (
-        "https://sitio.cl/novedades/baja/<redactado>/"
-    )
+    # Las rutas salen del URLconf, como la redacción: si se renombran, la prueba las sigue.
+    for nombre in ("community:unsubscribe", "community:confirm"):
+        ruta = reverse(nombre, args=["SECRETO-123"])
+        esperada = ruta.replace("SECRETO-123", "<redactado>")
+        assert redact_path(ruta) == esperada
+        assert redact_path(f"https://sitio.cl{ruta}") == f"https://sitio.cl{esperada}"
 
 
 def test_no_se_toca_lo_que_no_lleva_secreto():
@@ -112,7 +114,7 @@ def test_el_filtro_de_logging_redacta_el_mensaje():
         pathname=__file__,
         lineno=1,
         msg="Not Found: %s",
-        args=("/novedades/baja/SECRETO-123/",),
+        args=(reverse("community:unsubscribe", args=["SECRETO-123"]),),
         exc_info=None,
     )
     assert RedactTokensFilter().filter(registro) is True
