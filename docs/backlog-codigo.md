@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 46 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Avance:** 47 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -129,7 +129,7 @@
 | B43 | Un solo servicio de imágenes | B42 | M | no | hecho (#222) |
 | B44 | Registro de derivados | B43 | M | no | hecho (#223) |
 | B45 | Metapruebas de completitud | — | S | no | hecho (#224) |
-| B46 | Lo publicado no se pierde al borrar | — | M | no | pendiente |
+| B46 | Lo publicado no se pierde al borrar | — | M | no | hecho (#225) |
 | B47 | Comandos de mantenimiento que avisan | — | S | no | pendiente |
 | B48 | Bitácora editorial que sobrevive | B17 | M | no | pendiente |
 | B49 | El HTML de autor se sanea a la salida | — | S | no | pendiente |
@@ -902,6 +902,8 @@ La pertenencia a la matriz de roles la prueba B15.
 Borrar a una persona que firma algo publicado queda bloqueado, con un mensaje que pide reasignar sus textos. La anonimización queda diferida (§3 del registro).
 
 **Hecho cuando.** En el panel, intentar borrar una imagen que usa un texto publicado, o a una persona que firma uno, muestra los usos y no borra nada.
+
+**Al cerrarlo (2026-11-03).** El dueño eligió bloquear siempre: también una imagen o una firma que solo usan borradores, y la obra elegida para la portada.
 
 #### B47 · Comandos de mantenimiento que avisan
 
