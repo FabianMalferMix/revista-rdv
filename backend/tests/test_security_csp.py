@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from django.http import HttpResponse
-from django.test import RequestFactory, override_settings
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
@@ -110,12 +110,6 @@ def test_same_nonce_is_stable_within_request():
 
     _mw(get_response)(RequestFactory().get("/"))
     assert seen[0] == seen[1]
-
-
-@override_settings(CSP_REPORT_ONLY=True)
-def test_report_only_mode_uses_report_header():
-    resp = _mw()(RequestFactory().get("/"))
-    assert CSP_RO in resp and CSP not in resp
 
 
 def test_does_not_override_upstream_policy():

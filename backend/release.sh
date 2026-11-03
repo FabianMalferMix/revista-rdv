@@ -12,10 +12,18 @@ PGOPTIONS="-c lock_timeout=${MIGRATE_LOCK_TIMEOUT:-10s}" python manage.py migrat
 echo "→ Configurando grupos y permisos (admin · editor · autor)..."
 python manage.py setup_groups
 
-# En desarrollo no hace falta: runserver sirve los estáticos desde las apps.
-if [ "${RELEASE_COLLECTSTATIC:-1}" = "1" ]; then
-  echo "→ Recolectando estáticos..."
-  python manage.py collectstatic --noinput
-fi
+# En desarrollo no hace falta: runserver sirve los estáticos desde las apps. Acepta los mismos
+# valores de sí o no que config/env.py, y cualquier otro detiene el despliegue.
+case "$(printf '%s' "${RELEASE_COLLECTSTATIC:-1}" | tr '[:upper:]' '[:lower:]')" in
+  1 | true | yes | on)
+    echo "→ Recolectando estáticos..."
+    python manage.py collectstatic --noinput
+    ;;
+  0 | false | no | off) ;;
+  *)
+    echo "RELEASE_COLLECTSTATIC=${RELEASE_COLLECTSTATIC} no es un valor de sí o no: usa 1 o 0, true o false, yes o no, on u off." >&2
+    exit 1
+    ;;
+esac
 
 echo "✓ release completo"

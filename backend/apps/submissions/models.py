@@ -4,9 +4,22 @@ from django.db import models
 from django.utils import timezone
 
 
+class PrivateFileSystemStorage(FileSystemStorage):
+    """Archivos sin URL pública: se descargan solo por una vista que comprueba permisos.
+
+    FileSystemStorage, sin `base_url`, toma MEDIA_URL y devolvería `/media/…`, una
+    dirección que una plantilla podría enlazar.
+    """
+
+    def url(self, name):
+        raise ValueError(
+            "Los archivos privados no tienen URL pública: se descargan por su vista protegida."
+        )
+
+
 def private_storage():
     """Almacenamiento fuera de MEDIA_ROOT: los adjuntos no se sirven públicamente."""
-    return FileSystemStorage(location=settings.PRIVATE_MEDIA_ROOT)
+    return PrivateFileSystemStorage(location=settings.PRIVATE_MEDIA_ROOT)
 
 
 class CallQuerySet(models.QuerySet):

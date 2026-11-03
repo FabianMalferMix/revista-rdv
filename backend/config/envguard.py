@@ -1,23 +1,20 @@
-"""Guard de arranque en producción: rechaza configuraciones inseguras (hallazgo S-02).
+"""Guard de arranque en producción: rechaza configuraciones inseguras.
 
 Vive fuera de `settings.py` para poder probarlo como función pura, sin recargar los
-ajustes de Django.
+ajustes de Django. Recibe los valores ya interpretados por `config.env`, los mismos que
+usará Django, y no vuelve a leer el entorno por su cuenta.
 
-El guard anterior comparaba por IGUALDAD contra los centinelas de DESARROLLO
-(`dev-insecure-change-me`, `resenas`), pero la plantilla de PRODUCCIÓN
-(`.env.prod.example`) usa otros valores (`CAMBIA-ESTO-…`). Resultado: el operador que
-seguía `docs/despliegue.md` al pie de la letra —cambiando solo lo que rompe visiblemente
-el sitio— arrancaba con la clave y las contraseñas publicadas en el repositorio, y sin
-una sola advertencia, mientras la propia plantilla le aseguraba lo contrario.
-
-Por eso ahora la validación es POSITIVA (comprobar que el valor es aceptable) en vez de
-una lista negra de centinelas conocidos.
+La validación es positiva: comprueba que cada valor sea aceptable, en vez de compararlo
+con una lista de valores de ejemplo conocidos, que es lo que deja pasar una plantilla
+nueva.
 """
+
+from pathlib import Path
 
 # Valores por defecto de desarrollo, inseguros en producción.
 INSECURE_SECRET = "dev-insecure-change-me"
 INSECURE_DB_PASSWORD = "resenas"
-DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
+DEFAULT_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0")
 
 # Fragmentos que delatan un SECRETO de plantilla sin sustituir. Se comparan en
 # minúsculas y por inclusión.
@@ -27,13 +24,22 @@ DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
 # `ci.example.com`). Y esta comprobación se aplica SOLO a los secretos, no a hosts ni
 # orígenes: dejar `revista.tudominio.cl` sin sustituir no es un agujero, el sitio
 # simplemente no responde (DisallowedHost), así que se corrige solo. Un secreto sin
-# sustituir, en cambio, es silencioso y es exactamente el fallo que se está cerrando.
+# sustituir, en cambio, es silencioso.
 PLACEHOLDER_MARKERS = ("cambia-esto", "change-me", "changeme")
 
 # Umbrales de `security.W009` de Django: se replican aquí para que el arranque y el
-# `check --deploy` del CI coincidan (antes el CI era más estricto que el despliegue).
+# `check --deploy` del CI coincidan.
 MIN_SECRET_LENGTH = 50
 MIN_SECRET_UNIQUE_CHARS = 5
+
+# Defensas que una variable de entorno puede apagar, con la prueba de que está apagada.
+# Con DEBUG=0, apagar una exige nombrar su variable en DJANGO_ALLOW_WEAKENED: así un
+# interruptor que se quedó puesto después de una prueba no pasa en silencio.
+WEAKENABLE_DEFENSES = {
+    "AXES_ENABLED": lambda values: not values["AXES_ENABLED"],
+    "RATELIMIT_ENABLE": lambda values: not values["RATELIMIT_ENABLE"],
+    "DJANGO_HSTS_SECONDS": lambda values: values["DJANGO_HSTS_SECONDS"] <= 0,
+}
 
 
 def is_placeholder(value):
@@ -42,14 +48,21 @@ def is_placeholder(value):
     return any(marker in lowered for marker in PLACEHOLDER_MARKERS)
 
 
-def check_production_env(env, secret_key, csrf_trusted_origins):
+def weakened_defenses(values):
+    """Los nombres de las defensas que la configuración apaga."""
+    return [name for name, is_off in WEAKENABLE_DEFENSES.items() if is_off(values)]
+
+
+def check_production_env(values):
     """Devuelve la lista de problemas de configuración para un despliegue con DEBUG=0.
 
-    `env` es un mapeo tipo `os.environ`. Lista vacía significa configuración aceptable.
+    `values` reúne los valores ya interpretados, con el nombre de su variable de
+    entorno como clave. Lista vacía significa configuración aceptable.
     """
     problems = []
 
     # ── Clave secreta ────────────────────────────────────────
+    secret_key = values["DJANGO_SECRET_KEY"]
     if secret_key == INSECURE_SECRET or is_placeholder(secret_key):
         problems.append("DJANGO_SECRET_KEY (valor de ejemplo)")
     elif len(secret_key) < MIN_SECRET_LENGTH or len(set(secret_key)) < MIN_SECRET_UNIQUE_CHARS:
@@ -59,7 +72,7 @@ def check_production_env(env, secret_key, csrf_trusted_origins):
         )
 
     # ── Contraseña de la base de datos ───────────────────────
-    db_password = env.get("POSTGRES_PASSWORD", INSECURE_DB_PASSWORD)
+    db_password = values["POSTGRES_PASSWORD"]
     if db_password in ("", INSECURE_DB_PASSWORD) or is_placeholder(db_password):
         problems.append("POSTGRES_PASSWORD")
 
@@ -73,27 +86,53 @@ def check_production_env(env, secret_key, csrf_trusted_origins):
     # siguiendo la documentación— es silencioso y mucho más probable. La plantilla de
     # producción no define CELERY_BROKER_URL, así que el camino documentado sí queda
     # cubierto.
-    if not env.get("CELERY_BROKER_URL", ""):
-        redis_password = env.get("REDIS_PASSWORD", "")
+    if not values["CELERY_BROKER_URL"]:
+        redis_password = values["REDIS_PASSWORD"]
         if not redis_password or is_placeholder(redis_password):
             problems.append("REDIS_PASSWORD (broker y caché sin autenticar)")
 
     # ── Hosts permitidos ─────────────────────────────────────
-    allowed_hosts = env.get("DJANGO_ALLOWED_HOSTS", "")
-    if allowed_hosts in ("", DEFAULT_HOSTS):
+    allowed_hosts = list(values["DJANGO_ALLOWED_HOSTS"])
+    if not allowed_hosts or allowed_hosts == list(DEFAULT_HOSTS):
         problems.append("DJANGO_ALLOWED_HOSTS")
-    elif any(h.strip() == "*" for h in allowed_hosts.split(",")):
+    elif "*" in allowed_hosts:
         problems.append("DJANGO_ALLOWED_HOSTS (el comodín '*' desactiva la validación de Host)")
 
     # ── Orígenes de confianza para CSRF ──────────────────────
     # Un origen http:// aquí acepta como legítimo un POST llegado por texto plano.
-    if not csrf_trusted_origins:
+    origins = values["DJANGO_CSRF_TRUSTED_ORIGINS"]
+    if not origins:
         problems.append("DJANGO_CSRF_TRUSTED_ORIGINS")
     else:
-        insecure_origins = [o for o in csrf_trusted_origins if not o.strip().startswith("https://")]
+        insecure_origins = [o for o in origins if not o.startswith("https://")]
         if insecure_origins:
             problems.append(
                 "DJANGO_CSRF_TRUSTED_ORIGINS (exige https://): " + ", ".join(insecure_origins)
             )
 
+    # ── Defensas apagadas ────────────────────────────────────
+    allowed = values["DJANGO_ALLOW_WEAKENED"]
+    unknown = [name for name in allowed if name not in WEAKENABLE_DEFENSES]
+    if unknown:
+        problems.append(
+            "DJANGO_ALLOW_WEAKENED (no son defensas que se puedan apagar: "
+            + ", ".join(unknown)
+            + ")"
+        )
+    for name in weakened_defenses(values):
+        if name not in allowed:
+            problems.append(f"{name} (apaga una defensa: nómbrala en DJANGO_ALLOW_WEAKENED)")
+
     return problems
+
+
+def check_storage_separation(media_root, private_media_root):
+    """Lo privado no puede quedar dentro de lo que se sirve en /media/."""
+    media = Path(media_root).resolve()
+    private = Path(private_media_root).resolve()
+    if private.is_relative_to(media):
+        return [
+            f"DJANGO_PRIVATE_MEDIA_ROOT ({private}) queda dentro de MEDIA_ROOT ({media}), "
+            "que se sirve en público"
+        ]
+    return []
