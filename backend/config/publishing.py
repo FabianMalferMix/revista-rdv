@@ -75,3 +75,49 @@ def marked_as_preview(response, preview):
         response["Cache-Control"] = "private, no-store"
         response["X-Robots-Tag"] = "noindex"
     return response
+
+
+class FrozenSlugAdminMixin:
+    """En el panel, la dirección (slug) de lo que ya es público es de solo lectura.
+
+    Cambiarla dejaría en 404 los enlaces difundidos (prensa, dossiers, redes), porque las
+    fichas no guardan direcciones anteriores. Lo que se publica con un estado o una casilla
+    la congela al publicarse; lo demás (secciones, etiquetas, personas, obras), en cuanto
+    existe, porque su ficha puede estar enlazada desde cualquier pieza publicada.
+    """
+
+    def slug_is_frozen(self, obj):
+        if obj is None or obj.pk is None:
+            return False
+        queryset = type(obj)._default_manager.all()
+        if isinstance(queryset, (EditorialQuerySet, PublishableQuerySet)):
+            return queryset.published().filter(pk=obj.pk).exists()
+        return True
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = list(super().get_readonly_fields(request, obj))
+        if self.slug_is_frozen(obj) and "slug" not in fields:
+            fields.append("slug")
+        return fields
+
+    def get_prepopulated_fields(self, request, obj=None):
+        # Un campo de solo lectura no está en el formulario: dejarlo en prepopulated_fields
+        # rompería la ficha de cambio.
+        if self.slug_is_frozen(obj):
+            return {}
+        return super().get_prepopulated_fields(request, obj)
+
+    def get_fields(self, request, obj=None):
+        # Sin `fields` ni `fieldsets`, Django pone los campos de solo lectura al final del
+        # formulario. La dirección congelada conserva el sitio que tiene mientras se edita.
+        fields = list(super().get_fields(request, obj))
+        if not self.slug_is_frozen(obj) or "slug" not in fields:
+            return fields
+        editable_order = list(super().get_fields(request, None))
+        if "slug" not in editable_order:
+            return fields
+        fields.remove("slug")
+        position = editable_order.index("slug")
+        previous = editable_order[position - 1] if position else None
+        fields.insert(fields.index(previous) + 1 if previous in fields else 0, "slug")
+        return fields

@@ -9,7 +9,7 @@ publicacion     /publicacion/cuadernos-del-ruido/
 poemas          /poemas/                                       ancho
 poema           /poema/umbral/                                 ancho
 textos          /textos/                                       ancho
-articulo        /articulo/resena-la-casa-vacia/                ancho
+articulo        /texto/resena-la-casa-vacia/                   ancho
 dossier         /dossier/
 agenda          /agenda/
 evento          /evento/recital-nuevas-voces-lanzamiento/

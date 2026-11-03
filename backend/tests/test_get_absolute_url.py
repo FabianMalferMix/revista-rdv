@@ -10,6 +10,7 @@ Poem, Event, Publication y Recording ya lo tenían; estos tres se habían quedad
 import pytest
 from django.contrib.admin.sites import AdminSite
 from django.test import Client
+from django.urls import URLPattern, URLResolver, get_resolver, resolve
 from django.utils import timezone
 
 from apps.content.models import Article, Collection, EditorialStatus, Page, PublishStatus
@@ -31,7 +32,7 @@ def test_las_tres_urls_apuntan_a_su_ruta():
     a = _articulo()
     c = Collection.objects.create(title="Una colección", slug="una-coleccion")
     p = Page.objects.create(title="Una página", slug="una-pagina")
-    assert a.get_absolute_url() == "/articulo/un-texto/"
+    assert a.get_absolute_url() == "/texto/un-texto/"
     assert c.get_absolute_url() == "/coleccion/una-coleccion/"
     assert p.get_absolute_url() == "/pagina/una-pagina/"
 
@@ -72,7 +73,7 @@ def test_el_panel_ofrece_ver_en_el_sitio():
     respuesta = navegador.get(enlace)
     assert respuesta.status_code == 302
     # La vista de atajo devuelve una URI absoluta (http://testserver/...).
-    assert respuesta["Location"].endswith("/articulo/un-texto/")
+    assert respuesta["Location"].endswith("/texto/un-texto/")
 
 
 @pytest.mark.parametrize("borrador", [True, False])
@@ -88,7 +89,7 @@ def test_tambien_para_las_piezas_sin_publicar(borrador):
         status=EditorialStatus.DRAFT if borrador else EditorialStatus.PUBLISHED,
         published_at=None if borrador else timezone.now(),
     )
-    assert a.get_absolute_url() == "/articulo/otro/"
+    assert a.get_absolute_url() == "/texto/otro/"
     esperado = 404 if borrador else 200
     assert Client().get(a.get_absolute_url()).status_code == esperado
 
@@ -98,3 +99,79 @@ def test_el_sitemap_sigue_respondiendo():
     _articulo()
     Page.objects.create(title="P", slug="p", status=PublishStatus.PUBLISHED)
     assert Client().get("/sitemap.xml").status_code == 200
+
+
+# Las rutas públicas son permanentes: enlaces en prensa, dossiers, correos, buscadores y
+# lectores de feeds dependen de ellas. Renombrar una exige dejar la vieja con
+# RedirectView(permanent=True), que sigue resolviendo; borrarla de esta lista exige
+# preguntarse antes quién la enlaza. Cada ruta va con un ejemplo concreto.
+PUBLIC_PATHS = [
+    "/",
+    "/textos/",
+    "/texto/un-texto/",
+    "/buscar/",
+    "/poemas/",
+    "/poema/un-poema/",
+    "/seccion/resenas/",
+    "/etiqueta/memoria/",
+    "/colaborador/una-firma/",
+    "/colecciones/",
+    "/coleccion/una-coleccion/",
+    "/pagina/privacidad/",
+    "/integrantes/",
+    "/integrante/una-integrante/",
+    "/registros/",
+    "/registro/una-lectura/",
+    "/agenda/",
+    "/trayectoria/",
+    "/galeria/",
+    "/evento/un-recital/",
+    "/dossier/",
+    "/publicaciones/",
+    "/publicacion/un-libro/",
+    "/prensa/",
+    "/aliados/",
+    "/novedades/",
+    "/novedades/confirmar/un-token/",
+    "/novedades/baja/un-token/",
+    "/obra/una-obra/",
+    "/editorial/una-editorial/",
+    "/autor/un-autor/",
+    "/enviar/",
+    "/enviar/gracias/",
+    "/feed/",
+    "/feed/registros/",
+    "/sitemap.xml",
+    "/robots.txt",
+    "/favicon.ico",
+    "/healthz/",
+    "/readyz/",
+]
+# Rutas que no circulan fuera del sitio: el panel y la descarga de adjuntos, que solo
+# enlaza el panel. En desarrollo, además, los medios los sirve Django.
+NOT_PUBLIC_PREFIXES = ("admin/", "envios/", "^media/")
+
+
+@pytest.mark.parametrize("path", PUBLIC_PATHS)
+def test_public_path_still_resolves(path):
+    resolve(path)  # Resolver404 si la ruta desapareció sin dejar su redirección
+
+
+def _routes(patterns, prefix=""):
+    for pattern in patterns:
+        route = prefix + str(pattern.pattern)
+        if isinstance(pattern, URLResolver):
+            yield from _routes(pattern.url_patterns, route)
+        elif isinstance(pattern, URLPattern):
+            yield route
+
+
+def test_every_public_route_is_in_the_frozen_list():
+    """Una ruta nueva entra en la lista: así queda fijada desde que existe."""
+    frozen = {resolve(path).route for path in PUBLIC_PATHS}
+    current = {
+        route
+        for route in _routes(get_resolver().url_patterns)
+        if not route.startswith(NOT_PUBLIC_PREFIXES)
+    }
+    assert current == frozen

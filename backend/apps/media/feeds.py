@@ -12,6 +12,8 @@ from django.contrib.syndication.views import Feed
 from django.db.models import F
 from django.utils.feedgenerator import Rss201rev2Feed
 
+from config.feeds import stable_guid
+
 from .models import Recording
 
 
@@ -90,6 +92,13 @@ class RecordingsFeed(Feed):
 
     def item_link(self, item):
         return item.get_absolute_url()
+
+    # El GUID no es la dirección: no cambia con el slug ni con el dominio, y una
+    # aplicación de pódcast no vuelve a descargar el episodio.
+    item_guid_is_permalink = False
+
+    def item_guid(self, item):
+        return stable_guid("recording", item.pk)
 
     def item_pubdate(self, item):
         return item.published_at

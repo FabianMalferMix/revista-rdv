@@ -1,24 +1,26 @@
 from django.contrib import admin
 
+from config.publishing import FrozenSlugAdminMixin
+
 from .models import BookAuthor, Publisher, Work
 
 
 @admin.register(Publisher)
-class PublisherAdmin(admin.ModelAdmin):
+class PublisherAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["name", "country"]
     search_fields = ["name"]
     prepopulated_fields = {"slug": ("name",)}
 
 
 @admin.register(BookAuthor)
-class BookAuthorAdmin(admin.ModelAdmin):
+class BookAuthorAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["name"]
     search_fields = ["name"]
     prepopulated_fields = {"slug": ("name",)}
 
 
 @admin.register(Work)
-class WorkAdmin(admin.ModelAdmin):
+class WorkAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["title", "kind", "publisher", "publication_year", "publicacion"]
     list_filter = ["kind"]
     search_fields = ["title", "isbn"]

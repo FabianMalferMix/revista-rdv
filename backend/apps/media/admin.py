@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from config.publishing import FrozenSlugAdminMixin
+
 from .models import MediaAsset, Recording
 
 
@@ -19,7 +21,7 @@ class MediaAssetAdmin(admin.ModelAdmin):
 
 
 @admin.register(Recording)
-class RecordingAdmin(admin.ModelAdmin):
+class RecordingAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["title", "kind", "featured", "published", "recorded_on"]
     list_filter = ["kind", "featured", "published"]
     search_fields = ["title", "description"]

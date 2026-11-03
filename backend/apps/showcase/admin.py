@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from config.publishing import FrozenSlugAdminMixin
+
 from .models import (
     Partner,
     PressMention,
@@ -40,7 +42,7 @@ class WhereToBuyInline(admin.TabularInline):
 
 
 @admin.register(Publication)
-class PublicationAdmin(admin.ModelAdmin):
+class PublicationAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["title", "kind", "year", "is_own", "published", "featured"]
     list_filter = ["published", "featured", "kind", "is_own"]
     search_fields = ["title", "synopsis", "isbn"]
