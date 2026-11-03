@@ -162,8 +162,8 @@ jobs:
         run: |
           # Ejercita la ruta REAL de estáticos de producción, que el smoke de gunicorn
           # NO cubre (corre con DEBUG=1). Con DEBUG=0, collectstatic usa
-          # VendoredStaticFilesStorage (hash + manifiesto WhiteNoise, con vendor/tinymce/
-          # exento del hash). No necesita la BD.
+          # VendoredStaticFilesStorage (hash + manifiesto WhiteNoise, con la carpeta de TinyMCE,
+          # vendor/tinymce-<versión>/, exenta del hash). No necesita la BD.
           docker run --name prod-static --entrypoint python \
             -e DJANGO_DEBUG=0 \
             -e DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
@@ -184,9 +184,9 @@ jobs:
           site = [k for k in m if k.endswith("css/site.css")]
           assert site and m[site[0]] != site[0], "css/site.css no quedó hasheado"
           # 2) TinyMCE queda SIN hash: su carga perezosa relativa se rompería si no.
-          tiny = [k for k in m if k.startswith("vendor/tinymce/")]
-          assert tiny, "no hay entradas de vendor/tinymce/ en el manifiesto"
-          assert all(m[k] == k for k in tiny), "vendor/tinymce/ fue hasheado (no debería)"
+          tiny = [k for k in m if k.startswith("vendor/tinymce-")]
+          assert tiny, "no hay entradas de vendor/tinymce-<versión>/ en el manifiesto"
+          assert all(m[k] == k for k in tiny), "la carpeta de TinyMCE fue hasheada (no debería)"
           print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
           PY
 
@@ -385,6 +385,15 @@ jobs:
           [ "$(curl -s -o /dev/null -w '%{http_code}' "$P/static/$CSS")" = 200 ] \
             || { echo "FALLO: Caddy no sirve el estático hasheado"; exit 1; }
           echo "OK: Caddy sirve el estático hasheado"
+          # Lo hasheado se cachea como inmutable; TinyMCE, que va sin hash, se revalida.
+          curl -fsS -D - -o /dev/null "$P/static/$CSS" | grep -qi '^cache-control: public, max-age=31536000, immutable' \
+            || { echo "FALLO: el estático hasheado no se cachea como inmutable"; exit 1; }
+          TINY="$(docker compose exec -T web python -c 'from config.staticfiles import TINYMCE_DIR; print(TINYMCE_DIR)')tinymce.min.js"
+          HT=$(curl -fsS -D - -o /dev/null "$P/static/$TINY")
+          if echo "$HT" | grep -qi immutable || ! echo "$HT" | grep -qi '^cache-control: no-cache'; then
+            echo "FALLO: $TINY llega como inmutable o sin revalidar"; echo "$HT"; exit 1
+          fi
+          echo "OK: TinyMCE ($TINY) se revalida, sin caché inmutable"
           # /readyz/ exige el latido de las tareas: beat despacha la publicación programada
           # al minuto de arrancar y el worker la ejecuta. Se espera hasta tres minutos.
           listo() { curl -fsS "$P/readyz/" | python3 -c "import json,sys; sys.exit(json.load(sys.stdin)['status'] != 'ready')"; }
