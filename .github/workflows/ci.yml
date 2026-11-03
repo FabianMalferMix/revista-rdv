@@ -51,7 +51,7 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          python -m pip install "pip==26.2.1"
+          python -m pip install "pip==26.3"
           pip install --require-hashes -r backend/requirements-dev.txt
 
       - name: Lint y formato (ruff)
@@ -219,7 +219,7 @@ jobs:
         env:
           SKIP: ruff-check,ruff-format,gitleaks
         run: |
-          python -m pip install "pip==26.2.1"
+          python -m pip install "pip==26.3"
           python -m pip install "pre-commit==4.7.0"
           pre-commit run --all-files --show-diff-on-failure
 
@@ -312,7 +312,7 @@ jobs:
         # no debería instalar sus propias herramientas desde la última versión que haya
         # ese día (S-33). Fijarla hace además reproducible el resultado del SAST.
         run: |
-          python -m pip install "pip==26.2.1"
+          python -m pip install "pip==26.3"
           python -m pip install "bandit==1.9.4"
           bandit -r backend/apps backend/config -ll
 

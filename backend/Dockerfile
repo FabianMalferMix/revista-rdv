@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 # pip fijado, para que la imagen sea reproducible: el CI instala el mismo
 # (tests/test_tool_versions.py). Al subirlo, cambia en los dos sitios.
-RUN pip install "pip==26.2.1"
+RUN pip install "pip==26.3"
 COPY requirements.txt requirements-dev.txt ./
 
 # ── Desarrollo ────────────────────────────────────────────
