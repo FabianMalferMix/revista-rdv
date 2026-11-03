@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 37 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 38 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -117,7 +117,7 @@
 | B37 | Lo despublicado deja de servirse | B13 | M | sí | hecho (#215) |
 | B38 | Ciclo de vida del suscriptor y de los envíos | — | M | sí | hecho (#216) |
 | B39 | El panel respeta el consentimiento y el estado de los envíos | B38 | S | sí | hecho (#217) |
-| B40 | Correo de confirmación fiable y con rastro | B27, B38 | M | sí | pendiente |
+| B40 | Correo de confirmación fiable y con rastro | B27, B38 | M | sí | hecho (#218) |
 | B41 | El CI ensaya lo que se despliega | B06 | M | sí | pendiente |
 
 **Tanda 5 — Robustez de archivos, imágenes y datos**
