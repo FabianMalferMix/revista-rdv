@@ -71,3 +71,12 @@ def test_el_feed_sigue_sirviendo_los_articulos():
     )
     xml = Client().get("/feed/").content.decode()
     assert "Un texto publicado" in xml
+
+
+def test_podcast_title_comes_from_the_profile():
+    perfil = SiteProfile.load()
+    perfil.name = "Colectivo de Prueba"
+    perfil.save()
+    xml = Client().get("/feed/registros/").content.decode()
+    canal = xml.split("<channel>", 1)[1]
+    assert canal.split("<title>", 1)[1].split("</title>", 1)[0] == "Colectivo de Prueba — Registros"

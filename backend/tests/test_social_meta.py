@@ -11,6 +11,7 @@ import json
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.utils import timezone
 
 from apps.content.models import EditorialStatus
@@ -47,7 +48,7 @@ def _perfil_con_imagen(imagen):
 
 
 def _url(imagen):
-    return f"http://testserver{imagen.file.url}"
+    return f"{settings.SITE_URL}{imagen.file.url}"
 
 
 def _sopa(client, url):

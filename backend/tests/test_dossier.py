@@ -179,7 +179,8 @@ def test_el_anio_de_un_evento_es_el_de_su_hora_local(client):
     assert "#anio-2025" in client.get(evento.get_absolute_url()).content.decode()
 
 
-def test_la_ficha_reune_los_datos_del_colectivo(client, profile, make_article):
+def test_la_ficha_reune_los_datos_del_colectivo(client, profile, make_article, settings):
+    settings.SITE_URL = "https://revista.example.org"
     """Fundado, lugar, contacto, Instagram, sitio y la fecha de la última publicación: lo
     que un programador copia en su ficha. El correo es el mismo del pie y de la portada."""
     profile.location = "Valparaíso"
@@ -199,7 +200,8 @@ def test_la_ficha_reune_los_datos_del_colectivo(client, profile, make_article):
     assert datos["Lugar"].get_text() == "Valparaíso"
     assert datos["Contacto"].a["href"] == "mailto:gestion@example.com"
     assert datos["Instagram"].a.get_text() == "@colectivo.prueba"
-    assert datos["Sitio"].get_text() == "testserver"
+    # El dominio del sitio, no el Host con que se abrió la página.
+    assert datos["Sitio"].get_text() == "revista.example.org"
     assert datos["Actualizado"].get_text() == "el 5 de marzo de 2026"
     contacto = sopa.select_one("#contacto")
     assert contacto.select_one('a[href="mailto:gestion@example.com"]') is not None

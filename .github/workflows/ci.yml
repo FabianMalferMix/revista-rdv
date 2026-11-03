@@ -122,6 +122,7 @@ jobs:
           POSTGRES_PASSWORD: ci-strong-db-password
           DJANGO_ALLOWED_HOSTS: ci.example.com
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
+          SITE_URL: https://ci.example.com
         # --deploy corre las security.W*; --fail-level WARNING las hace bloqueantes.
         run: python manage.py check --deploy --fail-level WARNING
 
@@ -160,6 +161,7 @@ jobs:
           POSTGRES_PASSWORD: ci-strong-db-password
           DJANGO_ALLOWED_HOSTS: ci.example.com
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
+          SITE_URL: https://ci.example.com
         run: |
           # Ejercita la ruta REAL de estáticos de producción, que el smoke de gunicorn
           # NO cubre (corre con DEBUG=1). Con DEBUG=0, collectstatic usa
@@ -172,6 +174,7 @@ jobs:
             -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
             -e DJANGO_CSRF_TRUSTED_ORIGINS="$DJANGO_CSRF_TRUSTED_ORIGINS" \
+            -e SITE_URL="$SITE_URL" \
             resenas-prod manage.py collectstatic --noinput
           docker cp prod-static:/app/staticfiles/staticfiles.json staticfiles.json
           docker rm -f prod-static
@@ -349,7 +352,8 @@ jobs:
             -e CELERY_BROKER_URL=redis://qa13-redis:6379/0 \
             -e CELERY_RESULT_BACKEND=redis://qa13-redis:6379/1 \
             -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
-            -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost"
+            -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
+            -e SITE_URL=https://localhost"
 
           # El mismo orden que producción: release.sh (migraciones, grupos y estáticos con
           # VendoredStaticFilesStorage) y después web, que comparte el volumen de estáticos.
@@ -479,6 +483,7 @@ jobs:
             -e POSTGRES_PASSWORD=ci-strong-db-password \
             -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS=localhost -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
+            -e SITE_URL=https://localhost \
             --entrypoint python resenas-prod manage.py migrate
           PG="docker exec -e PGPASSWORD=ci-strong-db-password bk-db"
           ORIG=$($PG psql -U resenas -d resenas -tAc "SELECT count(*) FROM content_page;")

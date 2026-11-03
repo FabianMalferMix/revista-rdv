@@ -1,4 +1,3 @@
-from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
 from apps.agenda.models import Event
@@ -6,6 +5,7 @@ from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Publication
+from config.origin import FixedOriginSitemap as Sitemap
 
 from .models import Article, Collection, Page, Poem, Section
 

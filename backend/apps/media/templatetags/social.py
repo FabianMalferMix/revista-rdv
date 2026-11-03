@@ -6,6 +6,8 @@ perfil del sitio. La tarjeta es grande siempre que haya imagen, propia o del per
 
 from django import template
 
+from config.origin import absolute_url
+
 register = template.Library()
 
 
@@ -15,7 +17,7 @@ def social_image_url(context, obj=None):
     no hay ninguna."""
     imagen = obj.social_image() if obj is not None else None
     imagen = imagen or getattr(context.get("site_profile"), "og_image", None)
-    return context["request"].build_absolute_uri(imagen.file.url) if imagen else ""
+    return absolute_url(imagen.file.url) if imagen else ""
 
 
 @register.inclusion_tag("partials/_social_meta.html", takes_context=True)
