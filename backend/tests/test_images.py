@@ -41,9 +41,9 @@ def test_derivatives_and_dimensions_populated():
 
 
 def test_srcset_empty_for_small_image():
-    a = _asset("small.jpg", (300, 200))
-    assert (a.width, a.height) == (300, 200)
-    assert a.srcset() == ""  # 300 < todos los anchos objetivo → sin derivados
+    a = _asset("small.jpg", (200, 150))
+    assert (a.width, a.height) == (200, 150)
+    assert a.srcset() == ""  # 200 < todos los anchos objetivo → sin derivados
 
 
 def test_responsive_img_tag_renders_all_attrs():

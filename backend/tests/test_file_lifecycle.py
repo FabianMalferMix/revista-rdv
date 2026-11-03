@@ -233,10 +233,12 @@ def test_borrar_un_recurso_borra_tambien_sus_derivadas(django_capture_on_commit_
             alt_text="Recital",
         )
     storage = asset.file.storage
-    nombres = [asset.file.name, *asset.derivative_names()]
+    nombres = [asset.file.name, *MediaAsset.objects.get(pk=asset.pk).derivative_names()]
     existentes = [n for n in nombres if storage.exists(n)]
     assert len(existentes) > 1, "no se generó ninguna derivada; el test no probaría nada"
 
+    # Con la instancia de antes de la tarea, que no ve el registro de copias: el borrado lo lee
+    # de la base.
     with django_capture_on_commit_callbacks(execute=True):
         asset.delete()
     assert not any(storage.exists(n) for n in existentes)
@@ -316,7 +318,8 @@ def test_a_deletion_that_rolls_back_keeps_the_files(django_capture_on_commit_cal
             alt_text="Recital",
         )
     storage = asset.file.storage
-    nombres = [n for n in [asset.file.name, *asset.derivative_names()] if storage.exists(n)]
+    copias = MediaAsset.objects.get(pk=asset.pk).derivative_names()
+    nombres = [n for n in [asset.file.name, *copias] if storage.exists(n)]
     assert len(nombres) > 1
     with django_capture_on_commit_callbacks(execute=True) as callbacks:
         with pytest.raises(RuntimeError), transaction.atomic():

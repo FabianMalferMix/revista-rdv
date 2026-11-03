@@ -48,7 +48,7 @@ class MediaAsset(models.Model):
     """Biblioteca de imágenes. width/height son derivados del archivo (no editables)."""
 
     # Anchos de los derivados para `srcset` (solo se generan los menores al original).
-    SRCSET_WIDTHS = (480, 960, 1440)
+    SRCSET_WIDTHS = (240, 480, 960, 1440)
     # La obra de la portada va a sangre (D18): pide copias más anchas y en formatos
     # modernos. Se hacen solo para la imagen elegida como portada (apps.showcase lo dice al
     # servicio de imágenes), no para cada imagen que se sube. Las calidades dejan la lámina
@@ -78,6 +78,10 @@ class MediaAsset(models.Model):
     # El color del borde de la imagen, en «#rrggbb», con el que el estante pinta el lomo de una
     # publicación. Lo mide el servicio de imágenes; vacío si aún no se midió o no se puede leer.
     border_color = models.CharField(max_length=7, blank=True, editable=False)
+    # Las copias que generó el servicio de imágenes, por clase («srcset», o la extensión de las de
+    # portada) y ancho: {"srcset": {"480": "assets/…/foto__480w.jpg"}, "avif": {…}}. De aquí salen
+    # el `srcset`, sin preguntar al almacenamiento en cada página, y lo que se borra con la imagen.
+    derivatives = models.JSONField(default=dict, blank=True, editable=False)
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -100,6 +104,7 @@ class MediaAsset(models.Model):
         file_changed = self._file_changed(kwargs.get("update_fields"))
         if file_changed:
             self.border_color = ""
+            self.derivatives = {}
         # En una transacción: si la limpieza de una imagen recién subida falla, la fila tampoco
         # queda, aunque quien guarda no haya abierto una.
         with transaction.atomic():
@@ -129,17 +134,15 @@ class MediaAsset(models.Model):
         return str(p.with_name(f"{p.stem}__{width}w{p.suffix}"))
 
     def derivative_names(self):
-        """Nombres de las copias reducidas. Lo consume apps.media.filecleanup para que
-        al borrar el recurso no queden derivados huérfanos en el almacenamiento."""
-        if not self.file or not self.file.name:
-            return []
-        # Las de portada, en todos los anchos posibles: borrar una que no existe no falla.
-        anchos_portada = {*self.PORTADA_WIDTHS, *([self.width] if self.width else [])}
-        return [self._derivative_name(w) for w in self.SRCSET_WIDTHS] + [
-            self._portada_name(w, ext)
-            for w in sorted(anchos_portada)
-            for ext, _, _ in self.PORTADA_FORMATS
-        ]
+        """Los nombres de las copias registradas. Lo consume apps.media.filecleanup: al borrar o
+        reemplazar la imagen se borran estas, también las de un ancho que ya no se usa."""
+        return [name for copies in (self.derivatives or {}).values() for name in copies.values()]
+
+    def registered_copies(self, kind):
+        """Las copias registradas de una clase, como (ancho, nombre), de la más angosta a la más
+        ancha."""
+        copies = (self.derivatives or {}).get(kind, {})
+        return sorted((int(width), name) for width, name in copies.items())
 
     # ── La obra de la portada (D18) ───────────────────────────
     def _portada_name(self, width, ext):
@@ -161,14 +164,11 @@ class MediaAsset(models.Model):
         return self._anchos_portada(self.width) if self.width else []
 
     def portada_srcset(self, ext):
-        """`srcset` de las copias de portada en un formato: solo las que existen."""
+        """`srcset` de las copias de portada registradas en un formato."""
         if not self.file or not self.file.name:
             return ""
-        return ", ".join(
-            f"{self.file.storage.url(self._portada_name(w, ext))} {w}w"
-            for w in self.portada_widths()
-            if self.file.storage.exists(self._portada_name(w, ext))
-        )
+        url = self.file.storage.url
+        return ", ".join(f"{url(name)} {w}w" for w, name in self.registered_copies(ext))
 
     def strip_metadata(self, force=False):
         """Reescribe el original sin metadatos (EXIF, XMP, IPTC). Las copias salen limpias
@@ -251,22 +251,18 @@ class MediaAsset(models.Model):
             raise
 
     def srcset(self):
-        """Cadena `srcset` con los derivados existentes + el original. Robusta: solo
-        lista archivos presentes (nunca apunta a derivados que falten) y devuelve ""
-        si no hay ningún derivado (el partial usa solo `src` + `width/height`)."""
+        """Cadena `srcset` con las copias registradas y el original, sin consultar el
+        almacenamiento: el registro solo lista las que el servicio escribió o encontró. Devuelve
+        "" si no hay ninguna copia (el partial usa solo `src` + `width/height`)."""
         if not self.file or not self.width:
             return ""
-        derivatives = []
-        for w in self.SRCSET_WIDTHS:
-            if w >= self.width:
-                continue
-            name = self._derivative_name(w)
-            if self.file.storage.exists(name):
-                derivatives.append(f"{self.file.storage.url(name)} {w}w")
-        if not derivatives:
+        copies = self.registered_copies("srcset")
+        if not copies:
             return ""
-        derivatives.append(f"{self.file.url} {self.width}w")
-        return ", ".join(derivatives)
+        url = self.file.storage.url
+        return ", ".join(
+            [f"{url(name)} {w}w" for w, name in copies] + [f"{self.file.url} {self.width}w"]
+        )
 
 
 # Los registros que caben en la tirada de la portada. Las buenas prácticas de carruseles

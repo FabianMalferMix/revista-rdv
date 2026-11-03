@@ -130,7 +130,7 @@ REFERENCED_ROWS = {
 # base rehace al cargar, y lo que el servicio de imágenes vuelve a medir al cargar.
 PRIVATE_FIELDS = {
     "people.Contributor": {"user"},
-    "media.MediaAsset": {"uploaded_by", "metadata_stripped_at", "border_color"},
+    "media.MediaAsset": {"uploaded_by", "metadata_stripped_at", "border_color", "derivatives"},
     "content.Article": {"owner", "search_vector"},
     "content.Poem": {"owner", "search_vector"},
 }

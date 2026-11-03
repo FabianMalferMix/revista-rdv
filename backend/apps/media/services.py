@@ -37,11 +37,14 @@ def register_portada_use(uses):
 
 
 def _wanted(asset, width, portada):
-    """Las copias de una imagen de ese ancho: (ancho, nombre, formato y opciones)."""
-    copies = [(w, asset._derivative_name(w), None) for w in asset.SRCSET_WIDTHS if w < width]
+    """Las copias de una imagen de ese ancho: (ancho, nombre, clase, formato y opciones). La
+    clase es «srcset», o la extensión de una copia de portada."""
+    copies = [
+        (w, asset._derivative_name(w), "srcset", None) for w in asset.SRCSET_WIDTHS if w < width
+    ]
     if portada:
         copies += [
-            (w, asset._portada_name(w, ext), (fmt, options))
+            (w, asset._portada_name(w, ext), ext, (fmt, options))
             for w in asset._anchos_portada(width)
             for ext, fmt, options in asset.PORTADA_FORMATS
         ]
@@ -51,8 +54,10 @@ def _wanted(asset, width, portada):
 def process_image(asset_id):
     """Deja una imagen lista para servirse.
 
-    Idempotente: solo abre el archivo si falta algo y solo escribe lo que falta. Devuelve False
-    si el archivo no se pudo limpiar o leer, con un WARNING que dice qué recurso y qué archivo.
+    Idempotente: solo abre el archivo si falta algo y solo escribe lo que falta. Lleva al día el
+    registro de copias del recurso (`MediaAsset.derivatives`): quita las que ya no están en el
+    disco y anota las que encuentra o escribe. Devuelve False si el archivo no se pudo limpiar o
+    leer, con un WARNING que dice qué recurso y qué archivo.
     """
     asset = MediaAsset.objects.filter(pk=asset_id).first()
     if asset is None or not asset.file:
@@ -61,15 +66,23 @@ def process_image(asset_id):
         return False
     portada = any(uses(asset) for uses in _portada_uses)
     exists = asset.file.storage.exists
+    registry = {
+        kind: {w: name for w, name in copies.items() if exists(name)}
+        for kind, copies in (asset.derivatives or {}).items()
+    }
     # Lo que guarda la base, no lo que muestra la instancia: con la columna a NULL, ImageField
     # abre el archivo al instanciar y rellena el ancho solo en memoria.
     width, height = MediaAsset.objects.filter(pk=asset.pk).values_list("width", "height").get()
-    if (
-        width
-        and height
-        and asset.border_color
-        and all(exists(name) for _, name, _ in _wanted(asset, width, portada))
-    ):
+    missing = []
+    for w, name, kind, _output in _wanted(asset, width or 0, portada):
+        if str(w) in registry.get(kind, {}):
+            continue
+        if exists(name):
+            registry.setdefault(kind, {})[str(w)] = name
+        else:
+            missing.append(name)
+    if width and height and asset.border_color and not missing:
+        _save_registry(asset, registry)
         return True
     try:
         with asset.file.open("rb") as fh:
@@ -80,6 +93,7 @@ def process_image(asset_id):
         logger.warning(
             "No se pudo leer la imagen %s (recurso %s): %s", asset.file.name, asset.pk, exc
         )
+        _save_registry(asset, registry)
         return False
     if (width, height) != img.size:
         MediaAsset.objects.filter(pk=asset.pk).update(width=img.width, height=img.height)
@@ -91,10 +105,13 @@ def process_image(asset_id):
     )
     base = img.convert("RGBA" if transparent else "RGB")
     pending = {}
-    for w, name, output in _wanted(asset, base.width, portada):
-        output = output or srcset_format
-        if output and not exists(name):
-            pending.setdefault(w, []).append((name, output))
+    for w, name, kind, output in _wanted(asset, base.width, portada):
+        if str(w) in registry.get(kind, {}):
+            continue
+        if exists(name):
+            registry.setdefault(kind, {})[str(w)] = name
+        elif output or srcset_format:
+            pending.setdefault(w, []).append((name, kind, output or srcset_format))
     # De la más ancha a la más angosta, cada copia sale de la anterior, con un solo redimensionado
     # por ancho para todos sus formatos.
     current = base
@@ -102,12 +119,21 @@ def process_image(asset_id):
         if w != current.width:
             size = (w, max(1, round(base.height * w / base.width)))
             current = current.resize(size, Image.Resampling.LANCZOS)
-        for name, output in pending[w]:
-            _write(asset, name, current, output)
+        for name, kind, output in pending[w]:
+            saved = _write(asset, name, current, output)
+            if saved:
+                registry.setdefault(kind, {})[str(w)] = saved
+    _save_registry(asset, registry)
     if not asset.border_color:
         color = border_color(current)
         MediaAsset.objects.filter(pk=asset.pk).update(border_color=color)
     return True
+
+
+def _save_registry(asset, registry):
+    registry = {kind: copies for kind, copies in registry.items() if copies}
+    if registry != (asset.derivatives or {}):
+        MediaAsset.objects.filter(pk=asset.pk).update(derivatives=registry)
 
 
 def _write(asset, name, img, output):
@@ -120,8 +146,10 @@ def _write(asset, name, img, output):
     except (KeyError, OSError) as exc:
         # Un Pillow sin codificador de AVIF deja al menos el WebP.
         logger.warning("No se pudo codificar %s en %s: %s", name, fmt, exc)
-        return
-    asset.file.storage.save(name, ContentFile(buf.getvalue()))
+        return None
+    # El nombre con que quedó: el almacenamiento le añade un sufijo si otra tarea escribió la
+    # misma copia a la vez, y el registro tiene que apuntar al archivo que existe.
+    return asset.file.storage.save(name, ContentFile(buf.getvalue()))
 
 
 def border_color(img):

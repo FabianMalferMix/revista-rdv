@@ -161,7 +161,7 @@ def test_an_unreadable_image_is_a_warning_naming_it_and_the_command_fails(caplog
 
 
 def test_each_copy_is_resized_once_from_the_next_wider_one(monkeypatch):
-    """Una portada de 3000 px: quince copias en siete anchos, cada ancho a partir del anterior."""
+    """Una portada de 3000 px: dieciséis copias en ocho anchos, cada ancho a partir del anterior."""
     obra = _processed("ancha", (3000, 1800))
     profile = SiteProfile.load()
     profile.hero_image = obra
@@ -185,9 +185,10 @@ def test_each_copy_is_resized_once_from_the_next_wider_one(monkeypatch):
         (1080, 960),
         (960, 640),
         (640, 480),
+        (480, 240),
     ]
     storage = obra.file.storage
     copies = [obra._derivative_name(w) for w in obra.SRCSET_WIDTHS] + [
         obra._portada_name(w, ext) for w in obra.portada_widths() for ext in ("avif", "webp")
     ]
-    assert len(copies) == 15 and all(storage.exists(name) for name in copies)
+    assert len(copies) == 16 and all(storage.exists(name) for name in copies)
