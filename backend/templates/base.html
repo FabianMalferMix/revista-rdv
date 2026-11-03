@@ -32,8 +32,8 @@
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}",
-    "url": "{{ request.scheme }}://{{ request.get_host }}/"{% if site_profile.og_image %},
-    "logo": "{{ request.scheme }}://{{ request.get_host }}{{ site_profile.og_image.file.url }}"{% endif %}{% if redes_del_colectivo %},
+    "url": "{{ site_origin }}/"{% if site_profile.og_image %},
+    "logo": "{{ site_origin }}{{ site_profile.og_image.file.url }}"{% endif %}{% if redes_del_colectivo %},
     "sameAs": [{% for link in redes_del_colectivo %}"{{ link.url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]{% endif %}
   }
   </script>

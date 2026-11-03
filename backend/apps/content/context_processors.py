@@ -1,5 +1,7 @@
 from django.urls import reverse
 
+from config.origin import absolute_url
+
 # La barra principal: cinco enlaces (D9, decidido por el dueño del sitio). Cada uno marca
 # como suyas las vistas de su territorio: en la ficha de un poema queda marcado «Poemas»,
 # y en la agenda, «Colectivo», que es el centro de todo lo del colectivo. Las fichas de una
@@ -77,10 +79,10 @@ def nav(request):
 
 
 def canonical(request):
-    """URL canónica: esquema + host + ruta, SIN el query string (utm_*, q, …) que
-    ensuciaría la señal de canonicalización. Preserva solo ?page= en listados
-    paginados, donde cada página es un recurso distinto (hallazgo #06)."""
-    url = f"{request.scheme}://{request.get_host()}{request.path}"
+    """URL canónica: el origen fijo (SITE_URL) y la ruta, SIN el query string (utm_*, q, …)
+    que ensuciaría la señal de canonicalización. Preserva solo ?page= en listados
+    paginados, donde cada página es un recurso distinto."""
+    url = absolute_url(request.path)
     page = request.GET.get("page", "")
     if page.isdigit() and page != "1":
         url = f"{url}?page={page}"

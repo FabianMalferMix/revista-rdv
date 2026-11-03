@@ -10,9 +10,11 @@ import mimetypes
 
 from django.contrib.syndication.views import Feed
 from django.db.models import F
+from django.urls import reverse
 from django.utils.feedgenerator import Rss201rev2Feed
 
 from config.feeds import stable_guid
+from config.origin import absolute_url
 
 from .models import Recording
 
@@ -44,15 +46,31 @@ class PodcastFeed(Rss201rev2Feed):
 
 
 class RecordingsFeed(Feed):
+    """El pódcast de los registros.
+
+    No guarda nada de la petición: las URL absolutas salen de SITE_URL (config/origin.py),
+    así que una sola instancia sirve a todos los hilos de gunicorn.
+    """
+
     feed_type = PodcastFeed
-    title = "Registros — lecturas del colectivo"
-    link = "/registros/"
     description = "Registros en audio de lecturas y recitales."
 
-    def feed_extra_kwargs(self, obj):
+    def _perfil(self):
         from apps.showcase.models import SiteProfile
 
-        p = SiteProfile.load()
+        return SiteProfile.load()
+
+    def title(self):
+        return f"{self._perfil().name} — Registros"
+
+    def link(self):
+        return absolute_url(reverse("media:recording_index"))
+
+    def feed_url(self):
+        return absolute_url(reverse("recordings_feed"))
+
+    def feed_extra_kwargs(self, obj):
+        p = self._perfil()
         return {
             "itunes_author": p.name,
             "itunes_summary": p.tagline or self.description,
@@ -62,20 +80,6 @@ class RecordingsFeed(Feed):
 
     def item_extra_kwargs(self, item):
         return {"itunes_summary": item.description or item.get_kind_display()}
-
-    def get_feed(self, obj, request):
-        # Capturamos la request para construir la URL ABSOLUTA del enclosure: Django solo
-        # aplica add_domain a los <link>, no al <enclosure>, y `item_enclosure_url` no
-        # recibe la request.
-        #
-        # Guardarlo en `self` solo es seguro si la instancia NO se comparte. Lo era
-        # mientras gunicorn corría con workers sync (una petición por proceso), pero ese
-        # supuesto dejó de valer al pasar a gthread con 4 hilos (hallazgo S-07): con la
-        # instancia única que creaba urls.py, dos peticiones concurrentes se pisaban la
-        # request y el enclosure podía salir con el host de la otra. Por eso el feed se
-        # registra ahora mediante `recordings_feed`, que instancia por petición.
-        self.request = request
-        return super().get_feed(obj, request)
 
     def items(self):
         return (
@@ -91,7 +95,7 @@ class RecordingsFeed(Feed):
         return item.description or item.get_kind_display()
 
     def item_link(self, item):
-        return item.get_absolute_url()
+        return absolute_url(item.get_absolute_url())
 
     # El GUID no es la dirección: no cambia con el slug ni con el dominio, y una
     # aplicación de pódcast no vuelve a descargar el episodio.
@@ -105,9 +109,9 @@ class RecordingsFeed(Feed):
 
     # Enclosure solo para registros con archivo propio (los embeds van como enlace).
     def item_enclosure_url(self, item):
-        # URL ABSOLUTA (esquema+host): los clientes de podcast exigen que el enclosure
-        # sea resoluble; una URL relativa deja el episodio sin audio en Apple/Spotify.
-        return self.request.build_absolute_uri(item.file.url) if item.file else None
+        # URL ABSOLUTA: los clientes de podcast exigen que el enclosure sea resoluble; una
+        # URL relativa deja el episodio sin audio en Apple/Spotify.
+        return absolute_url(item.file.url) if item.file else None
 
     def item_enclosure_length(self, item):
         try:
@@ -119,14 +123,3 @@ class RecordingsFeed(Feed):
         if not item.file:
             return None
         return mimetypes.guess_type(item.file.name)[0] or "audio/mpeg"
-
-
-def recordings_feed(request, *args, **kwargs):
-    """Vista del feed: crea una instancia NUEVA por petición.
-
-    `path("feed/registros/", RecordingsFeed(), ...)` construía una sola instancia
-    compartida por todo el proceso. Como el feed guarda la request en `self` (ver
-    `get_feed`), dos peticiones concurrentes en el mismo worker se la pisaban. Con
-    workers de tipo sync no ocurría; con gthread y 4 hilos, sí.
-    """
-    return RecordingsFeed()(request, *args, **kwargs)

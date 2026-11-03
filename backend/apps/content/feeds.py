@@ -2,6 +2,7 @@ from django.contrib.syndication.views import Feed
 from django.urls import reverse
 
 from config.feeds import stable_guid
+from config.origin import absolute_url
 
 from .models import Article
 
@@ -16,8 +17,6 @@ class LatestArticlesFeed(Feed):
     arreglarlo. Ahora lee del perfil, como ya hacía el feed de podcast.
     """
 
-    link = "/"
-
     # Respaldo si el perfil no tiene lema: el feed nunca debe quedarse sin descripción.
     DESCRIPCION_POR_DEFECTO = "Últimas reseñas, ensayos y entrevistas."
 
@@ -25,6 +24,12 @@ class LatestArticlesFeed(Feed):
         from apps.showcase.models import SiteProfile
 
         return SiteProfile.load()
+
+    def link(self):
+        return absolute_url(reverse("content:home"))
+
+    def feed_url(self):
+        return absolute_url(reverse("feed"))
 
     def title(self, obj=None):
         perfil = self._perfil()
@@ -48,7 +53,8 @@ class LatestArticlesFeed(Feed):
         return item.subtitle or item.excerpt
 
     def item_link(self, item):
-        return reverse("content:article_detail", args=[item.slug])
+        # Absoluta desde SITE_URL: así Django no le añade el Host de la petición.
+        return absolute_url(item.get_absolute_url())
 
     # El GUID no es la dirección: no cambia con el slug ni con el dominio.
     item_guid_is_permalink = False

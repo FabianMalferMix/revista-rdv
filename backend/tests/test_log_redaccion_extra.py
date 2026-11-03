@@ -14,6 +14,7 @@ import json
 import logging
 
 import pytest
+from django.urls import reverse
 
 from config.logformat import JsonFormatter
 
@@ -23,7 +24,8 @@ from config.logformat import JsonFormatter
 # allowlist habría funcionado, pero cada excepción es una rendija permanente en el
 # escáner; sale más barato que la prueba no parezca un secreto.
 VALOR_INVENTADO = "no-es-una-credencial"
-RUTA = f"/novedades/baja/{VALOR_INVENTADO}/"
+# La ruta sale del URLconf, como la redacción: si se renombra, la prueba la sigue.
+RUTA = reverse("community:unsubscribe", args=[VALOR_INVENTADO])
 
 
 class _PeticionFalsa:
@@ -49,7 +51,7 @@ def _formatea(**extra):
 
 
 def test_el_mensaje_va_redactado():
-    assert _formatea()["message"] == "Not Found: /novedades/baja/<redactado>/"
+    assert _formatea()["message"] == f"Not Found: {RUTA.replace(VALOR_INVENTADO, '<redactado>')}"
 
 
 def test_el_objeto_request_no_filtra_el_token():
@@ -82,7 +84,8 @@ def test_no_se_redacta_lo_que_no_es_un_token():
     assert salida["otra_ruta"] == "/articulo/resena-la-casa-vacia/"
 
 
-@pytest.mark.parametrize("ruta", ["/novedades/confirmar/abc123/", "/novedades/baja/xyz789/"])
-def test_ambas_rutas_del_boletin(ruta):
+@pytest.mark.parametrize("nombre", ["community:confirm", "community:unsubscribe"])
+def test_ambas_rutas_del_boletin(nombre):
+    ruta = reverse(nombre, args=["abc123"])
     salida = _formatea(request=type("R", (), {"__repr__": lambda s: f"<R: GET '{ruta}'>"})())
     assert "<redactado>" in salida["request"]

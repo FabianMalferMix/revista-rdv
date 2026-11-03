@@ -1,11 +1,22 @@
 name: resenas
 
+# Rotación de los logs de cada contenedor: con el driver json-file por defecto crecen sin
+# límite en el disco de la base, de los medios y de los respaldos. Diez megas por archivo y
+# cinco archivos por servicio (docker-compose.prod.yml repite el ancla para el proxy: las
+# anclas de YAML no cruzan archivos, y tests/test_compose_logging.py las compara).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 # Base "prod-safe": los servicios usan el código de la IMAGEN (sin bind-mount).
 # En desarrollo, docker-compose.override.yml (auto-cargado) añade el montaje de código,
 # runserver y el puerto local. En producción se usa docker-compose.prod.yml.
 
 services:
   db:
+    logging: *logging
     image: postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-resenas}
@@ -20,6 +31,7 @@ services:
       retries: 12
 
   redis:
+    logging: *logging
     image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     # noeviction: como broker de Celery, Redis NUNCA debe descartar tareas encoladas
     # bajo presión de memoria (rechaza escrituras en su lugar). En producción guarda
@@ -37,6 +49,7 @@ services:
   # estáticos, una vez y antes de que arranquen web, worker y beat, que esperan a que termine
   # bien. Si falla, no arranca nada con el código nuevo.
   release:
+    logging: *logging
     build: ./backend
     command: ["sh", "release.sh"]
     env_file: .env
@@ -49,6 +62,7 @@ services:
 
   # App. Sin command → usa el CMD (gunicorn) de la imagen.
   web:
+    logging: *logging
     build: ./backend
     env_file: .env
     volumes:
@@ -67,6 +81,7 @@ services:
 
   # Worker de Celery (correo, publicación programada).
   worker:
+    logging: *logging
     build: ./backend
     entrypoint: ["celery", "-A", "config", "worker", "-l", "info"]
     env_file: .env
@@ -81,6 +96,7 @@ services:
 
   # Planificador de Celery: dispara las tareas de CELERY_BEAT_SCHEDULE (settings.py).
   beat:
+    logging: *logging
     build: ./backend
     entrypoint: ["celery", "-A", "config", "beat", "-l", "info"]
     env_file: .env
@@ -97,6 +113,7 @@ services:
   # /backups es un bind-mount del host (BACKUP_DIR) para sobrevivir a `down -v` y a la
   # pérdida del disco; apúntalo a almacenamiento respaldado/externo en producción.
   backup:
+    logging: *logging
     build: ./infra/backup   # postgres:16 + restic (off-site) + curl (alertas)
     profiles: ["backup"]
     # Entorno EXPLÍCITO en vez de `env_file: .env` (mínimo privilegio): antes recibía el

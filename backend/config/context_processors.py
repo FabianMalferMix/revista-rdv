@@ -4,6 +4,8 @@ from pathlib import Path
 
 from django.conf import settings
 
+from config.origin import site_host, site_origin
+
 
 def version_estaticos(request):
     """Sufijo para romper la caché de la hoja de estilos y de los guiones EN DESARROLLO.
@@ -32,3 +34,8 @@ def version_estaticos(request):
     except OSError:
         # Que falte el archivo no debe tumbar todas las páginas del sitio.
         return {"version_estaticos": ""}
+
+
+def origin(request):
+    """El origen fijo de las URL absolutas (JSON-LD) y el dominio que imprime el dossier."""
+    return {"site_origin": site_origin(), "site_host": site_host()}

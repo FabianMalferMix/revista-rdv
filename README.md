@@ -206,7 +206,7 @@ bash tools/ux/preparar-entorno.sh
 [docs/despliegue.md](docs/despliegue.md).
 
 ```bash
-cp .env.prod.example .env   # editar secretos, contraseñas y SITE_ADDRESS (tu dominio)
+cp .env.prod.example .env   # editar secretos, contraseñas, SITE_ADDRESS y SITE_URL (tu dominio)
 APP_VERSION=$(git rev-parse --short HEAD) \
   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```

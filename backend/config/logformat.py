@@ -10,6 +10,22 @@ import logging
 from config.redaction import redact_path
 
 
+def _redact(value):
+    """Redacta las cadenas de un campo extra, también dentro de diccionarios y listas.
+
+    Celery adjunta a cada «Task … received» y a cada fallo un extra `data` con los
+    argumentos de la tarea: una cadena con un token dentro de esa estructura saldría en
+    claro si solo se redactaran los extras de tipo cadena.
+    """
+    if isinstance(value, str):
+        return redact_path(value)
+    if isinstance(value, dict):
+        return {_redact(key): _redact(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_redact(item) for item in value]
+    return value
+
+
 def _serializa_redactado(obj):
     """`default` de json.dumps: pasa a texto y redacta de camino.
 
@@ -44,5 +60,5 @@ class JsonFormatter(logging.Formatter):
         standard = logging.LogRecord("", 0, "", 0, "", (), None).__dict__
         for key, value in record.__dict__.items():
             if key not in standard and key not in ("message", "asctime"):
-                data[key] = redact_path(value) if isinstance(value, str) else value
+                data[key] = _redact(value)
         return json.dumps(data, ensure_ascii=False, default=_serializa_redactado)

@@ -26,7 +26,11 @@ cp .env.prod.example .env      # editar: SECRET_KEY, contraseñas fuertes, domin
 
 Claves obligatorias (con `DJANGO_DEBUG=0` el arranque se rechaza si faltan o son de ejemplo):
 `DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `DJANGO_ALLOWED_HOSTS`,
-`DJANGO_CSRF_TRUSTED_ORIGINS`, y `SITE_ADDRESS` = tu dominio (p. ej. `revista.tudominio.cl`).
+`DJANGO_CSRF_TRUSTED_ORIGINS`, `SITE_ADDRESS` = tu dominio sin www (p. ej.
+`revista.tudominio.cl`) y `SITE_URL` = el mismo dominio con https
+(`https://revista.tudominio.cl`). Las URL absolutas (canonical, Open Graph, sitemap, feeds,
+enlaces del boletín) salen de `SITE_URL`, nunca del Host de la petición. Crea también el
+registro DNS de `www`: Caddy obtiene su certificado y lo redirige al dominio sin www.
 
 ## Primer despliegue
 

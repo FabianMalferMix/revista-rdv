@@ -28,6 +28,10 @@ ALLOWED_HOSTS = _ALLOWED_HOSTS_FROM_ENV + [
     h for h in ("127.0.0.1", "localhost") if h not in _ALLOWED_HOSTS_FROM_ENV
 ]
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+# El origen de las URL absolutas (canonical, Open Graph, JSON-LD, sitemap, robots y feeds):
+# sale de aquí y no del Host de cada petición (config/origin.py). Con DEBUG=0 es
+# obligatorio, en https y sin www; en desarrollo, el servidor local.
+SITE_URL = env_str("SITE_URL", "http://localhost:8000" if DEBUG else "").rstrip("/")
 
 # ── Aplicaciones ──────────────────────────────────────────
 INSTALLED_APPS = [
@@ -86,6 +90,7 @@ TEMPLATES = [
                 "apps.content.context_processors.canonical",
                 "apps.showcase.context_processors.site_profile",
                 "config.context_processors.version_estaticos",
+                "config.context_processors.origin",
             ],
         },
     },
@@ -322,6 +327,9 @@ if not DEBUG:
         "CELERY_BROKER_URL": _BROKER_URL_FROM_ENV,
         "DJANGO_ALLOWED_HOSTS": _ALLOWED_HOSTS_FROM_ENV,
         "DJANGO_CSRF_TRUSTED_ORIGINS": CSRF_TRUSTED_ORIGINS,
+        "SITE_URL": SITE_URL,
+        # El dominio que sirve Caddy (docker-compose.prod.yml): solo se lee para compararlo.
+        "SITE_ADDRESS": env_str("SITE_ADDRESS"),
         "AXES_ENABLED": AXES_ENABLED,
         "RATELIMIT_ENABLE": RATELIMIT_ENABLE,
         "DJANGO_HSTS_SECONDS": SECURE_HSTS_SECONDS,
