@@ -128,7 +128,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 AXES_FAILURE_LIMIT = env_int("AXES_FAILURE_LIMIT", 5)
 AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
-AXES_LOCKOUT_PARAMETERS = ["ip_address"]  # bloquea la IP atacante
+# Bloquea la combinación de cuenta e IP: quien prueba contraseñas contra una cuenta queda
+# fuera desde su conexión, sin dejar fuera a la dueña de la cuenta desde otra ni a las demás
+# cuentas de la misma IP. Y un acierto reinicia solo su propia combinación: con el bloqueo
+# por IP, cualquier login correcto desde esa IP borraba los fallos contra todas las cuentas.
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
 # Sin esto, axes responde «Account locked: too many login attempts» en inglés, y en
 # una pantalla PÚBLICA: la ve cualquiera que llegue a /admin/login/.
