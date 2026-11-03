@@ -166,3 +166,37 @@ def make_poem(db):
         return Poem.objects.create(**defaults)
 
     return _make
+
+
+class _KeepSentryEvents:
+    """Un transporte de Sentry que guarda los sobres en vez de mandarlos."""
+
+    def __new__(cls):
+        from sentry_sdk.transport import Transport
+
+        class KeepEvents(Transport):
+            def __init__(self):
+                super().__init__()
+                self.envelopes = []
+
+            def capture_envelope(self, envelope):
+                self.envelopes.append(envelope)
+
+            def events(self):
+                return [e for env in self.envelopes if (e := env.get_event()) is not None]
+
+        return KeepEvents()
+
+
+@pytest.fixture
+def sentry_events():
+    """Sentry arrancado como en producción (`init_sentry`), con un transporte que guarda los
+    eventos: devuelve la función que los lista."""
+    import sentry_sdk
+
+    from config.sentry import init_sentry
+
+    transport = _KeepSentryEvents()
+    init_sentry("https://public@sentry.invalid/1", environment="test", transport=transport)
+    yield transport.events
+    sentry_sdk.get_client().close()

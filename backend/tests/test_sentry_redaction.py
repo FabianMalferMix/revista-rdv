@@ -17,41 +17,17 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from kombu.exceptions import OperationalError as BrokerError
-from sentry_sdk.transport import Transport
 
 from apps.community import views
 from apps.community.models import NewsletterSubscriber
 from apps.community.tasks import send_confirmation_email
 from config import redaction
-from config.sentry import init_sentry
 
 pytestmark = pytest.mark.django_db
 EMAIL = "ana.prueba@example.com"
 NAME = "Ana Prueba"
 # La respuesta de un servidor SMTP que rechaza al destinatario: cita su dirección.
 SMTP_REPLY = f"5.1.1 <{EMAIL}>: Recipient address rejected: User unknown".encode()
-
-
-class _KeepEvents(Transport):
-    """Un transporte que guarda los sobres en vez de mandarlos."""
-
-    def __init__(self):
-        super().__init__()
-        self.envelopes = []
-
-    def capture_envelope(self, envelope):
-        self.envelopes.append(envelope)
-
-    def events(self):
-        return [e for env in self.envelopes if (e := env.get_event()) is not None]
-
-
-@pytest.fixture
-def sentry_events():
-    transport = _KeepEvents()
-    init_sentry("https://public@sentry.invalid/1", environment="test", transport=transport)
-    yield transport.events
-    sentry_sdk.get_client().close()
 
 
 def _pending():
