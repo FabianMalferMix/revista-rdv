@@ -53,7 +53,7 @@ def test_unknown_transition(editor, make_article):
 def test_transition_writes_audit_trail(editor, autor, make_article):
     article = make_article(owner=autor, status=S.IN_REVIEW)
     workflow.perform_transition(article, "accept", editor, note="ok")
-    entry = EditorialTransition.objects.filter(article=article).latest("created_at")
+    entry = EditorialTransition.objects.for_item(article).latest("created_at")
     assert (entry.from_status, entry.to_status) == (S.IN_REVIEW, S.APPROVED)
     assert entry.actor == editor
     assert entry.note == "ok"
@@ -89,7 +89,7 @@ def test_publish_due_items_is_idempotent(make_article):
 
     assert publish_due_items() == 1
     assert publish_due_items() == 0
-    assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
+    assert EditorialTransition.objects.for_item(article).filter(to_status=S.PUBLISHED).count() == 1
 
 
 def test_schedule_requires_future_published_at(editor, make_article):
@@ -125,7 +125,7 @@ def test_perform_transition_rechecks_state_under_lock(editor, make_article):
     with pytest.raises(ValueError):
         workflow.perform_transition(stale, "publish", editor)
 
-    assert EditorialTransition.objects.filter(article=article, to_status=S.PUBLISHED).count() == 1
+    assert EditorialTransition.objects.for_item(article).filter(to_status=S.PUBLISHED).count() == 1
 
 
 def test_publish_due_items_declares_resilience_policy():
