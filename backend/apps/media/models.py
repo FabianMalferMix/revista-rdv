@@ -4,7 +4,6 @@ from io import BytesIO
 from pathlib import PurePosixPath
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models, transaction
@@ -37,6 +36,10 @@ REWRITE_FORMATS = {
 }
 
 
+# Lo que lanza Pillow ante un archivo que no puede leer: ilegible, truncado o demasiado grande.
+IMAGE_ERRORS = (OSError, Image.DecompressionBombError)
+
+
 class ImageCleanupError(Exception):
     """No se pudo reescribir sin metadatos una imagen recién subida: no se publica."""
 
@@ -47,8 +50,8 @@ class MediaAsset(models.Model):
     # Anchos de los derivados para `srcset` (solo se generan los menores al original).
     SRCSET_WIDTHS = (480, 960, 1440)
     # La obra de la portada va a sangre (D18): pide copias más anchas y en formatos
-    # modernos. Se hacen solo para la imagen elegida como portada (ver
-    # apps.showcase.apps), no para cada imagen que se sube. Las calidades dejan la lámina
+    # modernos. Se hacen solo para la imagen elegida como portada (apps.showcase lo dice al
+    # servicio de imágenes), no para cada imagen que se sube. Las calidades dejan la lámina
     # del estreno bajo 300 KB en escritorio y 150 KB en el teléfono.
     PORTADA_WIDTHS = (640, 960, 1080, 1440, 1920, 2560)
     PORTADA_FORMATS = (("avif", "AVIF", {"quality": 50}), ("webp", "WEBP", {"quality": 70}))
@@ -69,6 +72,12 @@ class MediaAsset(models.Model):
     # Derivados: los rellena Django desde el archivo. Fuente única, no editables a mano.
     width = models.PositiveIntegerField(null=True, blank=True, editable=False)
     height = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    # Cuándo se comprobó que el original no lleva metadatos, o se reescribió sin ellos. Vacío: aún
+    # no se comprobó (el comando de derivados lo hace con las imágenes anteriores).
+    metadata_stripped_at = models.DateTimeField(null=True, blank=True, editable=False)
+    # El color del borde de la imagen, en «#rrggbb», con el que el estante pinta el lomo de una
+    # publicación. Lo mide el servicio de imágenes; vacío si aún no se midió o no se puede leer.
+    border_color = models.CharField(max_length=7, blank=True, editable=False)
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -88,16 +97,32 @@ class MediaAsset(models.Model):
 
     # ── Imágenes responsivas (srcset) ─────────────────────────
     def save(self, *args, **kwargs):
-        # Una imagen recién subida todavía no está en el almacenamiento.
-        recien_subida = bool(self.file) and not self.file._committed
+        file_changed = self._file_changed(kwargs.get("update_fields"))
+        if file_changed:
+            self.border_color = ""
         # En una transacción: si la limpieza de una imagen recién subida falla, la fila tampoco
         # queda, aunque quien guarda no haya abierto una.
         with transaction.atomic():
             super().save(*args, **kwargs)
-            # El orden importa: limpiar el original ANTES de derivar, para que las copias
-            # se generen a partir de la imagen ya despojada y con la orientación aplicada.
-            self.strip_metadata(force=recien_subida)
-        self.ensure_derivatives()
+            if file_changed:
+                # En la misma petición: una imagen que no se puede limpiar se rechaza, y ninguna
+                # se sirve con su ubicación mientras espera su turno en la cola.
+                self.strip_metadata(force=True)
+        if file_changed:
+            from .tasks import process_image
+
+            # Las copias y el color, fuera de la petición y con el archivo ya confirmado. Guardar
+            # sin cambiar el archivo no abre la imagen.
+            process_image.delay_on_commit(self.pk)
+
+    def _file_changed(self, update_fields):
+        """Si este guardado escribe un archivo distinto del que guarda la base."""
+        if not self.file or (update_fields is not None and "file" not in update_fields):
+            return False
+        if not self.file._committed or self._state.adding or not self.pk:
+            return True
+        stored = type(self).objects.filter(pk=self.pk).values_list("file", flat=True).first()
+        return stored != self.file.name
 
     def _derivative_name(self, width):
         p = PurePosixPath(self.file.name)
@@ -135,52 +160,6 @@ class MediaAsset(models.Model):
         archivo subido, que puede pesar varios megas."""
         return self._anchos_portada(self.width) if self.width else []
 
-    def ensure_portada_derivatives(self):
-        """Genera, si faltan, las copias de portada en AVIF y WebP. Idempotente y tolerante a
-        fallos, como `ensure_derivatives`: sin ellas, la portada cae al `srcset` de siempre."""
-        if not self.file or not self.file.name:
-            return
-        existe = self.file.storage.exists
-        if self.width and all(
-            existe(self._portada_name(w, ext))
-            for w in self.portada_widths()
-            for ext, _, _ in self.PORTADA_FORMATS
-        ):
-            return
-        try:
-            with self.file.open("rb") as fh:
-                img = Image.open(fh)
-                img.load()
-        except Exception:
-            return
-        # Derecha y con su ancho real. Una foto de cámara puede venir girada por su etiqueta
-        # EXIF, y estas copias pueden hacerse antes de que strip_metadata la enderece y
-        # corrija `width` (la señal post_save de apps.showcase llega dentro del save()): los
-        # anchos salen de la imagen enderezada, no de la columna.
-        img = ImageOps.exif_transpose(img)
-        # La transparencia se conserva (AVIF y WebP la admiten): pasada a RGB sin más, lo
-        # transparente salía negro y el logo en tinta desaparecía encima.
-        transparente = img.mode in ("RGBA", "LA", "PA") or (
-            img.mode == "P" and "transparency" in img.info
-        )
-        img = img.convert("RGBA" if transparente else "RGB")
-        for w in self._anchos_portada(img.width):
-            for ext, fmt, opciones in self.PORTADA_FORMATS:
-                nombre = self._portada_name(w, ext)
-                if existe(nombre):
-                    continue
-                copia = img
-                if w != img.width:
-                    copia = img.resize(
-                        (w, max(1, round(img.height * w / img.width))), Image.Resampling.LANCZOS
-                    )
-                buf = BytesIO()
-                try:
-                    copia.save(buf, format=fmt, **opciones)
-                except Exception:  # noqa: BLE001 - un Pillow sin AVIF deja al menos el WebP
-                    continue
-                self.file.storage.save(nombre, ContentFile(buf.getvalue()))
-
     def portada_srcset(self, ext):
         """`srcset` de las copias de portada en un formato: solo las que existen."""
         if not self.file or not self.file.name:
@@ -209,14 +188,17 @@ class MediaAsset(models.Model):
         try:
             with self.file.open("rb") as fh:
                 img = Image.open(fh)
-                img.load()
                 fmt = (img.format or "").upper()
+                # Los metadatos están en la cabecera: se miran sin decodificar la imagen (un PNG
+                # sí la decodifica, porque los suyos pueden ir después de los píxeles).
                 metadatos = bool(img.getexif()) or bool(METADATA_KEYS & img.info.keys())
                 if not force and not metadatos:
+                    self._mark_stripped()
                     return True
                 if fmt not in REWRITE_FORMATS:
                     raise ImageCleanupError(f"formato {fmt or 'desconocido'}")
                 icc = img.info.get("icc_profile")
+                img.load()
                 limpia = ImageOps.exif_transpose(img)
         except Exception as exc:
             if force:
@@ -227,6 +209,8 @@ class MediaAsset(models.Model):
                 )
                 self.file.storage.delete(self.file.name)
                 raise ImageCleanupError(self.file.name) from exc
+            if not isinstance(exc, (*IMAGE_ERRORS, ImageCleanupError)):
+                raise
             logger.warning(
                 "La imagen %s (recurso %s) no se pudo limpiar: %s", self.file.name, self.pk, exc
             )
@@ -243,7 +227,12 @@ class MediaAsset(models.Model):
         self._replace_original(buf.getvalue())
         self.width, self.height = limpia.width, limpia.height
         type(self).objects.filter(pk=self.pk).update(width=limpia.width, height=limpia.height)
+        self._mark_stripped()
         return True
+
+    def _mark_stripped(self):
+        self.metadata_stripped_at = timezone.now()
+        type(self).objects.filter(pk=self.pk).update(metadata_stripped_at=self.metadata_stripped_at)
 
     def _replace_original(self, content):
         """Pone `content` en lugar del original, con el mismo nombre (la columna no cambia).
@@ -260,104 +249,6 @@ class MediaAsset(models.Model):
         except BaseException:
             storage.delete(copy)
             raise
-
-    def ensure_derivatives(self):
-        """Repara width/height ausentes y genera (si faltan) las copias reducidas para
-        `srcset`. Nunca sube de tamaño. Tolerante a fallos: un archivo ilegible o un
-        formato no rasterizable no rompe el guardado (sin derivados, `srcset` cae al
-        original y `width/height` quedan como estén)."""
-        if not self.file:
-            return
-        # Lo que hay REALMENTE en la columna, no lo que muestra la instancia. `ImageField`
-        # conecta `update_dimension_fields` a la señal `post_init`, que al cargar una fila
-        # con la columna a NULL abre el archivo y rellena `self.width`/`self.height` en
-        # memoria (sin escribir). Mirar el atributo, como se hacía antes, dejaba esta
-        # función convencida de que las dimensiones ya estaban guardadas: la reparación
-        # resultaba inalcanzable justo en el caso para el que se escribió, y la fila se
-        # quedaba en NULL para siempre pagando una apertura de archivo por instanciación.
-        # `values_list` no instancia el modelo, así que no dispara `post_init`.
-        guardadas = (
-            type(self).objects.filter(pk=self.pk).values_list("width", "height").first()
-            if self.pk
-            else None
-        )
-        ancho_guardado, alto_guardado = guardadas or (None, None)
-
-        # ¿Hace falta abrir el archivo? Solo si faltan dimensiones o algún derivado.
-        need_open = not ancho_guardado or not alto_guardado
-        if not need_open:
-            targets = [w for w in self.SRCSET_WIDTHS if w < ancho_guardado]
-            need_open = any(not self.file.storage.exists(self._derivative_name(w)) for w in targets)
-        if not need_open:
-            return
-        try:
-            with self.file.open("rb") as fh:
-                img = Image.open(fh)
-                img.load()
-        except Exception:
-            return
-        # Repara dimensiones (fuente única: el archivo real).
-        if (ancho_guardado, alto_guardado) != (img.width, img.height):
-            self.width, self.height = img.width, img.height
-            if self.pk:
-                type(self).objects.filter(pk=self.pk).update(width=img.width, height=img.height)
-
-        fmt = (img.format or "JPEG").upper()
-        if fmt in ("JPEG", "JPG", "MPO"):
-            fmt_out, save_kwargs = "JPEG", {"quality": 82, "optimize": True, "progressive": True}
-        elif fmt == "PNG":
-            fmt_out, save_kwargs = "PNG", {"optimize": True}
-        elif fmt == "WEBP":
-            fmt_out, save_kwargs = "WEBP", {"quality": 82}
-        else:
-            return  # formato sin soporte de derivados
-        for w in (w for w in self.SRCSET_WIDTHS if w < img.width):
-            name = self._derivative_name(w)
-            if self.file.storage.exists(name):
-                continue
-            resized = img.resize(
-                (w, max(1, round(img.height * w / img.width))), Image.Resampling.LANCZOS
-            )
-            if fmt_out == "JPEG" and resized.mode not in ("RGB", "L"):
-                resized = resized.convert("RGB")
-            buf = BytesIO()
-            resized.save(buf, format=fmt_out, **save_kwargs)
-            self.file.storage.save(name, ContentFile(buf.getvalue()))
-
-    def color_de_borde(self):
-        """El color del borde de la imagen, en «#rrggbb»: la mediana del anillo exterior (un 4 %
-        de cada lado). Con él el estante de la portada pinta el lomo y el canto de cada
-        publicación (D28), para que el libro sea el mismo de lomo y de frente. Se mide una vez
-        por archivo y queda en la caché; "" si la imagen no se puede leer, y ese fallo solo se
-        recuerda unos minutos: una lectura que falló una vez no queda fijada para siempre."""
-        if not self.file or not self.file.name:
-            return ""
-        clave = f"color-de-borde:{self.file.name}"
-        color = cache.get(clave)
-        if color is None:
-            color = self._medir_color_de_borde()
-            cache.set(clave, color, None if color else 300)
-        return color
-
-    def _medir_color_de_borde(self):
-        try:
-            with self.file.open("rb") as fh:
-                img = Image.open(fh)
-                img.draft("RGB", (120, 168))  # un JPEG se decodifica ya reducido
-                img = ImageOps.exif_transpose(img).convert("RGB")
-        except Exception:
-            return ""
-        img = img.resize((60, 84))
-        ancho, alto = img.size
-        borde = max(1, round(min(ancho, alto) * 0.04))
-        anillo = [
-            img.getpixel((x, y))
-            for x in range(ancho)
-            for y in range(alto)
-            if x < borde or y < borde or x >= ancho - borde or y >= alto - borde
-        ]
-        mediana = [sorted(p[c] for p in anillo)[len(anillo) // 2] for c in range(3)]
-        return "#{:02x}{:02x}{:02x}".format(*mediana)
 
     def srcset(self):
         """Cadena `srcset` con los derivados existentes + el original. Robusta: solo

@@ -227,10 +227,11 @@ def test_borrar_un_envio_borra_el_manuscrito_del_disco(django_capture_on_commit_
 
 
 def test_borrar_un_recurso_borra_tambien_sus_derivadas(django_capture_on_commit_callbacks):
-    asset = MediaAsset.objects.create(
-        file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
-        alt_text="Recital",
-    )
+    with django_capture_on_commit_callbacks(execute=True):
+        asset = MediaAsset.objects.create(
+            file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
+            alt_text="Recital",
+        )
     storage = asset.file.storage
     nombres = [asset.file.name, *asset.derivative_names()]
     existentes = [n for n in nombres if storage.exists(n)]
@@ -309,10 +310,11 @@ def test_a_replacement_that_rolls_back_keeps_the_original(django_capture_on_comm
 
 
 def test_a_deletion_that_rolls_back_keeps_the_files(django_capture_on_commit_callbacks):
-    asset = MediaAsset.objects.create(
-        file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
-        alt_text="Recital",
-    )
+    with django_capture_on_commit_callbacks(execute=True):
+        asset = MediaAsset.objects.create(
+            file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
+            alt_text="Recital",
+        )
     storage = asset.file.storage
     nombres = [n for n in [asset.file.name, *asset.derivative_names()] if storage.exists(n)]
     assert len(nombres) > 1

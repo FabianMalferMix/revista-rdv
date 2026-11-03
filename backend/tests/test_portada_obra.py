@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 
@@ -29,12 +30,19 @@ ESTATICOS = Path(__file__).resolve().parent.parent / "static" / "img" / "portada
 def _recurso(nombre="obra.jpg", tamano=(1500, 900), alt="Lectura en la plaza"):
     buffer = BytesIO()
     Image.new("RGB", tamano, (200, 60, 120)).save(buffer, format="JPEG")
-    recurso = MediaAsset.objects.create(
-        file=SimpleUploadedFile(nombre, buffer.getvalue(), content_type="image/jpeg"),
-        alt_text=alt,
-    )
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        recurso = MediaAsset.objects.create(
+            file=SimpleUploadedFile(nombre, buffer.getvalue(), content_type="image/jpeg"),
+            alt_text=alt,
+        )
     recurso.refresh_from_db()
     return recurso
+
+
+def _guardar(perfil):
+    """Guarda el perfil y deja correr lo que encola al confirmar: las copias de la obra."""
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        perfil.save()
 
 
 def _obra(client):
@@ -85,7 +93,7 @@ def test_la_imagen_elegida_reemplaza_a_la_lamina_y_nunca_sirve_el_original(clien
     obra = _recurso()
     perfil = SiteProfile.load()
     perfil.hero_image = obra
-    perfil.save()
+    _guardar(perfil)
     _, picture = _obra(client)
     fuentes = picture.select("source")
     assert [(f.get("media"), f["type"]) for f in fuentes] == [
@@ -105,7 +113,7 @@ def test_el_recorte_del_telefono_va_primero_con_su_media(client):
     perfil = SiteProfile.load()
     perfil.hero_image = _recurso("ancha.jpg")
     perfil.hero_image_phone = _recurso("alta.jpg", (700, 1400))
-    perfil.save()
+    _guardar(perfil)
     _, picture = _obra(client)
     fuentes = [(f.get("media"), f["type"], f["srcset"]) for f in picture.select("source")]
     assert [m for m, _, _ in fuentes] == [PORTADA_TELEFONO, PORTADA_TELEFONO, None, None]
@@ -117,7 +125,7 @@ def test_la_imagen_para_compartir_no_es_la_obra(client):
     """og_image lleva el nombre escrito: bajo el logo lo repetiría."""
     perfil = SiteProfile.load()
     perfil.og_image = _recurso("tarjeta.jpg", (1200, 630))
-    perfil.save()
+    _guardar(perfil)
     _, picture = _obra(client)
     assert "lamina-ancha-2400.avif" in str(picture)
     assert "tarjeta" not in str(picture)
@@ -143,7 +151,7 @@ def test_las_copias_se_hacen_al_elegir_la_obra_y_una_sola_vez(monkeypatch):
     assert not almacen.exists(obra._portada_name(1500, "avif")), "solo la obra elegida tiene copias"
     perfil = SiteProfile.load()
     perfil.hero_image = obra
-    perfil.save()
+    _guardar(perfil)
     for ancho in obra.portada_widths():
         for ext in ("avif", "webp"):
             assert almacen.exists(obra._portada_name(ancho, ext))
@@ -151,7 +159,7 @@ def test_las_copias_se_hacen_al_elegir_la_obra_y_una_sola_vez(monkeypatch):
         assert (copia.format, copia.size) == ("AVIF", (1080, 648))
     guardadas = []
     monkeypatch.setattr(almacen, "save", lambda *a, **k: guardadas.append(a))
-    perfil.save()
+    _guardar(perfil)
     assert not guardadas, "las copias que ya existen no se rehacen"
 
 
@@ -159,7 +167,7 @@ def test_al_cambiar_el_archivo_de_la_obra_se_rehacen_sus_copias(django_capture_o
     obra = _recurso("primera.jpg")
     perfil = SiteProfile.load()
     perfil.hero_image = obra
-    perfil.save()
+    _guardar(perfil)
     almacen = obra.file.storage
     vieja = obra._portada_name(1500, "avif")
     buffer = BytesIO()
@@ -176,7 +184,7 @@ def test_borrar_la_obra_borra_sus_copias(django_capture_on_commit_callbacks):
     obra = _recurso()
     perfil = SiteProfile.load()
     perfil.hero_image = obra
-    perfil.save()
+    _guardar(perfil)
     almacen = obra.file.storage
     copias = [obra._portada_name(w, e) for w in obra.portada_widths() for e in ("avif", "webp")]
     assert all(almacen.exists(c) for c in copias)
