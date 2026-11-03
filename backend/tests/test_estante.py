@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
-from django.core.cache import cache
 from django.core.files.base import ContentFile
+from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 
@@ -133,7 +133,10 @@ def _tapa(nombre, borde, centro):
     buffer = BytesIO()
     imagen.save(buffer, format="PNG")
     tapa = MediaAsset(alt_text=nombre)
-    tapa.file.save(f"{nombre}.png", ContentFile(buffer.getvalue()))
+    # Subida y procesada: el servicio de imágenes mide el color al confirmar.
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        tapa.file.save(f"{nombre}.png", ContentFile(buffer.getvalue()))
+    tapa.refresh_from_db()
     return tapa
 
 
@@ -142,7 +145,6 @@ def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
     borde de su tapa y el canto (el grueso que asoma junto a la tapa de frente), uno más
     oscuro; los dos como rectángulos de SVG, porque la CSP no admite estilos en línea. Sobre
     un lomo oscuro, el texto va claro."""
-    cache.clear()
     make_publication(slug="rosa", position=0, cover=_tapa("rosa", (246, 214, 230), (20, 30, 200)))
     make_publication(slug="azul", position=1, cover=_tapa("azul", (31, 115, 199), (250, 250, 250)))
     make_publication(slug="sin-tapa", position=2)

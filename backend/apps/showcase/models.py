@@ -117,11 +117,6 @@ class SiteProfile(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
-        # Las copias de la obra de la portada (AVIF y WebP) se hacen al elegirla, no al
-        # pedir la portada. Las que ya existen no se rehacen.
-        for imagen in (self.hero_image, self.hero_image_phone):
-            if imagen is not None:
-                imagen.ensure_portada_derivatives()
 
     def delete(self, *args, **kwargs):
         pass  # el singleton no se borra
@@ -267,7 +262,7 @@ class Publication(models.Model):
         de su tapa; el canto (el grueso que asoma junto a la tapa de frente), un poco más oscuro;
         y `oscuro` si el texto del lomo tiene que ir claro para leerse. Vacío sin tapa legible:
         el lomo queda en la hoja clara."""
-        color = self.cover.color_de_borde() if self.cover else ""
+        color = self.cover.border_color if self.cover else ""
         if not color:
             return {}
         rgb = [int(color[i : i + 2], 16) for i in (1, 3, 5)]

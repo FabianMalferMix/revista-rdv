@@ -5,6 +5,7 @@ from io import BytesIO
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template import Context, Template
+from django.test import TestCase
 from PIL import Image
 
 from apps.media.models import MediaAsset
@@ -20,7 +21,9 @@ def _img_upload(name="test.jpg", size=(1000, 600)):
 
 
 def _asset(name="test.jpg", size=(1000, 600), alt="alt"):
-    a = MediaAsset.objects.create(file=_img_upload(name, size), alt_text=alt)
+    """Una imagen subida y ya procesada: el guardado confirma y corre la tarea que encola."""
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        a = MediaAsset.objects.create(file=_img_upload(name, size), alt_text=alt)
     a.refresh_from_db()
     return a
 

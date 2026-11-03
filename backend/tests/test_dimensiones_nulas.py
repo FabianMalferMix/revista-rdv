@@ -1,4 +1,4 @@
-"""`ensure_derivatives` repara de verdad las dimensiones ausentes en la BASE.
+"""El servicio de imágenes repara de verdad las dimensiones ausentes en la BASE.
 
 `MediaAsset.file` es un `ImageField` con `width_field`/`height_field`, y Django conecta
 `update_dimension_fields` a `post_init`: al cargar una fila cuya columna está a NULL, abre
@@ -17,6 +17,7 @@ from django.db import connection
 from PIL import Image
 
 from apps.media.models import MediaAsset
+from apps.media.services import process_image
 
 pytestmark = pytest.mark.django_db
 
@@ -52,7 +53,7 @@ def test_post_init_disfraza_la_columna_vacia():
 def test_repara_la_columna_cuando_esta_a_nulo():
     a = _recurso()
     MediaAsset.objects.filter(pk=a.pk).update(width=None, height=None)
-    MediaAsset.objects.get(pk=a.pk).ensure_derivatives()
+    process_image(a.pk)
     assert _columna(a.pk) == (1600, 1000)
 
 
@@ -60,25 +61,27 @@ def test_repara_aunque_los_derivados_ya_existan():
     """El caso que el atajo de rendimiento se saltaba: con los derivados en su sitio, la
     función salía antes de abrir el archivo y no llegaba nunca a reparar."""
     a = _recurso()
-    a.ensure_derivatives()  # deja 480/960/1440 en disco
+    process_image(a.pk)  # deja 480/960/1440 en disco
     MediaAsset.objects.filter(pk=a.pk).update(width=None, height=None)
-    MediaAsset.objects.get(pk=a.pk).ensure_derivatives()
+    process_image(a.pk)
     assert _columna(a.pk) == (1600, 1000)
 
 
 def test_no_corrige_una_dimension_equivocada_y_es_deliberado():
     """Límite conocido, fijado aquí para que no se descubra por sorpresa.
 
-    Con la columna NO vacía la función se fía de ella y ni siquiera abre el archivo: ese
-    atajo es lo que evita releer todo el catálogo en cada pasada. Detectar una columna que
+    Con la columna NO vacía, las copias en disco y el color medido, el servicio se fía de la
+    columna y ni siquiera abre el archivo: ese atajo es lo que evita releer todo el catálogo en
+    cada pasada. Detectar una columna que
     miente exigiría abrir cada imagen siempre, que es justo el coste que se quiere evitar.
     Y no es un estado que se dé solo: Django rellena las dimensiones desde el archivo al
     guardar, así que el NULL aparece por caminos que se saltan `save()` (una migración de
     datos, `bulk_create`, una siembra), no un valor equivocado.
     """
     a = _recurso()
+    process_image(a.pk)
     MediaAsset.objects.filter(pk=a.pk).update(width=99, height=99)
-    MediaAsset.objects.get(pk=a.pk).ensure_derivatives()
+    process_image(a.pk)
     assert _columna(a.pk) == (99, 99)
 
 
@@ -95,11 +98,11 @@ def test_no_reabre_el_archivo_cuando_no_hace_falta(monkeypatch):
     """El atajo de rendimiento sigue vivo: con la columna correcta y los derivados en
     disco, no se abre nada. Si esto cae, el arreglo salió caro."""
     a = _recurso()
-    a.ensure_derivatives()
+    process_image(a.pk)
     a = MediaAsset.objects.get(pk=a.pk)
 
     def _prohibido(*args, **kwargs):
         raise AssertionError("abrió el archivo sin necesidad")
 
     monkeypatch.setattr(type(a.file), "open", _prohibido)
-    a.ensure_derivatives()
+    process_image(a.pk)

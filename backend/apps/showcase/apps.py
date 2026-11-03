@@ -11,29 +11,24 @@ class ShowcaseConfig(AppConfig):
         from django.db.models.signals import post_save
 
         from apps.media.filecleanup import register
-        from apps.media.models import MediaAsset
+        from apps.media.services import register_portada_use
 
         from .models import Publication, SiteProfile
+        from .signals import process_portada_images
 
         # Los PDF se borran del disco al borrar o reemplazar la fila (hallazgo S-13).
         register(Publication, "pdf")
         register(SiteProfile, "dossier_pdf")
 
-        def copias_de_la_portada(sender, instance, **kwargs):
-            """Si se cambia el archivo de la imagen que ya es la portada, sus copias AVIF y
-            WebP se rehacen con el archivo nuevo (las viejas las borra filecleanup). Vive
-            aquí y no en media: la biblioteca de imágenes no sabe qué es una portada."""
-            if SiteProfile.objects.filter(
-                Q(hero_image=instance) | Q(hero_image_phone=instance)
-            ).exists():
-                instance.ensure_portada_derivatives()
-
-        # weak=False: es una función local de ready(). Con la referencia débil de siempre
-        # solo seguía viva por la caché de Django que la guarda con DEBUG; en producción
-        # se perdía en silencio, como habría pasado con las de filecleanup.
+        # La biblioteca de imágenes hace las copias de portada de las imágenes que el perfil
+        # elige como obra; no sabe qué es una portada.
+        register_portada_use(
+            lambda asset: SiteProfile.objects.filter(
+                Q(hero_image=asset) | Q(hero_image_phone=asset)
+            ).exists()
+        )
         post_save.connect(
-            copias_de_la_portada,
-            sender=MediaAsset,
-            weak=False,
-            dispatch_uid="showcase.copias_de_la_portada",
+            process_portada_images,
+            sender=SiteProfile,
+            dispatch_uid="showcase.process_portada_images",
         )

@@ -126,11 +126,11 @@ REFERENCED_ROWS = {
     "people.Contributor",
 }
 
-# Los campos que no viajan: las cuentas del panel y el vector de búsqueda, que el trigger de la
-# base rehace al cargar.
+# Los campos que no viajan: las cuentas del panel, el vector de búsqueda, que el trigger de la
+# base rehace al cargar, y lo que el servicio de imágenes vuelve a medir al cargar.
 PRIVATE_FIELDS = {
     "people.Contributor": {"user"},
-    "media.MediaAsset": {"uploaded_by"},
+    "media.MediaAsset": {"uploaded_by", "metadata_stripped_at", "border_color"},
     "content.Article": {"owner", "search_vector"},
     "content.Poem": {"owner", "search_vector"},
 }
