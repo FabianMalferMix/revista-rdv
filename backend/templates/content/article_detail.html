@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images social %}
+{% load images social authored %}
 
 {% block title %}{{ article.seo_title|default:article.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ article.seo_description|default:article.subtitle|default:article.title }}{% endblock %}
@@ -84,7 +84,7 @@
         </figure>
       {% endif %}
       {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
-      <div class="body">{{ article.body|safe }}</div>
+      <div class="body" hx-disable>{{ article.body|authored_html }}</div>
     </div>
     </div>
     {% include "content/partials/_pie_de_entidad.html" %}
