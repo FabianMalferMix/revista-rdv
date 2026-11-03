@@ -39,7 +39,7 @@ class RecordingAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
             if not Poem.objects.filter(recording=obj).exists():
                 messages.warning(
                     request,
-                    f"«{obj.title}» está publicado sin transcripción ni poema enlazado: quien no "
+                    f"“{obj.title}” está publicado sin transcripción ni poema enlazado: quien no "
                     "puede escucharlo no tiene qué leer. Escribe la transcripción o enlaza el "
                     "registro desde la ficha del poema.",
                 )
