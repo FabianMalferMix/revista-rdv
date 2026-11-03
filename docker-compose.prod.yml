@@ -20,7 +20,6 @@ x-logging: &logging
 
 services:
   release:
-    image: resenas-app:${APP_VERSION:-local}
     environment:
       DJANGO_DEBUG: "0"
     mem_limit: ${WEB_MEM_LIMIT:-768m}
@@ -30,39 +29,10 @@ services:
     security_opt: ["no-new-privileges:true"]
 
   web:
-    # Docker manda SIGKILL a los 10 s: gunicorn necesita su --graceful-timeout (30 s) para
-    # terminar las peticiones en curso.
+    # Docker manda SIGKILL a los 10 s: gunicorn necesita su graceful_timeout (30 s, en
+    # backend/gunicorn.conf.py) para terminar las peticiones en curso. Sin `command`: el de la
+    # imagen, el mismo que arranca el CI, con las opciones de gunicorn.conf.py.
     stop_grace_period: 40s
-    image: resenas-app:${APP_VERSION:-local}
-    command:
-      - gunicorn
-      - config.wsgi:application
-      - --bind
-      - 0.0.0.0:8000
-      - --workers
-      - ${GUNICORN_WORKERS:-3}
-      # Con hilos, gunicorn usa la clase gthread en vez de sync: una petición lenta ya
-      # no bloquea un proceso entero, así que el paralelismo efectivo pasa de 3 a 12
-      # (hallazgo S-07). Los timeouts del borde están en infra/caddy/Caddyfile.
-      - --threads
-      - ${GUNICORN_THREADS:-4}
-      # Con gthread, --timeout no es un plazo por petición: el proceso sigue avisando que está
-      # vivo aunque todos sus hilos estén ocupados. El plazo de cada consulta lo pone
-      # statement_timeout (backend/config/settings.py).
-      - --timeout
-      - "30"
-      - --graceful-timeout
-      - "30"
-      - --max-requests
-      - "1000"
-      - --max-requests-jitter
-      - "100"
-      - --forwarded-allow-ips
-      - "*"
-      # SIN --access-logfile: el log de acceso vive ahora en Caddy (ver Caddyfile). El de
-      # gunicorn registraba siempre la IP interna del proxy y, sobre todo, escribía la
-      # ruta completa —con el token del boletín— sin posibilidad de redactarla, porque su
-      # formato de acceso no admite sustituciones (residuo del hallazgo S-20).
     environment:
       DJANGO_DEBUG: "0"
     # Aislamiento de recursos (hallazgo S-08): sin límites, un pico de `web` podía
@@ -92,7 +62,6 @@ services:
     # Por encima del límite duro de las tareas (CELERY_TASK_TIME_LIMIT, 60 s): un correo en
     # curso termina antes de que Docker mate el proceso.
     stop_grace_period: 75s
-    image: resenas-app:${APP_VERSION:-local}
     environment:
       DJANGO_DEBUG: "0"
     mem_limit: ${WORKER_MEM_LIMIT:-512m}
@@ -111,7 +80,6 @@ services:
       start_period: 40s
 
   beat:
-    image: resenas-app:${APP_VERSION:-local}
     environment:
       DJANGO_DEBUG: "0"
     mem_limit: ${BEAT_MEM_LIMIT:-256m}
@@ -148,6 +116,23 @@ services:
     # su política y no el OOM killer del host quien mate el proceso.
     mem_limit: ${REDIS_MEM_LIMIT:-384m}
     cpus: ${REDIS_CPUS:-0.5}
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+  # La caché de Django, aparte del broker: con allkeys-lru descarta lo menos usado al
+  # llenarse, cosa que el broker no puede hacer sin perder tareas, y un broker lleno ya no
+  # deja sin caché al sitio. Sin persistencia: todo lo que guarda se puede recalcular.
+  cache:
+    logging: *logging
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    command: "redis-server --save '' --appendonly no --maxmemory 64mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requerido en produccion}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    mem_limit: ${CACHE_MEM_LIMIT:-128m}
+    cpus: ${CACHE_CPUS:-0.25}
     security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 

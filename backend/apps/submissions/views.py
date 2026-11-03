@@ -4,6 +4,8 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django_ratelimit.decorators import ratelimit
 
+from config.cache import SERVICE_UNAVAILABLE, counters_available
+
 from .forms import SubmissionForm
 from .models import Call, Submission
 
@@ -15,8 +17,11 @@ def _open_call():
 @ratelimit(key="ip", rate="10/h", method="POST", block=False)
 def submit(request):
     if request.method == "POST":
-        if getattr(request, "limited", False):  # rate-limit por IP superado
-            messages.error(request, "Has enviado demasiadas propuestas. Inténtalo más tarde.")
+        if getattr(request, "limited", False):  # rate-limit por IP superado, o la caché caída
+            if counters_available():
+                messages.error(request, "Has enviado demasiadas propuestas. Inténtalo más tarde.")
+            else:
+                messages.error(request, SERVICE_UNAVAILABLE)
             # Rehidratamos con lo escrito (como `initial`, sin marcar el form como
             # enviado para no mostrar errores de validación espurios) para no perder
             # el texto del usuario — hallazgo #28. El adjunto no se puede repoblar.

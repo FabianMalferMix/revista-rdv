@@ -7,6 +7,9 @@ window.addEventListener("load", function () {
     selector: "textarea.richtext",
     menubar: false,
     plugins: "lists link autolink",
+    // Una imagen pegada viaja como data: y la limpieza del HTML la borra al guardar: mejor
+    // que no entre. Las imágenes del texto se suben como recurso.
+    paste_data_images: false,
     toolbar:
       "undo redo | h2 h3 | bold italic | bullist numlist | blockquote link | removeformat",
     height: 480,

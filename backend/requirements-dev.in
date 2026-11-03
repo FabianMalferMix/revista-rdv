@@ -1,7 +1,8 @@
 # Dependencias de DESARROLLO/TEST (fuente con rangos). El lockfile fijado +
 # hashes es requirements-dev.txt (superconjunto de runtime + dev), generado con:
-#   pip-compile --generate-hashes --strip-extras requirements-dev.in
-# Regenerar tras editar este archivo o requirements.in.
+#   pip-compile --generate-hashes --strip-extras --unsafe-package pip requirements-dev.in
+# Regenerar tras editar este archivo o requirements.in. pip queda fuera del lockfile: lo
+# fijan el Dockerfile y el CI.
 -r requirements.in
 pytest>=9.1.1,<10
 pytest-django>=4.14.0,<5
@@ -10,3 +11,5 @@ pytest-randomly>=5.0.0,<6
 pytest-xdist>=3.6,<4
 beautifulsoup4>=4.12,<5
 ruff>=0.17.1,<1
+# Compila los lockfiles (CONTRIBUTING.md, «Dependencias»).
+pip-tools>=7.6.2,<8

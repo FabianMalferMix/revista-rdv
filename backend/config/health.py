@@ -77,6 +77,13 @@ def check_heartbeat():
     return None
 
 
+def check_cache():
+    from config.cache import cache_ping
+
+    reason = cache_ping()
+    return f"la caché (Redis) no responde: {reason}" if reason else None
+
+
 def check_scheduled():
     from apps.content.models import EditorialStatus, editorial_models
 
@@ -126,6 +133,7 @@ def check_disk():
 CHECKS = {
     "database": check_database,
     "broker": check_broker,
+    "cache": check_cache,
     "heartbeat": check_heartbeat,
     "scheduled": check_scheduled,
     "migrations": check_migrations,

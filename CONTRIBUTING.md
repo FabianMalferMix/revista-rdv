@@ -49,9 +49,15 @@ hashes (`requirements.txt` / `requirements-dev.txt`). Tras editar un `.in`:
 ```bash
 docker compose exec web bash -c 'cd /app && \
   python -m piptools compile --generate-hashes --strip-extras -o requirements.txt requirements.in && \
-  python -m piptools compile --generate-hashes --strip-extras -o requirements-dev.txt requirements-dev.in'
-docker compose build web        # reconstruye con --require-hashes
+  python -m piptools compile --generate-hashes --strip-extras --unsafe-package pip \
+    -o requirements-dev.txt requirements-dev.in'
+docker compose build && docker compose up -d   # reconstruye con --require-hashes
 ```
+
+pip-tools está en el lockfile de desarrollo, así que la imagen de `web` lo trae. pip queda
+fuera de los lockfiles: su versión la fijan el Dockerfile y el CI, y una prueba comprueba que
+coincidan. release, web, worker y beat usan una sola imagen (`resenas-app:dev` en
+desarrollo): al reconstruirla se actualizan los cuatro.
 
 Commitea el `.in` y el `.txt` juntos. Dependabot recompila estos lockfiles
 automáticamente (Django se mantiene en la línea 5.2 LTS).
@@ -64,13 +70,14 @@ pre-commit install            # instala el gancho de git
 pre-commit run --all-files    # opcional: corre los hooks sobre todo el repo
 ```
 
-Además de ruff y gitleaks, los ganchos revisan la higiene de los archivos (espacios, YAML y
-archivos de más de 2 MB), la sintaxis de los guiones de `backend/static/js/` (`node --check`) y
-los identificadores de decisión en el código. El CI los corre todos en el job `hygiene`, salvo
-ruff y gitleaks, que tienen sus propios jobs. Sin pre-commit instalado, el recuento de
-identificadores se corre con `python3 tools/ci/decision_refs.py`: su línea base
-(`tools/ci/decision_refs_baseline.json`) solo puede bajar, y tras quitar alguno se baja con
-`--update`.
+El gancho de ruff usa el ruff instalado, el del lockfile de desarrollo: pre-commit tiene que
+correr donde esté instalado `backend/requirements-dev.txt`. Además de ruff y gitleaks, los
+ganchos revisan la higiene de los archivos (espacios, YAML y archivos de más de 2 MB), la
+sintaxis de los guiones de `backend/static/js/` (`node --check`) y los identificadores de
+decisión en el código. El CI los corre todos en el job `hygiene`, salvo ruff y gitleaks, que
+tienen sus propios jobs. Sin pre-commit instalado, el recuento de identificadores se corre con
+`python3 tools/ci/decision_refs.py`: su línea base (`tools/ci/decision_refs_baseline.json`) solo
+puede bajar, y tras quitar alguno se baja con `--update`.
 
 ## Flujo de trabajo
 

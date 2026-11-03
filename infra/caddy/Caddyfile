@@ -3,12 +3,16 @@
 
 	# Timeouts de borde. Sin ellos, Caddy sostiene indefinidamente una conexión lenta y
 	# la reenvía a gunicorn, que atiende un número fijo de peticiones a la vez (procesos
-	# por hilos, ver docker-compose.prod.yml): unas pocas conexiones lentas bastan para
+	# por hilos, ver backend/gunicorn.conf.py): unas pocas conexiones lentas bastan para
 	# ocuparlas todas y tumbar el sitio (slowloris). Con read_body/read_header acotados,
 	# Caddy absorbe o corta el cuerpo ANTES de tocar la aplicación.
+	#
+	# read_body es el plazo de todo el cuerpo: cinco minutos dejan subir un audio de 50 MB
+	# con unos 1,4 Mbps de subida. El precio: Caddy reenvía el cuerpo a gunicorn mientras
+	# llega, así que una subida lenta ocupa uno de sus hilos todo ese tiempo.
 	servers {
 		timeouts {
-			read_body 30s
+			read_body 5m
 			read_header 10s
 			write 60s
 			idle 120s
@@ -50,9 +54,16 @@ www.{$SITE_ADDRESS::80} {
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
-	# Corta cuerpos de request abusivos en el borde (el adjunto de envíos permite
-	# 10 MB; el margen cubre la sobrecarga multipart). Defensa antes de llegar a la app.
-	request_body {
+	# Corta cuerpos de request abusivos en el borde, algo por encima del tope de cada ruta
+	# para que quien se pase vea el mensaje del formulario y no un 413 sin cuerpo: el panel
+	# sube audio de hasta 50 MB (apps/media/validators.py), y el formulario público, un
+	# adjunto de hasta 10 MB. tests/test_upload_limits.py compara estos valores con los topes.
+	@panel path /admin/*
+	request_body @panel {
+		max_size 60MB
+	}
+	@fuera_del_panel not path /admin/*
+	request_body @fuera_del_panel {
 		max_size 12MB
 	}
 
