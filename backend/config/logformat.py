@@ -7,18 +7,18 @@ Se usa en producción para que los logs sean agregables/consultables por un cole
 import json
 import logging
 
-from config.redaction import redact_path
+from config.redaction import redact_text
 
 
 def _redact(value):
     """Redacta las cadenas de un campo extra, también dentro de diccionarios y listas.
 
     Celery adjunta a cada «Task … received» y a cada fallo un extra `data` con los
-    argumentos de la tarea: una cadena con un token dentro de esa estructura saldría en
-    claro si solo se redactaran los extras de tipo cadena.
+    argumentos de la tarea y, en un fallo, la excepción y su traza: un token o una dirección
+    dentro de esa estructura saldrían en claro si solo se redactaran los extras de tipo cadena.
     """
     if isinstance(value, str):
-        return redact_path(value)
+        return redact_text(value)
     if isinstance(value, dict):
         return {_redact(key): _redact(item) for key, item in value.items()}
     if isinstance(value, (list, tuple, set, frozenset)):
@@ -40,7 +40,7 @@ def _serializa_redactado(obj):
     Solo afectaba a producción: en desarrollo el formateador es `plain`, que no emite
     los campos extra.
     """
-    return redact_path(str(obj))
+    return redact_text(str(obj))
 
 
 class JsonFormatter(logging.Formatter):
@@ -51,11 +51,12 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             # Redactado también aquí, y no solo en el filtro: así la garantía no depende
             # de que quien añada un handler recuerde engancharle `redact_tokens`.
-            "message": redact_path(record.getMessage()),
+            "message": redact_text(record.getMessage()),
         }
         if record.exc_info:
-            # Una traza puede citar la ruta (p. ej. en el marco de la vista).
-            data["exc_info"] = redact_path(self.formatException(record.exc_info))
+            # Una traza puede citar la ruta (p. ej. en el marco de la vista) o la dirección
+            # que rechazó el servidor de correo.
+            data["exc_info"] = redact_text(self.formatException(record.exc_info))
         # Campos extra pasados con logger.info(..., extra={...}).
         standard = logging.LogRecord("", 0, "", 0, "", (), None).__dict__
         for key, value in record.__dict__.items():

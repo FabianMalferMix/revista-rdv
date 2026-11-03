@@ -6,7 +6,8 @@ contenga una de esas rutas puede dar de baja una suscripción ajena. Aquí se re
 en dos salidas de Python:
 
 - el logging: `RedactTokensFilter`, en el handler de consola, reescribe el mensaje ya
-  formateado, y `JsonFormatter` (config/logformat.py) redacta además cada campo;
+  formateado, y `JsonFormatter` (config/logformat.py) redacta además cada campo, también las
+  direcciones de correo;
 - Sentry: `sentry_before_send` y `sentry_before_breadcrumb` redactan los tokens y las
   direcciones de correo de todo el evento y de cada miga (config/sentry.py).
 
@@ -96,6 +97,21 @@ SENSITIVE_KEYS = frozenset(key.lower() for key in DEFAULT_DENYLIST) | {
 FILTERED = "[Filtered]"
 # Una dirección de correo dentro de cualquier texto: el mensaje de un error SMTP la cita.
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+EMAIL_MARK = "<correo>"
+
+
+def redact_text(value):
+    """Sustituye los tokens de las rutas del boletín y las direcciones de correo.
+
+    Es la redacción de todo texto que sale hacia el log JSON o hacia Sentry: cuando el servidor
+    de correo rechaza un destinatario, la excepción lo cita, y Celery la copia en el mensaje, en
+    la traza y en los extras de la línea de error de la tarea.
+    """
+    if not value or not isinstance(value, str):
+        return value
+    return _EMAIL.sub(EMAIL_MARK, redact_path(value))
+
+
 # Cabeceras que repiten la URL de la página, y con ella el token.
 _URL_HEADERS = {"referer", "hx-current-url"}
 
@@ -104,7 +120,7 @@ def _scrub(value):
     """Redacta los tokens y las direcciones de correo de todas las cadenas, y el valor de las
     claves sensibles, a cualquier profundidad."""
     if isinstance(value, str):
-        return _EMAIL.sub("<correo>", redact_path(value))
+        return redact_text(value)
     if isinstance(value, dict):
         return {
             key: FILTERED if str(key).lower() in SENSITIVE_KEYS else _scrub(item)

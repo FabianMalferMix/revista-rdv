@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 41 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 41 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -124,6 +124,7 @@
 
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
+| B80 | El log no cita las direcciones de correo | B30 | S | sí | pendiente |
 | B42 | Los archivos se borran después de confirmar | B08 | S | no | pendiente |
 | B43 | Un solo servicio de imágenes | B42 | M | no | pendiente |
 | B44 | Registro de derivados | B43 | M | no | pendiente |
@@ -808,6 +809,19 @@ De OPE-8: el hook de ruff como `repo: local`; pip-tools y pip fijados; un `.pyth
 
 ### Tanda 5 — Robustez de archivos, imágenes y datos
 
+#### B80 · El log no cita las direcciones de correo
+
+**Hallazgos:** ninguno de la auditoría: se vio al cerrar B40 · **Depende de:** B30 · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.** Cuando el servidor de correo rechaza un destinatario, smtplib lanza `SMTPRecipientsRefused` con la dirección dentro, y Celery la copia en la línea de error del worker: en el mensaje, en la traza y en el extra `data`. El formateador JSON del log de producción (`config/logformat.py`) solo redacta los tokens del boletín, así que la dirección sale en claro. Sentry ya la quita (`_EMAIL` en `config/redaction.py`), y el panel ya dice qué suscriptor falló (B40).
+
+**Alcance.**
+
+- una sola función de redacción de texto en `config/redaction.py`, con los tokens y las direcciones, que usan Sentry y el formateador JSON en el mensaje, la traza y los extras;
+- la dirección se sustituye por la misma marca que en Sentry, sin conservar el dominio.
+
+**Hecho cuando.** Una prueba levanta un servidor SMTP que rechaza al destinatario y corre la tarea de confirmación con el log del worker en JSON: la línea de error de la tarea sigue diciendo `SMTPRecipientsRefused` y el código 550, y la dirección no aparece en ninguna línea.
+
 #### B42 · Los archivos se borran después de confirmar
 
 **Hallazgos:** DAT-4 · **Depende de:** B08 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
@@ -1363,6 +1377,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80
 
 ## 5. Lo diferido
 
