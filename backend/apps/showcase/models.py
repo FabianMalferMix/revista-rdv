@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 
 from django.db import models
 
-from apps.media.validators import validate_pdf_extension
+from apps.media.validators import MAX_PDF_MB, validate_pdf_extension, validate_pdf_size
 from config import publishing
 
 
@@ -61,9 +61,12 @@ class SiteProfile(models.Model):
     dossier_pdf = models.FileField(
         upload_to="dossier/",
         blank=True,
-        validators=[validate_pdf_extension],
+        validators=[validate_pdf_extension, validate_pdf_size],
         verbose_name="dossier en PDF",
-        help_text="PDF del kit de prensa (override manual opcional del dossier generado).",
+        help_text=(
+            "PDF del kit de prensa (override manual opcional del dossier generado), de hasta "
+            f"{MAX_PDF_MB} MB."
+        ),
     )
     og_image = models.ForeignKey(
         "media.MediaAsset",
@@ -215,8 +218,8 @@ class Publication(models.Model):
     pdf = models.FileField(
         upload_to="publications/",
         blank=True,
-        validators=[validate_pdf_extension],
-        help_text="PDF de descarga gratuita (plaquettes/fanzines digitales).",
+        validators=[validate_pdf_extension, validate_pdf_size],
+        help_text=f"PDF de descarga gratuita (plaquettes/fanzines digitales), de hasta {MAX_PDF_MB} MB.",
     )
     featured = models.BooleanField(
         default=False,

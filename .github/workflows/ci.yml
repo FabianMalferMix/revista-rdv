@@ -363,7 +363,7 @@ jobs:
           # VendoredStaticFilesStorage) y después web, que comparte el volumen de estáticos.
           docker run --rm --network qa13net $COMMON -v qa13static:/app/staticfiles \
             resenas-prod sh release.sh
-          docker run -d --name prod-web --network qa13net $COMMON \
+          docker run -d --name prod-web --network qa13net --network-alias web $COMMON \
             -v qa13static:/app/staticfiles -e DJANGO_SECURE_SSL_REDIRECT=0 resenas-prod
 
           echo "Esperando a gunicorn..."
@@ -398,6 +398,43 @@ jobs:
           done
           docker exec prod-web python -c "import urllib.request as u,json; r=u.urlopen('http://127.0.0.1:8000/readyz/',timeout=5); assert r.status==200 and json.load(r)['status']=='ready'" \
             || { docker logs prod-web 2>&1 | grep readyz | tail -5; exit 1; }
+          # Subidas desde el panel con el Caddy real delante: el límite de /admin/ deja
+          # llegar a Django lo que pasa del tope de un campo, para que se vea el mensaje
+          # del formulario y no un 413 sin cuerpo; lo que pasa del límite lo corta Caddy.
+          echo "--- subidas por el panel a través de Caddy ---"
+          docker run -d --name prod-proxy --network qa13net -p 127.0.0.1:8088:80 \
+            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine
+          # Una sesión de administración creada en la base: lo que se prueba es la subida.
+          SESSION=$(docker exec prod-web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY, get_user_model
+          from django.contrib.sessions.backends.db import SessionStore
+          u = get_user_model().objects.create_superuser('ci-panel', 'ci@example.com', 'ci-panel-clave-larga')
+          s = SessionStore()
+          s[SESSION_KEY] = str(u.pk)
+          s[BACKEND_SESSION_KEY] = 'django.contrib.auth.backends.ModelBackend'
+          s[HASH_SESSION_KEY] = u.get_session_auth_hash()
+          s.create()
+          print(s.session_key)" | tail -1)
+          CSRF=abcdefghijklmnopqrstuvwxyz012345
+          sube() {
+            curl -s -o "/tmp/subida-$1.html" -w '%{http_code}' \
+              -b "sessionid=$SESSION; csrftoken=$CSRF" -F csrfmiddlewaretoken=$CSRF \
+              -F title="Lectura $1" -F slug="lectura-$1" -F kind=audio -F position=0 \
+              -F "file=@/tmp/audio-$1.mp3;type=audio/mpeg" \
+              http://127.0.0.1:8088/admin/media/recording/add/ || true
+          }
+          for megas in 40 55 70; do head -c "${megas}000000" /dev/zero > "/tmp/audio-$megas.mp3"; done
+          [ "$(sube 40)" = 302 ] || { echo "FALLO: el audio de 40 MB no se guardó"; exit 1; }
+          [ "$(sube 55)" = 200 ] && grep -q "el máximo es 50 MB" /tmp/subida-55.html \
+            || { echo "FALLO: el audio de 55 MB no dio el error del formulario"; exit 1; }
+          sube 70 > /dev/null
+          docker exec prod-web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from apps.media.models import Recording
+          assert sorted(Recording.objects.values_list('slug', flat=True)) == ['lectura-40'], 'Caddy no cortó el cuerpo de 70 MB'"
           echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
 
       - name: Orden de despliegue con compose (release antes que web, worker y beat)

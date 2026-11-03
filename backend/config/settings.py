@@ -146,10 +146,13 @@ AXES_ENABLED = env_bool("AXES_ENABLED", "pytest" not in sys.modules)
 RATELIMIT_ENABLE = env_bool("RATELIMIT_ENABLE", True)
 RATELIMIT_IP_META_KEY = "config.clientip.client_ip"
 
-# Límites de subida (defensa ante cuerpos de request abusivos; el proxy corta antes).
-# El adjunto de envíos permite hasta 10 MB (validado en el form); Caddy corta en 12 MB.
+# Límites de las peticiones. El tamaño de cada archivo lo validan sus campos
+# (apps/media/validators.py y el formulario de envíos), y Caddy corta algo por encima del tope
+# de cada ruta. Este límite solo cuenta los campos que no son archivos.
 DATA_UPLOAD_MAX_MEMORY_SIZE = env_int("DJANGO_DATA_UPLOAD_MAX", 3 * 1024 * 1024)
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
+# El valor por defecto de Django: con 200, un evento con 35 fotos no se podía guardar (cada
+# foto suma cinco campos al formulario del panel).
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
 # ── Internacionalización ──────────────────────────────────
 # Django 6.0 cambiará el esquema que `forms.URLField` asume para una URL sin protocolo:
