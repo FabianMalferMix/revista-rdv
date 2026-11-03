@@ -27,7 +27,8 @@ VIEJO = timezone.now() - timedelta(days=400)
 
 def _suscriptor(email, status):
     sub = NewsletterSubscriber.objects.create(email=email, status=status, token="t-" + email)
-    NewsletterSubscriber.objects.filter(pk=sub.pk).update(created_at=VIEJO)
+    # La purga mide desde el último cambio de estado.
+    NewsletterSubscriber.objects.filter(pk=sub.pk).update(created_at=VIEJO, status_changed_at=VIEJO)
     return sub
 
 
