@@ -155,7 +155,7 @@ def test_las_copias_se_hacen_al_elegir_la_obra_y_una_sola_vez(monkeypatch):
     assert not guardadas, "las copias que ya existen no se rehacen"
 
 
-def test_al_cambiar_el_archivo_de_la_obra_se_rehacen_sus_copias():
+def test_al_cambiar_el_archivo_de_la_obra_se_rehacen_sus_copias(django_capture_on_commit_callbacks):
     obra = _recurso("primera.jpg")
     perfil = SiteProfile.load()
     perfil.hero_image = obra
@@ -164,14 +164,15 @@ def test_al_cambiar_el_archivo_de_la_obra_se_rehacen_sus_copias():
     vieja = obra._portada_name(1500, "avif")
     buffer = BytesIO()
     Image.new("RGB", (1200, 800), (10, 20, 30)).save(buffer, format="JPEG")
-    obra.file = SimpleUploadedFile("segunda.jpg", buffer.getvalue(), content_type="image/jpeg")
-    obra.save()
+    with django_capture_on_commit_callbacks(execute=True):
+        obra.file = SimpleUploadedFile("segunda.jpg", buffer.getvalue(), content_type="image/jpeg")
+        obra.save()
     obra.refresh_from_db()
     assert not almacen.exists(vieja), "las copias del archivo anterior quedaron huérfanas"
     assert almacen.exists(obra._portada_name(1200, "avif"))
 
 
-def test_borrar_la_obra_borra_sus_copias():
+def test_borrar_la_obra_borra_sus_copias(django_capture_on_commit_callbacks):
     obra = _recurso()
     perfil = SiteProfile.load()
     perfil.hero_image = obra
@@ -179,7 +180,8 @@ def test_borrar_la_obra_borra_sus_copias():
     almacen = obra.file.storage
     copias = [obra._portada_name(w, e) for w in obra.portada_widths() for e in ("avif", "webp")]
     assert all(almacen.exists(c) for c in copias)
-    obra.delete()
+    with django_capture_on_commit_callbacks(execute=True):
+        obra.delete()
     assert not any(almacen.exists(c) for c in copias)
     assert SiteProfile.load().hero_image is None, "la portada vuelve a la lámina"
 

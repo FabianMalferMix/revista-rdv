@@ -1,4 +1,5 @@
 import logging
+import os
 from io import BytesIO
 from pathlib import PurePosixPath
 
@@ -239,13 +240,26 @@ class MediaAsset(models.Model):
 
         buf = BytesIO()
         limpia.save(buf, format=fmt_out, **kwargs)  # sin exif= ni xmp=: los metadatos se pierden
-        name = self.file.name
-        # Sobrescribe conservando el nombre (el valor de la columna no cambia).
-        self.file.storage.delete(name)
-        self.file.storage.save(name, ContentFile(buf.getvalue()))
+        self._replace_original(buf.getvalue())
         self.width, self.height = limpia.width, limpia.height
         type(self).objects.filter(pk=self.pk).update(width=limpia.width, height=limpia.height)
         return True
+
+    def _replace_original(self, content):
+        """Pone `content` en lugar del original, con el mismo nombre (la columna no cambia).
+
+        La copia se escribe al lado, con otro nombre, y ocupa el lugar del original con
+        `os.replace`, que es atómico: si la escritura falla (un disco lleno), el original sigue
+        entero en el disco.
+        """
+        storage, name = self.file.storage, self.file.name
+        p = PurePosixPath(name)
+        copy = storage.save(str(p.with_name(f"{p.stem}__limpia{p.suffix}")), ContentFile(content))
+        try:
+            os.replace(storage.path(copy), storage.path(name))
+        except BaseException:
+            storage.delete(copy)
+            raise
 
     def ensure_derivatives(self):
         """Repara width/height ausentes y genera (si faltan) las copias reducidas para

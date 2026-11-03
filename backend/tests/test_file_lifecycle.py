@@ -10,6 +10,8 @@ S-14: las derivadas salían limpias porque Pillow no copia el EXIF, pero el ORIG
 cámara. Publicar la ubicación exacta de un recital es una fuga real.
 """
 
+import errno
+import os
 from io import BytesIO
 from pathlib import Path
 
@@ -19,6 +21,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import transaction
 from PIL import Image
 from PIL.TiffImagePlugin import IFDRational
 
@@ -198,7 +201,16 @@ def test_el_comando_avisa_de_las_imagenes_que_no_puede_limpiar():
 # ── S-13: archivos huérfanos ──────────────────────────────
 
 
-def test_borrar_un_envio_borra_el_manuscrito_del_disco():
+def _recording(name="primera.mp3"):
+    return Recording.objects.create(
+        slug="lectura",
+        title="Lectura",
+        kind=Recording.Kind.AUDIO,
+        file=SimpleUploadedFile(name, b"ID3\x04\x00\x00\x00"),
+    )
+
+
+def test_borrar_un_envio_borra_el_manuscrito_del_disco(django_capture_on_commit_callbacks):
     sub = Submission.objects.create(
         author_name="Alguien",
         author_email="alguien@example.com",
@@ -209,11 +221,12 @@ def test_borrar_un_envio_borra_el_manuscrito_del_disco():
     )
     storage, name = sub.file.storage, sub.file.name
     assert storage.exists(name)
-    sub.delete()
+    with django_capture_on_commit_callbacks(execute=True):
+        sub.delete()
     assert not storage.exists(name), "el manuscrito quedó huérfano en private_media"
 
 
-def test_borrar_un_recurso_borra_tambien_sus_derivadas():
+def test_borrar_un_recurso_borra_tambien_sus_derivadas(django_capture_on_commit_callbacks):
     asset = MediaAsset.objects.create(
         file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
         alt_text="Recital",
@@ -223,11 +236,12 @@ def test_borrar_un_recurso_borra_tambien_sus_derivadas():
     existentes = [n for n in nombres if storage.exists(n)]
     assert len(existentes) > 1, "no se generó ninguna derivada; el test no probaría nada"
 
-    asset.delete()
+    with django_capture_on_commit_callbacks(execute=True):
+        asset.delete()
     assert not any(storage.exists(n) for n in existentes)
 
 
-def test_borrado_masivo_desde_el_admin_tambien_limpia():
+def test_borrado_masivo_desde_el_admin_tambien_limpia(django_capture_on_commit_callbacks):
     """`QuerySet.delete()` no pasa por `Model.delete()`, pero sí emite post_delete."""
     rec = Recording.objects.create(
         slug="lectura",
@@ -237,20 +251,103 @@ def test_borrado_masivo_desde_el_admin_tambien_limpia():
     )
     storage, name = rec.file.storage, rec.file.name
     assert storage.exists(name)
-    Recording.objects.filter(pk=rec.pk).delete()
+    with django_capture_on_commit_callbacks(execute=True):
+        Recording.objects.filter(pk=rec.pk).delete()
     assert not storage.exists(name)
 
 
-def test_reemplazar_el_archivo_borra_el_anterior():
-    rec = Recording.objects.create(
-        slug="lectura",
-        title="Lectura",
-        kind=Recording.Kind.AUDIO,
-        file=SimpleUploadedFile("primera.mp3", b"ID3\x04\x00\x00\x00"),
-    )
+def test_reemplazar_el_archivo_borra_el_anterior(django_capture_on_commit_callbacks):
+    rec = _recording()
     storage, anterior = rec.file.storage, rec.file.name
-    rec.file = SimpleUploadedFile("segunda.mp3", b"ID3\x04\x00\x00\x01")
-    rec.save()
+    with django_capture_on_commit_callbacks(execute=True):
+        rec.file = SimpleUploadedFile("segunda.mp3", b"ID3\x04\x00\x00\x01")
+        rec.save()
+        assert storage.exists(anterior), "se borró antes de confirmar el cambio"
     assert rec.file.name != anterior
     assert not storage.exists(anterior), "el archivo sustituido quedó huérfano"
     assert storage.exists(rec.file.name)
+
+
+# ── Nada se borra antes de confirmar ──────────────────────
+
+
+def _disk_full(*args, **kwargs):
+    raise OSError(errno.ENOSPC, "No space left on device")
+
+
+def test_a_replacement_that_cannot_be_written_keeps_the_original(
+    monkeypatch, django_capture_on_commit_callbacks
+):
+    """Con el disco lleno, la escritura del archivo nuevo falla y la ficha sigue sirviendo el
+    que tenía."""
+    rec = _recording()
+    storage, original = rec.file.storage, rec.file.name
+    with django_capture_on_commit_callbacks(execute=True):
+        rec.file = SimpleUploadedFile("segunda.mp3", b"ID3\x04\x00\x00\x01")
+        monkeypatch.setattr(storage, "save", _disk_full)
+        with pytest.raises(OSError), transaction.atomic():
+            rec.save()
+        monkeypatch.undo()
+        # Otro guardado de la misma instancia que no toca el archivo no borra nada.
+        rec.title = "Lectura en voz alta"
+        rec.save(update_fields=["title"])
+    assert storage.exists(original)
+    assert Recording.objects.get(pk=rec.pk).file.name == original
+
+
+def test_a_replacement_that_rolls_back_keeps_the_original(django_capture_on_commit_callbacks):
+    rec = _recording()
+    storage, original = rec.file.storage, rec.file.name
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError), transaction.atomic():
+            rec.file = SimpleUploadedFile("segunda.mp3", b"ID3\x04\x00\x00\x01")
+            rec.save()
+            raise RuntimeError("falla el resto del guardado")
+    assert callbacks == []
+    assert storage.exists(original)
+    assert Recording.objects.get(pk=rec.pk).file.name == original
+
+
+def test_a_deletion_that_rolls_back_keeps_the_files(django_capture_on_commit_callbacks):
+    asset = MediaAsset.objects.create(
+        file=SimpleUploadedFile("foto.jpg", _jpeg(1200, 800), content_type="image/jpeg"),
+        alt_text="Recital",
+    )
+    storage = asset.file.storage
+    nombres = [n for n in [asset.file.name, *asset.derivative_names()] if storage.exists(n)]
+    assert len(nombres) > 1
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError), transaction.atomic():
+            asset.delete()
+            raise RuntimeError("falla otro borrado de la misma operación")
+    assert callbacks == []
+    assert all(storage.exists(n) for n in nombres)
+
+
+def test_cleaning_an_image_that_cannot_be_written_keeps_the_original(monkeypatch):
+    """Una imagen con metadatos que se limpia después de subirla (el comando de derivados la
+    vuelve a pasar): si la copia limpia no cabe en el disco, o no puede ocupar el lugar del
+    original, el original sigue entero y no queda ninguna copia a medias."""
+    asset = MediaAsset.objects.create(
+        file=SimpleUploadedFile("sin-sitio.jpg", _jpeg(con_gps=False), content_type="image/jpeg"),
+        alt_text="Recital",
+    )
+    storage, name = asset.file.storage, asset.file.name
+    with storage.open(name, "wb") as fh:
+        fh.write(_jpeg())
+    folder, stem = Path(storage.path(name)).parent, Path(name).stem
+    before = sorted(folder.glob(f"{stem}*"))
+
+    for target, attribute in ((storage, "save"), (os, "replace")):
+        monkeypatch.setattr(target, attribute, _disk_full)
+        with pytest.raises(OSError):
+            asset.strip_metadata()
+        monkeypatch.undo()
+        with storage.open(name, "rb") as fh:
+            assert fh.read() == _jpeg()
+        assert sorted(folder.glob(f"{stem}*")) == before
+
+    assert asset.strip_metadata() is True
+    with storage.open(name, "rb") as fh:
+        assert not Image.open(fh).getexif()
+    assert sorted(folder.glob(f"{stem}*")) == before

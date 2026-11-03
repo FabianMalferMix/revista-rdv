@@ -58,7 +58,9 @@ def test_the_cache_reports_one_error_per_interval(monkeypatch, caplog):
     ]
 
 
-def test_a_file_that_cannot_be_deleted_is_an_error_naming_its_row(monkeypatch, caplog):
+def test_a_file_that_cannot_be_deleted_is_an_error_naming_its_row(
+    monkeypatch, caplog, django_capture_on_commit_callbacks
+):
     asset = make_image("huerfana")
     pk, name = asset.pk, asset.file.name
 
@@ -66,7 +68,8 @@ def test_a_file_that_cannot_be_deleted_is_an_error_naming_its_row(monkeypatch, c
         raise OSError("disco de solo lectura")
 
     monkeypatch.setattr(FileSystemStorage, "delete", refuse)
-    asset.delete()
+    with django_capture_on_commit_callbacks(execute=True):
+        asset.delete()
     records = [r for r in caplog.records if r.name == "apps.media.filecleanup"]
     assert records and all(r.levelname == "ERROR" and r.exc_info for r in records)
     assert f"No se pudo borrar el archivo {name!r} de media.MediaAsset pk={pk}" in [
