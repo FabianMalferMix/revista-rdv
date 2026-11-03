@@ -134,6 +134,7 @@ def test_sentry_no_recibe_el_token():
 
 
 def test_la_redaccion_nunca_rompe_el_reporte():
-    """Un `before_send` que lanza excepción haría perder el evento de error."""
+    """Un evento con una forma inesperada se envía igual: la limpieza solo descarta lo que
+    no pudo limpiar (tests/test_sentry_redaction.py)."""
     assert sentry_before_send({"transaction": None, "request": "no-es-dict"}, {}) is not None
     assert sentry_before_send({}, {}) == {}
