@@ -148,6 +148,19 @@ class MemberSitemap(Sitemap):
         return reverse("people:member_detail", args=[obj.slug])
 
 
+class CollaboratorSitemap(Sitemap):
+    """Las personas de fuera del colectivo con obra publicada: las que tienen ficha."""
+
+    changefreq = "monthly"
+    priority = 0.4
+
+    def items(self):
+        return Contributor.objects.visible().filter(is_member=False).order_by("display_name")
+
+    def location(self, obj):
+        return reverse("content:contributor_detail", args=[obj.slug])
+
+
 class _ReviewsSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.4
@@ -185,6 +198,7 @@ SITEMAPS = {
     "secciones": SectionSitemap,
     "colecciones": CollectionSitemap,
     "integrantes": MemberSitemap,
+    "colaboradores": CollaboratorSitemap,
     "eventos": EventSitemap,
     "registros": RecordingSitemap,
     "publicaciones": PublicationSitemap,
@@ -192,4 +206,10 @@ SITEMAPS = {
     "obras": WorkSitemap,
     "editoriales": PublisherSitemap,
     "autores": BookAuthorSitemap,
+}
+
+# Las fichas públicas que el sitemap no anuncia, con su motivo. Toda ficha está en SITEMAPS o
+# aquí (tests/test_completeness.py).
+EXCLUDED_FROM_SITEMAP = {
+    "content:tag_detail": "Listados de los textos de una etiqueta: repiten fichas que ya están.",
 }
