@@ -48,7 +48,7 @@ class Event(models.Model):
     city = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
     poster = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     participants = models.ManyToManyField("people.Contributor", blank=True, related_name="events")
     is_external = models.BooleanField(
@@ -94,7 +94,7 @@ class EventPhoto(models.Model):
     """Foto del álbum de un evento: la Galería pública se arma por evento."""
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="photos")
-    asset = models.ForeignKey("media.MediaAsset", on_delete=models.CASCADE, related_name="+")
+    asset = models.ForeignKey("media.MediaAsset", on_delete=models.PROTECT, related_name="+")
     caption = models.CharField(
         max_length=255, blank=True, help_text="Pie de foto (si difiere del recurso)."
     )

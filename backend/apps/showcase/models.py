@@ -73,7 +73,7 @@ class SiteProfile(models.Model):
         "media.MediaAsset",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="+",
         verbose_name="imagen para compartir",
         help_text="Imagen social por defecto (og:image) y logo en los datos estructurados.",
@@ -84,7 +84,7 @@ class SiteProfile(models.Model):
         "media.MediaAsset",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="+",
         verbose_name="imagen de portada",
         help_text=(
@@ -97,7 +97,7 @@ class SiteProfile(models.Model):
         "media.MediaAsset",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="+",
         verbose_name="imagen de portada para el teléfono",
         help_text=(
@@ -206,7 +206,7 @@ class Publication(models.Model):
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     isbn = models.CharField(max_length=20, blank=True)
     cover = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     synopsis = models.TextField(blank=True)
     participants = models.ManyToManyField(
@@ -318,7 +318,7 @@ class PressMention(models.Model):
         blank=True, help_text="Cita destacada para la página de prensa y el dossier."
     )
     logo = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     published = models.BooleanField(default=True)
     position = models.PositiveSmallIntegerField(default=0)
@@ -348,7 +348,7 @@ class Partner(models.Model):
     name = models.CharField(max_length=255)
     kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.OTRO)
     logo = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     url = models.URLField(blank=True)
     description = models.TextField(blank=True)

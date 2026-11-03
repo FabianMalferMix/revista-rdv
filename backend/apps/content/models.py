@@ -208,10 +208,10 @@ class Article(EditorialItem):
         related_name="reviews",
     )
     cover_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     og_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     reading_time = models.PositiveIntegerField(
         default=0, editable=False, help_text="Minutos estimados (derivado del cuerpo)"
@@ -282,7 +282,8 @@ class ArticleContributor(models.Model):
     """Puente Artículo ↔ Colaborador. `position` = orden de firma (coautoría)."""
 
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
-    contributor = models.ForeignKey("people.Contributor", on_delete=models.CASCADE)
+    # Una persona que firma algo no se borra: antes hay que reasignar sus textos.
+    contributor = models.ForeignKey("people.Contributor", on_delete=models.PROTECT)
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -295,6 +296,9 @@ class ArticleContributor(models.Model):
             )
         ]
 
+    def __str__(self):
+        return f"{self.contributor} firma «{self.article}»"
+
 
 class ReviewedWork(models.Model):
     """Puente Reseña ↔ Obra."""
@@ -302,7 +306,8 @@ class ReviewedWork(models.Model):
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name="reviewed_work_links"
     )
-    work = models.ForeignKey("reviews.Work", on_delete=models.CASCADE, related_name="review_links")
+    # Una obra reseñada no se borra: sus reseñas quedarían sin la obra de la que hablan.
+    work = models.ForeignKey("reviews.Work", on_delete=models.PROTECT, related_name="review_links")
 
     class Meta:
         verbose_name = "obra reseñada"
@@ -310,6 +315,9 @@ class ReviewedWork(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["article", "work"], name="uniq_article_work")
         ]
+
+    def __str__(self):
+        return f"«{self.work}», reseñada en «{self.article}»"
 
 
 class Poem(EditorialItem):
@@ -341,7 +349,7 @@ class Poem(EditorialItem):
         help_text="Registro del poema leído por su autor/a (opcional).",
     )
     og_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
@@ -394,7 +402,8 @@ class PoemContributor(models.Model):
     """Puente Poema ↔ Colaborador. `position` = orden de firma (coautoría)."""
 
     poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
-    contributor = models.ForeignKey("people.Contributor", on_delete=models.CASCADE)
+    # Una persona que firma algo no se borra: antes hay que reasignar sus poemas.
+    contributor = models.ForeignKey("people.Contributor", on_delete=models.PROTECT)
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -404,6 +413,9 @@ class PoemContributor(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["poem", "contributor"], name="uniq_poem_contributor")
         ]
+
+    def __str__(self):
+        return f"{self.contributor} firma «{self.poem}»"
 
 
 class PublishStatus(models.TextChoices):
@@ -423,7 +435,7 @@ class Collection(models.Model):
     description = models.TextField(blank=True)
     intro = models.TextField(blank=True)
     cover_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     status = models.CharField(
         max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT

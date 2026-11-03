@@ -1,0 +1,7 @@
+{% extends "admin/delete_selected_confirmation.html" %}
+
+{% block content %}
+{{ block.super }}
+{# Con la imagen en uso, Django no ofrece borrarla: lo de arriba son sus usos, no lo que se borraría. #}
+{% if protected %}<p class="help">Mientras se use, la imagen no se puede borrar: quítala antes de cada uno de esos lugares o pon otra en su sitio.</p>{% endif %}
+{% endblock %}
