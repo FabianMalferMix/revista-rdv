@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 26 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 27 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -104,7 +104,7 @@
 
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
-| B27 | Variables de entorno sin ambigüedad | — | M | sí | pendiente |
+| B27 | Variables de entorno sin ambigüedad | — | M | sí | hecho (#205) |
 | B28 | Direcciones e identificadores permanentes | — | M | sí | pendiente |
 | B29 | Un origen fijo para las URL absolutas | B27 | M | sí | pendiente |
 | B30 | Logs con formato y redacción en todos los procesos | — | M | sí | pendiente |
