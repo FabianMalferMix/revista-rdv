@@ -39,6 +39,18 @@ class NewsletterSubscriber(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # El último cambio de estado: desde aquí mide la purga, no desde el alta original.
     status_changed_at = models.DateTimeField(default=timezone.now)
+    # El rastro del correo de confirmación, que el panel enseña: cuándo salió y, si no
+    # salió, el último error (sin direcciones).
+    confirmation_sent_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="confirmación enviada"
+    )
+    confirmation_error = models.CharField(
+        max_length=120,
+        blank=True,
+        verbose_name="error del último envío",
+        help_text="Vacío si el último envío salió. Un rechazo de la dirección "
+        "(SMTPRecipientsRefused) no se reintenta; los demás errores se reintentan solos.",
+    )
 
     class Meta:
         ordering = ["-created_at"]

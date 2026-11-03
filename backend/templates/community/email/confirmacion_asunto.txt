@@ -1,0 +1,1 @@
+{% autoescape off %}Confirma tu suscripción a las novedades de {{ name }}{% endautoescape %}

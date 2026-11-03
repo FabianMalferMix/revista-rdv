@@ -315,9 +315,12 @@ EMAIL_HOST_USER = env_str("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env_str("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 # Sin timeout, smtplib espera indefinidamente a un servidor que acepta la conexión y
-# luego calla: bastaba para inmovilizar los slots del worker.
-EMAIL_TIMEOUT = env_int("EMAIL_TIMEOUT", 20)
-DEFAULT_FROM_EMAIL = env_str("DEFAULT_FROM_EMAIL", "Reseñas <no-reply@resenas.cl>")
+# luego calla. Se aplica a cada operación del socket: un servidor que calla falla a los
+# 10 s, y uno que contesta despacio a cada paso agota el límite blando de la tarea; los
+# dos casos se reintentan. Tiene que ser menor que ese límite, o no llegaría a actuar.
+EMAIL_TIMEOUT = env_int("EMAIL_TIMEOUT", 10)
+# Con DEBUG=0 el guard exige uno explícito; el de por defecto no se hace pasar por nadie.
+DEFAULT_FROM_EMAIL = env_str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
 # ── Logging a stdout (JSON en producción, texto plano legible en desarrollo) ──
 LOGGING = {
@@ -364,6 +367,9 @@ if not DEBUG:
         "RATELIMIT_ENABLE": RATELIMIT_ENABLE,
         "DJANGO_HSTS_SECONDS": SECURE_HSTS_SECONDS,
         "SENTRY_DSN": SENTRY_DSN,
+        "DEFAULT_FROM_EMAIL": env_str("DEFAULT_FROM_EMAIL"),
+        "EMAIL_HOST": EMAIL_HOST,
+        "EMAIL_HOST_PASSWORD": EMAIL_HOST_PASSWORD,
         "DJANGO_ALLOW_WEAKENED": env_list("DJANGO_ALLOW_WEAKENED"),
     }
     _problems = envguard.check_production_env(_effective)

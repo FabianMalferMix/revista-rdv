@@ -1,12 +1,13 @@
 """Guard de arranque en producción.
 
 Con DEBUG=0 el sitio no arranca con secretos de plantilla, hosts por defecto, orígenes
-sin https ni defensas apagadas sin autorización. Las pruebas de la función usan valores
+sin https, un correo sin remitente o de ejemplo, ni defensas apagadas sin autorización. Las pruebas de la función usan valores
 ya interpretados; las del final cargan `config.settings` en un proceso aparte, para
 comprobar que el guard recibe lo mismo que usa Django.
 """
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -38,6 +39,9 @@ BUENA = {
     "RATELIMIT_ENABLE": True,
     "DJANGO_HSTS_SECONDS": 31536000,
     "SENTRY_DSN": "https://public@sentry.example.org/1",
+    "DEFAULT_FROM_EMAIL": "Revista <no-reply@revista.midominio.cl>",
+    "EMAIL_HOST": "smtp.proveedor-real.cl",
+    "EMAIL_HOST_PASSWORD": "una-clave-de-correo-larga",
     "DJANGO_ALLOW_WEAKENED": [],
 }
 
@@ -178,6 +182,36 @@ def test_site_url_must_be_the_domain_caddy_serves():
     assert _check({"SITE_ADDRESS": ":80"}) == []
 
 
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("DEFAULT_FROM_EMAIL", ""),
+        ("DEFAULT_FROM_EMAIL", "Revista <no-reply@tudominio.cl>"),
+        ("EMAIL_HOST", "smtp.tuproveedor.cl"),
+        ("EMAIL_HOST_PASSWORD", "secreto"),
+    ],
+)
+def test_the_mail_settings_cannot_keep_the_template_values(name, value):
+    assert any(p.startswith(name) for p in _check({name: value}))
+
+
+def test_the_mail_values_of_the_production_template_do_not_start_the_site():
+    """Los marcadores del guard copian los ejemplos de .env.prod.example: si la plantilla
+    cambia de ejemplo, el guard tiene que seguir rechazándolo."""
+    template = Path(__file__).resolve().parents[2] / ".env.prod.example"
+    if not template.exists():
+        pytest.skip("la plantilla vive en la raíz del repositorio, fuera del contenedor")
+    found = re.findall(
+        r"^#?\s*(DEFAULT_FROM_EMAIL|EMAIL_HOST|EMAIL_HOST_PASSWORD)=(.*)$",
+        template.read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
+    assert [name for name, _ in found].count("DEFAULT_FROM_EMAIL") == 2  # vacío y ejemplo
+    for name, value in found:
+        if value.strip() or name == "DEFAULT_FROM_EMAIL":
+            assert any(p.startswith(name) for p in _check({name: value.strip()})), value
+
+
 # ── Los settings reales, en un proceso aparte ─────────────────
 # Importar `config.settings` aplica el guard: así se comprueba que recibe los valores que
 # usa Django, interpretados por config/env.py. Cada caso tarda alrededor de un segundo.
@@ -209,6 +243,7 @@ ENTORNOS_CI = {
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
+        "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
     "build-prod / collectstatic": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -218,6 +253,7 @@ ENTORNOS_CI = {
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
+        "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
     "prod-runtime": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -227,6 +263,7 @@ ENTORNOS_CI = {
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
         "SITE_URL": "https://localhost",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
+        "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
         "DJANGO_SECURE_SSL_REDIRECT": "0",
     },
     "backup-restore / migrate": {
@@ -237,6 +274,7 @@ ENTORNOS_CI = {
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
         "SITE_URL": "https://localhost",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
+        "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
 }
 
@@ -273,6 +311,15 @@ def test_settings_name_the_variable_of_an_unknown_boolean():
     result = _load_settings(env)
     assert result.returncode != 0
     assert "AXES_ENABLED='verdadero'" in result.stderr
+
+
+def test_settings_refuse_to_start_without_a_sender():
+    """El remitente por defecto, el de desarrollo, no cuenta como explícito."""
+    env = dict(ENTORNOS_CI["build-prod / collectstatic"])
+    del env["DEFAULT_FROM_EMAIL"]
+    result = _load_settings(env)
+    assert result.returncode != 0
+    assert "DEFAULT_FROM_EMAIL (el remitente" in result.stderr
 
 
 def test_settings_refuse_to_start_without_site_url():

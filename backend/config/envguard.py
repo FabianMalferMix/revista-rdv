@@ -27,6 +27,9 @@ DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
 # simplemente no responde (DisallowedHost), así que se corrige solo. Un secreto sin
 # sustituir, en cambio, es silencioso.
 PLACEHOLDER_MARKERS = ("cambia-esto", "change-me", "changeme")
+# Los valores del correo que traía la plantilla de producción.
+EMAIL_TEMPLATE_MARKERS = ("tudominio", "tuproveedor")
+EMAIL_TEMPLATE_VALUES = ("secreto", "usuario")
 
 # Umbrales de `security.W009` de Django: se replican aquí para que el arranque y el
 # `check --deploy` del CI coincidan.
@@ -112,6 +115,22 @@ def check_production_env(values):
             problems.append(
                 "DJANGO_CSRF_TRUSTED_ORIGINS (exige https://): " + ", ".join(insecure_origins)
             )
+
+    # ── Correo ───────────────────────────────────────────────
+    # Un correo mal configurado no impide arrancar: falla después, en el worker, en cada
+    # confirmación, mientras el formulario responde «te enviamos un correo».
+    if not values["DEFAULT_FROM_EMAIL"]:
+        problems.append(
+            "DEFAULT_FROM_EMAIL (el remitente, por ejemplo «Nombre <no-reply@dominio>»)"
+        )
+    for name in ("DEFAULT_FROM_EMAIL", "EMAIL_HOST", "EMAIL_HOST_PASSWORD"):
+        value = (values[name] or "").strip().lower()
+        if (
+            is_placeholder(value)
+            or any(marker in value for marker in EMAIL_TEMPLATE_MARKERS)
+            or value in EMAIL_TEMPLATE_VALUES
+        ):
+            problems.append(f"{name} (valor de ejemplo)")
 
     # ── Origen de las URL absolutas ──────────────────────────
     problems += _site_url_problems(values)
