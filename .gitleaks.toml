@@ -6,19 +6,12 @@ title = "Reseñas — configuración de gitleaks"
 [extend]
 useDefault = true
 
-# La allowlist está ACOTADA A RUTAS y los patrones van ANCLADOS (hallazgo S-31 de
-# secretos). Antes era global y sin anclar: cualquier hallazgo que contuviera una de
-# esas cadenas quedaba silenciado en TODO el repositorio, de modo que un secreto real
-# con el prefijo «ci-secret-key…» habría pasado desapercibido. Ahora solo se perdonan
-# esos valores exactos y solo donde de verdad viven: los workflows de CI, los tests que
-# replican sus entornos y las plantillas de entorno.
+# La allowlist perdona solo esos valores exactos (patrones anclados), en cualquier archivo:
+# no son credenciales, y un secreto real no puede coincidir con ellos. No se acota por rutas:
+# en esta versión de gitleaks, una ruta de la lista perdonaría cualquier secreto que hubiera
+# en ese archivo. El job security del CI lo comprueba con un token inventado en un workflow.
 [allowlist]
-description = "Secretos de prueba de CI (valores exactos, solo en los ficheros donde viven)"
-paths = [
-  '''^\.github/workflows/.*\.yml$''',
-  '''^backend/tests/test_envguard\.py$''',
-  '''^\.env(\.[a-z]+)?\.example$''',
-]
+description = "Secretos de prueba de CI (valores exactos)"
 regexes = [
   '''^ci-secret-key$''',
   '''^ci-smoke-key$''',

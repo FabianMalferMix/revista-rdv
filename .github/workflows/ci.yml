@@ -21,31 +21,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      db:
-        image: postgres:16
-        env:
-          POSTGRES_DB: resenas
-          POSTGRES_USER: resenas
-          # La misma que usa `check --deploy`: las guardas de producción rechazan la de
-          # desarrollo, y ese paso consulta la base (las páginas legales).
-          POSTGRES_PASSWORD: ci-strong-db-password
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U resenas"
-          --health-interval 5s --health-timeout 3s --health-retries 12
-      redis:
-        image: redis:7
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s --health-timeout 3s --health-retries 12
-
     env:
       DJANGO_SECRET_KEY: ci-secret-key
       DJANGO_DEBUG: "1" # los tests corren en modo desarrollo; la config prod se valida aparte
       POSTGRES_HOST: localhost
       POSTGRES_PORT: "5432"
+      # El compose la toma de aquí para crear la base. Es también la de `check --deploy`: el
+      # guard de producción rechaza la de desarrollo, y ese paso consulta la base.
       POSTGRES_PASSWORD: ci-strong-db-password
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/1
@@ -53,15 +35,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # La base y Redis del compose, con sus imágenes fijadas por digest: un PR de Dependabot
+      # que cambia una se prueba con la nueva. ci/docker-compose.test.yml las publica en el
+      # runner, donde corre pytest.
+      - name: Base de datos y Redis del compose
+        run: |
+          touch .env
+          docker compose -f docker-compose.yml -f ci/docker-compose.test.yml up -d --wait db redis
+
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
 
       - name: Instalar dependencias
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install "pip==26.2.1"
           pip install --require-hashes -r backend/requirements-dev.txt
 
       - name: Lint y formato (ruff)
@@ -100,8 +90,9 @@ jobs:
       - name: Ejecutar tests (con cobertura medida)
         working-directory: backend
         # Umbral de cobertura: falla el CI si baja del 80% (config en pyproject.toml).
-        # Incluye apps y config (la middleware CSP y el logging entran al gate).
-        run: pytest --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
+        # Incluye apps y config (la middleware CSP y el logging entran al gate). En paralelo,
+        # un proceso por CPU (pytest-xdist): cada uno con su propia base de pruebas.
+        run: pytest -n auto --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
 
       - name: Umbrales de cobertura por módulo (código sensible)
         working-directory: backend
@@ -140,12 +131,11 @@ jobs:
 
       - name: Smoke de arranque (gunicorn + /healthz/)
         run: |
-          # DEBUG=1 evita el guard de producción y la validación de Host; --entrypoint
-          # salta el migrate (healthz no toca la BD). Corre como usuario no-root (uid 1000).
+          # El comando de la imagen, con las opciones de gunicorn.conf.py. DEBUG=1 evita el
+          # guard de producción y la validación de Host (healthz no toca la BD). Corre como
+          # usuario no-root (uid 1000).
           docker run -d --name prod-smoke -p 8000:8000 \
-            -e DJANGO_DEBUG=1 -e DJANGO_SECRET_KEY=ci-smoke-key \
-            --entrypoint gunicorn resenas-prod \
-            config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+            -e DJANGO_DEBUG=1 -e DJANGO_SECRET_KEY=ci-smoke-key resenas-prod
           for i in $(seq 1 20); do
             curl -fsS http://127.0.0.1:8000/healthz/ && break
             sleep 2
@@ -194,15 +184,10 @@ jobs:
           print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
           PY
 
-      - name: Escaneo de vulnerabilidades de la imagen prod (trivy, informativo)
-        # Informativo (continue-on-error): CVEs HIGH/CRITICAL con fix en la imagen.
-        # Promover a bloqueante cuando se decida el umbral.
-        #
-        # El binario se descarga de una release FIJADA y se verifica su sha256 antes de
-        # ejecutarlo (S-33). Antes se hacía `curl … /main/contrib/install.sh | sh`: código
-        # traído de una rama MUTABLE de un tercero y ejecutado sin comprobar nada, en un
-        # runner con acceso al repositorio.
-        continue-on-error: true
+      - name: Escaneo de vulnerabilidades de la imagen prod (trivy)
+        # Bloquea las vulnerabilidades críticas que ya tienen corrección; las altas se listan,
+        # sin bloquear. El binario viene de una release fijada y se verifica su sha256 antes
+        # de ejecutarlo.
         env:
           TRIVY_VERSION: "0.72.0"
           TRIVY_SHA256: "bbb64b9695866ce4a7a8f5c9592002c5961cab378577fa3f8a040df362b9b2ea"
@@ -212,7 +197,8 @@ jobs:
             "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${TARBALL}"
           echo "${TRIVY_SHA256}  ${TARBALL}" | sha256sum -c -
           tar -xzf "$TARBALL" trivy
-          ./trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table resenas-prod
+          ./trivy image --severity HIGH --ignore-unfixed --format table resenas-prod
+          ./trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 --format table resenas-prod
 
   # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
   # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
@@ -223,7 +209,7 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
 
       - name: Higiene del repositorio (pre-commit, bloqueante)
         # Espacios, YAML, archivos de más de 2 MB, la sintaxis de los guiones (node --check)
@@ -233,7 +219,7 @@ jobs:
         env:
           SKIP: ruff-check,ruff-format,gitleaks
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install "pip==26.2.1"
           python -m pip install "pre-commit==4.7.0"
           pre-commit run --all-files --show-diff-on-failure
 
@@ -305,16 +291,28 @@ jobs:
           tar -xzf "$TARBALL" gitleaks
           ./gitleaks detect --no-banner --redact -c .gitleaks.toml
 
+      - name: gitleaks no perdona un secreto por estar en un workflow
+        # La allowlist perdona los valores de prueba exactos, no los archivos donde viven. Un
+        # token inventado aquí mismo, con forma de token de GitHub, tiene que detectarse.
+        run: |
+          mkdir -p /tmp/fuga/.github/workflows
+          TOKEN="ghp_$(head -c 512 /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 36)"
+          printf 'env:\n  TOKEN: %s\n' "$TOKEN" > /tmp/fuga/.github/workflows/fuga.yml
+          if ./gitleaks detect --no-git --source /tmp/fuga -c .gitleaks.toml --no-banner --redact; then
+            echo "FALLO: gitleaks no detectó un token en un workflow"; exit 1
+          fi
+          echo "OK: un secreto en un workflow se detecta"
+
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
 
       - name: SAST (bandit, severidad media+, bloqueante)
         # Versión fijada: un job que exige --require-hashes al resto de las dependencias
         # no debería instalar sus propias herramientas desde la última versión que haya
         # ese día (S-33). Fijarla hace además reproducible el resultado del SAST.
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install "pip==26.2.1"
           python -m pip install "bandit==1.9.4"
           bandit -r backend/apps backend/config -ll
 
@@ -323,151 +321,89 @@ jobs:
         continue-on-error: true
         uses: actions/dependency-review-action@v5
 
-  # Ejercita el CAMINO DE PRODUCCIÓN real (DEBUG=0) sirviendo peticiones, que la
-  # suite (DEBUG=1) y el smoke de gunicorn (DEBUG=1, solo /healthz/) no cubren:
-  # cabeceras de seguridad, /readyz/ con BD+broker, estático hasheado por WhiteNoise
-  # y los healthchecks de compose de web/worker/beat (#23, #24, #25). Levanta db y
-  # redis como contenedores en una red propia (misma receta validada localmente).
+  # El camino de producción tal como se despliega: la imagen prod y el compose de producción,
+  # con el entorno de ci/prod.env (DEBUG=0), que lleva COMPOSE_FILE como el .env del servidor.
+  # Cubre lo que la suite (DEBUG=1) no ve: el release antes que web, worker y beat; los
+  # healthchecks del compose; gunicorn con gunicorn.conf.py; Caddy delante, con sus cabeceras,
+  # sus estáticos y sus medios; y /readyz/ con la base, el broker y el latido de las tareas.
   prod-runtime:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 
-      - name: Construir imagen de producción
-        run: docker build --target prod -t resenas-prod ./backend
-
-      - name: Camino de producción DEBUG=0 + healthchecks de compose
+      - name: El compose de producción se carga
         run: |
-          docker network create qa13net
-          docker run -d --name qa13-db --network qa13net \
-            -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
-            -e POSTGRES_PASSWORD=ci-strong-db-password postgres:16
-          docker run -d --name qa13-redis --network qa13net redis:7
-          for i in $(seq 1 30); do
-            docker exec qa13-db pg_isready -U resenas >/dev/null 2>&1 && break
-            sleep 2
-          done
+          cp ci/prod.env .env
+          docker compose config -q
 
-          COMMON="-e DJANGO_DEBUG=0 \
-            -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
-            -e POSTGRES_HOST=qa13-db -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
-            -e POSTGRES_PASSWORD=ci-strong-db-password \
-            -e CELERY_BROKER_URL=redis://qa13-redis:6379/0 \
-            -e CELERY_RESULT_BACKEND=redis://qa13-redis:6379/1 \
-            -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
-            -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
-            -e SITE_URL=https://localhost \
-            -e DJANGO_ALLOW_WEAKENED=SENTRY_DSN"
+      - name: El Caddyfile es válido
+        run: docker compose run --rm --no-deps proxy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
-          # El mismo orden que producción: release.sh (migraciones, grupos y estáticos con
-          # VendoredStaticFilesStorage) y después web, que comparte el volumen de estáticos.
-          docker run --rm --network qa13net $COMMON -v qa13static:/app/staticfiles \
-            resenas-prod sh release.sh
-          docker run -d --name prod-web --network qa13net $COMMON \
-            -v qa13static:/app/staticfiles -e DJANGO_SECURE_SSL_REDIRECT=0 resenas-prod
-
-          echo "Esperando a gunicorn..."
-          for i in $(seq 1 40); do
-            docker exec prod-web python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/',timeout=3)" 2>/dev/null && break
-            sleep 3
-          done
-
-          echo "--- /healthz/ = ok ---"
-          docker exec prod-web python -c "import urllib.request as u; assert u.urlopen('http://127.0.0.1:8000/healthz/',timeout=5).read().strip()==b'ok'"
-          echo "--- / con cabeceras de seguridad (camino DEBUG=0) ---"
-          docker exec prod-web python -c "import urllib.request as u,sys; h=u.urlopen('http://127.0.0.1:8000/',timeout=5).headers; sys.exit(0 if all(h.get(x) for x in ['Content-Security-Policy','X-Frame-Options','X-Content-Type-Options','Permissions-Policy']) else 1)"
-          echo "--- estático hasheado servido por WhiteNoise ---"
-          docker exec prod-web python -c "import json,urllib.request as u; hh=json.load(open('/app/staticfiles/staticfiles.json'))['paths']['css/site.css']; assert u.urlopen('http://127.0.0.1:8000/static/'+hh,timeout=5).status==200"
-          echo "--- healthcheck web de compose ---"
-          docker exec prod-web python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5).status==200 else 1)"
-
-          echo "--- worker y beat + sus healthchecks de compose ---"
-          docker run -d --name prod-worker --network qa13net $COMMON \
-            --entrypoint celery resenas-prod -A config worker -l warning
-          docker run -d --name prod-beat --network qa13net $COMMON \
-            --entrypoint celery resenas-prod -A config beat -l warning --schedule /app/celerybeat-schedule
-          sleep 20
-          docker exec prod-worker sh -c 'celery -A config inspect ping -d celery@$(hostname) -t 10 >/dev/null 2>&1'
-          docker exec prod-beat python -c "import os,sys,time; f='/app/celerybeat-schedule'; sys.exit(0 if os.path.exists(f) and time.time()-os.path.getmtime(f)<300 else 1)"
-          # /readyz/ exige el latido de las tareas: beat despacha la publicación programada
-          # al minuto de arrancar y el worker la ejecuta. Se espera hasta tres minutos.
-          echo "--- /readyz/ = 200 ready (BD, broker, latido, migraciones, disco) ---"
-          for i in $(seq 1 36); do
-            docker exec prod-web python -c "import urllib.request as u,json; r=u.urlopen('http://127.0.0.1:8000/readyz/',timeout=5); assert json.load(r)['status']=='ready'" 2>/dev/null && break
+      - name: Levantar producción con su compose
+        run: |
+          docker compose up -d --build
+          sano() { [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q "$1")")" = healthy ]; }
+          for i in $(seq 1 60); do
+            sano web && sano worker && sano beat && break
             sleep 5
           done
-          docker exec prod-web python -c "import urllib.request as u,json; r=u.urlopen('http://127.0.0.1:8000/readyz/',timeout=5); assert r.status==200 and json.load(r)['status']=='ready'" \
-            || { docker logs prod-web 2>&1 | grep readyz | tail -5; exit 1; }
-          echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
+          for servicio in web worker beat; do
+            sano "$servicio" || { echo "FALLO: $servicio no pasó su healthcheck"; docker compose ps; exit 1; }
+          done
+          echo "OK: web, worker y beat pasan los healthchecks del compose"
 
-      - name: Orden de despliegue con compose (release antes que web, worker y beat)
-        run: |
-          cp .env.example .env
-          C="docker compose -f docker-compose.yml"
-          # Base nueva, con todas las migraciones pendientes: el release las aplica y solo
-          # entonces arranca web.
-          $C up -d web
-          [ "$(docker inspect -f '{{.State.ExitCode}}' resenas-release-1)" = "0" ] \
+          RELEASE=$(docker compose ps -aq release)
+          [ "$(docker inspect -f '{{.State.ExitCode}}' "$RELEASE")" = "0" ] \
             || { echo "FALLO: el release no terminó bien"; exit 1; }
-          FIN=$(docker inspect -f '{{.State.FinishedAt}}' resenas-release-1)
-          INICIO=$(docker inspect -f '{{.State.StartedAt}}' resenas-web-1)
+          FIN=$(docker inspect -f '{{.State.FinishedAt}}' "$RELEASE")
+          INICIO=$(docker inspect -f '{{.State.StartedAt}}' "$(docker compose ps -q web)")
           [[ "$FIN" < "$INICIO" ]] \
             || { echo "FALLO: web arrancó ($INICIO) antes de que terminara el release ($FIN)"; exit 1; }
-          PENDIENTES=$($C exec -T web python manage.py showmigrations --plan | grep -c '^\[ \]' || true)
-          [ "$PENDIENTES" = "0" ] || { echo "FALLO: quedaron $PENDIENTES migraciones sin aplicar"; exit 1; }
           echo "OK: el release migra antes de que arranque web"
 
-          # Si migrate falla, no arranca nada con el código nuevo: una tabla que ya existe hace
-          # fallar la migración inicial de content.
-          $C down -v
-          $C up -d --wait db
-          $C exec -T db psql -U resenas -d resenas -qc "CREATE TABLE content_article (id int);"
-          if $C up -d web worker beat; then
-            echo "FALLO: compose arrancó los servicios con el release fallido"; exit 1
-          fi
-          ARRANCADOS=$($C ps --status running --services | grep -c -E '^(web|worker|beat)$' || true)
-          [ "$ARRANCADOS" = "0" ] \
-            || { echo "FALLO: arrancaron $ARRANCADOS servicios con el release fallido"; exit 1; }
-          echo "OK: si el release falla, web, worker y beat no arrancan"
-          $C down -v
+          docker compose logs web | grep -q "Using worker: gthread" \
+            || { echo "FALLO: gunicorn no arrancó con hilos (gunicorn.conf.py)"; exit 1; }
+          echo "OK: gunicorn arranca con gunicorn.conf.py"
 
-      # Caddy sirve /media/ FUERA de Django: ni SecurityMiddleware ni config.csp tocan
-      # esas respuestas, así que ningún test de la suite las cubre. Se verifica con el
-      # Caddyfile REAL que un archivo subible desde el panel no puede ejecutarse como
-      # HTML/JS en el origen del sitio (hallazgo de seguridad S-01).
-      - name: Cabeceras defensivas de /media/ servidas por Caddy (S-01)
+      - name: El sitio, a través de Caddy
         run: |
-          # El Caddyfile no lo validaba nada: un error de sintaxis solo se descubría al
-          # desplegar. `caddy validate` lo comprueba antes de levantar nada.
-          docker run --rm -e SITE_ADDRESS=:80 \
-            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
-            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-
-          mkdir -p /tmp/mediatest
-          printf '<script>alert(document.domain)</script>' > /tmp/mediatest/evil.html
-          docker run -d --name prod-proxy --network qa13net -p 8081:80 \
-            -e SITE_ADDRESS=:80 \
-            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
-            -v /tmp/mediatest:/srv/media:ro \
-            caddy:2-alpine
-
-          for i in $(seq 1 20); do
-            curl -sf -o /dev/null http://127.0.0.1:8081/media/evil.html && break
-            sleep 2
+          P=http://127.0.0.1:8080
+          curl -fsS "$P/healthz/" | grep -qx ok
+          H=$(curl -fsS -D - -o /dev/null "$P/")
+          for cabecera in Content-Security-Policy X-Frame-Options X-Content-Type-Options Permissions-Policy; do
+            echo "$H" | grep -qi "^$cabecera:" || { echo "FALLO: / se sirve sin $cabecera"; exit 1; }
           done
+          echo "OK: / con las cabeceras de seguridad (DEBUG=0)"
+          CSS=$(docker compose exec -T web python -c "import json; print(json.load(open('/app/staticfiles/staticfiles.json'))['paths']['css/site.css'])")
+          [ "$(curl -s -o /dev/null -w '%{http_code}' "$P/static/$CSS")" = 200 ] \
+            || { echo "FALLO: Caddy no sirve el estático hasheado"; exit 1; }
+          echo "OK: Caddy sirve el estático hasheado"
+          # /readyz/ exige el latido de las tareas: beat despacha la publicación programada
+          # al minuto de arrancar y el worker la ejecuta. Se espera hasta tres minutos.
+          listo() { curl -fsS "$P/readyz/" | python3 -c "import json,sys; sys.exit(json.load(sys.stdin)['status'] != 'ready')"; }
+          for i in $(seq 1 36); do listo 2>/dev/null && break; sleep 5; done
+          listo || { curl -s "$P/readyz/"; exit 1; }
+          echo "OK: /readyz/ = ready (BD, broker, latido, migraciones, disco)"
 
-          H=$(curl -sS -D - -o /dev/null http://127.0.0.1:8081/media/evil.html)
+      # Caddy sirve /media/ fuera de Django: ni SecurityMiddleware ni config.csp tocan esas
+      # respuestas, y ninguna prueba de la suite las ve. Un archivo subible desde el panel no
+      # puede ejecutarse como HTML ni JS en el origen del sitio.
+      - name: Cabeceras defensivas de /media/
+        run: |
+          docker compose exec -T web sh -c "printf '<script>alert(document.domain)</script>' > /app/mediafiles/evil.html"
+          H=$(curl -sS -D - -o /dev/null http://127.0.0.1:8080/media/evil.html)
           echo "$H"
           echo "$H" | grep -iq 'X-Content-Type-Options: *nosniff' \
             || { echo "FALLO: /media/ se sirve sin nosniff"; exit 1; }
           echo "$H" | grep -iq "Content-Security-Policy: *default-src 'none'; sandbox" \
             || { echo "FALLO: /media/ se sirve sin CSP de aislamiento"; exit 1; }
-          echo "OK: /media/ se sirve con nosniff + CSP sandbox (S-01 cerrado en el borde)"
+          echo "OK: /media/ se sirve con nosniff y CSP de aislamiento"
 
-      - name: Lo despublicado deja de servirse, con el Caddy real
+      - name: Lo despublicado deja de servirse
         run: |
-          # Dos registros con audio en la base de prod-web: uno publicado y otro no.
-          ARCHIVOS=$(docker exec prod-web python -c "
+          # Dos registros con audio: uno publicado y otro no.
+          ARCHIVOS=$(docker compose exec -T web python -c "
           import os, django
           os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
           from django.core.files.base import ContentFile
@@ -482,30 +418,39 @@ jobs:
           PUB_FILE=$(echo "$ARCHIVOS" | sed -n 1p | cut -d' ' -f2)
           DES_URL=$(echo "$ARCHIVOS" | sed -n 2p | cut -d' ' -f1)
           DES_FILE=$(echo "$ARCHIVOS" | sed -n 2p | cut -d' ' -f2)
-          # Caddy, con el volumen de medios de web y web como upstream (red y alias propios).
-          mkdir -p /tmp/archmedia
-          docker cp prod-web:/app/mediafiles/. /tmp/archmedia/
-          docker network create archnet
-          docker network connect --alias web archnet prod-web
-          docker run -d --name prod-proxy-archivos --network archnet -p 127.0.0.1:8089:80 \
-            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
-            -v /tmp/archmedia:/srv/media:ro caddy:2-alpine
-          for i in $(seq 1 20); do curl -sf -o /dev/null http://127.0.0.1:8089/healthz/ && break; sleep 2; done
+          P=http://127.0.0.1:8080
           codigo() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
-          [ "$(codigo "http://127.0.0.1:8089$PUB_URL")" = 200 ] \
+          [ "$(codigo "$P$PUB_URL")" = 200 ] \
             || { echo "FALLO: el audio publicado no se sirve"; exit 1; }
-          [ "$(codigo -H 'Range: bytes=0-9' "http://127.0.0.1:8089$PUB_URL")" = 206 ] \
+          [ "$(codigo -H 'Range: bytes=0-9' "$P$PUB_URL")" = 206 ] \
             || { echo "FALLO: el audio publicado no admite saltos (Range)"; exit 1; }
-          [ "$(codigo "http://127.0.0.1:8089$DES_URL")" = 404 ] \
+          [ "$(codigo "$P$DES_URL")" = 404 ] \
             || { echo "FALLO: el audio despublicado se sigue sirviendo"; exit 1; }
           for archivo in "$PUB_FILE" "$DES_FILE"; do
-            [ "$(codigo "http://127.0.0.1:8089/media/$archivo")" = 404 ] \
+            [ "$(codigo "$P/media/$archivo")" = 404 ] \
               || { echo "FALLO: /media/$archivo se sirve sin pasar por Django"; exit 1; }
           done
-          curl -s http://127.0.0.1:8089/feed/registros/ | grep -q "$PUB_URL" \
+          curl -s "$P/feed/registros/" | grep -q "$PUB_URL" \
             || { echo "FALLO: el feed de pódcast no entrega el registro publicado"; exit 1; }
-          docker rm -f prod-proxy-archivos > /dev/null
           echo "OK: lo publicado se sirve con Range, lo despublicado da 404 y /media/ no lo entrega"
+
+      - name: Si el release falla, no arranca nada
+        run: |
+          # Una tabla que ya existe hace fallar la migración inicial de content.
+          docker compose down -v
+          docker compose up -d --wait db
+          docker compose exec -T db psql -U resenas -d resenas -qc "CREATE TABLE content_article (id int);"
+          if docker compose up -d --no-build web worker beat; then
+            echo "FALLO: compose arrancó los servicios con el release fallido"; exit 1
+          fi
+          ARRANCADOS=$(docker compose ps --status running --services | grep -c -E '^(web|worker|beat)$' || true)
+          [ "$ARRANCADOS" = "0" ] \
+            || { echo "FALLO: arrancaron $ARRANCADOS servicios con el release fallido"; exit 1; }
+          echo "OK: si el release falla, web, worker y beat no arrancan"
+
+      - name: Registro de producción, si algo falló
+        if: failure()
+        run: docker compose logs --no-color --tail 200 release web worker beat proxy
 
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
   # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
@@ -520,10 +465,15 @@ jobs:
 
       - name: Roundtrip de respaldo/restauración (pg_dump → pg_restore)
         run: |
+          # La imagen de la base del compose, fijada por digest: la misma que la del sidecar de
+          # respaldos (tests/test_image_pinning.py). Sirve también para leer los artefactos.
+          touch .env
+          PG_IMAGE=$(docker compose -f docker-compose.yml config --format json | jq -r .services.db.image)
+          echo "imagen de la base: $PG_IMAGE"
           docker network create bknet
           docker run -d --name bk-db --network bknet \
             -e POSTGRES_DB=resenas -e POSTGRES_USER=resenas \
-            -e POSTGRES_PASSWORD=ci-strong-db-password postgres:16
+            -e POSTGRES_PASSWORD=ci-strong-db-password "$PG_IMAGE"
           for i in $(seq 1 30); do
             docker exec bk-db pg_isready -U resenas >/dev/null 2>&1 && break
             sleep 2
@@ -561,10 +511,10 @@ jobs:
           # Los artefactos llevan la BD completa y los manuscritos privados: deben quedar
           # cerrados. Un receptor de pings registra cada aviso de éxito o de fallo.
           docker build -q -t resenas-backup ./infra/backup >/dev/null
-          docker run -d --name bk-ping --network bknet python:3.12-alpine \
-            python -m http.server 8000 >/dev/null
+          docker run -d --name bk-ping --network bknet --entrypoint python resenas-prod \
+            -m http.server 8000 >/dev/null
           for i in $(seq 1 30); do
-            docker exec bk-ping wget -q -O /dev/null http://localhost:8000/ 2>/dev/null && break
+            docker exec bk-ping python -c "import urllib.request as u; u.urlopen('http://localhost:8000/')" 2>/dev/null && break
             sleep 1
           done
           BK="docker run --rm --network bknet -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
@@ -579,7 +529,7 @@ jobs:
 
           # Los artefactos los crea root dentro del contenedor: se leen desde otro
           # contenedor en vez de con sudo (portable y sin depender del runner).
-          docker run --rm -v /tmp/bk:/backups alpine sh -c '
+          docker run --rm -v /tmp/bk:/backups "$PG_IMAGE" sh -c '
             set -eu
             D=$(find /backups -name db.dump | head -1)
             test -n "$D" || { echo "FALLO: backup.sh no generó el dump"; exit 1; }
@@ -610,7 +560,7 @@ jobs:
           echo "pings → éxito=$EXITOS fallo=$FALLOS"
           [ "$EXITOS" = "1" ] && [ "$FALLOS" = "3" ] \
             || { echo "FALLO: se esperaba 1 aviso de éxito y 3 de fallo"; exit 1; }
-          docker run --rm -v /tmp/bk:/backups alpine sh -c \
+          docker run --rm -v /tmp/bk:/backups "$PG_IMAGE" sh -c \
             'test "$(find /backups -name OK | wc -l)" = "1"' \
             || { echo "FALLO: un respaldo fallido quedó como completo"; exit 1; }
           echo "OK: cada fallo avisa, y ninguno queda como respaldo completo"
@@ -620,16 +570,16 @@ jobs:
             -e POSTGRES_USER=resenas -e POSTGRES_PASSWORD=ci-strong-db-password
             -v $PWD/infra/backup:/scripts:ro -v /tmp/bk:/backups
             -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media"
-          if $RESTORE postgres:16 sh /scripts/restore.sh latest; then
+          if $RESTORE "$PG_IMAGE" sh /scripts/restore.sh latest; then
             echo "FALLO: restore.sh se ejecutó sin confirmación"; exit 1
           fi
           echo "OK: restore.sh se niega a destruir sin RESTORE_CONFIRM"
 
           # ── restore.sh latest elige el respaldo completo más reciente ──
           # Un directorio más nuevo pero sin OK (a medias) no se restaura nunca.
-          docker run --rm -v /tmp/bk:/backups alpine sh -c \
+          docker run --rm -v /tmp/bk:/backups "$PG_IMAGE" sh -c \
             'D=$(dirname "$(find /backups -name OK | head -1)"); mkdir /backups/20991231-235959 && cp "$D/db.dump" /backups/20991231-235959/'
-          SALIDA=$($RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 sh /scripts/restore.sh latest)
+          SALIDA=$($RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas "$PG_IMAGE" sh /scripts/restore.sh latest)
           echo "$SALIDA"
           if echo "$SALIDA" | grep -q "20991231-235959"; then
             echo "FALLO: restore.sh latest eligió un respaldo a medias"; exit 1
@@ -646,12 +596,12 @@ jobs:
           $BK $RESTIC_ENV -v /tmp/bk:/backups -v /tmp/bkmedia:/volumes/media \
             -v /tmp/bkpriv:/volumes/private_media resenas-backup /scripts/backup.sh
           $PG psql -U resenas -d resenas -qc "UPDATE content_page SET title = 'cambiado';"
-          docker run --rm -v /tmp/bkmedia:/m alpine rm /m/foto.jpg
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" rm /m/foto.jpg
           $RESTORE $RESTIC_ENV -e RESTORE_CONFIRM=SI-DESTRUIR-resenas --entrypoint sh \
             resenas-backup /scripts/restore.sh --from-restic latest
           [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "0" ] \
             || { echo "FALLO: restic no devolvió la base del respaldo"; exit 1; }
-          docker run --rm -v /tmp/bkmedia:/m alpine test -f /m/foto.jpg \
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" test -f /m/foto.jpg \
             || { echo "FALLO: restic no devolvió el archivo de medios"; exit 1; }
           echo "OK: la base y los medios vuelven desde restic"
 
@@ -670,24 +620,24 @@ jobs:
           # Una vista que depende de content_page hace fallar el DROP de pg_restore a mitad.
           $PG psql -U resenas -d resenas -qc "UPDATE content_page SET title = 'cambiado';"
           $PG psql -U resenas -d resenas -qc "CREATE VIEW bloqueo AS SELECT * FROM content_page;"
-          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'echo marca > /m/marca.txt'
-          if $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 sh /scripts/restore.sh latest; then
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" sh -c 'echo marca > /m/marca.txt'
+          if $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas "$PG_IMAGE" sh /scripts/restore.sh latest; then
             echo "FALLO: la restauración debía fallar a mitad"; exit 1
           fi
           [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "$ORIG" ] \
             || { echo "FALLO: la base no quedó como estaba"; exit 1; }
-          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'test -f /m/marca.txt && test ! -e /m/.restaurando' \
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" sh -c 'test -f /m/marca.txt && test ! -e /m/.restaurando' \
             || { echo "FALLO: los medios no quedaron como estaban"; exit 1; }
           $PG psql -U resenas -d resenas -qc "DROP VIEW bloqueo;"
           echo "OK: un fallo a mitad deja la base y los medios como estaban"
 
           # ── --media-only no toca la base ──
-          docker run --rm -v /tmp/bkmedia:/m alpine rm /m/foto.jpg
-          $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas postgres:16 \
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" rm /m/foto.jpg
+          $RESTORE -e RESTORE_CONFIRM=SI-DESTRUIR-resenas "$PG_IMAGE" \
             sh /scripts/restore.sh --media-only latest
           [ "$($PG psql -U resenas -d resenas -tAc "$CAMBIADAS")" = "$ORIG" ] \
             || { echo "FALLO: --media-only tocó la base"; exit 1; }
-          docker run --rm -v /tmp/bkmedia:/m alpine sh -c 'test -f /m/foto.jpg && test ! -e /m/marca.txt' \
+          docker run --rm -v /tmp/bkmedia:/m "$PG_IMAGE" sh -c 'test -f /m/foto.jpg && test ! -e /m/marca.txt' \
             || { echo "FALLO: --media-only no restauró los medios"; exit 1; }
           echo "OK: --media-only restaura los medios y deja la base"
 

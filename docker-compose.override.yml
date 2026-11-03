@@ -2,11 +2,14 @@
 # Monta el código para hot-reload, usa runserver y publica el puerto local (solo 127.0.0.1).
 # En producción NO se carga (se usa `-f docker-compose.yml -f docker-compose.prod.yml`).
 
+# release, web, worker y beat comparten la imagen del stage dev, con su propia etiqueta: la de
+# producción (resenas-app:local) es la del stage prod, y la usa la vista previa local.
 services:
   web:
     build:
       context: ./backend
       target: dev
+    image: resenas-app:dev
     command: python manage.py runserver 0.0.0.0:8000
     # runserver atiende cada petición en un hilo nuevo, y con conexiones persistentes cada
     # hilo dejaba la suya abierta: unos cientos de páginas seguidas llenaban las 100 de
@@ -25,6 +28,7 @@ services:
     build:
       context: ./backend
       target: dev
+    image: resenas-app:dev
     environment:
       RELEASE_COLLECTSTATIC: "0"
     volumes:
@@ -34,6 +38,7 @@ services:
     build:
       context: ./backend
       target: dev
+    image: resenas-app:dev
     volumes:
       - ./backend:/app
 
@@ -41,6 +46,7 @@ services:
     build:
       context: ./backend
       target: dev
+    image: resenas-app:dev
     volumes:
       - ./backend:/app
 

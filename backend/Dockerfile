@@ -9,8 +9,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 WORKDIR /app
-# pip al día (corrige CVEs del propio pip) y compatible con --require-hashes.
-RUN pip install --upgrade pip
+# pip fijado, para que la imagen sea reproducible: el CI instala el mismo
+# (tests/test_tool_versions.py). Al subirlo, cambia en los dos sitios.
+RUN pip install "pip==26.2.1"
 COPY requirements.txt requirements-dev.txt ./
 
 # ── Desarrollo ────────────────────────────────────────────
@@ -18,7 +19,7 @@ FROM base AS dev
 # Lockfile con hashes: instalación reproducible y verificada.
 RUN pip install --require-hashes -r requirements-dev.txt
 COPY . .
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "config.wsgi:application"]
 
 # ── Producción ────────────────────────────────────────────
 FROM base AS prod
@@ -32,5 +33,6 @@ COPY --chown=app:app . .
 RUN chown -R app:app /app
 USER app
 # Las migraciones, los grupos y los estáticos no se hacen al arrancar: los hace release.sh,
-# desde el servicio `release` del compose, antes de que arranquen web, worker y beat.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# desde el servicio `release` del compose, antes de que arranquen web, worker y beat. Las
+# opciones de gunicorn están en gunicorn.conf.py, que lee solo.
+CMD ["gunicorn", "config.wsgi:application"]

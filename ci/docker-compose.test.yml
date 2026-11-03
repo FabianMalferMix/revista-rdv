@@ -1,0 +1,7 @@
+# Para el job test del CI, que corre pytest en el runner y no en un contenedor: publica en el
+# runner la base y Redis del compose, con sus imágenes fijadas, las que mantiene Dependabot.
+services:
+  db:
+    ports: ["127.0.0.1:5432:5432"]
+  redis:
+    ports: ["127.0.0.1:6379:6379"]
