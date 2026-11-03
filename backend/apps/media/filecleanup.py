@@ -21,11 +21,13 @@ import logging
 from functools import partial
 
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save, pre_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 
 logger = logging.getLogger(__name__)
-# Donde `pre_save` deja, en la instancia, los archivos que reemplaza el guardado en curso.
+# Donde `pre_save` deja, en la instancia, los archivos que reemplaza el guardado en curso, y
+# `pre_delete`, los que se van con la fila.
 _REPLACED = "_filecleanup_replaced"
+_DELETED = "_filecleanup_deleted"
 
 
 def _borrar(storage, names, label, pk):
@@ -58,12 +60,28 @@ def _nombres(instance, field_name):
     return nombres
 
 
+def _antes_de_borrar(field_name):
+    def handler(sender, instance, **kwargs):
+        # Los derivados registrados se leen de la base: la instancia que se borra puede ser
+        # anterior a la tarea que los registró.
+        if not callable(getattr(instance, "derivative_names", None)) or not instance.pk:
+            return
+        stored = sender._base_manager.filter(pk=instance.pk).first()
+        if stored is not None:
+            instance.__dict__.setdefault(_DELETED, {})[field_name] = _nombres(stored, field_name)
+
+    return handler
+
+
 def _al_borrar(field_name):
     def handler(sender, instance, using, **kwargs):
         fieldfile = getattr(instance, field_name, None)
         if not fieldfile:
             return
-        _delete_on_commit(fieldfile.storage, _nombres(instance, field_name), instance, using)
+        names = instance.__dict__.get(_DELETED, {}).pop(field_name, None)
+        if names is None:
+            names = _nombres(instance, field_name)
+        _delete_on_commit(fieldfile.storage, names, instance, using)
 
     return handler
 
@@ -107,6 +125,12 @@ def register(model, *field_names):
     """Conecta el borrado de archivos para los campos indicados de `model`."""
     etiqueta = f"{model._meta.app_label}.{model._meta.model_name}"
     for field_name in field_names:
+        pre_delete.connect(
+            _antes_de_borrar(field_name),
+            sender=model,
+            weak=False,
+            dispatch_uid=f"filecleanup:before-delete:{etiqueta}:{field_name}",
+        )
         post_delete.connect(
             _al_borrar(field_name),
             sender=model,
