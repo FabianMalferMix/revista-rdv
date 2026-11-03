@@ -45,7 +45,7 @@ def copy_title_and_actor(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("content", "0015_remove_unused_fields"),
+        ("content", "0016_search_config_and_generated_vector"),
     ]
 
     operations = [
