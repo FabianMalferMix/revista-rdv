@@ -121,6 +121,30 @@ def _after_replace(field_name):
     return handler
 
 
+# Los campos de archivo que no se limpian solos, con su motivo. Hoy ninguno: todo campo de
+# archivo de las apps del proyecto se lleva su archivo con la fila.
+EXEMPT = {}
+
+
+def register_all():
+    """Conecta el borrado para todos los campos de archivo de las apps del proyecto, salvo los
+    de EXEMPT. Lo llama MediaConfig.ready(): un campo nuevo queda cubierto sin registrarlo a
+    mano. Un adjunto privado que quedara en el disco incumpliría una petición de supresión."""
+    from django.apps import apps
+    from django.db.models import FileField
+
+    for model in apps.get_models():
+        if not model.__module__.startswith("apps."):
+            continue
+        names = [
+            field.name
+            for field in model._meta.fields
+            if isinstance(field, FileField) and f"{model._meta.label}.{field.name}" not in EXEMPT
+        ]
+        if names:
+            register(model, *names)
+
+
 def register(model, *field_names):
     """Conecta el borrado de archivos para los campos indicados de `model`."""
     etiqueta = f"{model._meta.app_label}.{model._meta.model_name}"

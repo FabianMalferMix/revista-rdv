@@ -10,15 +10,10 @@ class ShowcaseConfig(AppConfig):
         from django.db.models import Q
         from django.db.models.signals import post_save
 
-        from apps.media.filecleanup import register
         from apps.media.services import register_portada_use
 
-        from .models import Publication, SiteProfile
+        from .models import SiteProfile
         from .signals import process_portada_images
-
-        # Los PDF se borran del disco al borrar o reemplazar la fila (hallazgo S-13).
-        register(Publication, "pdf")
-        register(SiteProfile, "dossier_pdf")
 
         # La biblioteca de imágenes hace las copias de portada de las imágenes que el perfil
         # elige como obra; no sabe qué es una portada.

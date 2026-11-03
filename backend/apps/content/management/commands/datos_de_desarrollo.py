@@ -72,6 +72,16 @@ MODELOS = [
     "submissions.Call",
 ]
 
+# Lo que no viaja, con su motivo. Todo modelo de las apps está en MODELOS o aquí.
+NOT_EXPORTED = {
+    "community.NewsletterSubscriber": "Correos de personas reales: datos personales.",
+    "submissions.Submission": "Propuestas de autores externos, con su correo y su manuscrito.",
+    "content.EditorialNote": "Discusión interna del equipo sobre piezas que pueden no publicarse.",
+    "content.EditorialTransition": "Bitácora interna, con las cuentas del panel.",
+    "people.RoleGrant": "Lo que setup_groups repartió en esta base; lo rehace en cada una.",
+    "devtools.DevelopmentMarker": "La marca de esta base, no su contenido: la pone `cargar`.",
+}
+
 # Si alguno tiene filas, la base ya tiene contenido y `cargar` no la toca.
 CON_CONTENIDO = ["content.Poem", "content.Article", "media.MediaAsset", "showcase.Publication"]
 
