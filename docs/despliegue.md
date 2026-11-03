@@ -130,7 +130,8 @@ proxy alternativo (`PROXY_HTTP_PORT`). Este flujo se ejecutó al implementar el 
 - `SENTRY_DSN` — error tracking (Django + Celery), obligatorio con `DJANGO_DEBUG=0` (ver
   «Avisos»). Con `DJANGO_DEBUG=0` los logs salen en **JSON** (agregables por un colector); en
   dev son texto plano.
-- `GUNICORN_WORKERS` — nº de workers (por defecto 3; ~`2·CPU+1`).
+- `GUNICORN_WORKERS` y `GUNICORN_THREADS` — procesos de gunicorn (por defecto 3; ~`2·CPU+1`) e
+  hilos por proceso (por defecto 4). El resto de sus opciones está en `backend/gunicorn.conf.py`.
 - `CELERY_CONCURRENCY` — procesos del worker (por defecto 2, unos 40 MB cada uno). Sin
   fijarlo, Celery abriría uno por CPU del servidor y podría pasar de `WORKER_MEM_LIMIT`.
 - `DB_STATEMENT_TIMEOUT_MS` (15000) y `DB_CONNECT_TIMEOUT` (5 s) — plazos de cada consulta y de

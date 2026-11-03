@@ -47,7 +47,7 @@
             <h2 class="rotulo ficha-rotulo">Dónde conseguirlo</h2>
             <p class="buy-links">
               {% for s in stores %}<a class="btn" href="{{ s.url }}" rel="noopener" target="_blank">{{ s.label }} ↗</a>{% endfor %}
-              {% if publication.pdf %}<a class="btn" href="{{ publication.pdf.url }}">Descargar PDF gratis</a>{% endif %}
+              {% if publication.pdf %}<a class="btn" href="{{ publication.pdf_url }}">Descargar PDF gratis</a>{% endif %}
             </p>
           {% endif %}
         {% endwith %}

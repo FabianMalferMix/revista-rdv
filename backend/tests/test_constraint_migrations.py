@@ -78,3 +78,43 @@ def test_a_call_with_crossed_dates_gets_them_swapped():
     crossed = Call.objects.get(pk=crossed.pk)
     assert (crossed.opens_at, crossed.closes_at) == (start - timedelta(days=5), start)
     assert Call.objects.get(pk=instant.pk).closes_at == start + timedelta(days=1)
+
+
+def test_subscribers_are_lowercased_and_merged_keeping_the_latest():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    old = _migrate("community", "0003_newslettersubscriber_confirm_token_and_more")
+    Subscriber = old.get_model("community", "NewsletterSubscriber")
+    now = timezone.now()
+    Subscriber.objects.create(
+        email="Ana@Correo.cl", status="pending", confirm_token_at=now - timedelta(days=9)
+    )
+    Subscriber.objects.create(
+        email="ana@correo.cl", status="confirmed", confirmed_at=now - timedelta(days=2)
+    )
+    gone = Subscriber.objects.create(email="Otro@Correo.cl", status="unsubscribed")
+    new = _migrate("community", "0004_subscriber_lifecycle")
+    rows = {
+        s.email: (s.status, s.status_changed_at)
+        for s in new.get_model("community", "NewsletterSubscriber").objects.all()
+    }
+    assert set(rows) == {"ana@correo.cl", "otro@correo.cl"}
+    assert rows["ana@correo.cl"][0] == "confirmed"
+    assert rows["ana@correo.cl"][1] == now - timedelta(days=2)
+    assert rows["otro@correo.cl"][1] == gone.created_at
+
+
+def test_resolved_submissions_get_the_migration_date():
+    old = _migrate("submissions", "0003_convocatorias_cierran_despues_de_abrir")
+    Submission = old.get_model("submissions", "Submission")
+    common = {"author_name": "A", "author_email": "a@example.com", "title": "T", "body": "x"}
+    rejected = Submission.objects.create(status="rejected", **common)
+    received = Submission.objects.create(status="received", **common)
+    new = _migrate("submissions", "0004_submission_resolved_at")
+    dates = dict(
+        new.get_model("submissions", "Submission").objects.values_list("pk", "resolved_at")
+    )
+    assert dates[rejected.pk] is not None
+    assert dates[received.pk] is None

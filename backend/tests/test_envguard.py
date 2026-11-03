@@ -206,7 +206,8 @@ def _load_settings(env, expression="'ok'"):
 
 
 # Entornos DEBUG=0 reales de .github/workflows/ci.yml. Se fijan aquí para que endurecer
-# el guard no deje el CI en rojo sin que la suite lo avise antes.
+# el guard no deje el CI en rojo sin que la suite lo avise antes. El de prod-runtime vive en
+# ci/prod.env, y su prueba lo lee de ahí.
 ENTORNOS_CI = {
     "test / check --deploy": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -227,17 +228,6 @@ ENTORNOS_CI = {
         "SITE_URL": "https://ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
     },
-    "prod-runtime": {
-        "DJANGO_SECRET_KEY": CI_SECRET,
-        "POSTGRES_PASSWORD": "ci-strong-db-password",
-        "CELERY_BROKER_URL": "redis://:ci-strong-redis-password@qa13-redis:6379/0",
-        "CACHE_URL": "redis://:ci-strong-redis-password@qa13-redis:6379/2",
-        "DJANGO_ALLOWED_HOSTS": "localhost,127.0.0.1",
-        "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
-        "SITE_URL": "https://localhost",
-        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
-        "DJANGO_SECURE_SSL_REDIRECT": "0",
-    },
     "backup-restore / migrate": {
         "DJANGO_SECRET_KEY": CI_SECRET,
         "POSTGRES_PASSWORD": "ci-strong-db-password",
@@ -254,6 +244,22 @@ ENTORNOS_CI = {
 def test_los_entornos_debug0_del_ci_pasan_el_guard(nombre):
     result = _load_settings(ENTORNOS_CI[nombre])
     assert result.returncode == 0, f"{nombre} quedaría en rojo: {result.stderr[-500:]}"
+
+
+def test_the_ci_production_environment_passes_the_guard():
+    """prod-runtime levanta el compose de producción con ci/prod.env como .env: el compose
+    fija DJANGO_DEBUG=0 y el resto sale del archivo."""
+    path = BACKEND_DIR.parent / "ci" / "prod.env"
+    if not path.exists():
+        pytest.skip("ci/prod.env vive en la raíz del repositorio, fuera del contenedor")
+    env = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip() and not line.lstrip().startswith("#"):
+            name, _, value = line.partition("=")
+            env[name.strip()] = value
+    assert "DJANGO_SECRET_KEY" in env  # control positivo: el archivo se leyó
+    result = _load_settings(env)
+    assert result.returncode == 0, f"prod-runtime quedaría en rojo: {result.stderr[-500:]}"
 
 
 def test_settings_refuse_a_weakened_defense_unless_authorized():

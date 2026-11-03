@@ -3,12 +3,16 @@
 
 	# Timeouts de borde. Sin ellos, Caddy sostiene indefinidamente una conexión lenta y
 	# la reenvía a gunicorn, que atiende un número fijo de peticiones a la vez (procesos
-	# por hilos, ver docker-compose.prod.yml): unas pocas conexiones lentas bastan para
+	# por hilos, ver backend/gunicorn.conf.py): unas pocas conexiones lentas bastan para
 	# ocuparlas todas y tumbar el sitio (slowloris). Con read_body/read_header acotados,
 	# Caddy absorbe o corta el cuerpo ANTES de tocar la aplicación.
+	#
+	# read_body es el plazo de todo el cuerpo: cinco minutos dejan subir un audio de 50 MB
+	# con unos 1,4 Mbps de subida. El precio: Caddy reenvía el cuerpo a gunicorn mientras
+	# llega, así que una subida lenta ocupa uno de sus hilos todo ese tiempo.
 	servers {
 		timeouts {
-			read_body 30s
+			read_body 5m
 			read_header 10s
 			write 60s
 			idle 120s
@@ -50,9 +54,16 @@ www.{$SITE_ADDRESS::80} {
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
-	# Corta cuerpos de request abusivos en el borde (el adjunto de envíos permite
-	# 10 MB; el margen cubre la sobrecarga multipart). Defensa antes de llegar a la app.
-	request_body {
+	# Corta cuerpos de request abusivos en el borde, algo por encima del tope de cada ruta
+	# para que quien se pase vea el mensaje del formulario y no un 413 sin cuerpo: el panel
+	# sube audio de hasta 50 MB (apps/media/validators.py), y el formulario público, un
+	# adjunto de hasta 10 MB. tests/test_upload_limits.py compara estos valores con los topes.
+	@panel path /admin/*
+	request_body @panel {
+		max_size 60MB
+	}
+	@fuera_del_panel not path /admin/*
+	request_body @fuera_del_panel {
 		max_size 12MB
 	}
 
@@ -62,6 +73,10 @@ www.{$SITE_ADDRESS::80} {
 	# desde el panel no pueda ejecutarse como HTML/JS en el origen del sitio (S-01);
 	# es la capa que además protege lo ya subido, sin migrar datos.
 	handle_path /media/* {
+		# El audio de los registros y los PDF de las publicaciones no se sirven desde aquí:
+		# los entrega Django solo mientras su pieza está publicada (abajo, X-Accel-Redirect).
+		@protegido path /recordings/* /publications/*
+		respond @protegido 404
 		root * /srv/media
 		file_server
 		header {
@@ -88,8 +103,24 @@ www.{$SITE_ADDRESS::80} {
 		}
 	}
 
-	# Todo lo demás va a gunicorn.
-	reverse_proxy web:8000
+	# Todo lo demás va a gunicorn. Cuando Django responde con X-Accel-Redirect (el archivo de
+	# una pieza publicada, backend/config/protected_media.py), Caddy lo lee del volumen de
+	# medios: admite saltos (Range) y gunicorn no ocupa un hilo en enviarlo. Con las mismas
+	# cabeceras defensivas que /media/.
+	reverse_proxy web:8000 {
+		@archivo_publicado header X-Accel-Redirect *
+		handle_response @archivo_publicado {
+			root * /srv/media
+			rewrite * {rp.header.X-Accel-Redirect}
+			file_server
+			header {
+				X-Content-Type-Options nosniff
+				Content-Security-Policy "default-src 'none'; sandbox"
+				Referrer-Policy no-referrer
+				X-Frame-Options DENY
+			}
+		}
+	}
 
 	header -Server
 

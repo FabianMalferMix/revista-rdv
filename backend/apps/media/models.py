@@ -11,8 +11,16 @@ from django.utils import timezone
 from PIL import Image, ImageOps
 
 from config import publishing
+from config.protected_media import file_name, random_upload_path
 
-from .validators import validate_audio_video_extension, validate_image
+from .validators import (
+    MAX_AUDIO_MB,
+    MAX_IMAGE_MB,
+    validate_audio_extension,
+    validate_audio_size,
+    validate_image,
+    validate_image_size,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +56,8 @@ class MediaAsset(models.Model):
         upload_to="assets/%Y/%m/",
         width_field="width",
         height_field="height",
-        validators=[validate_image],
-        help_text="JPEG, PNG o WebP, hasta 40 megapíxeles.",
+        validators=[validate_image_size, validate_image],
+        help_text=f"JPEG, PNG o WebP, hasta 40 megapíxeles y {MAX_IMAGE_MB} MB.",
     )
     alt_text = models.CharField(
         max_length=255,
@@ -361,6 +369,10 @@ class MediaAsset(models.Model):
 TIRADA_SIZE = 5
 
 
+def recording_upload_to(instance, filename):
+    return random_upload_path("recordings", filename)
+
+
 class Recording(models.Model):
     """Registro de audio o video de una lectura/recital.
 
@@ -391,10 +403,14 @@ class Recording(models.Model):
         max_length=10, choices=Kind.choices, default=Kind.VIDEO, verbose_name="tipo"
     )
     file = models.FileField(
-        upload_to="recordings/%Y/%m/",
+        upload_to=recording_upload_to,
         blank=True,
-        validators=[validate_audio_video_extension],
+        validators=[validate_audio_extension, validate_audio_size],
         verbose_name="archivo",
+        help_text=(
+            f"Audio de hasta {MAX_AUDIO_MB} MB. Un vídeo se publica con su enlace de YouTube o "
+            "Vimeo, en «Enlace para incrustar»."
+        ),
     )
     embed_url = models.URLField(
         blank=True,
@@ -476,6 +492,14 @@ class Recording(models.Model):
         from django.urls import reverse
 
         return reverse("media:recording_detail", args=[self.slug])
+
+    def file_url(self):
+        """La dirección de el audio: la vista que lo entrega solo si el registro es público."""
+        from django.urls import reverse
+
+        if not self.file:
+            return ""
+        return reverse("media:recording_file", args=[self.slug, file_name(self.file)])
 
     def social_image(self):
         """La imagen para compartir el registro: su póster (ver `{% social_meta %}`)."""
