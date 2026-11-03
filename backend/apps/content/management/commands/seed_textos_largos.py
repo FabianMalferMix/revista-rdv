@@ -28,7 +28,6 @@ contenido de prueba.
 """
 
 import re
-import unicodedata
 from datetime import timedelta
 from pathlib import Path
 
@@ -51,6 +50,7 @@ from apps.content.models import (
 )
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
+from config.text import strip_accents
 
 DIRECTORIO = Path(__file__).resolve().parent / "textos_largos"
 PREFIJO = "zz-largo-"
@@ -230,7 +230,7 @@ POEMAS = (
 
 def _slug(texto):
     """«Ediciones Pájaro de Cemento» → «zz-largo-ediciones-pajaro-de-cemento»."""
-    plano = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
+    plano = strip_accents(texto).encode("ascii", "ignore").decode()
     return PREFIJO + re.sub(r"[^a-z0-9]+", "-", plano.lower()).strip("-")[:200]
 
 

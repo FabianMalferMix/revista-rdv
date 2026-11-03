@@ -498,7 +498,8 @@ jobs:
         run: docker compose logs --no-color --tail 200 release web worker beat proxy
 
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
-  # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
+  # REAL (con el vector de búsqueda generado, su configuración, la extensión unaccent y
+  # datos de migración) se pueda restaurar
   # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.
   backup-restore:
     runs-on: ubuntu-latest
@@ -523,8 +524,8 @@ jobs:
             docker exec bk-db pg_isready -U resenas >/dev/null 2>&1 && break
             sleep 2
           done
-          # Migra el esquema REAL con la imagen prod (triggers FTS, extensión unaccent,
-          # páginas legales de migración).
+          # Migra el esquema REAL con la imagen prod (vector de búsqueda generado, extensión
+          # unaccent, páginas legales de migración).
           docker run --rm --network bknet \
             -e DJANGO_DEBUG=0 \
             -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
@@ -544,14 +545,15 @@ jobs:
           $PG psql -U resenas -d postgres -qc "CREATE DATABASE restored;"
           $PG pg_restore -U resenas -d restored --clean --if-exists --no-owner --no-acl /tmp/db.dump
           REST=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM content_page;")
-          TRG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_trigger WHERE tgname LIKE '%search_vector_trg';")
+          FTS=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM information_schema.columns WHERE column_name = 'search_vector' AND is_generated = 'ALWAYS';")
+          CFG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_ts_config WHERE cfgname = 'spanish_unaccent';")
           EXT=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_extension WHERE extname='unaccent';")
-          echo "content_page orig=$ORIG restaurado=$REST | triggers FTS=$TRG | unaccent=$EXT"
+          echo "content_page orig=$ORIG restaurado=$REST | vectores generados=$FTS | configuración=$CFG | unaccent=$EXT"
           # Comprobaciones explícitas: con `set -e`, en `test A && test B` el fallo de A no
           # aborta el paso, y la comprobación nunca podía fallar.
-          [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$TRG" = "2" ] && [ "$EXT" = "1" ] \
+          [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$FTS" = "2" ] && [ "$CFG" = "1" ] && [ "$EXT" = "1" ] \
             || { echo "FALLO: la restauración no coincide con el original"; exit 1; }
-          echo "OK: respaldo restaurado íntegro (datos + triggers FTS + extensión)"
+          echo "OK: respaldo restaurado íntegro (datos + vectores de búsqueda + configuración + extensión)"
 
           # ── backup.sh REAL, con la imagen del sidecar (trae curl para el ping) ──
           # Los artefactos llevan la BD completa y los manuscritos privados: deben quedar
