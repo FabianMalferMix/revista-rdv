@@ -109,6 +109,22 @@ DATABASES = {
         "HOST": env_str("POSTGRES_HOST", "db"),
         "PORT": env_str("POSTGRES_PORT", "5432"),
         "CONN_MAX_AGE": env_int("DJANGO_CONN_MAX_AGE", 60),
+        # Una conexión reutilizada se comprueba antes de usarla: si la base se reinició, la
+        # petición abre otra en vez de responder 500.
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": {
+            # Sin plazo, psycopg espera hasta 130 s a una base que no contesta.
+            "connect_timeout": env_int("DB_CONNECT_TIMEOUT", 5),
+            # Una consulta que pasa de este plazo se cancela con un error, en vez de retener un
+            # hilo de gunicorn mientras dure: con gthread, --timeout no corta una petición
+            # colgada. libpq usa estas `options` en lugar de PGOPTIONS, así que lo que el
+            # entorno ponga ahí se suma detrás y manda: el release lo usa para migrar con
+            # lock_timeout y sin este plazo (release.sh).
+            "options": (
+                f"-c statement_timeout={env_int('DB_STATEMENT_TIMEOUT_MS', 15000)} "
+                f"{env_str('PGOPTIONS')}"
+            ).strip(),
+        },
     }
 }
 
@@ -128,7 +144,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 AXES_FAILURE_LIMIT = env_int("AXES_FAILURE_LIMIT", 5)
 AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
-AXES_LOCKOUT_PARAMETERS = ["ip_address"]  # bloquea la IP atacante
+# Bloquea la combinación de cuenta e IP: quien prueba contraseñas contra una cuenta queda
+# fuera desde su conexión, sin dejar fuera a la dueña de la cuenta desde otra ni a las demás
+# cuentas de la misma IP. Y un acierto reinicia solo su propia combinación: con el bloqueo
+# por IP, cualquier login correcto desde esa IP borraba los fallos contra todas las cuentas.
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
 # Sin esto, axes responde «Account locked: too many login attempts» en inglés, y en
 # una pantalla PÚBLICA: la ve cualquiera que llegue a /admin/login/.
@@ -177,6 +197,9 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 # cayera dentro, Caddy serviría los manuscritos en /media/: el arranque se niega, también
 # en desarrollo.
 PRIVATE_MEDIA_ROOT = env_str("DJANGO_PRIVATE_MEDIA_ROOT", str(BASE_DIR / "private_media"))
+# El audio y los PDF que solo se sirven publicados (config/protected_media.py): en producción
+# los entrega Caddy con X-Accel-Redirect; en desarrollo, sin Caddy delante, Django.
+PROTECTED_MEDIA_ACCEL = not DEBUG
 _storage_problems = envguard.check_storage_separation(MEDIA_ROOT, PRIVATE_MEDIA_ROOT)
 if _storage_problems:
     raise ImproperlyConfigured("; ".join(_storage_problems) + ".")
@@ -239,6 +262,11 @@ CELERY_TASK_TIME_LIMIT = env_int("CELERY_TASK_TIME_LIMIT", 60)
 # prefetch 1 evita que un worker acapare tareas que no va a poder atender.
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Sin esto, el worker abre un proceso por CPU del servidor, sin relación con su carga (una
+# tarea por minuto y algún correo) ni con su límite de memoria (WORKER_MEM_LIMIT): con
+# muchas CPU, superaba el límite en reposo. Cada proceso se renueva tras 200 tareas.
+CELERY_WORKER_CONCURRENCY = env_int("CELERY_CONCURRENCY", 2)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
 
 # ── Caché ─────────────────────────────────────────────────
 # Redis en producción: los contadores de django-ratelimit se comparten entre los

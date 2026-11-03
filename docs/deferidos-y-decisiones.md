@@ -176,7 +176,7 @@ infra ya se hicieron (se indican).
 |---|---|---|
 | **Correo SMTP / deliverability** | Servidor SMTP real + **SPF/DKIM/DMARC** en DNS. La estructura MIME (`EmailMessage`) y la cabecera `List-Unsubscribe` **ya están** (`community/tasks.py`). | Configurar `EMAIL_HOST/PORT/USER/PASSWORD/USE_TLS` y `DEFAULT_FROM_EMAIL`; publicar SPF/DKIM/DMARC; smoke de entrega contra un buzón real. |
 | **Respaldo off-site (restic)** | Un repo restic (S3/BackBlaze/rclone) + `RESTIC_REPOSITORY`/`RESTIC_PASSWORD`. El **roundtrip `pg_dump`/`pg_restore` ya se verifica en CI** (job `backup-restore`). | Definir el repo y las credenciales; `infra/backup/backup.sh` ya tiene la rama restic. Probar un `restic restore` real en staging (RTO/RPO). |
-| **CD real** | Registry de contenedores + target de despliegue + rollback. | Job de release que taggee la imagen (`docker build --target prod`), la publique y despliegue con estrategia de rollback. El `build-prod` de CI construye y valida una imagen, pero el VPS reconstruye la suya y el CI no cargaba el compose de producción (C29). |
+| **CD real** | Registry de contenedores + target de despliegue + rollback. | Job de release que taggee la imagen (`docker build --target prod`), la publique y despliegue con estrategia de rollback. El CI ya levanta la imagen prod con el compose de producción y `ci/prod.env` (job `prod-runtime`, B41), con el mismo gunicorn (`backend/gunicorn.conf.py`); lo que falta es que el VPS despliegue esa misma imagen en vez de reconstruir la suya (C29). |
 | **Alerta de fallo de respaldo (dead-man's-switch)** | `BACKUP_PING_URL` (healthchecks.io o similar). El script ya hace el ping OK/fail. | Definir la URL y probar que un fallo dispara la alerta. |
 
 ---
@@ -245,6 +245,12 @@ paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` q
   Docker, que equivale a ser root en el anfitrión; el monitor externo (C8) avisa en su lugar
   (RES-6).
 - **No se parte `settings.py` en módulos.** Basta un settings de pruebas explícito (B57; OPE-2).
+- **Un umbral propio por cuenta y un enfriamiento progresivo en el bloqueo del panel.** B34
+  bloquea por cuenta e IP, y un acierto solo reinicia su propia combinación. django-axes 8.3
+  compara un único límite con el máximo de todos sus criterios, así que no admite un umbral
+  más alto solo por cuenta, y su enfriamiento no conoce los bloqueos anteriores. Con pocas
+  cuentas del equipo, no compensa reimplementarlo. *Si se retoma:* con el segundo factor,
+  cuando crezcan las cuentas de autor (SEG-3).
 - **No hay modo report-only en la CSP, ni `report-to`.** B27 retiró el interruptor en vez de
   darle un destino para los informes: la prueba de humo del CI abre el sitio en un navegador y
   falla con cualquier error de consola, que es donde aparece una violación, y un interruptor

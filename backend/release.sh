@@ -6,8 +6,10 @@ set -eu
 
 # lock_timeout: un cambio de esquema que espera detrás de una transacción larga (el pg_dump del
 # respaldo, por ejemplo) falla en vez de dejar en cola todas las consultas que llegan detrás.
+# statement_timeout=0: una migración de datos puede tardar más que una petición (settings.py
+# suma PGOPTIONS a las opciones de la conexión).
 echo "→ Aplicando migraciones..."
-PGOPTIONS="-c lock_timeout=${MIGRATE_LOCK_TIMEOUT:-10s}" python manage.py migrate --noinput
+PGOPTIONS="-c lock_timeout=${MIGRATE_LOCK_TIMEOUT:-10s} -c statement_timeout=0" python manage.py migrate --noinput
 
 echo "→ Configurando grupos y permisos (admin · editor · autor)..."
 python manage.py setup_groups

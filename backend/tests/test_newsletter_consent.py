@@ -118,7 +118,8 @@ def test_el_enlace_de_baja_no_caduca_nunca(client):
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_reintentar_el_alta_emite_un_token_de_confirmacion_nuevo(client):
-    sub = _pendiente()
+    # Pasado el tope de reenvío (dentro de él, el alta repetida no reenvía nada).
+    sub = _pendiente(confirm_token_at=timezone.now() - timedelta(minutes=11))
     primero = sub.confirm_token
     client.post(reverse("community:subscribe"), {"email": sub.email, "apodo": ""})
     sub.refresh_from_db()

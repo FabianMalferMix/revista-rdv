@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from apps.content.models import Article
 from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
-from config import publishing
+from config import protected_media, publishing
 
 from .models import Partner, PressMention, Publication, SiteProfile
 
@@ -129,3 +129,8 @@ def dossier(request):
             "ultima_publicacion": ultima_publicacion(),
         },
     )
+
+
+def publication_pdf(request, slug, filename):
+    publication, preview = publishing.piece_for(request, Publication.objects, slug=slug)
+    return protected_media.serve(publication.pdf, filename, preview)

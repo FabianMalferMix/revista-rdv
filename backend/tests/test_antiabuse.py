@@ -1,7 +1,7 @@
 """Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit) — F2-5."""
 
 import pytest
-from django.test import override_settings
+from django.test import Client, override_settings
 from django.urls import reverse
 
 from apps.community.models import NewsletterSubscriber
@@ -101,3 +101,48 @@ def test_rate_limit_buckets_are_isolated_per_client_ip(client):
     )
     assert NewsletterSubscriber.objects.filter(email="b@example.com").exists()
     assert b"Demasiados intentos" not in resp_b.content
+
+
+# ── Bloqueo por cuenta e IP ────────────────────────────────────
+
+ATTACKER = "203.0.113.50"
+OTHER_IP = "198.51.100.60"
+
+
+def _login(client, username, password, ip):
+    return client.post(
+        reverse("admin:login"),
+        {"username": username, "password": password, "next": "/admin/"},
+        HTTP_X_FORWARDED_FOR=ip,
+    )
+
+
+@pytest.fixture
+def two_staff_accounts(db):
+    from django.contrib.auth import get_user_model
+
+    model = get_user_model()
+    model.objects.create_user("duena", password="clave-correcta-de-la-duena", is_staff=True)
+    model.objects.create_user("autora", password="clave-correcta-de-la-autora", is_staff=True)
+
+
+@override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=3)
+def test_failed_attempts_lock_the_account_only_from_that_ip(client, two_staff_accounts):
+    for _ in range(3):
+        _login(client, "duena", "no-es-su-clave", ATTACKER)
+    # Desde esa IP, la cuenta queda bloqueada, aunque llegue la contraseña correcta.
+    assert _login(client, "duena", "clave-correcta-de-la-duena", ATTACKER).status_code == 429
+    # La dueña entra desde su conexión, y otra cuenta entra desde la misma IP.
+    assert _login(Client(), "duena", "clave-correcta-de-la-duena", OTHER_IP).status_code == 302
+    assert _login(Client(), "autora", "clave-correcta-de-la-autora", ATTACKER).status_code == 302
+
+
+@override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=3)
+def test_another_account_logging_in_does_not_reset_the_count(client, two_staff_accounts):
+    """Con el bloqueo por IP, una cuenta propia que acertaba cada pocos intentos reiniciaba el
+    contador, y se podían probar contraseñas contra otra cuenta sin fin."""
+    _login(client, "duena", "no-es-su-clave", ATTACKER)
+    _login(client, "duena", "tampoco", ATTACKER)
+    assert _login(Client(), "autora", "clave-correcta-de-la-autora", ATTACKER).status_code == 302
+    _login(client, "duena", "ni-esta", ATTACKER)
+    assert _login(client, "duena", "clave-correcta-de-la-duena", ATTACKER).status_code == 429

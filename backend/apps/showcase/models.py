@@ -5,6 +5,7 @@ from django.db import models
 
 from apps.media.validators import MAX_PDF_MB, validate_pdf_extension, validate_pdf_size
 from config import publishing
+from config.protected_media import file_name, random_upload_path
 
 
 class PartnerQuerySet(publishing.PublishableQuerySet):
@@ -182,6 +183,10 @@ class SiteSocialLink(models.Model):
         return f"@{ruta.split('/', 1)[0]}" if ruta else ""
 
 
+def publication_upload_to(instance, filename):
+    return random_upload_path("publications", filename)
+
+
 class Publication(models.Model):
     """Publicación del catálogo vitrina (libro, plaquette, fanzine…). Sin pagos:
     la compra se deriva a enlaces externos (WhereToBuy) o a un PDF de descarga.
@@ -216,7 +221,7 @@ class Publication(models.Model):
         default=True, help_text="Editada por el colectivo (vs participación en obra ajena)."
     )
     pdf = models.FileField(
-        upload_to="publications/",
+        upload_to=publication_upload_to,
         blank=True,
         validators=[validate_pdf_extension, validate_pdf_size],
         help_text=f"PDF de descarga gratuita (plaquettes/fanzines digitales), de hasta {MAX_PDF_MB} MB.",
@@ -243,6 +248,14 @@ class Publication(models.Model):
         from django.urls import reverse
 
         return reverse("showcase:publication_detail", args=[self.slug])
+
+    def pdf_url(self):
+        """La dirección de el PDF: la vista que lo entrega solo si la publicación es público."""
+        from django.urls import reverse
+
+        if not self.pdf:
+            return ""
+        return reverse("showcase:publication_pdf", args=[self.slug, file_name(self.pdf)])
 
     def social_image(self):
         """La imagen para compartir la publicación: su cubierta (ver `{% social_meta %}`)."""

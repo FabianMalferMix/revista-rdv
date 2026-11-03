@@ -95,6 +95,9 @@ class Submission(models.Model):
         related_name="submissions",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # Cuándo se rechazó o se retiró: la purga cuenta desde aquí, como promete la política de
+    # privacidad («pasado un tiempo desde su resolución»), y no desde que llegó.
+    resolved_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -103,3 +106,13 @@ class Submission(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.author_name}"
+
+    RESOLVED = (Status.REJECTED, Status.WITHDRAWN)
+
+    def save(self, *args, **kwargs):
+        # La fecha de resolución sigue al estado, se cambie desde donde se cambie.
+        if self.status in self.RESOLVED and self.resolved_at is None:
+            self.resolved_at = timezone.now()
+        elif self.status not in self.RESOLVED:
+            self.resolved_at = None
+        super().save(*args, **kwargs)

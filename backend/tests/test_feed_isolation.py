@@ -47,7 +47,10 @@ def test_the_feed_is_the_same_whatever_the_host(feeds_with_items, path):
 
 def test_the_podcast_enclosure_comes_from_the_site_url(feeds_with_items):
     body = Client(HTTP_HOST=HOSTS[0]).get("/feed/registros/").content.decode()
-    assert re.search(rf'<enclosure [^>]*url="{re.escape(SITE)}/media/[^"]+lectura[^"]*\.mp3"', body)
+    # La vista que entrega el audio solo mientras el registro está publicado.
+    assert re.search(
+        rf'<enclosure [^>]*url="{re.escape(SITE)}/archivo/registro/lectura/[^"]+\.mp3"', body
+    )
 
 
 @pytest.mark.parametrize("path", ["/feed/", "/feed/registros/"])

@@ -20,15 +20,6 @@ repos:
         # índice: sin él, `pre-commit run --all-files` no revisaría ninguno.
         args: ["--maxkb=2048", "--enforce-all"]
 
-  # ruff: linter + formateador. Se fija a la misma versión que el lockfile (0.16.0)
-  # para que el resultado local coincida con el del CI.
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.0
-    hooks:
-      - id: ruff-check
-        args: [--fix]
-      - id: ruff-format
-
   # Escaneo de secretos: evita commitear credenciales por accidente. Usa la
   # allowlist de .gitleaks.toml (secretos de prueba de CI).
   - repo: https://github.com/gitleaks/gitleaks
@@ -39,8 +30,22 @@ repos:
   # Ganchos propios (tools/ci/): la sintaxis de los guiones, en local y antes de que el job
   # `navegador` del CI los ejecute, y la regla de que la historia va en el commit y no en los
   # comentarios del código.
+  #
+  # ruff, linter y formateador, es el instalado: el del lockfile de desarrollo
+  # (backend/requirements-dev.txt), el mismo que corre el CI. Así no hay una segunda versión
+  # que mantener aquí.
   - repo: local
     hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --fix
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format
+        language: system
+        types_or: [python, pyi]
       - id: js-syntax
         name: sintaxis de los guiones (node --check)
         entry: tools/ci/js_syntax.sh

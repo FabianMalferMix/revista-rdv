@@ -127,8 +127,16 @@ proxy alternativo (`PROXY_HTTP_PORT`). Este flujo se ejecutó al implementar el 
 
 ## Ajustes útiles
 
-- `SENTRY_DSN` — activa error tracking (Django + Celery). Sin él no se activa nada. Con
-  `DJANGO_DEBUG=0` los logs salen en **JSON** (agregables por un colector); en dev son texto plano.
-- `GUNICORN_WORKERS` — nº de workers (por defecto 3; ~`2·CPU+1`).
-- `DJANGO_SECURE_SSL_REDIRECT` / `DJANGO_HSTS_SECONDS` — activos por defecto con `DEBUG=0`.
+- `SENTRY_DSN` — error tracking (Django + Celery), obligatorio con `DJANGO_DEBUG=0` (ver
+  «Avisos»). Con `DJANGO_DEBUG=0` los logs salen en **JSON** (agregables por un colector); en
+  dev son texto plano.
+- `GUNICORN_WORKERS` y `GUNICORN_THREADS` — procesos de gunicorn (por defecto 3; ~`2·CPU+1`) e
+  hilos por proceso (por defecto 4). El resto de sus opciones está en `backend/gunicorn.conf.py`.
+- `CELERY_CONCURRENCY` — procesos del worker (por defecto 2, unos 40 MB cada uno). Sin
+  fijarlo, Celery abriría uno por CPU del servidor y podría pasar de `WORKER_MEM_LIMIT`.
+- `DB_STATEMENT_TIMEOUT_MS` (15000) y `DB_CONNECT_TIMEOUT` (5 s) — plazos de cada consulta y de
+  cada conexión a la base. Con gthread, el `--timeout` de gunicorn no corta una petición
+  colgada: estos plazos sí. Las migraciones del release corren sin plazo de consulta.
+- `DJANGO_SECURE_SSL_REDIRECT` / `DJANGO_HSTS_SECONDS` — activos por defecto con `DEBUG=0`
+  (apagar HSTS exige `DJANGO_ALLOW_WEAKENED`).
 - `PROXY_HTTP_PORT` / `PROXY_HTTPS_PORT` — si otro proxy/LB va delante de Caddy.
