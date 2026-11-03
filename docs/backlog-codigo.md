@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 41 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Avance:** 42 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -124,7 +124,7 @@
 
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
-| B80 | El log no cita las direcciones de correo | B30 | S | sí | pendiente |
+| B80 | El log no cita las direcciones de correo | B30 | S | sí | hecho (#220) |
 | B42 | Los archivos se borran después de confirmar | B08 | S | no | pendiente |
 | B43 | Un solo servicio de imágenes | B42 | M | no | pendiente |
 | B44 | Registro de derivados | B43 | M | no | pendiente |
