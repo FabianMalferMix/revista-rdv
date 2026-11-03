@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils import timezone
@@ -110,17 +111,36 @@ class ReviewedWorkInline(admin.TabularInline):
     autocomplete_fields = ["work"]
 
 
+class EditorialNoteFormSet(BaseGenericInlineFormSet):
+    """Las notas de otra persona se leen, pero no se editan ni se borran."""
+
+    request = None
+
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        if form.instance.pk and form.instance.author_id != self.request.user.pk:
+            for field in form.fields.values():
+                field.disabled = True
+
+
 class EditorialNoteInline(GenericTabularInline):
     model = EditorialNote
+    formset = EditorialNoteFormSet
     extra = 1
-    readonly_fields = ["created_at"]
+    # El autor es quien la escribe (EditorialItemAdmin.save_formset), no un desplegable.
+    readonly_fields = ["author", "created_at"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        return type(formset.__name__, (formset,), {"request": request})
 
 
 class EditorialTransitionInline(GenericTabularInline):
     model = EditorialTransition
     extra = 0
     can_delete = False
-    readonly_fields = ["from_status", "to_status", "actor", "note", "created_at"]
+    fields = ["from_status", "to_status", "actor_name", "note", "created_at"]
+    readonly_fields = fields
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -154,6 +174,16 @@ class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     Concentra los permisos por objeto y estado, el dueño automático y las
     acciones de transición; las subclases solo declaran campos e inlines.
     """
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model is not EditorialNote:
+            return super().save_formset(request, form, formset, change)
+        for note in formset.save(commit=False):
+            if note.pk is None:
+                note.author = request.user
+            note.save()
+        for note in formset.deleted_objects:
+            note.delete()
 
     # Todo cambio de estado pasa por estas acciones (perform_transition, con guardas
     # de permiso y de estado, y bitácora). El desplegable `status` es readonly (ver get_readonly_fields).

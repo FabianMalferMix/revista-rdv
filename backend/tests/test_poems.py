@@ -42,8 +42,8 @@ def test_poem_transitions_have_generic_audit_trail(editor, autor, make_poem, mak
     assert entry.item == poem
     assert (entry.from_status, entry.to_status) == (S.IN_REVIEW, S.APPROVED)
     # El filtro por related_query_name distingue piezas del mismo id.
-    assert EditorialTransition.objects.filter(poem=poem).count() == 1
-    assert EditorialTransition.objects.filter(article=article).count() == 1
+    assert EditorialTransition.objects.for_item(poem).count() == 1
+    assert EditorialTransition.objects.for_item(article).count() == 1
 
 
 def test_author_cannot_publish_poem(autor, make_poem):

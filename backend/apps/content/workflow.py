@@ -30,6 +30,7 @@ PUBLISH = "publish"
 # El actor de lo que hace el propio sistema (la publicación programada): pasa todas las
 # guardas de rol y queda en la bitácora sin persona.
 SYSTEM = object()
+SYSTEM_NAME = "Sistema"
 
 
 class Transition(NamedTuple):
@@ -115,11 +116,14 @@ def perform_transition(item, name, user, note="", when=None):
             locked.published_at = now
         locked.save(update_fields=["status", "published_at", "updated_at"])
 
+        person = user if getattr(user, "is_authenticated", False) else None
         EditorialTransition.objects.create(
             item=locked,
+            item_title=locked.title,
             from_status=from_status,
             to_status=transition.target,
-            actor=user if getattr(user, "is_authenticated", False) else None,
+            actor=person,
+            actor_name=SYSTEM_NAME if user is SYSTEM else (person.get_username() if person else ""),
             note=note,
         )
 
