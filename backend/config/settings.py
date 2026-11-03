@@ -315,6 +315,8 @@ LOGGING = {
     },
 }
 
+SENTRY_DSN = env_str("SENTRY_DSN")
+
 # ── Guard de producción ───────────────────────────────────
 # Con DEBUG=0 rechaza arrancar con valores de ejemplo, secretos débiles o defensas
 # apagadas sin autorización. La lógica vive en config.envguard (función pura, probada en
@@ -333,6 +335,7 @@ if not DEBUG:
         "AXES_ENABLED": AXES_ENABLED,
         "RATELIMIT_ENABLE": RATELIMIT_ENABLE,
         "DJANGO_HSTS_SECONDS": SECURE_HSTS_SECONDS,
+        "SENTRY_DSN": SENTRY_DSN,
         "DJANGO_ALLOW_WEAKENED": env_list("DJANGO_ALLOW_WEAKENED"),
     }
     _problems = envguard.check_production_env(_effective)
@@ -349,11 +352,10 @@ if not DEBUG:
             "Arranca con defensas apagadas (DJANGO_ALLOW_WEAKENED): %s", ", ".join(_weakened)
         )
 
-# ── Observabilidad: Sentry (opt-in por SENTRY_DSN) ────────
-# Con SENTRY_DSN definido se captura error tracking; sentry-sdk auto-habilita las
-# integraciones de Django y Celery (basta con inicializar aquí, importado por ambos
-# procesos vía DJANGO_SETTINGS_MODULE). Sin DSN no hace nada (dev/tests intactos).
-SENTRY_DSN = env_str("SENTRY_DSN")
+# ── Observabilidad: Sentry ────────────────────────────────
+# Obligatorio con DEBUG=0 (guard de producción). sentry-sdk habilita solo las integraciones
+# de Django y Celery: basta con arrancarlo aquí, que importan los dos procesos. Sin DSN
+# (desarrollo, pruebas) no hace nada.
 if SENTRY_DSN:
     from config.sentry import init_sentry
 

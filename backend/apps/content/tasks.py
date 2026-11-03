@@ -32,4 +32,7 @@ def publish_due_items():
             except ValueError:
                 continue  # ya la movió otra corrida o una acción manual
             published += 1
+    from config.health import record_heartbeat
+
+    record_heartbeat()
     return published

@@ -22,10 +22,27 @@ el sitio ya está degradado de todos modos (Celery tampoco puede encolar).
 """
 
 import logging
+import time
 
 from django.core.cache.backends.redis import RedisCache
 
 logger = logging.getLogger(__name__)
+
+# Con Redis caído, cada visita falla en varias operaciones: un ERROR con su traza (que llega a
+# Sentry) por cada intervalo, y el resto, un WARNING de una línea.
+ERROR_INTERVAL = 300  # segundos
+_last_error = None
+
+
+def _degraded(operation):
+    global _last_error
+    now = time.monotonic()
+    if _last_error is None or now - _last_error >= ERROR_INTERVAL:
+        _last_error = now
+        logger.error("Caché Redis no disponible en %s(); se degrada", operation, exc_info=True)
+    else:
+        logger.warning("Caché Redis no disponible en %s(); se degrada", operation)
+
 
 try:  # pragma: no cover - redis siempre está instalado en este proyecto
     from redis.exceptions import RedisError
@@ -40,7 +57,7 @@ class ResilientRedisCache(RedisCache):
         try:
             return super().add(*args, **kwargs)
         except RedisError:
-            logger.warning("Caché Redis no disponible en add(); se degrada", exc_info=True)
+            _degraded("add")
             return False
 
     def incr(self, *args, **kwargs):
@@ -49,26 +66,26 @@ class ResilientRedisCache(RedisCache):
         except RedisError as exc:
             # ValueError es justo lo que django-ratelimit espera cuando el backend no
             # puede contar (lo documenta para python3-memcached).
-            logger.warning("Caché Redis no disponible en incr(); se degrada", exc_info=True)
+            _degraded("incr")
             raise ValueError("caché no disponible") from exc
 
     def get(self, key, default=None, version=None):
         try:
             return super().get(key, default, version)
         except RedisError:
-            logger.warning("Caché Redis no disponible en get(); se degrada", exc_info=True)
+            _degraded("get")
             return default
 
     def set(self, *args, **kwargs):
         try:
             return super().set(*args, **kwargs)
         except RedisError:
-            logger.warning("Caché Redis no disponible en set(); se degrada", exc_info=True)
+            _degraded("set")
             return False
 
     def delete(self, *args, **kwargs):
         try:
             return super().delete(*args, **kwargs)
         except RedisError:
-            logger.warning("Caché Redis no disponible en delete(); se degrada", exc_info=True)
+            _degraded("delete")
             return False

@@ -37,6 +37,7 @@ BUENA = {
     "AXES_ENABLED": True,
     "RATELIMIT_ENABLE": True,
     "DJANGO_HSTS_SECONDS": 31536000,
+    "SENTRY_DSN": "https://public@sentry.example.org/1",
     "DJANGO_ALLOW_WEAKENED": [],
 }
 
@@ -117,7 +118,12 @@ def test_example_com_no_se_considera_placeholder():
 
 @pytest.mark.parametrize("name", sorted(WEAKENABLE_DEFENSES))
 def test_each_weakened_defense_is_refused_unless_named(name):
-    off = {"AXES_ENABLED": False, "RATELIMIT_ENABLE": False, "DJANGO_HSTS_SECONDS": 0}[name]
+    off = {
+        "AXES_ENABLED": False,
+        "RATELIMIT_ENABLE": False,
+        "DJANGO_HSTS_SECONDS": 0,
+        "SENTRY_DSN": "",
+    }[name]
     refused = _check({name: off})
     assert any(p.startswith(name) for p in refused), refused
     # Nombrarla en DJANGO_ALLOW_WEAKENED es la autorización explícita.
@@ -202,6 +208,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
+        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
     },
     "build-prod / collectstatic": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -210,6 +217,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
+        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
     },
     "prod-runtime": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -218,6 +226,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "localhost,127.0.0.1",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
         "SITE_URL": "https://localhost",
+        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
         "DJANGO_SECURE_SSL_REDIRECT": "0",
     },
     "backup-restore / migrate": {
@@ -227,6 +236,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "localhost",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
         "SITE_URL": "https://localhost",
+        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
     },
 }
 
@@ -246,7 +256,7 @@ def test_settings_refuse_a_weakened_defense_unless_authorized():
     allowed = _load_settings(
         {
             **env,
-            "DJANGO_ALLOW_WEAKENED": "RATELIMIT_ENABLE",
+            "DJANGO_ALLOW_WEAKENED": "RATELIMIT_ENABLE,SENTRY_DSN",
             "DJANGO_ALLOWED_HOSTS": "revista.cl, www.revista.cl",
             "SITE_URL": "https://revista.cl",
         },

@@ -40,6 +40,8 @@ WEAKENABLE_DEFENSES = {
     "AXES_ENABLED": lambda values: not values["AXES_ENABLED"],
     "RATELIMIT_ENABLE": lambda values: not values["RATELIMIT_ENABLE"],
     "DJANGO_HSTS_SECONDS": lambda values: values["DJANGO_HSTS_SECONDS"] <= 0,
+    # Sin Sentry, nadie se entera de un error: la página 500 promete que alguien lo mira.
+    "SENTRY_DSN": lambda values: not values["SENTRY_DSN"],
 }
 
 

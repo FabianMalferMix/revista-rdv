@@ -87,6 +87,29 @@ Las imágenes viejas se limpian a mano (`docker image ls resenas-app`, `docker i
 `web`, `worker`, `beat`, `db`, `redis` y `proxy` llevan `restart: unless-stopped`: se recuperan
 solos ante caídas. `web` tiene healthcheck a `/healthz/`.
 
+## Avisos
+
+Tres avisos cubren lo que puede fallar sin que nadie lo vea. Las cuentas se crean al lanzar.
+
+- **Errores: Sentry.** Crea un proyecto de Django en Sentry (el plan gratuito basta) y pon su
+  DSN en `SENTRY_DSN`; con `DJANGO_DEBUG=0` el sitio no arranca sin él. Antes de salir, cada
+  evento pierde el cuerpo de la petición, las variables de cada marco, las cabeceras que
+  repiten la URL, los tokens del boletín y las direcciones de correo
+  (`backend/config/sentry.py` y `backend/config/redaction.py`, con sus pruebas).
+- **Caída del sitio y de las tareas: un monitor que visita `/readyz/`.** Un servicio de
+  monitoreo externo (por ejemplo UptimeRobot o Better Stack) que pida
+  `https://<dominio>/readyz/` cada pocos minutos y avise si no responde 200. `/readyz/`
+  responde 503 si falla la base, el broker, el latido de las tareas (la publicación
+  programada deja una marca cada minuto; si tiene más de cinco, se pararon beat o el
+  worker), si hay piezas programadas vencidas sin publicar, migraciones sin aplicar o menos
+  del 5 % de disco libre en los medios. El JSON de la respuesta dice qué comprobación falla,
+  y el log de `web`, por qué.
+- **Respaldo: healthchecks.io.** `BACKUP_PING_URL` (ver «Respaldos»).
+
+Docker marca un contenedor como `unhealthy`, pero Compose no lo reinicia: no se usa un
+reiniciador automático, porque exigiría montar el socket de Docker (equivale a ser root en
+el servidor). El monitor avisa y una persona decide.
+
 ## Respaldos
 
 Activa el sidecar de respaldos y revisa [docs/respaldos.md](respaldos.md):

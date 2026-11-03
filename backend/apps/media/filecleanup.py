@@ -18,13 +18,19 @@ from django.db.models.signals import post_delete, pre_save
 logger = logging.getLogger(__name__)
 
 
-def _borrar(storage, name):
+def _borrar(storage, name, instance):
     if not name:
         return
     try:
         storage.delete(name)
     except Exception:  # noqa: BLE001 - nunca debe impedir el borrado de la fila
-        logger.warning("No se pudo borrar el archivo %r del almacenamiento", name, exc_info=True)
+        # Un archivo que queda huérfano: el ERROR dice de qué fila era para poder borrarlo.
+        logger.exception(
+            "No se pudo borrar el archivo %r de %s pk=%s",
+            name,
+            instance._meta.label,
+            instance.pk,
+        )
 
 
 def _nombres(instance, field_name):
@@ -45,7 +51,7 @@ def _al_borrar(field_name):
         if not fieldfile:
             return
         for name in _nombres(instance, field_name):
-            _borrar(fieldfile.storage, name)
+            _borrar(fieldfile.storage, name, instance)
 
     return handler
 
@@ -68,7 +74,7 @@ def _al_reemplazar(field_name):
         if viejo.name == (nuevo.name if nuevo else None):
             return  # mismo archivo: no tocar
         for name in _nombres(anterior, field_name):
-            _borrar(viejo.storage, name)
+            _borrar(viejo.storage, name, anterior)
 
     return handler
 

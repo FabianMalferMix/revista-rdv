@@ -3,7 +3,7 @@ import unicodedata
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
-from django.db import DatabaseError
+from django.db import OperationalError
 from django.db.models import F, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -474,10 +474,11 @@ def search(request):
                     por_tipo[fila["tipo"]].append(
                         {"url": url, "title": fila["titulo"], "dato": dato}
                     )
-        except DatabaseError:
-            # Red de seguridad: cualquier término que el motor de FTS rechace devuelve
-            # «sin resultados» en vez de un 500 público.
-            logger.warning("Consulta de búsqueda rechazada por la BD", exc_info=True)
+        except OperationalError:
+            # Una conexión caída o una consulta cancelada por su plazo: «sin resultados» en
+            # vez de un 500, y un ERROR para que llegue a Sentry. Un error de programación no
+            # se captura: tiene que verse.
+            logger.exception("La búsqueda no pudo consultar la base")
             por_tipo = {}
         grupos = [
             {"titulo": titulo, "resultados": por_tipo[tipo]}
@@ -493,42 +494,15 @@ def healthz(request):
     return HttpResponse("ok", content_type="text/plain")
 
 
-def _db_ok():
-    """La BD responde a una consulta trivial."""
-    from django.db import connections
-
-    try:
-        with connections["default"].cursor() as cur:
-            cur.execute("SELECT 1")
-            cur.fetchone()
-        return True
-    except Exception:
-        return False
-
-
-def _broker_ok():
-    """El broker de Celery (Redis) acepta un PING."""
-    import redis
-    from django.conf import settings
-
-    try:
-        client = redis.from_url(
-            settings.CELERY_BROKER_URL, socket_connect_timeout=3, socket_timeout=3
-        )
-        return bool(client.ping())
-    except Exception:
-        return False
-
-
 def readyz(request):
-    """Readiness: verifica dependencias (BD + broker). 200 si listo, 503 si no.
-
-    Distinto de healthz (liveness): apto para monitoreo externo de uptime y para
-    detectar que la app no puede operar aunque el proceso siga vivo.
-    """
+    """Readiness para el monitor externo: 200 si el sitio puede operar, 503 si no, con lo que
+    falla (config/health.py). Distinto de healthz (liveness), que solo dice que el proceso
+    responde."""
     import json
 
-    checks = {"database": _db_ok(), "broker": _broker_ok()}
+    from config.health import readiness
+
+    checks = readiness()
     ready = all(checks.values())
     return HttpResponse(
         json.dumps({"status": "ready" if ready else "not-ready", "checks": checks}),
