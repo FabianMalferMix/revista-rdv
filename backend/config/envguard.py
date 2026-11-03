@@ -82,20 +82,13 @@ def check_production_env(values):
     if db_password in ("", INSECURE_DB_PASSWORD) or is_placeholder(db_password):
         problems.append("POSTGRES_PASSWORD")
 
-    # ── Contraseña de Redis ──────────────────────────────────
-    # Solo se exige si no se ha fijado una URL de broker explícita, que puede apuntar a
-    # un Redis gestionado con sus credenciales embebidas.
-    #
-    # Residuo conocido y aceptado: quien fije a mano un CELERY_BROKER_URL SIN
-    # credenciales evita esta comprobación. Se acepta porque es un acto deliberado,
-    # mientras que el fallo que este guard cierra —olvidar sustituir un placeholder
-    # siguiendo la documentación— es silencioso y mucho más probable. La plantilla de
-    # producción no define CELERY_BROKER_URL, así que el camino documentado sí queda
-    # cubierto.
-    if not values["CELERY_BROKER_URL"]:
-        redis_password = values["REDIS_PASSWORD"]
-        if not redis_password or is_placeholder(redis_password):
-            problems.append("REDIS_PASSWORD (broker y caché sin autenticar)")
+    # ── Redis: el broker y la caché, con contraseña ──────────
+    # Se miran las URL efectivas, las que usarán Celery y la caché, salgan de REDIS_PASSWORD
+    # o de una URL fijada a mano.
+    for name in ("CELERY_BROKER_URL", "CACHE_URL"):
+        password = urlsplit(values[name]).password or ""
+        if not password or is_placeholder(password):
+            problems.append(f"{name} (sin contraseña: define REDIS_PASSWORD)")
 
     # ── Hosts permitidos ─────────────────────────────────────
     allowed_hosts = list(values["DJANGO_ALLOWED_HOSTS"])

@@ -8,8 +8,11 @@ degradado.
 
 import pytest
 from django.core.cache import caches
+from django.core.cache.backends.redis import RedisCache
 from django.test import override_settings
 from django.urls import reverse
+
+from config.cache import FALLBACKS, SERVICE_UNAVAILABLE, WITHOUT_REDIS
 
 # Puerto sin nadie escuchando: simula Redis caído sin tocar el de verdad.
 CACHE_CAIDA = {
@@ -43,10 +46,11 @@ def test_incr_se_traduce_a_valueerror():
 @override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
 def test_el_alta_de_newsletter_no_da_500_con_redis_caido(client):
     resp = client.post(
-        reverse("community:subscribe"), {"email": "alguien@example.com", "apodo": ""}
+        reverse("community:subscribe"), {"email": "alguien@example.com", "apodo": ""}, follow=True
     )
-    assert resp.status_code != 500
-    assert resp.status_code in (200, 302)
+    assert resp.status_code == 200
+    # El límite falla cerrado, y lo dice con la verdad: no fueron demasiados intentos.
+    assert SERVICE_UNAVAILABLE in resp.content.decode()
 
 
 @pytest.mark.django_db
@@ -54,13 +58,59 @@ def test_el_alta_de_newsletter_no_da_500_con_redis_caido(client):
 def test_el_buscador_no_da_500_con_redis_caido(client):
     resp = client.get(reverse("content:search"), {"q": "umbral"})
     assert resp.status_code == 200
+    assert SERVICE_UNAVAILABLE in resp.content.decode()
 
 
 @pytest.mark.django_db
 @override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
 def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
-    resp = client.get(reverse("submissions:submit"))
+    data = {
+        "author_name": "Ana",
+        "author_email": "ana@example.com",
+        "type": "poesía",
+        "title": "Un título",
+        "body": "Unos versos",
+    }
+    resp = client.post(reverse("submissions:submit"), data)
     assert resp.status_code == 200
+    assert SERVICE_UNAVAILABLE in resp.content.decode()
+
+
+@pytest.mark.django_db
+@override_settings(RATELIMIT_ENABLE=True)
+def test_a_real_rate_limit_still_says_too_many_attempts(client):
+    """Control positivo: con la caché en pie, pasarse del límite es «demasiados intentos»."""
+    for i in range(6):
+        resp = client.post(
+            reverse("community:subscribe"), {"email": f"a{i}@example.com", "apodo": ""}, follow=True
+        )
+    html = resp.content.decode()
+    assert "Demasiados intentos" in html
+    assert SERVICE_UNAVAILABLE not in html
+
+
+def test_the_wrapper_covers_every_redis_method():
+    """Un método nuevo de RedisCache tiene que decidir qué devuelve con Redis caído."""
+    own = {
+        name
+        for name, value in vars(RedisCache).items()
+        if callable(value) and not name.startswith("_")
+    }
+    assert own == set(FALLBACKS) | WITHOUT_REDIS
+
+
+@override_settings(CACHES=CACHE_CAIDA)
+def test_every_method_degrades_with_redis_down():
+    cache = caches["default"]
+    assert cache.get_many(["a", "b"]) == {}
+    assert cache.has_key("a") is False
+    assert cache.touch("a") is False
+    assert cache.set_many({"a": 1, "b": 2}) == ["a", "b"]
+    cache.delete_many(["a"])
+    cache.clear()
+    assert cache.get_or_set("a", "por defecto") == "por defecto"
+    with pytest.raises(ValueError):
+        cache.decr("a")
 
 
 def test_la_politica_ante_cache_no_disponible_es_fail_closed(settings):

@@ -29,8 +29,8 @@ ORIGENES_BUENOS = ["https://revista.midominio.cl"]
 BUENA = {
     "DJANGO_SECRET_KEY": CLAVE_BUENA,
     "POSTGRES_PASSWORD": "una-contrasena-de-verdad-larga",
-    "REDIS_PASSWORD": "otra-contrasena-de-verdad",
-    "CELERY_BROKER_URL": "",
+    "CELERY_BROKER_URL": "redis://:otra-contrasena-de-verdad@redis:6379/0",
+    "CACHE_URL": "redis://:otra-contrasena-de-verdad@cache:6379/0",
     "DJANGO_ALLOWED_HOSTS": ["revista.midominio.cl"],
     "DJANGO_CSRF_TRUSTED_ORIGINS": ORIGENES_BUENOS,
     "SITE_URL": "https://revista.midominio.cl",
@@ -69,7 +69,8 @@ def test_placeholder_de_la_plantilla_de_produccion_es_rechazado():
 
 def test_secretos_vacios_de_la_plantilla_son_rechazados():
     # La plantilla ahora los deja vacíos: el guard debe atraparlos igual.
-    problemas = _check({"POSTGRES_PASSWORD": "", "REDIS_PASSWORD": ""}, secret="")
+    sin_clave = {"CELERY_BROKER_URL": "redis://redis:6379/0", "CACHE_URL": "redis://cache:6379/0"}
+    problemas = _check({"POSTGRES_PASSWORD": "", **sin_clave}, secret="")
     assert any("DJANGO_SECRET_KEY" in p for p in problemas)
     assert any("POSTGRES_PASSWORD" in p for p in problemas)
     assert any("REDIS_PASSWORD" in p for p in problemas)
@@ -99,11 +100,17 @@ def test_origen_csrf_sin_https_es_rechazado():
     assert any("https" in p for p in problemas)
 
 
-def test_redis_sin_password_es_rechazado_salvo_broker_explicito():
-    assert any("REDIS_PASSWORD" in p for p in _check({"REDIS_PASSWORD": ""}))
-    # Con una URL de broker explícita (Redis gestionado con sus credenciales), no se exige.
-    sin_redis = _check({"REDIS_PASSWORD": "", "CELERY_BROKER_URL": "redis://user:pw@ext:6379/0"})
-    assert not any("REDIS_PASSWORD" in p for p in sin_redis)
+@pytest.mark.parametrize("name", ["CELERY_BROKER_URL", "CACHE_URL"])
+def test_broker_and_cache_urls_need_a_password(name):
+    """Se miran las URL efectivas: una fijada a mano sin contraseña también se rechaza."""
+    for url in (
+        "redis://redis:6379/0",
+        "redis://user:@ext:6379/0",
+        "redis://:cambia-esto@x:6379/0",
+    ):
+        assert any(p.startswith(name) for p in _check({name: url})), url
+    # Control positivo: con contraseña, sea derivada o escrita a mano, pasa.
+    assert _check({name: "redis://:una-clave-larga@ext:6379/0"}) == []
 
 
 def test_example_com_no_se_considera_placeholder():
@@ -233,12 +240,14 @@ def _load_settings(env, expression="'ok'"):
 
 
 # Entornos DEBUG=0 reales de .github/workflows/ci.yml. Se fijan aquí para que endurecer
-# el guard no deje el CI en rojo sin que la suite lo avise antes.
+# el guard no deje el CI en rojo sin que la suite lo avise antes. El de prod-runtime vive en
+# ci/prod.env, y su prueba lo lee de ahí.
 ENTORNOS_CI = {
     "test / check --deploy": {
         "DJANGO_SECRET_KEY": CI_SECRET,
         "POSTGRES_PASSWORD": "ci-strong-db-password",
-        "CELERY_BROKER_URL": "redis://localhost:6379/0",
+        "CELERY_BROKER_URL": "redis://:ci-check-password@localhost:6379/0",
+        "CACHE_URL": "redis://:ci-check-password@localhost:6379/2",
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
@@ -254,17 +263,6 @@ ENTORNOS_CI = {
         "SITE_URL": "https://ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
         "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
-    },
-    "prod-runtime": {
-        "DJANGO_SECRET_KEY": CI_SECRET,
-        "POSTGRES_PASSWORD": "ci-strong-db-password",
-        "CELERY_BROKER_URL": "redis://qa13-redis:6379/0",
-        "DJANGO_ALLOWED_HOSTS": "localhost,127.0.0.1",
-        "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
-        "SITE_URL": "https://localhost",
-        "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
-        "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
-        "DJANGO_SECURE_SSL_REDIRECT": "0",
     },
     "backup-restore / migrate": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -283,6 +281,22 @@ ENTORNOS_CI = {
 def test_los_entornos_debug0_del_ci_pasan_el_guard(nombre):
     result = _load_settings(ENTORNOS_CI[nombre])
     assert result.returncode == 0, f"{nombre} quedaría en rojo: {result.stderr[-500:]}"
+
+
+def test_the_ci_production_environment_passes_the_guard():
+    """prod-runtime levanta el compose de producción con ci/prod.env como .env: el compose
+    fija DJANGO_DEBUG=0 y el resto sale del archivo."""
+    path = BACKEND_DIR.parent / "ci" / "prod.env"
+    if not path.exists():
+        pytest.skip("ci/prod.env vive en la raíz del repositorio, fuera del contenedor")
+    env = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip() and not line.lstrip().startswith("#"):
+            name, _, value = line.partition("=")
+            env[name.strip()] = value
+    assert "DJANGO_SECRET_KEY" in env  # control positivo: el archivo se leyó
+    result = _load_settings(env)
+    assert result.returncode == 0, f"prod-runtime quedaría en rojo: {result.stderr[-500:]}"
 
 
 def test_settings_refuse_a_weakened_defense_unless_authorized():
