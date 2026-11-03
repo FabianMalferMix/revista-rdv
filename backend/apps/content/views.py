@@ -1,5 +1,4 @@
 import logging
-import unicodedata
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
@@ -25,6 +24,7 @@ from config.cache import SERVICE_UNAVAILABLE, counters_available
 from config.origin import absolute_url
 
 from .models import (
+    SEARCH_CONFIG,
     Article,
     Collection,
     CollectionArticle,
@@ -35,7 +35,17 @@ from .models import (
     Tag,
 )
 from .pie import firmas, puerta, puertas_vecinas, vecinos
-from .services import coincidencias_por_nombre, ultima_publicacion
+from .services import (
+    EVENT,
+    PERSON,
+    POEM,
+    PUBLICATION,
+    RECORDING,
+    SEARCH_TYPES,
+    TEXT,
+    coincidencias_por_nombre,
+    ultima_publicacion,
+)
 from .templatetags.versos import primeros_versos
 
 logger = logging.getLogger(__name__)
@@ -357,13 +367,6 @@ def page_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
-def _strip_accents(text):
-    """Quita los diacríticos (á→a, ñ→n, …) para que la búsqueda sea insensible a
-    acentos: el search_vector se construye con unaccent() en el trigger, así que el
-    término debe ir igual de despojado para que ambos lados coincidan."""
-    return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
-
-
 # Tope de resultados de cada grupo, y de candidatos que se traen de cada tabla: diez en la
 # página de búsqueda y cinco en el panel de la lupa, que es un adelanto (lleva a la página).
 SEARCH_RESULTS = 10
@@ -371,16 +374,6 @@ SEARCH_RESULTS_PANEL = 5
 # Longitud máxima de la consulta: por encima de esto no aporta precisión y solo
 # encarece el `to_tsquery`.
 SEARCH_MAX_QUERY = 120
-# Los grupos de resultados (ticket 5.4), en el orden en que se enseñan: quien busca un
-# nombre lo encuentra arriba; después, la obra en el orden de la barra, y las actividades.
-GRUPOS_DE_BUSQUEDA = (
-    ("persona", "Personas"),
-    ("poema", "Poemas"),
-    ("texto", "Textos"),
-    ("registro", "Registros"),
-    ("publicacion", "Publicaciones"),
-    ("actividad", "Actividades"),
-)
 
 
 def _dato(*partes):
@@ -388,22 +381,40 @@ def _dato(*partes):
     return " · ".join(str(parte) for parte in partes if parte)
 
 
-def _resultado_por_nombre(fila):
-    """Una fila de `coincidencias_por_nombre`: adónde lleva y qué la acompaña."""
-    tipo, slug, dato = fila["tipo"], fila["slug"], fila["dato"]
-    if tipo == "persona":
-        if fila["integrante"]:
-            return reverse("people:member_detail", args=[slug]), dato or "Integrante"
-        return reverse("content:contributor_detail", args=[slug]), "Colaborador"
-    if tipo == "registro":
-        clase = dict(Recording.Kind.choices).get(dato, dato)
-        return reverse("media:recording_detail", args=[slug]), _dato(clase, fila["anio"])
-    if tipo == "publicacion":
-        clase = dict(Publication.Kind.choices).get(dato, dato)
-        return reverse("showcase:publication_detail", args=[slug]), _dato(clase, fila["anio"])
-    clase = dict(Event.Type.choices).get(dato, dato)
+def _person(fila):
+    if fila["integrante"]:
+        return reverse("people:member_detail", args=[fila["slug"]]), fila["dato"] or "Integrante"
+    return reverse("content:contributor_detail", args=[fila["slug"]]), "Colaborador"
+
+
+def _recording(fila):
+    clase = dict(Recording.Kind.choices).get(fila["dato"], fila["dato"])
+    return reverse("media:recording_detail", args=[fila["slug"]]), _dato(clase, fila["anio"])
+
+
+def _publication(fila):
+    clase = dict(Publication.Kind.choices).get(fila["dato"], fila["dato"])
+    return reverse("showcase:publication_detail", args=[fila["slug"]]), _dato(clase, fila["anio"])
+
+
+def _event(fila):
+    clase = dict(Event.Type.choices).get(fila["dato"], fila["dato"])
     cuando = date_format(timezone.localtime(fila["fecha"]), "j M Y")
-    return reverse("agenda:event_detail", args=[slug]), _dato(clase, cuando, fila["lugar"])
+    return reverse("agenda:event_detail", args=[fila["slug"]]), _dato(clase, cuando, fila["lugar"])
+
+
+# Adónde lleva cada tipo de coincidencia por nombre y qué la acompaña.
+_NAME_RESULTS = {PERSON: _person, RECORDING: _recording, PUBLICATION: _publication, EVENT: _event}
+
+
+def _resultado_por_nombre(fila):
+    """Una fila de `coincidencias_por_nombre`: adónde lleva y qué la acompaña. Un tipo que no
+    está en la tabla es un error de programación, no una actividad."""
+    try:
+        formatter = _NAME_RESULTS[fila["tipo"]]
+    except KeyError:
+        raise ValueError(f"Tipo de búsqueda desconocido: {fila['tipo']!r}") from None
+    return formatter(fila)
 
 
 # HEAD ejecuta la vista entera (Django solo descarta el cuerpo): cuenta para el límite como
@@ -438,8 +449,7 @@ def search(request):
     limited = bool(getattr(request, "limited", False))
     unavailable = SERVICE_UNAVAILABLE if limited and not counters_available() else ""
     if q and not limited:
-        termino = _strip_accents(q)
-        query = SearchQuery(termino, config="spanish")
+        query = SearchQuery(q, config=SEARCH_CONFIG)
         # `[:tope]` en cada queryset hace que el LIMIT viaje al SQL, y `only()` evita
         # traer el texto completo de cada pieza para nada.
         articles = (
@@ -456,9 +466,9 @@ def search(request):
             .only("slug", "title")
             .order_by("-rank")[:tope]
         )
-        por_tipo = {tipo: [] for tipo, _ in GRUPOS_DE_BUSQUEDA}
+        por_tipo = {tipo: [] for tipo, _ in SEARCH_TYPES}
         try:
-            por_tipo["texto"] = [
+            por_tipo[TEXT] = [
                 {
                     "url": reverse("content:article_detail", args=[a.slug]),
                     "title": a.title,
@@ -466,12 +476,12 @@ def search(request):
                 }
                 for a in articles
             ]
-            por_tipo["poema"] = [
+            por_tipo[POEM] = [
                 {"url": p.get_absolute_url(), "title": p.title, "dato": ""} for p in poems
             ]
             # Una letra sola casa con casi todos los nombres: no dice nada.
-            if len(termino) >= 2:
-                for fila in coincidencias_por_nombre(termino, tope):
+            if len(q) >= 2:
+                for fila in coincidencias_por_nombre(q, tope):
                     url, dato = _resultado_por_nombre(fila)
                     por_tipo[fila["tipo"]].append(
                         {"url": url, "title": fila["titulo"], "dato": dato}
@@ -484,7 +494,7 @@ def search(request):
             por_tipo = {}
         grupos = [
             {"titulo": titulo, "resultados": por_tipo[tipo]}
-            for tipo, titulo in GRUPOS_DE_BUSQUEDA
+            for tipo, titulo in SEARCH_TYPES
             if por_tipo.get(tipo)
         ]
     template = "content/partials/_search_results.html" if panel else "content/search.html"

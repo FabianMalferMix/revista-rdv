@@ -56,10 +56,31 @@ def _columnas(filas, tipo, titulo, dato="", lugar="", fecha=None, anio=None, int
     return filas.annotate(**dict(zip(nombres, valores, strict=True))).values_list(*nombres)
 
 
+# Los tipos de la búsqueda, en el orden en que se enseñan sus grupos: quien busca un nombre lo
+# encuentra arriba; después, la obra en el orden de la barra, y las actividades. Los textos y
+# los poemas salen de la búsqueda de texto completo; los demás, de coincidencias_por_nombre.
+PERSON, POEM, TEXT, RECORDING, PUBLICATION, EVENT = (
+    "persona",
+    "poema",
+    "texto",
+    "registro",
+    "publicacion",
+    "actividad",
+)
+SEARCH_TYPES = (
+    (PERSON, "Personas"),
+    (POEM, "Poemas"),
+    (TEXT, "Textos"),
+    (RECORDING, "Registros"),
+    (PUBLICATION, "Publicaciones"),
+    (EVENT, "Actividades"),
+)
+
+
 def coincidencias_por_nombre(termino, tope):
     """Personas, registros, publicaciones y actividades cuyo nombre o título contiene el
-    término, sin distinguir acentos ni mayúsculas: `termino` llega sin acentos y la base
-    quita los de la columna (`unaccent`). Es UNA consulta: las cuatro partes van unidas
+    término, sin distinguir acentos ni mayúsculas: la base quita los acentos de los dos lados
+    (`unaccent`). Es UNA consulta: las cuatro partes van unidas
     (UNION ALL), cada una con su orden y su tope. Con una consulta por tipo, la búsqueda
     pasaba del techo de diez consultas de su prueba de rendimiento.
 
@@ -72,28 +93,28 @@ def coincidencias_por_nombre(termino, tope):
 
     personas = _columnas(
         Contributor.objects.visible().filter(display_name__unaccent__icontains=termino),
-        "persona",
+        PERSON,
         "display_name",
         dato="role",
         integrante="is_member",
     ).order_by("-is_member", "display_name")[:tope]
     registros = _columnas(
         Recording.objects.published().filter(title__unaccent__icontains=termino),
-        "registro",
+        RECORDING,
         "title",
         dato="kind",
         anio=ExtractYear("recorded_on"),
     ).order_by("-recorded_on", "-created_at")[:tope]
     publicaciones = _columnas(
         Publication.objects.published().filter(title__unaccent__icontains=termino),
-        "publicacion",
+        PUBLICATION,
         "title",
         dato="kind",
         anio=F("year"),
     ).order_by("position", "-year", "title")[:tope]
     actividades = _columnas(
         Event.objects.published().filter(title__unaccent__icontains=termino),
-        "actividad",
+        EVENT,
         "title",
         dato="type",
         lugar="city",

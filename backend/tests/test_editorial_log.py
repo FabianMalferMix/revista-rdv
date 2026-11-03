@@ -154,8 +154,8 @@ def _back_to_the_latest_migrations():
 @pytest.mark.django_db(transaction=True)
 def test_the_migration_copies_title_and_actor_into_existing_entries(_back_to_the_latest_migrations):
     before, after = (
-        ("content", "0015_remove_unused_fields"),
-        ("content", "0016_editorial_log_survives"),
+        ("content", "0016_search_config_and_generated_vector"),
+        ("content", "0017_editorial_log_survives"),
     )
     executor = MigrationExecutor(connection)
     executor.migrate([before])

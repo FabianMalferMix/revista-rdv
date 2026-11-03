@@ -1,5 +1,5 @@
 // Inicializa TinyMCE sobre los textarea con clase .richtext en el admin.
-// TinyMCE va auto-hospedado en static/vendor/tinymce/ (sin CDN, sin API key);
+// TinyMCE va auto-hospedado en static/vendor/tinymce-<versión>/ (sin CDN, sin API key);
 // su cargador resuelve el resto de recursos relativos a tinymce.min.js.
 window.addEventListener("load", function () {
   if (!window.tinymce) return;

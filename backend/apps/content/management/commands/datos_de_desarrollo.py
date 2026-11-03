@@ -160,7 +160,8 @@ PUBLIC_FIELDS = {
     },
     "media.MediaAsset": {"file", "alt_text", "caption", "credit", "width", "height", "created_at"},
     "media.Recording": {
-        "slug", "title", "kind", "file", "embed_url", "poster", "description", "recorded_on",
+        "slug", "title", "kind", "file", "embed_url", "poster", "description", "transcript",
+        "recorded_on",
         "duration_minutes", "event", "featured", "published", "published_at", "position",
         "created_at", "participants",
     },

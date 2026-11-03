@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 
 from config.publishing import FrozenSlugAdminMixin
+from config.staticfiles import TINYMCE_DIR
 
 from . import workflow
 from .models import (
@@ -34,14 +35,14 @@ from .sanitize import clean_html
 class RichTextWidget(forms.Textarea):
     """Textarea con editor TinyMCE (ver static/admin/richtext_init.js).
 
-    TinyMCE va auto-hospedado en `static/vendor/tinymce/` (sin CDN): su cargador
+    TinyMCE va auto-hospedado en `static/vendor/tinymce-<versión>/` (sin CDN): su cargador
     perezoso resuelve tema/modelo/iconos/skin/plugins relativos a este archivo,
     por eso ese subárbol se sirve sin hash (ver config.staticfiles).
     """
 
     class Media:
         js = (
-            "vendor/tinymce/tinymce.min.js",
+            f"{TINYMCE_DIR}tinymce.min.js",
             "admin/richtext_init.js",
         )
 

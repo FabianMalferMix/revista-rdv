@@ -1,18 +1,18 @@
 import re
-import unicodedata
 
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
 from config import publishing
+from config.text import strip_accents
 
 from .sanitize import clean_html
 
@@ -53,6 +53,26 @@ class ArticleType(models.TextChoices):
     NARRATIVA = "narrativa", "Narrativa"
     CRITICA = "critica", "Crítica"
     NOTA = "nota", "Nota"
+
+
+# La configuración de búsqueda de texto completo: la española, con los acentos plegados por
+# `unaccent` (migración content 0016). La misma al indexar y al buscar, así que «Wisława» y
+# «Wislawa», o «canción» y «cancion», son la misma palabra.
+SEARCH_CONFIG = "spanish_unaccent"
+
+
+def search_vector(*weighted_fields):
+    """El vector de búsqueda de los campos, cada uno con su peso: el título (A) cuenta más que
+    el cuerpo (D) al ordenar. Es una columna generada: la base lo rehace en cada escritura,
+    también con `update()` o loaddata, y Django ve sus columnas al renombrarlas o borrarlas."""
+    parts = [
+        SearchVector(field, weight=weight, config=SEARCH_CONFIG)
+        for field, weight in weighted_fields
+    ]
+    vector = parts[0]
+    for part in parts[1:]:
+        vector = vector + part
+    return vector
 
 
 class EditorialStatus(models.TextChoices):
@@ -198,7 +218,11 @@ class Article(EditorialItem):
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
-    search_vector = SearchVectorField(null=True, editable=False)
+    search_vector = models.GeneratedField(
+        expression=search_vector(("title", "A"), ("subtitle", "B"), ("body", "D")),
+        output_field=SearchVectorField(),
+        db_persist=True,
+    )
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
@@ -238,8 +262,7 @@ class Article(EditorialItem):
             return False
 
         def base(texto):
-            sin_tildes = unicodedata.normalize("NFD", texto)
-            return "".join(c for c in sin_tildes if not unicodedata.combining(c)).lower().strip()
+            return strip_accents(texto).lower().strip()
 
         seccion, tipo = base(self.section.name), base(self.get_type_display())
         return not (seccion.startswith(tipo) or tipo.startswith(seccion))
@@ -253,9 +276,6 @@ class Article(EditorialItem):
         self.body = clean_html(self.body)
         self.reading_time = self._calc_reading_time()
         super().save(*args, **kwargs)
-        # `search_vector` lo mantiene un trigger de Postgres (ver migración): se
-        # actualiza en TODA escritura de title/subtitle/body (también bulk_update),
-        # no solo al pasar por save().
 
 
 class ArticleContributor(models.Model):
@@ -326,7 +346,11 @@ class Poem(EditorialItem):
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
     # Mantenido por un trigger de Postgres (ver migración): los poemas son buscables.
-    search_vector = SearchVectorField(null=True, editable=False)
+    search_vector = models.GeneratedField(
+        expression=search_vector(("title", "A"), ("body", "D")),
+        output_field=SearchVectorField(),
+        db_persist=True,
+    )
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
@@ -537,7 +561,7 @@ class EditorialTransition(models.Model):
     pieza y del nombre de quien hizo el movimiento: la entrada sobrevive al borrado de la pieza
     (no hay relación inversa que la arrastre) y al de la cuenta, que solo deja vacío `actor`.
     Ni el modelo ni la base dejan modificarla o borrarla: un trigger de PostgreSQL lo impide
-    también para `update()` y `delete()` sobre consultas (migración content 0016).
+    también para `update()` y `delete()` sobre consultas (migración content 0017).
     """
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
