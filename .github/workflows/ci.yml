@@ -402,7 +402,7 @@ jobs:
           # llegar a Django lo que pasa del tope de un campo, para que se vea el mensaje
           # del formulario y no un 413 sin cuerpo; lo que pasa del límite lo corta Caddy.
           echo "--- subidas por el panel a través de Caddy ---"
-          docker run -d --name prod-proxy --network qa13net -p 127.0.0.1:8088:80 \
+          docker run -d --name prod-proxy-subidas --network qa13net -p 127.0.0.1:8088:80 \
             -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine
           # Una sesión de administración creada en la base: lo que se prueba es la subida.
           SESSION=$(docker exec prod-web python -c "
@@ -435,6 +435,7 @@ jobs:
           os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
           from apps.media.models import Recording
           assert sorted(Recording.objects.values_list('slug', flat=True)) == ['lectura-40'], 'Caddy no cortó el cuerpo de 70 MB'"
+          docker rm -f prod-proxy-subidas > /dev/null
           echo "OK: camino de producción DEBUG=0 y healthchecks de web/worker/beat verificados"
 
       - name: Orden de despliegue con compose (release antes que web, worker y beat)
