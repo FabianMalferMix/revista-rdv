@@ -28,8 +28,8 @@ ORIGENES_BUENOS = ["https://revista.midominio.cl"]
 BUENA = {
     "DJANGO_SECRET_KEY": CLAVE_BUENA,
     "POSTGRES_PASSWORD": "una-contrasena-de-verdad-larga",
-    "REDIS_PASSWORD": "otra-contrasena-de-verdad",
-    "CELERY_BROKER_URL": "",
+    "CELERY_BROKER_URL": "redis://:otra-contrasena-de-verdad@redis:6379/0",
+    "CACHE_URL": "redis://:otra-contrasena-de-verdad@cache:6379/0",
     "DJANGO_ALLOWED_HOSTS": ["revista.midominio.cl"],
     "DJANGO_CSRF_TRUSTED_ORIGINS": ORIGENES_BUENOS,
     "SITE_URL": "https://revista.midominio.cl",
@@ -65,7 +65,8 @@ def test_placeholder_de_la_plantilla_de_produccion_es_rechazado():
 
 def test_secretos_vacios_de_la_plantilla_son_rechazados():
     # La plantilla ahora los deja vacíos: el guard debe atraparlos igual.
-    problemas = _check({"POSTGRES_PASSWORD": "", "REDIS_PASSWORD": ""}, secret="")
+    sin_clave = {"CELERY_BROKER_URL": "redis://redis:6379/0", "CACHE_URL": "redis://cache:6379/0"}
+    problemas = _check({"POSTGRES_PASSWORD": "", **sin_clave}, secret="")
     assert any("DJANGO_SECRET_KEY" in p for p in problemas)
     assert any("POSTGRES_PASSWORD" in p for p in problemas)
     assert any("REDIS_PASSWORD" in p for p in problemas)
@@ -95,11 +96,17 @@ def test_origen_csrf_sin_https_es_rechazado():
     assert any("https" in p for p in problemas)
 
 
-def test_redis_sin_password_es_rechazado_salvo_broker_explicito():
-    assert any("REDIS_PASSWORD" in p for p in _check({"REDIS_PASSWORD": ""}))
-    # Con una URL de broker explícita (Redis gestionado con sus credenciales), no se exige.
-    sin_redis = _check({"REDIS_PASSWORD": "", "CELERY_BROKER_URL": "redis://user:pw@ext:6379/0"})
-    assert not any("REDIS_PASSWORD" in p for p in sin_redis)
+@pytest.mark.parametrize("name", ["CELERY_BROKER_URL", "CACHE_URL"])
+def test_broker_and_cache_urls_need_a_password(name):
+    """Se miran las URL efectivas: una fijada a mano sin contraseña también se rechaza."""
+    for url in (
+        "redis://redis:6379/0",
+        "redis://user:@ext:6379/0",
+        "redis://:cambia-esto@x:6379/0",
+    ):
+        assert any(p.startswith(name) for p in _check({name: url})), url
+    # Control positivo: con contraseña, sea derivada o escrita a mano, pasa.
+    assert _check({name: "redis://:una-clave-larga@ext:6379/0"}) == []
 
 
 def test_example_com_no_se_considera_placeholder():
@@ -205,7 +212,8 @@ ENTORNOS_CI = {
     "test / check --deploy": {
         "DJANGO_SECRET_KEY": CI_SECRET,
         "POSTGRES_PASSWORD": "ci-strong-db-password",
-        "CELERY_BROKER_URL": "redis://localhost:6379/0",
+        "CELERY_BROKER_URL": "redis://:ci-check-password@localhost:6379/0",
+        "CACHE_URL": "redis://:ci-check-password@localhost:6379/2",
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",

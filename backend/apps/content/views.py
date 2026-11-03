@@ -21,6 +21,7 @@ from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
 from apps.submissions.models import Call
 from config import publishing
+from config.cache import SERVICE_UNAVAILABLE, counters_available
 from config.origin import absolute_url
 
 from .models import (
@@ -435,6 +436,7 @@ def search(request):
     tope = SEARCH_RESULTS_PANEL if panel else SEARCH_RESULTS
     grupos = []
     limited = bool(getattr(request, "limited", False))
+    unavailable = SERVICE_UNAVAILABLE if limited and not counters_available() else ""
     if q and not limited:
         termino = _strip_accents(q)
         query = SearchQuery(termino, config="spanish")
@@ -486,7 +488,17 @@ def search(request):
             if por_tipo.get(tipo)
         ]
     template = "content/partials/_search_results.html" if panel else "content/search.html"
-    return render(request, template, {"grupos": grupos, "q": q, "limited": limited, "panel": panel})
+    return render(
+        request,
+        template,
+        {
+            "grupos": grupos,
+            "q": q,
+            "limited": limited,
+            "unavailable": unavailable,
+            "panel": panel,
+        },
+    )
 
 
 def healthz(request):
