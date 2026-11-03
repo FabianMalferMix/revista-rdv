@@ -1,36 +1,78 @@
 """Redacción de los tokens del boletín, que viajan en la URL.
 
-Los enlaces de confirmación y baja del boletín llevan el token en la RUTA:
-
-    /novedades/confirmar/<token>/
-    /novedades/baja/<token>/
-
-Quien lea un registro que contenga una de esas rutas puede dar de baja una suscripción
-ajena. Aquí se redacta el token en dos salidas de Python:
+Los enlaces de confirmación y baja del boletín llevan el token en la RUTA
+(`/novedades/confirmar/<token>/`, `/novedades/baja/<token>/`). Quien lea un registro que
+contenga una de esas rutas puede dar de baja una suscripción ajena. Aquí se redacta el token
+en dos salidas de Python:
 
 - el logging: `RedactTokensFilter`, en el handler de consola, reescribe el mensaje ya
-  formateado;
+  formateado, y `JsonFormatter` (config/logformat.py) redacta además cada campo;
 - Sentry: `sentry_before_send` redacta la URL, la query y el nombre de la transacción de
   cada evento, y `sentry_before_breadcrumb`, las migas de pan.
 
-Lo demás que Sentry adjunta a un evento (cabeceras como `Referer`, variables locales,
-textos de excepción) no pasa por esta redacción. Los logs de acceso y de errores del
-borde los escribe Caddy, que redacta la ruta con su propio filtro
-(`infra/caddy/Caddyfile`); gunicorn no escribe log de acceso.
+Las rutas con token no se copian aquí: el patrón se construye con `reverse()` sobre toda
+ruta del URLconf que reciba un `token`, así que renombrar una o añadir otra no deja su
+token en claro. Los logs de acceso y de errores del borde los escribe Caddy, que redacta
+con su propio filtro (`infra/caddy/Caddyfile`); una prueba compara ese filtro con estas
+rutas.
 """
 
 import re
 
-# Rutas cuyo último segmento es un secreto.
-_RUTA_CON_TOKEN = re.compile(r"(/novedades/(?:confirmar|baja))/[^/]+/?")
 _REDACTADO = r"\1/<redactado>/"
+# Lo que se escribe en lugar del texto si el patrón no se puede construir con Django ya
+# en marcha: sin patrón no se sabe qué redactar, y se falla cerrado.
+SIN_PATRON = "<redactado: no se pudo construir el patrón de las rutas con token>"
+_patterns = {}
+
+
+def token_route_prefixes():
+    """El comienzo de cada ruta del URLconf que lleva un token: «/novedades/baja/», …"""
+    from django.urls import URLResolver, get_resolver, reverse
+
+    prefixes = []
+
+    def walk(patterns, namespace):
+        for pattern in patterns:
+            if isinstance(pattern, URLResolver):
+                inner = ":".join(filter(None, [namespace, pattern.namespace]))
+                walk(pattern.url_patterns, inner)
+            elif "token" in getattr(pattern.pattern, "converters", {}):
+                name = f"{namespace}:{pattern.name}" if namespace else pattern.name
+                url = reverse(name, kwargs={"token": "TOKEN"})
+                prefixes.append(url[: url.index("TOKEN")])
+
+    walk(get_resolver().url_patterns, None)
+    return prefixes
+
+
+def _token_route_pattern():
+    """El patrón de las rutas con token, o None antes de que Django arranque.
+
+    Antes de `django.setup()` el URLconf no se puede resolver, y tampoco hace falta: aún no
+    se atiende ninguna petición ni tarea, así que no hay rutas con token que redactar.
+    """
+    from django.apps import apps
+    from django.conf import settings
+
+    if not apps.ready:
+        return None
+    key = settings.ROOT_URLCONF
+    if key not in _patterns:
+        prefixes = [re.escape(prefix.rstrip("/")) for prefix in token_route_prefixes()]
+        _patterns[key] = re.compile(rf"({'|'.join(prefixes)})/[^/]+/?") if prefixes else None
+    return _patterns[key]
 
 
 def redact_path(value):
     """Sustituye el token de las rutas del boletín por un marcador."""
     if not value or not isinstance(value, str):
         return value
-    return _RUTA_CON_TOKEN.sub(_REDACTADO, value)
+    try:
+        pattern = _token_route_pattern()
+    except Exception:  # noqa: BLE001 - sin patrón no se sabe qué ocultar: se oculta todo
+        return SIN_PATRON
+    return pattern.sub(_REDACTADO, value) if pattern else value
 
 
 def sentry_before_send(event, hint):

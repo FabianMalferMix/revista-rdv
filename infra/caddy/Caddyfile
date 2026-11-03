@@ -19,12 +19,19 @@
 	# el log de acceso del sitio: cuando el upstream falla (un 500, un timeout), Caddy
 	# emite una entrada de error que incluye la petición entera, y ahí volvía a aparecer
 	# el token del boletín sin redactar. Se comprobó reproduciéndolo.
+	#
+	# Las rutas con token son las de apps/community/urls.py, y el token también viaja en
+	# las cabeceras que repiten la URL de la página: Referer (estáticos, formularios) y
+	# Hx-Current-Url (el buscador de htmx). tests/test_caddy_redaction.py comprueba que
+	# los dos filtros cubren todas esas rutas.
 	log {
 		output stdout
 		format filter {
 			wrap json
 			fields {
 				request>uri regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+				request>headers>Referer regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+				request>headers>Hx-Current-Url regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
 			}
 		}
 	}
@@ -98,6 +105,8 @@ www.{$SITE_ADDRESS::80} {
 			wrap json
 			fields {
 				request>uri regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+				request>headers>Referer regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
+				request>headers>Hx-Current-Url regexp "/novedades/(confirmar|baja)/[^/?]+" "/novedades/$1/<redactado>"
 			}
 		}
 	}
