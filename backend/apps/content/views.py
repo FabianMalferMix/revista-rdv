@@ -21,6 +21,7 @@ from apps.reviews.models import Work
 from apps.showcase.models import Publication, SiteProfile
 from apps.submissions.models import Call
 from config import publishing
+from config.origin import absolute_url
 
 from .models import (
     Article,
@@ -548,6 +549,6 @@ def robots(request):
         "User-agent: *",
         "Allow: /",
         "Disallow: /admin/",
-        f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}",
+        f"Sitemap: {absolute_url(reverse('sitemap'))}",
     ]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

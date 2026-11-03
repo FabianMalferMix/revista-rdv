@@ -30,6 +30,14 @@
 	}
 }
 
+# El sitio se sirve sin www (SITE_URL de Django apunta al mismo dominio). Si el DNS de www
+# existe, Caddy obtiene su certificado y redirige a la dirección sin www; si no existe, solo
+# registra que no pudo obtenerlo, sin afectar al dominio. En local y en las pruebas
+# (":80") este bloque no coincide con ninguna petición.
+www.{$SITE_ADDRESS::80} {
+	redir https://{$SITE_ADDRESS}{uri} permanent
+}
+
 # SITE_ADDRESS = dominio real en producción (Caddy obtiene TLS de Let's Encrypt
 # automáticamente) o ":80" en local/pruebas (HTTP, sin certificado).
 {$SITE_ADDRESS::80} {

@@ -29,7 +29,7 @@
     {% social_image_url event as imagen %}{% if imagen %}"image": "{{ imagen|escapejs }}",{% endif %}
     {% if event.description %}"description": "{{ event.description|truncatechars:300|escapejs }}",{% endif %}
     "organizer": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"},
-    "url": "{{ request.build_absolute_uri }}"
+    "url": "{{ canonical_url }}"
   }
   </script>
 {% endblock %}

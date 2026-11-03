@@ -97,22 +97,24 @@ def test_recording_detail_falls_back_to_site_og_image(client):
     assert b'property="og:image"' in resp.content
 
 
-# ── Canonical / og:url sin query string (hallazgo #06) ──────────────────────
+# ── Canonical / og:url sin query string ─────────────────────────────────────
 
 
-def test_canonical_and_og_url_strip_tracking_query(client):
+def test_canonical_and_og_url_strip_tracking_query(client, settings):
     """El canonical y og:url no arrastran query strings (utm_*, q, …) que
-    ensuciarían la señal de canonicalización."""
+    ensuciarían la señal de canonicalización, y salen del origen fijo del sitio."""
+    settings.SITE_URL = "https://revista.example.org"
     head = client.get("/?q=zzz&utm_source=news").content.decode().split("</head>")[0]
-    assert '<link rel="canonical" href="http://testserver/">' in head
-    assert '<meta property="og:url" content="http://testserver/">' in head
+    assert '<link rel="canonical" href="https://revista.example.org/">' in head
+    assert '<meta property="og:url" content="https://revista.example.org/">' in head
     assert "utm_source" not in head
 
 
-def test_canonical_preserves_pagination(client):
+def test_canonical_preserves_pagination(client, settings):
     """En listados paginados sí se preserva ?page= (cada página es un recurso)."""
+    settings.SITE_URL = "https://revista.example.org"
     head = client.get("/?page=2").content.decode().split("</head>")[0]
-    assert '<link rel="canonical" href="http://testserver/?page=2">' in head
+    assert '<link rel="canonical" href="https://revista.example.org/?page=2">' in head
 
 
 # ── image en JSON-LD, fallback de meta description, endDate de Event ─────────

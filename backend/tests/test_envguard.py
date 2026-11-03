@@ -32,6 +32,8 @@ BUENA = {
     "CELERY_BROKER_URL": "",
     "DJANGO_ALLOWED_HOSTS": ["revista.midominio.cl"],
     "DJANGO_CSRF_TRUSTED_ORIGINS": ORIGENES_BUENOS,
+    "SITE_URL": "https://revista.midominio.cl",
+    "SITE_ADDRESS": "",
     "AXES_ENABLED": True,
     "RATELIMIT_ENABLE": True,
     "DJANGO_HSTS_SECONDS": 31536000,
@@ -105,7 +107,10 @@ def test_example_com_no_se_considera_placeholder():
     anterior de este guard lo marcaba como placeholder y habría dejado el CI en rojo."""
     assert not is_placeholder("ci.example.com")
     assert (
-        _check({"DJANGO_ALLOWED_HOSTS": ["ci.example.com"]}, origins=["https://ci.example.com"])
+        _check(
+            {"DJANGO_ALLOWED_HOSTS": ["ci.example.com"], "SITE_URL": "https://ci.example.com"},
+            origins=["https://ci.example.com"],
+        )
         == []
     )
 
@@ -142,6 +147,31 @@ def test_private_storage_has_no_public_url():
         private_storage().url("submissions/2026/11/manuscrito.pdf")
 
 
+@pytest.mark.parametrize(
+    ("site_url", "reason"),
+    [
+        ("", "SITE_URL (el origen"),
+        ("http://revista.midominio.cl", "exige https"),
+        ("https://revista.midominio.cl/inicio", "sin ruta"),
+        ("https://www.revista.midominio.cl", "sin www"),
+        ("https://otra.midominio.cl", "no está en DJANGO_ALLOWED_HOSTS"),
+    ],
+)
+def test_site_url_must_be_the_https_origin_of_an_allowed_host(site_url, reason):
+    extra = {"SITE_URL": site_url}
+    if "www." in site_url:
+        extra["DJANGO_ALLOWED_HOSTS"] = ["www.revista.midominio.cl"]
+    assert any(reason in p for p in _check(extra)), _check(extra)
+
+
+def test_site_url_must_be_the_domain_caddy_serves():
+    problems = _check({"SITE_ADDRESS": "otra.midominio.cl"})
+    assert any("no es el dominio que sirve Caddy" in p for p in problems)
+    # Controles positivos: el mismo dominio, o «:80» en las pruebas locales.
+    assert _check({"SITE_ADDRESS": "revista.midominio.cl"}) == []
+    assert _check({"SITE_ADDRESS": ":80"}) == []
+
+
 # ── Los settings reales, en un proceso aparte ─────────────────
 # Importar `config.settings` aplica el guard: así se comprueba que recibe los valores que
 # usa Django, interpretados por config/env.py. Cada caso tarda alrededor de un segundo.
@@ -171,6 +201,7 @@ ENTORNOS_CI = {
         "CELERY_BROKER_URL": "redis://localhost:6379/0",
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
+        "SITE_URL": "https://ci.example.com",
     },
     "build-prod / collectstatic": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -178,6 +209,7 @@ ENTORNOS_CI = {
         "REDIS_PASSWORD": "ci-strong-redis-password",
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
+        "SITE_URL": "https://ci.example.com",
     },
     "prod-runtime": {
         "DJANGO_SECRET_KEY": CI_SECRET,
@@ -185,6 +217,7 @@ ENTORNOS_CI = {
         "CELERY_BROKER_URL": "redis://qa13-redis:6379/0",
         "DJANGO_ALLOWED_HOSTS": "localhost,127.0.0.1",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
+        "SITE_URL": "https://localhost",
         "DJANGO_SECURE_SSL_REDIRECT": "0",
     },
     "backup-restore / migrate": {
@@ -193,6 +226,7 @@ ENTORNOS_CI = {
         "REDIS_PASSWORD": "ci-strong-redis-password",
         "DJANGO_ALLOWED_HOSTS": "localhost",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
+        "SITE_URL": "https://localhost",
     },
 }
 
@@ -214,6 +248,7 @@ def test_settings_refuse_a_weakened_defense_unless_authorized():
             **env,
             "DJANGO_ALLOW_WEAKENED": "RATELIMIT_ENABLE",
             "DJANGO_ALLOWED_HOSTS": "revista.cl, www.revista.cl",
+            "SITE_URL": "https://revista.cl",
         },
         "s.RATELIMIT_ENABLE, s.ALLOWED_HOSTS",
     )
@@ -228,3 +263,11 @@ def test_settings_name_the_variable_of_an_unknown_boolean():
     result = _load_settings(env)
     assert result.returncode != 0
     assert "AXES_ENABLED='verdadero'" in result.stderr
+
+
+def test_settings_refuse_to_start_without_site_url():
+    env = dict(ENTORNOS_CI["build-prod / collectstatic"])
+    del env["SITE_URL"]
+    result = _load_settings(env)
+    assert result.returncode != 0
+    assert "SITE_URL (el origen de las URL absolutas" in result.stderr

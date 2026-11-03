@@ -46,7 +46,7 @@
         {% if profile.location %}<div><dt class="rotulo">Lugar</dt><dd>{{ profile.location }}</dd></div>{% endif %}
         {% if profile.correo_de_contacto %}<div><dt class="rotulo">Contacto</dt><dd><a href="mailto:{{ profile.correo_de_contacto }}">{{ profile.correo_de_contacto }}</a></dd></div>{% endif %}
         {% if instagram_del_colectivo %}<div><dt class="rotulo">Instagram</dt><dd><a href="{{ instagram_del_colectivo.url }}">{{ instagram_del_colectivo.usuario }}</a></dd></div>{% endif %}
-        <div><dt class="rotulo">Sitio</dt><dd>{{ request.get_host }}</dd></div>
+        <div><dt class="rotulo">Sitio</dt><dd>{{ site_host }}</dd></div>
         {% if ultima_publicacion %}<div><dt class="rotulo">Actualizado</dt><dd>el {{ ultima_publicacion|date:"j \d\e F \d\e Y" }}</dd></div>{% endif %}
       </dl>
     </section>

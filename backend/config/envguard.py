@@ -10,6 +10,7 @@ nueva.
 """
 
 from pathlib import Path
+from urllib.parse import urlsplit
 
 # Valores por defecto de desarrollo, inseguros en producción.
 INSECURE_SECRET = "dev-insecure-change-me"
@@ -110,6 +111,9 @@ def check_production_env(values):
                 "DJANGO_CSRF_TRUSTED_ORIGINS (exige https://): " + ", ".join(insecure_origins)
             )
 
+    # ── Origen de las URL absolutas ──────────────────────────
+    problems += _site_url_problems(values)
+
     # ── Defensas apagadas ────────────────────────────────────
     allowed = values["DJANGO_ALLOW_WEAKENED"]
     unknown = [name for name in allowed if name not in WEAKENABLE_DEFENSES]
@@ -123,6 +127,30 @@ def check_production_env(values):
         if name not in allowed:
             problems.append(f"{name} (apaga una defensa: nómbrala en DJANGO_ALLOW_WEAKENED)")
 
+    return problems
+
+
+def _site_url_problems(values):
+    """SITE_URL: un origen https, sin www, servido por Caddy y aceptado por Django."""
+    site_url = values["SITE_URL"]
+    if not site_url:
+        return ["SITE_URL (el origen de las URL absolutas, por ejemplo https://revista.cl)"]
+    parts = urlsplit(site_url)
+    if parts.scheme != "https" or not parts.hostname:
+        return [f"SITE_URL (exige https://dominio): {site_url}"]
+    if parts.path not in ("", "/") or parts.query or parts.fragment:
+        return [f"SITE_URL (solo el origen, sin ruta): {site_url}"]
+    from django.http.request import validate_host
+
+    host = parts.hostname
+    problems = []
+    if host.startswith("www."):
+        problems.append(f"SITE_URL (sin www: {host})")
+    if not validate_host(host, values["DJANGO_ALLOWED_HOSTS"]):
+        problems.append(f"SITE_URL ({host} no está en DJANGO_ALLOWED_HOSTS)")
+    site_address = values["SITE_ADDRESS"]
+    if site_address and not site_address.startswith(":") and site_address != host:
+        problems.append(f"SITE_URL ({host} no es el dominio que sirve Caddy: {site_address})")
     return problems
 
 

@@ -12,6 +12,8 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from kombu.exceptions import OperationalError as BrokerError
 
+from config.origin import absolute_url
+
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 from .tasks import send_confirmation_email
@@ -88,9 +90,9 @@ def subscribe(request):
 
 
 def _send_confirmation(request, sub):
-    # Las URLs se arman con la request (host absoluto) y el envío va a Celery.
-    confirm_url = request.build_absolute_uri(reverse("community:confirm", args=[sub.confirm_token]))
-    unsub_url = request.build_absolute_uri(reverse("community:unsubscribe", args=[sub.token]))
+    # Las URLs se arman con el origen fijo del sitio y el envío va a Celery.
+    confirm_url = absolute_url(reverse("community:confirm", args=[sub.confirm_token]))
+    unsub_url = absolute_url(reverse("community:unsubscribe", args=[sub.token]))
     try:
         send_confirmation_email.delay(sub.email, confirm_url, unsub_url)
     except BrokerError:

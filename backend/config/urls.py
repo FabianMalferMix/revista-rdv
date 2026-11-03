@@ -7,7 +7,7 @@ from django.urls import include, path
 from apps.content.feeds import LatestArticlesFeed
 from apps.content.sitemaps import SITEMAPS
 from apps.content.views import favicon, healthz, readyz, robots
-from apps.media.feeds import recordings_feed
+from apps.media.feeds import RecordingsFeed
 
 # Las rutas públicas son permanentes: las URL ya difundidas (prensa, dossiers, buscadores,
 # lectores de feeds) no se pueden corregir desde aquí. Renombrar una ruta exige dejar la
@@ -17,11 +17,10 @@ urlpatterns = [
     path("healthz/", healthz, name="healthz"),
     path("readyz/", readyz, name="readyz"),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
+    # Una instancia por feed, compartida entre los hilos de gunicorn: los feeds no guardan
+    # nada de la petición (las URL absolutas salen de SITE_URL).
     path("feed/", LatestArticlesFeed(), name="feed"),
-    # Instancia por petición (no `RecordingsFeed()`): el feed guarda la request en la
-    # instancia para el enclosure absoluto, y una instancia compartida se pisa entre
-    # peticiones concurrentes desde que gunicorn usa hilos. Ver apps/media/feeds.py.
-    path("feed/registros/", recordings_feed, name="recordings_feed"),
+    path("feed/registros/", RecordingsFeed(), name="recordings_feed"),
     path("robots.txt", robots, name="robots"),
     path("favicon.ico", favicon, name="favicon"),
     path("", include("apps.people.urls")),
