@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load authored %}
 
 {% block title %}{{ page.seo_title|default:page.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ page.seo_description|default:page.title }}{% endblock %}
@@ -7,6 +8,6 @@
   <article class="article">
     <h1>{{ page.title }}</h1>
     {# body ya viene sanitizado con nh3 (lista blanca) en Page.save. #}
-    <div class="body">{{ page.body|safe }}</div>
+    <div class="body" hx-disable>{{ page.body|authored_html }}</div>
   </article>
 {% endblock %}

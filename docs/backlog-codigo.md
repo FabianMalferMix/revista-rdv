@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 47 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Avance:** 48 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -132,7 +132,7 @@
 | B46 | Lo publicado no se pierde al borrar | — | M | no | pendiente |
 | B47 | Comandos de mantenimiento que avisan | — | S | no | hecho (#226) |
 | B48 | Bitácora editorial que sobrevive | B17 | M | no | pendiente |
-| B49 | El HTML de autor se sanea a la salida | — | S | no | pendiente |
+| B49 | El HTML de autor se sanea a la salida | — | S | no | hecho (#228) |
 | B50 | Búsqueda: una regla de acentos y tipos declarados | B20 | M | no | pendiente |
 | B51 | Transcripción de los registros | — | S | no | pendiente |
 | B52 | TinyMCE con la versión en la ruta y lo vendorizado con radar | — | M | no | pendiente |
