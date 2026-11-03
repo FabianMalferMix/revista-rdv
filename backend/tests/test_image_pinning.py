@@ -65,3 +65,46 @@ def test_el_digest_de_postgres_es_el_mismo_en_todas_partes():
     en_backup = re.search(r"FROM\s+(postgres:\S+)", dockerfile)
     assert en_compose and en_backup
     assert en_compose.group(1) == en_backup.group(1)
+
+
+# Las imágenes de un registro que un workflow podría nombrar: las que usa el repositorio y las
+# de base más comunes. Se buscan con etiqueta o con digest, para no confundirlas con un comando
+# (`python -c`) ni con una URL (`redis://…`); las de base, también sueltas (`alpine sh`).
+_EN_WORKFLOW = re.compile(
+    r"(?<![\w./-])(?:postgres|redis|caddy|python|alpine|debian|ubuntu|node|busybox)"
+    r"(?::[\w.-]+(?:@sha256:[0-9a-f]{64})?|@sha256:[0-9a-f]{64})"
+)
+_BASE_SUELTA = re.compile(r"(?<=\s)(?:alpine|debian|ubuntu|busybox)(?=\s|$)", re.MULTILINE)
+
+
+def _imagenes_de_workflow(texto):
+    return set(_EN_WORKFLOW.findall(texto) + _IMAGE.findall(texto) + _BASE_SUELTA.findall(texto))
+
+
+def test_el_detector_encuentra_las_imagenes_de_un_workflow():
+    """Control positivo de la siguiente: reconoce una imagen y no confunde lo demás."""
+    texto = "docker run --rm alpine sh\n    image: postgres:16\n  caddy:2-alpine caddy validate\n"
+    assert _imagenes_de_workflow(texto) == {"alpine", "postgres:16", "caddy:2-alpine"}
+    otros = "redis://localhost:6379/0 python -c x actions/setup-python@v7 ubuntu-latest\n"
+    assert _imagenes_de_workflow(otros) == set()
+
+
+def test_los_workflows_usan_las_imagenes_del_repositorio():
+    """El CI toma sus imágenes del compose y de los Dockerfile, que Dependabot mantiene, o las
+    nombra con esa misma referencia, fijada por digest. Una etiqueta suelta en un workflow
+    probaría otra imagen que la desplegada."""
+    carpeta = RAIZ / ".github" / "workflows"
+    if not carpeta.exists():
+        pytest.skip(".github/workflows no existe en este árbol")
+    del_repositorio = set()
+    for relativa in DOCKERFILES:
+        del_repositorio |= set(_FROM.findall(_leer(relativa)))
+    for relativa in COMPOSES:
+        del_repositorio |= set(_IMAGE.findall(_leer(relativa)))
+    for ruta in sorted(carpeta.glob("*.yml")):
+        for imagen in _imagenes_de_workflow(ruta.read_text(encoding="utf-8")):
+            if imagen.startswith("$") or imagen.startswith(OWN_IMAGE):
+                continue
+            assert _DIGEST.search(imagen) and imagen in del_repositorio, (
+                f"{ruta.name}: {imagen} no es una imagen del compose ni de un Dockerfile"
+            )
