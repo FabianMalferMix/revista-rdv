@@ -8,10 +8,14 @@ limpiar imágenes subidas antes de que la limpieza fuera obligatoria. Sale con e
 imagen no se pudo limpiar o leer (el log dice cuál y por qué): habrá que reemplazarla.
 """
 
+import logging
+
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.media.models import MediaAsset
 from apps.media.services import process_image
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -22,7 +26,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         ids = list(MediaAsset.objects.order_by("pk").values_list("pk", flat=True))
-        failed = [pk for pk in ids if not process_image(pk)]
+        failed = []
+        for pk in ids:
+            # Un recurso que falla de una manera inesperada no detiene a los demás.
+            try:
+                ok = process_image(pk)
+            except Exception:
+                logger.exception("No se pudo procesar la imagen del recurso %s", pk)
+                ok = False
+            if not ok:
+                failed.append(pk)
         if failed:
             raise CommandError(
                 f"{len(failed)} de {len(ids)} imágenes no se pudieron limpiar o leer "
