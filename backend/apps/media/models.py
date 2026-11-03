@@ -322,7 +322,7 @@ class Recording(models.Model):
         MediaAsset,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="+",
         verbose_name="póster",
         help_text=(

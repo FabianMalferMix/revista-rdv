@@ -1,0 +1,7 @@
+{% extends "admin/delete_confirmation.html" %}
+
+{% block delete_protected %}
+{{ block.super }}
+{# Una firma en uso no se borra: lo de arriba son sus textos y poemas, no lo que se borraría. #}
+<p class="help">Mientras firme textos o poemas, esta persona no se puede borrar: reasígnalos antes a otra firma, desde la ficha de cada uno.</p>
+{% endblock %}

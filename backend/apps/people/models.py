@@ -41,7 +41,7 @@ class Contributor(models.Model):
         "media.MediaAsset",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="+",
     )
     website = models.URLField(blank=True)

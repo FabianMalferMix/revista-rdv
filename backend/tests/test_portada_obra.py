@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
@@ -188,8 +189,12 @@ def test_borrar_la_obra_borra_sus_copias(django_capture_on_commit_callbacks):
     almacen = obra.file.storage
     copias = [obra._portada_name(w, e) for w in obra.portada_widths() for e in ("avif", "webp")]
     assert all(almacen.exists(c) for c in copias)
+    with pytest.raises(ProtectedError):
+        obra.delete()  # mientras es la portada, no se borra
+    perfil.hero_image = None
+    _guardar(perfil)
     with django_capture_on_commit_callbacks(execute=True):
-        obra.delete()
+        MediaAsset.objects.get(pk=obra.pk).delete()
     assert not any(almacen.exists(c) for c in copias)
     assert SiteProfile.load().hero_image is None, "la portada vuelve a la lámina"
 
