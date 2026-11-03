@@ -245,6 +245,11 @@ paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` q
   Docker, que equivale a ser root en el anfitrión; el monitor externo (C8) avisa en su lugar
   (RES-6).
 - **No se parte `settings.py` en módulos.** Basta un settings de pruebas explícito (B57; OPE-2).
+- **No hay modo report-only en la CSP, ni `report-to`.** B27 retiró el interruptor en vez de
+  darle un destino para los informes: la prueba de humo del CI abre el sitio en un navegador y
+  falla con cualquier error de consola, que es donde aparece una violación, y un interruptor
+  menos no puede debilitar producción. *Si se retoma:* si hace falta ensayar una CSP nueva con
+  tráfico real, con un `report-to` hacia el proyecto de Sentry (SEG-5).
 
 ---
 

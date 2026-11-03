@@ -8,14 +8,14 @@ auto-hospedado y entra por 'self'. Los estilos son 'self' en el sitio público; 
 bajo /admin/, donde el admin de Django y TinyMCE inyectan estilos en línea, admiten
 además 'unsafe-inline' (`_STYLE_ADMIN`).
 
-Con DJANGO_CSP_REPORT_ONLY=1 se emite en modo Report-Only (observa violaciones sin
-bloquear), útil como red de seguridad antes de forzar la política en producción.
+La política siempre bloquea: no hay modo Report-Only. Un cambio que la viole lo detecta
+antes la prueba de humo del CI, que abre el sitio en un navegador y falla con cualquier
+error de consola.
 """
 
 import base64
 import os
 
-from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
 # Marcador interno para la directiva que depende de la ruta.
@@ -73,10 +73,6 @@ class ContentSecurityPolicyMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self.report_only = getattr(settings, "CSP_REPORT_ONLY", False)
-        self.header = (
-            "Content-Security-Policy-Report-Only" if self.report_only else "Content-Security-Policy"
-        )
 
     def __call__(self, request):
         state = {"nonce": None}
@@ -115,5 +111,5 @@ class ContentSecurityPolicyMiddleware:
             elif value is _STYLE_MARKER:
                 value = style_src
             parts.append(f"{name} {value}")
-        response[self.header] = "; ".join(parts)
+        response["Content-Security-Policy"] = "; ".join(parts)
         return response
