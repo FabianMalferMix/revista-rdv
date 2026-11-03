@@ -434,6 +434,45 @@ jobs:
             || { echo "FALLO: el feed de pódcast no entrega el registro publicado"; exit 1; }
           echo "OK: lo publicado se sirve con Range, lo despublicado da 404 y /media/ no lo entrega"
 
+      # Subidas desde el panel, con el Caddy de producción delante: el límite de /admin/ deja
+      # llegar a Django lo que pasa del tope de un campo, para que se vea el mensaje del
+      # formulario y no un 413 sin cuerpo; lo que pasa del límite lo corta Caddy.
+      - name: Subidas por el panel, a través de Caddy
+        run: |
+          # Una sesión de administración creada en la base: lo que se prueba es la subida.
+          SESSION=$(docker compose exec -T web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY, get_user_model
+          from django.contrib.sessions.backends.db import SessionStore
+          u = get_user_model().objects.create_superuser('ci-panel', 'ci@example.com', 'ci-panel-clave-larga')
+          s = SessionStore()
+          s[SESSION_KEY] = str(u.pk)
+          s[BACKEND_SESSION_KEY] = 'django.contrib.auth.backends.ModelBackend'
+          s[HASH_SESSION_KEY] = u.get_session_auth_hash()
+          s.create()
+          print(s.session_key)" | tail -1)
+          CSRF=abcdefghijklmnopqrstuvwxyz012345
+          sube() {
+            curl -s -o "/tmp/subida-$1.html" -w '%{http_code}' \
+              -b "sessionid=$SESSION; csrftoken=$CSRF" -F csrfmiddlewaretoken=$CSRF \
+              -F title="Lectura $1" -F slug="lectura-$1" -F kind=audio -F position=0 \
+              -F "file=@/tmp/audio-$1.mp3;type=audio/mpeg" \
+              http://127.0.0.1:8080/admin/media/recording/add/ || true
+          }
+          for megas in 40 55 70; do head -c "${megas}000000" /dev/zero > "/tmp/audio-$megas.mp3"; done
+          [ "$(sube 40)" = 302 ] || { echo "FALLO: el audio de 40 MB no se guardó"; exit 1; }
+          [ "$(sube 55)" = 200 ] && grep -q "el máximo es 50 MB" /tmp/subida-55.html \
+            || { echo "FALLO: el audio de 55 MB no dio el error del formulario"; exit 1; }
+          sube 70 > /dev/null
+          docker compose exec -T web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from apps.media.models import Recording
+          subidos = Recording.objects.filter(slug__startswith='lectura-').values_list('slug', flat=True)
+          assert sorted(subidos) == ['lectura-40'], 'Caddy no cortó el cuerpo de 70 MB'"
+          echo "OK: el panel guarda 40 MB, explica los 55 MB y Caddy corta los 70 MB"
+
       - name: Si el release falla, no arranca nada
         run: |
           # Una tabla que ya existe hace fallar la migración inicial de content.

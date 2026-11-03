@@ -4,7 +4,8 @@ from django import forms
 
 from .models import Submission
 
-ALLOWED_EXTENSIONS = {"pdf", "doc", "docx", "odt", "rtf", "txt"}
+# En el orden en que los nombra la ayuda del formulario.
+ALLOWED_EXTENSIONS = ("pdf", "doc", "docx", "odt", "rtf", "txt")
 MAX_FILE_MB = 10
 
 # Firmas (magic bytes) esperadas por extensión: validan que el CONTENIDO del archivo
@@ -96,7 +97,10 @@ class SubmissionForm(forms.ModelForm):
             "file": "Adjunto (opcional)",
         }
         help_texts = {
-            "file": "PDF, DOC, DOCX, ODT, RTF o TXT. Máximo 10 MB.",
+            "file": (
+                f"{', '.join(e.upper() for e in ALLOWED_EXTENSIONS[:-1])} o "
+                f"{ALLOWED_EXTENSIONS[-1].upper()}. Máximo {MAX_FILE_MB} MB."
+            ),
         }
         widgets = {
             # `autocomplete` dice al navegador qué dato es cada campo, para que lo rellene

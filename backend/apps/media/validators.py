@@ -6,25 +6,77 @@ origen del sitio. Por eso cada campo de archivo del panel admite una lista cerra
 extensiones; la otra mitad de la defensa son las cabeceras del bloque `/media/` de
 `infra/caddy/Caddyfile` (`nosniff` y una CSP con `sandbox`).
 
-Solo las imágenes se comprueban también por su contenido (`validate_image`). Del audio, el
-vídeo y los PDF se mira únicamente la extensión: nada lee su contenido.
+Solo las imágenes se comprueban también por su contenido (`validate_image`). Del audio y los
+PDF se mira únicamente la extensión: nada lee su contenido.
+
+Cada campo tiene además un tope de tamaño. Caddy deja pasar algo más por /admin/ (el
+Caddyfile, que tests/test_upload_limits.py compara con estos topes), para que quien se pase
+lea aquí cuánto pesa su archivo y qué hacer, y no reciba un 413 sin explicación.
 """
 
 import warnings
 
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from django.utils.deconstruct import deconstructible
 from PIL import Image
 
-# Formatos de audio/vídeo admitidos para los registros (Recording.file).
-AUDIO_VIDEO_EXTENSIONS = ["mp3", "m4a", "oga", "ogg", "opus", "wav", "flac", "mp4", "m4v", "webm"]
+MB = 1024 * 1024
+# Topes de tamaño, en megas, de lo que se sube desde el panel.
+MAX_AUDIO_MB = 50
+MAX_PDF_MB = 20
+MAX_IMAGE_MB = 12
 
-validate_audio_video_extension = FileExtensionValidator(
-    allowed_extensions=AUDIO_VIDEO_EXTENSIONS,
+# Formatos de audio admitidos para los registros (Recording.file). Los vídeos no se alojan:
+# ocupan disco, respaldo y un proceso del servidor mientras suben, y se publican con su
+# enlace de YouTube o Vimeo.
+AUDIO_EXTENSIONS = ["mp3", "m4a", "oga", "ogg", "opus", "wav", "flac"]
+
+validate_audio_extension = FileExtensionValidator(
+    allowed_extensions=AUDIO_EXTENSIONS,
     message=(
-        "Formato no permitido. Usa audio o vídeo: %(allowed_extensions)s. "
-        "Nunca se aceptan archivos que el navegador pueda ejecutar (.html, .svg…)."
+        "Formato no permitido. Sube el audio en %(allowed_extensions)s. Un vídeo se publica "
+        "con su enlace de YouTube o Vimeo, en «Enlace para incrustar»."
     ),
+)
+
+
+@deconstructible
+class MaxSizeValidator:
+    """Rechaza un archivo nuevo que pase de `megabytes`, diciendo cuánto pesa y qué hacer.
+
+    Un archivo ya guardado no se vuelve a medir: editar el resto de la ficha no debe depender
+    de él.
+    """
+
+    def __init__(self, megabytes, what, advice):
+        self.megabytes = megabytes
+        self.what = what
+        self.advice = advice
+
+    def __call__(self, file):
+        if getattr(file, "_committed", False) or file.size <= self.megabytes * MB:
+            return
+        size = f"{file.size / MB:.1f}".replace(".", ",")
+        raise ValidationError(
+            f"{self.what} pesa {size} MB y el máximo es {self.megabytes} MB. {self.advice}",
+            code="file_too_big",
+        )
+
+    def __eq__(self, other):
+        return isinstance(other, MaxSizeValidator) and (
+            (self.megabytes, self.what, self.advice) == (other.megabytes, other.what, other.advice)
+        )
+
+
+validate_audio_size = MaxSizeValidator(
+    MAX_AUDIO_MB, "El audio", "Expórtalo en MP3 (128 kbps bastan para la voz) o recórtalo."
+)
+validate_pdf_size = MaxSizeValidator(
+    MAX_PDF_MB, "El PDF", "Vuelve a exportarlo con las imágenes comprimidas."
+)
+validate_image_size = MaxSizeValidator(
+    MAX_IMAGE_MB, "La imagen", "Expórtala en JPEG o WebP con menos calidad."
 )
 
 validate_pdf_extension = FileExtensionValidator(
