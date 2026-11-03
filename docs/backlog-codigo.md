@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 45 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Avance:** 46 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -128,7 +128,7 @@
 | B42 | Los archivos se borran después de confirmar | B08 | S | no | hecho (#221) |
 | B43 | Un solo servicio de imágenes | B42 | M | no | hecho (#222) |
 | B44 | Registro de derivados | B43 | M | no | hecho (#223) |
-| B45 | Metapruebas de completitud | — | S | no | pendiente |
+| B45 | Metapruebas de completitud | — | S | no | hecho (#224) |
 | B46 | Lo publicado no se pierde al borrar | — | M | no | pendiente |
 | B47 | Comandos de mantenimiento que avisan | — | S | no | pendiente |
 | B48 | Bitácora editorial que sobrevive | B17 | M | no | pendiente |
@@ -886,6 +886,8 @@ De TAR-5, punto 2: la limpieza borra los derivados según ese registro, no por n
 La pertenencia a la matriz de roles la prueba B15.
 
 **Hecho cuando.** En el PR, dos cambios temporales que se revierten hacen fallar la suite: un FileField nuevo sin registrar y una tarea de beat con el nombre mal escrito.
+
+**Al cerrarlo (2026-11-03).** El dueño eligió que las fichas de colaborador con obra publicada entren en el sitemap y que las de etiqueta queden excluidas, con su motivo.
 
 #### B46 · Lo publicado no se pierde al borrar
 
