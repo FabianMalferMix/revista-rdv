@@ -202,7 +202,8 @@ def test_podcast_enclosure_url_is_absolute(client):
     parsed = urlparse(url)
     assert parsed.scheme in ("http", "https"), f"enclosure no absoluto: {url}"
     assert parsed.netloc, f"enclosure sin host: {url}"
-    assert parsed.path.startswith("/media/"), url
+    # La vista que lo entrega solo mientras el registro está publicado, no /media/.
+    assert parsed.path.startswith("/archivo/registro/"), url
 
 
 def test_home_shows_featured_recording_when_published(client):

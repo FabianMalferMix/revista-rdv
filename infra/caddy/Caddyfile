@@ -62,6 +62,10 @@ www.{$SITE_ADDRESS::80} {
 	# desde el panel no pueda ejecutarse como HTML/JS en el origen del sitio (S-01);
 	# es la capa que además protege lo ya subido, sin migrar datos.
 	handle_path /media/* {
+		# El audio de los registros y los PDF de las publicaciones no se sirven desde aquí:
+		# los entrega Django solo mientras su pieza está publicada (abajo, X-Accel-Redirect).
+		@protegido path /recordings/* /publications/*
+		respond @protegido 404
 		root * /srv/media
 		file_server
 		header {
@@ -88,8 +92,24 @@ www.{$SITE_ADDRESS::80} {
 		}
 	}
 
-	# Todo lo demás va a gunicorn.
-	reverse_proxy web:8000
+	# Todo lo demás va a gunicorn. Cuando Django responde con X-Accel-Redirect (el archivo de
+	# una pieza publicada, backend/config/protected_media.py), Caddy lo lee del volumen de
+	# medios: admite saltos (Range) y gunicorn no ocupa un hilo en enviarlo. Con las mismas
+	# cabeceras defensivas que /media/.
+	reverse_proxy web:8000 {
+		@archivo_publicado header X-Accel-Redirect *
+		handle_response @archivo_publicado {
+			root * /srv/media
+			rewrite * {rp.header.X-Accel-Redirect}
+			file_server
+			header {
+				X-Content-Type-Options nosniff
+				Content-Security-Policy "default-src 'none'; sandbox"
+				Referrer-Policy no-referrer
+				X-Frame-Options DENY
+			}
+		}
+	}
 
 	header -Server
 

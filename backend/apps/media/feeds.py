@@ -111,7 +111,7 @@ class RecordingsFeed(Feed):
     def item_enclosure_url(self, item):
         # URL ABSOLUTA: los clientes de podcast exigen que el enclosure sea resoluble; una
         # URL relativa deja el episodio sin audio en Apple/Spotify.
-        return absolute_url(item.file.url) if item.file else None
+        return absolute_url(item.file_url()) if item.file else None
 
     def item_enclosure_length(self, item):
         try:
