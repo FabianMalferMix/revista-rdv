@@ -1,5 +1,6 @@
 import logging
 import secrets
+from functools import wraps
 
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
@@ -11,8 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from kombu.exceptions import OperationalError as BrokerError
-
-from config.origin import absolute_url
 
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
@@ -84,25 +83,38 @@ def subscribe(request):
         sub.confirm_token_at = timezone.now()
         sub.status = S.PENDING
         sub.save(update_fields=["token", "confirm_token", "confirm_token_at", "status"])
-        _send_confirmation(request, sub)
+        _send_confirmation(sub)
     messages.success(request, ALTA_NEUTRA)
     return HttpResponseRedirect(nxt)
 
 
-def _send_confirmation(request, sub):
-    # Las URLs se arman con el origen fijo del sitio y el envío va a Celery.
-    confirm_url = absolute_url(reverse("community:confirm", args=[sub.confirm_token]))
-    unsub_url = absolute_url(reverse("community:unsubscribe", args=[sub.token]))
+def _send_confirmation(sub):
+    # El envío va a Celery cuando la transacción se confirma, y con el id: ni el correo ni
+    # los tokens viajan por el broker.
     try:
-        send_confirmation_email.delay(sub.email, confirm_url, unsub_url)
+        send_confirmation_email.delay_on_commit(sub.pk)
     except BrokerError:
         # Broker inaccesible al encolar: el suscriptor ya quedó guardado, así que no
         # rompemos la suscripción con un 500. Se registra (sube a Sentry) para que la
         # operación lo atienda; el usuario puede reintentar el alta si no llega el correo.
-        # Sin la dirección en el mensaje: el log no es sitio para PII (S-21).
+        # Sin la dirección en el mensaje: el log no es sitio para datos personales.
         logger.exception("No se pudo encolar el correo de confirmación (suscriptor id=%s)", sub.pk)
 
 
+def _no_referrer(view):
+    """Las páginas con token en la URL no la mandan como Referer a nada de lo que cargan
+    (estilos, guiones, el buscador): la URL es el secreto."""
+
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        response = view(request, *args, **kwargs)
+        response["Referrer-Policy"] = "no-referrer"
+        return response
+
+    return wrapper
+
+
+@_no_referrer
 def confirm(request, token):
     """Confirmación del doble opt-in.
 
@@ -139,6 +151,7 @@ def confirm(request, token):
 
 
 @csrf_exempt
+@_no_referrer
 def unsubscribe(request, token):
     """Baja.
 

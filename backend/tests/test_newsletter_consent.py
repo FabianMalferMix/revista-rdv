@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 import pytest
+from django.conf import settings
 from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
@@ -77,9 +78,11 @@ def test_baja_en_un_clic_rfc8058(client):
 def test_el_correo_anuncia_el_un_clic():
     from apps.community.tasks import send_confirmation_email
 
-    send_confirmation_email("a@example.com", "https://x/confirmar", "https://x/baja")
+    sub = _pendiente()
+    send_confirmation_email(sub.pk)
     cabeceras = mail.outbox[0].extra_headers
-    assert cabeceras["List-Unsubscribe"] == "<https://x/baja>"
+    baja = f"{settings.SITE_URL}{reverse('community:unsubscribe', args=[sub.token])}"
+    assert cabeceras["List-Unsubscribe"] == f"<{baja}>"
     assert cabeceras["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
 
 
@@ -147,13 +150,14 @@ def test_el_alta_no_revela_si_la_direccion_ya_estaba_suscrita(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-def test_el_honeypot_tambien_responde_igual(client):
+def test_el_honeypot_tambien_responde_igual(client, django_capture_on_commit_callbacks):
     """Un bot no debe distinguirse por la respuesta."""
-    resp = client.post(
-        reverse("community:subscribe"),
-        {"email": "bot@example.com", "apodo": "soy-bot"},
-        follow=True,
-    )
+    with django_capture_on_commit_callbacks(execute=True):
+        resp = client.post(
+            reverse("community:subscribe"),
+            {"email": "bot@example.com", "apodo": "soy-bot"},
+            follow=True,
+        )
     assert "Si la dirección es válida".encode() in resp.content
     assert not NewsletterSubscriber.objects.filter(email="bot@example.com").exists()
     assert len(mail.outbox) == 0

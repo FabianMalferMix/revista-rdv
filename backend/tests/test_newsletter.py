@@ -1,6 +1,7 @@
 """Newsletter con doble opt-in + baja, y páginas legales (Lote F1-E)."""
 
 import pytest
+from django.conf import settings
 from django.core import mail
 from django.test import Client, override_settings
 from django.urls import reverse
@@ -13,9 +14,17 @@ S = NewsletterSubscriber.Status
 LOCMEM = "django.core.mail.backends.locmem.EmailBackend"
 
 
+def _pending(email="a@example.com"):
+    """Una suscripción pendiente de confirmar, con sus dos tokens."""
+    return NewsletterSubscriber.objects.create(
+        email=email, token="tok-baja", confirm_token="tok-confirma", confirm_token_at=timezone.now()
+    )
+
+
 @override_settings(EMAIL_BACKEND=LOCMEM)
-def test_subscribe_sends_confirmation_with_link(client):
-    client.post(reverse("community:subscribe"), {"email": "nuevo@example.com", "apodo": ""})
+def test_subscribe_sends_confirmation_with_link(client, django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):
+        client.post(reverse("community:subscribe"), {"email": "nuevo@example.com", "apodo": ""})
     sub = NewsletterSubscriber.objects.get(email="nuevo@example.com")
     # Dos tokens de vida distinta: el de baja es permanente, el de confirmación caduca.
     assert sub.status == S.PENDING and sub.token and sub.confirm_token
@@ -30,8 +39,10 @@ def test_confirmation_email_carries_list_unsubscribe_header():
     para que el cliente de correo ofrezca un botón de darse de baja."""
     from apps.community.tasks import send_confirmation_email
 
-    send_confirmation_email("a@example.com", "https://x/confirmar", "https://x/baja")
-    assert mail.outbox[0].extra_headers["List-Unsubscribe"] == "<https://x/baja>"
+    sub = _pending()
+    send_confirmation_email(sub.pk)
+    unsub_url = f"{settings.SITE_URL}{reverse('community:unsubscribe', args=[sub.token])}"
+    assert mail.outbox[0].extra_headers["List-Unsubscribe"] == f"<{unsub_url}>"
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
@@ -39,10 +50,12 @@ def test_confirmation_email_task_sends_message():
     # El envío vive en una tarea Celery (fuera del hilo de la petición, con reintento).
     from apps.community.tasks import send_confirmation_email
 
-    send_confirmation_email("a@example.com", "https://x/confirmar", "https://x/baja")
+    sub = _pending()
+    send_confirmation_email(sub.pk)
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["a@example.com"]
-    assert "https://x/confirmar" in mail.outbox[0].body
+    confirm_url = f"{settings.SITE_URL}{reverse('community:confirm', args=[sub.confirm_token])}"
+    assert confirm_url in mail.outbox[0].body
 
 
 def test_confirm_sets_confirmed(client):
@@ -93,15 +106,17 @@ def test_confirm_bad_token_404(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-def test_already_confirmed_not_reconfirmed(client):
+def test_already_confirmed_not_reconfirmed(client, django_capture_on_commit_callbacks):
     NewsletterSubscriber.objects.create(email="z@example.com", status=S.CONFIRMED, token="t")
-    client.post(reverse("community:subscribe"), {"email": "z@example.com", "apodo": ""})
+    with django_capture_on_commit_callbacks(execute=True):
+        client.post(reverse("community:subscribe"), {"email": "z@example.com", "apodo": ""})
     assert len(mail.outbox) == 0  # no reenvía a quien ya confirmó
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-def test_subscribe_honeypot_sends_no_mail(client):
-    client.post(reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"})
+def test_subscribe_honeypot_sends_no_mail(client, django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):
+        client.post(reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"})
     assert not NewsletterSubscriber.objects.filter(email="bot@spam.com").exists()
     assert len(mail.outbox) == 0
 
@@ -166,7 +181,7 @@ def test_subscribe_degrades_gracefully_when_broker_is_down(client):
     def enqueue_fail(*a, **k):
         raise OperationalError("broker inaccesible")
 
-    with mock.patch.object(views.send_confirmation_email, "delay", enqueue_fail):
+    with mock.patch.object(views.send_confirmation_email, "delay_on_commit", enqueue_fail):
         resp = client.post(
             reverse("community:subscribe"), {"email": "broker@example.com", "apodo": ""}
         )
@@ -199,7 +214,7 @@ def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
 
     monkeypatch.setattr(EmailMessage, "send", boom)
     with pytest.raises(smtplib.SMTPException):
-        tasks.send_confirmation_email("a@example.com", "http://c", "http://u")
+        tasks.send_confirmation_email(_pending().pk)
 
 
 def test_legal_pages_published(legal_pages):

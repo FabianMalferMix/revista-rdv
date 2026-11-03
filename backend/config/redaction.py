@@ -7,8 +7,8 @@ en dos salidas de Python:
 
 - el logging: `RedactTokensFilter`, en el handler de consola, reescribe el mensaje ya
   formateado, y `JsonFormatter` (config/logformat.py) redacta además cada campo;
-- Sentry: `sentry_before_send` redacta la URL, la query y el nombre de la transacción de
-  cada evento, y `sentry_before_breadcrumb`, las migas de pan.
+- Sentry: `sentry_before_send` y `sentry_before_breadcrumb` redactan los tokens y las
+  direcciones de correo de todo el evento y de cada miga (config/sentry.py).
 
 Las rutas con token no se copian aquí: el patrón se construye con `reverse()` sobre toda
 ruta del URLconf que reciba un `token`, así que renombrar una o añadir otra no deja su
@@ -18,6 +18,8 @@ rutas.
 """
 
 import re
+
+from sentry_sdk.scrubber import DEFAULT_DENYLIST
 
 _REDACTADO = r"\1/<redactado>/"
 # Lo que se escribe en lugar del texto si el patrón no se puede construir con Django ya
@@ -75,33 +77,70 @@ def redact_path(value):
     return pattern.sub(_REDACTADO, value) if pattern else value
 
 
+# Claves cuyo valor no sale hacia Sentry, a cualquier profundidad del evento: las que el SDK
+# considera sensibles (contraseñas, tokens, cookies…) y las que aquí llevan datos de una
+# persona o un secreto: el correo y el nombre de quien se suscribe o envía un texto, el texto
+# mismo y las URL del boletín, que llevan el token.
+SENSITIVE_KEYS = frozenset(key.lower() for key in DEFAULT_DENYLIST) | {
+    "email",
+    "author_email",
+    "author_name",
+    "body",
+    "title",
+    "confirm_url",
+    "unsub_url",
+    "next",
+    "sub",
+    "confirm_token",
+}
+FILTERED = "[Filtered]"
+# Una dirección de correo dentro de cualquier texto: el mensaje de un error SMTP la cita.
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+# Cabeceras que repiten la URL de la página, y con ella el token.
+_URL_HEADERS = {"referer", "hx-current-url"}
+
+
+def _scrub(value):
+    """Redacta los tokens y las direcciones de correo de todas las cadenas, y el valor de las
+    claves sensibles, a cualquier profundidad."""
+    if isinstance(value, str):
+        return _EMAIL.sub("<correo>", redact_path(value))
+    if isinstance(value, dict):
+        return {
+            key: FILTERED if str(key).lower() in SENSITIVE_KEYS else _scrub(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_scrub(item) for item in value]
+    return value
+
+
 def sentry_before_send(event, hint):
-    """Redacta los tokens antes de que el evento salga hacia Sentry."""
+    """Limpia el evento antes de que salga hacia Sentry; si algo falla, no lo envía.
+
+    Quita el cuerpo de la petición y las cabeceras que repiten la URL de la página, y
+    redacta los tokens y las direcciones de correo del resto: mensaje, excepciones,
+    transacción, migas y extras.
+    """
     try:
         request = event.get("request")
         if isinstance(request, dict):
-            if "url" in request:
-                request["url"] = redact_path(request["url"])
-            if "query_string" in request:
-                request["query_string"] = redact_path(request["query_string"])
-        if isinstance(event.get("transaction"), str):
-            event["transaction"] = redact_path(event["transaction"])
-    except Exception:  # noqa: BLE001 - jamás debe impedir el reporte de un error
-        pass
-    return event
+            request.pop("data", None)
+            headers = request.get("headers")
+            if isinstance(headers, dict):
+                for name in [n for n in headers if str(n).lower() in _URL_HEADERS]:
+                    del headers[name]
+        return _scrub(event)
+    except Exception:  # noqa: BLE001 - un evento que no se pudo limpiar no sale
+        return None
 
 
 def sentry_before_breadcrumb(crumb, hint):
-    """Misma redacción para las migas de pan (registran cada petición)."""
+    """Misma limpieza para las migas de pan (registran cada petición y cada log)."""
     try:
-        datos = crumb.get("data")
-        if isinstance(datos, dict) and isinstance(datos.get("url"), str):
-            datos["url"] = redact_path(datos["url"])
-        if isinstance(crumb.get("message"), str):
-            crumb["message"] = redact_path(crumb["message"])
+        return _scrub(crumb)
     except Exception:  # noqa: BLE001
-        pass
-    return crumb
+        return None
 
 
 class RedactTokensFilter:

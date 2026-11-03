@@ -355,18 +355,11 @@ if not DEBUG:
 # procesos vía DJANGO_SETTINGS_MODULE). Sin DSN no hace nada (dev/tests intactos).
 SENTRY_DSN = env_str("SENTRY_DSN")
 if SENTRY_DSN:
-    import sentry_sdk
+    from config.sentry import init_sentry
 
-    from config.redaction import sentry_before_breadcrumb, sentry_before_send
-
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
+    init_sentry(
+        SENTRY_DSN,
         environment=env_str("SENTRY_ENVIRONMENT", "production" if not DEBUG else "dev"),
         release=env_str("SENTRY_RELEASE") or None,
         traces_sample_rate=env_float("SENTRY_TRACES_SAMPLE_RATE", 0.0),
-        send_default_pii=False,
-        # Sin esto, el token de baja del boletín viajaba a un TERCERO dentro del nombre
-        # de la transacción y de la URL del evento (S-20).
-        before_send=sentry_before_send,
-        before_breadcrumb=sentry_before_breadcrumb,
     )
