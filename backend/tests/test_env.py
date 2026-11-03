@@ -56,6 +56,8 @@ def test_numbers_that_do_not_parse_name_the_variable(reader, raw):
 def test_env_list_drops_spaces_and_empty_items():
     environ = {"DJANGO_ALLOWED_HOSTS": "revista.cl, www.revista.cl,,"}
     assert env_list("DJANGO_ALLOWED_HOSTS", environ=environ) == ["revista.cl", "www.revista.cl"]
+    # El valor por defecto se escribe como la variable, y se lee igual.
+    assert env_list("DJANGO_ALLOWED_HOSTS", "a.cl, b.cl", environ={}) == ["a.cl", "b.cl"]
 
 
 def test_env_str_keeps_secrets_untouched():

@@ -14,7 +14,7 @@ from pathlib import Path
 # Valores por defecto de desarrollo, inseguros en producción.
 INSECURE_SECRET = "dev-insecure-change-me"
 INSECURE_DB_PASSWORD = "resenas"
-DEFAULT_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0")
+DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
 
 # Fragmentos que delatan un SECRETO de plantilla sin sustituir. Se comparan en
 # minúsculas y por inclusión.
@@ -93,7 +93,7 @@ def check_production_env(values):
 
     # ── Hosts permitidos ─────────────────────────────────────
     allowed_hosts = list(values["DJANGO_ALLOWED_HOSTS"])
-    if not allowed_hosts or allowed_hosts == list(DEFAULT_HOSTS):
+    if not allowed_hosts or allowed_hosts == DEFAULT_HOSTS.split(","):
         problems.append("DJANGO_ALLOWED_HOSTS")
     elif "*" in allowed_hosts:
         problems.append("DJANGO_ALLOWED_HOSTS (el comodín '*' desactiva la validación de Host)")

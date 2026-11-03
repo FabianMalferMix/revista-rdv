@@ -66,8 +66,9 @@ def env_float(name, default, environ=None):
         raise ImproperlyConfigured(f"{name}={value!r} no es un número.") from None
 
 
-def env_list(name, default=(), environ=None):
-    """Lista separada por comas, sin espacios alrededor ni elementos vacíos."""
+def env_list(name, default="", environ=None):
+    """Lista separada por comas, sin espacios alrededor ni elementos vacíos. El valor por
+    defecto se escribe como se escribiría la variable."""
     value = _raw(name, environ)
-    items = default if value is None else value.split(",")
-    return [item.strip() for item in items if item.strip()]
+    raw = default if value is None else value
+    return [item.strip() for item in raw.split(",") if item.strip()]
