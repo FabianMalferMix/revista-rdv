@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus
 from config.csp import ContentSecurityPolicyMiddleware
+from config.staticfiles import TINYMCE_DIR
 
 CSP = "Content-Security-Policy"
 CSP_RO = "Content-Security-Policy-Report-Only"
@@ -180,7 +181,7 @@ def test_article_detail_jsonld_carries_matching_nonce(client, make_article):
 def test_admin_article_add_selfhosts_tinymce(admin_client):
     resp = admin_client.get(reverse("admin:content_article_add"))
     assert resp.status_code == 200
-    assert b"vendor/tinymce/tinymce.min.js" in resp.content
+    assert f"{TINYMCE_DIR}tinymce.min.js".encode() in resp.content
     assert b"cdn.jsdelivr" not in resp.content
     assert CSP in resp  # el panel editorial también va protegido
 

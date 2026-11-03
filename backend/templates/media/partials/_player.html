@@ -30,12 +30,12 @@
     </div>
   {% elif r.file %}
     {% if r.kind == "video" %}
-      <video controls preload="none" {% if r.poster %}poster="{{ r.poster.file.url }}"{% endif %} src="{{ r.file.url }}"></video>
+      <video controls preload="none" {% if titulo_id %}aria-labelledby="{{ titulo_id }}" {% endif %}{% if r.poster %}poster="{{ r.poster.file.url }}"{% endif %} src="{{ r.file.url }}"></video>
     {% else %}
       {% comment %} Un audio con póster lo enseña al lado, cuadrado, como una portada de disco. {% endcomment %}
       <div class="player-audio">
         {% if r.poster %}<span class="riso-duo">{% responsive_img r.poster css_class="player-audio-poster" sizes="160px" decorativa=True %}</span>{% endif %}
-        <audio controls preload="none" src="{{ r.file_url }}"></audio>
+        <audio controls preload="none" {% if titulo_id %}aria-labelledby="{{ titulo_id }}" {% endif %}src="{{ r.file_url }}"></audio>
       </div>
     {% endif %}
   {% elif r.embed_url %}

@@ -43,23 +43,30 @@ cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigent
   proxy de borde. **Si se antepone un CDN/balanceador, hay que revisar cuántos proxies
   de confianza hay** (el right-most dejaría de ser la IP real del cliente).
 
-- **D3 — Búsqueda insensible a acentos** (`unaccent`). Implementado: migración
-  `content.0011` con funciones de trigger propias que construyen el `search_vector` con
-  `to_tsvector('spanish', unaccent(...))`, y `_strip_accents()` en la vista de búsqueda.
-  **Supuesto:** el usuario de la BD puede `CREATE EXTENSION` (el Postgres propio del
-  proyecto corre como superusuario). **En una BD gestionada (RDS, etc.), un admin debe
-  pre-crear la extensión `unaccent`** o la migración fallará.
+- **D3 — Búsqueda insensible a acentos** (`unaccent`). Implementado: la migración
+  `content.0016` crea la configuración de búsqueda `spanish_unaccent` (la española, con
+  `unaccent` antes del lematizador), que se usa al indexar y al buscar (`SEARCH_CONFIG` en
+  `apps/content/models.py`). Un solo plegado de acentos, el de la base: «Wisława», «Søren» o
+  «Miłosz» se encuentran escritos con y sin diacríticos, también las letras sin descomposición
+  Unicode que el `_strip_accents` de Python (NFKD) dejaba distintas (2026-11-03, C23, B50). La
+  búsqueda por nombre usa `__unaccent` a los dos lados. Lo que en Python siga necesitando quitar
+  tildes usa `config/text.py:strip_accents`. **Supuesto:** el usuario de la BD puede
+  `CREATE EXTENSION` y `CREATE TEXT SEARCH CONFIGURATION` (el Postgres propio del proyecto corre
+  como superusuario). **En una BD gestionada (RDS, etc.), un admin debe pre-crear la extensión
+  `unaccent`** o la migración 0011 fallará.
 
 - **D4 — Rendimiento: guardia de queries sí, carga con umbral no (aún).** Se añadieron
   presupuestos de consultas anti-N+1 (`django_assert_max_num_queries`, `test_performance.py`).
   El smoke de carga (k6/locust) con umbral p95 se difirió: empezar sin umbral bloqueante
   y calibrar (ver §2).
 
-- **FTS por trigger de Postgres, no `GeneratedField`.** El `search_vector` lo mantiene un
-  trigger (migraciones 0009→0011). *Porqué:* `unaccent` no es `IMMUTABLE`, así que no
-  sirve en un `GeneratedField`/índice de expresión; el trigger sí lo permite y además
-  cubre `bulk_update`/`QuerySet.update`/imports (que no pasan por `save()`). **Reabierta
-  el 2026-10-28 (C23).**
+- **FTS con una columna generada, no con triggers** (`GeneratedField`, migración `content.0016`,
+  2026-11-03, C23, B50). Hasta entonces el `search_vector` lo mantenía un trigger escrito a mano
+  (0009→0011), porque `unaccent` no es `IMMUTABLE`. La configuración `spanish_unaccent` lo sortea:
+  `to_tsvector` con una configuración fija sí es inmutable, así que el vector se declara en el
+  modelo y la base lo rehace en toda escritura, también con `update()`, `bulk_update` o
+  loaddata. Django ve sus columnas al renombrarlas o borrarlas, cosa que con el trigger no
+  pasaba. El título pesa más que el cuerpo al ordenar (`setweight` A, subtítulo B, cuerpo D).
 
 - **`CACHES` → Redis (db 2) en prod, LocMem en dev/tests.** Necesario para que los
   contadores de `django-ratelimit` se compartan entre workers. Seguro con `noeviction`

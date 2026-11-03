@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('media', '0014_protect_published_references'),
+        ('media', '0015_protect_published_references'),
         ('people', '0005_membership_labels'),
     ]
 

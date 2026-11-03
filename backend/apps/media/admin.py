@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Count, IntegerField, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 
@@ -67,3 +67,17 @@ class RecordingAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     autocomplete_fields = ["poster"]
     filter_horizontal = ["participants"]
     readonly_fields = ["created_at"]
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Un aviso, no un bloqueo: el colectivo puede publicar y escribir la transcripción después.
+        if obj.published and obj.kind == Recording.Kind.AUDIO and not obj.transcript:
+            from apps.content.models import Poem
+
+            if not Poem.objects.filter(recording=obj).exists():
+                messages.warning(
+                    request,
+                    f"“{obj.title}” está publicado sin transcripción ni poema enlazado: quien no "
+                    "puede escucharlo no tiene qué leer. Escribe la transcripción o enlaza el "
+                    "registro desde la ficha del poema.",
+                )

@@ -872,6 +872,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .mas-fotos > summary{list-style:none}
 .mas-fotos > summary::-webkit-details-marker{display:none}
 .mas-fotos > .photo-grid-resto{margin-top:var(--s3)}
+.registro-poema, .registro-transcripcion{margin:var(--s3) 0 0}
+.registro-transcripcion > summary{list-style:none}
+.registro-transcripcion > summary::-webkit-details-marker{display:none}
 .galeria-creditos{margin:var(--s2) 0 0}
 
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es

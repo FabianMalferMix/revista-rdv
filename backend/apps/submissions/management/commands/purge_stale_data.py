@@ -10,15 +10,23 @@ Minimización de datos (Ley 21.719). Cubre cuatro grupos:
     usuario tecleado (ambos son datos personales) y no tenían ninguna caducidad.
 
 Correr periódicamente (cron/beat) o a mano. `--days` fija la antigüedad mínima.
+
+Cada grupo se purga por separado: si uno falla, los demás se purgan igual, y el comando sale
+con error al final. Los adjuntos los borra la señal de apps.media.filecleanup al confirmar;
+uno que siga en el disco cuenta como fallo.
 """
 
+import logging
 from datetime import timedelta
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.db import OperationalError, transaction
 from django.utils import timezone
 
 from apps.community.models import NewsletterSubscriber
 from apps.submissions.models import Submission
+
+logger = logging.getLogger(__name__)
 
 # Los intentos de acceso se conservan bastante menos: su única utilidad es investigar
 # un incidente reciente, y son PII (IP + usuario tecleado).
@@ -55,21 +63,51 @@ class Command(BaseCommand):
             )
             return
 
-        files = 0
-        for submission in resolved:
-            if submission.file:
-                submission.file.delete(save=False)  # borra el adjunto privado
-                files += 1
-        resolved.delete()
-        pending.delete()
-        unsubscribed.delete()
-        for queryset in n_axes["querysets"]:
-            queryset.delete()
+        attachments = [(sub.pk, sub.file.storage, sub.file.name) for sub in resolved if sub.file]
+        left = []
 
+        def check_attachments():
+            # Después de que la señal intente borrarlos: los que siguen no se pudieron borrar, y
+            # el ERROR de filecleanup dice por qué.
+            left.extend(pk for pk, storage, name in attachments if storage.exists(name))
+
+        groups = [
+            ("envíos resueltos", resolved),
+            ("suscriptores pendientes", pending),
+            ("suscriptores dados de baja", unsubscribed),
+            *(
+                (f"registros de axes ({queryset.model.__name__})", queryset)
+                for queryset in n_axes["querysets"]
+            ),
+        ]
+        errors = []
+        for label, queryset in groups:
+            try:
+                queryset.delete()
+            except Exception as exc:
+                logger.exception("La purga de %s falló", label)
+                errors.append((label, exc))
+            else:
+                if queryset is resolved:
+                    transaction.on_commit(check_attachments)
+        if left:
+            errors.append((f"{len(left)} adjuntos (envíos {', '.join(map(str, left))})", None))
+
+        if errors:
+            # Una base que no responde se reintenta (la purga es idempotente); el resto se arregla
+            # a mano.
+            transient = next((e for _, e in errors if isinstance(e, OperationalError)), None)
+            if transient is not None:
+                raise transient
+            raise CommandError(
+                "La purga no terminó: " + "; ".join(label for label, _ in errors) + ". "
+                "El log dice por qué."
+            )
         self.stdout.write(
             self.style.SUCCESS(
                 f"Purgados: {n_pending} suscriptores PENDING, {n_unsub} dados de baja, "
-                f"{n_subm} envíos ({files} adjuntos), {n_axes['count']} intentos de acceso."
+                f"{n_subm} envíos ({len(attachments)} adjuntos), {n_axes['count']} intentos de "
+                "acceso."
             )
         )
 

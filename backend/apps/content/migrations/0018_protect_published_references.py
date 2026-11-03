@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('content', '0015_remove_unused_fields'),
-        ('media', '0014_protect_published_references'),
+        ('content', '0017_editorial_log_survives'),
+        ('media', '0015_protect_published_references'),
         ('people', '0006_protect_published_references'),
         ('reviews', '0005_protect_published_references'),
     ]

@@ -1,18 +1,18 @@
 import re
-import unicodedata
 
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
 from config import publishing
+from config.text import strip_accents
 
 from .sanitize import clean_html
 
@@ -53,6 +53,26 @@ class ArticleType(models.TextChoices):
     NARRATIVA = "narrativa", "Narrativa"
     CRITICA = "critica", "Crítica"
     NOTA = "nota", "Nota"
+
+
+# La configuración de búsqueda de texto completo: la española, con los acentos plegados por
+# `unaccent` (migración content 0016). La misma al indexar y al buscar, así que «Wisława» y
+# «Wislawa», o «canción» y «cancion», son la misma palabra.
+SEARCH_CONFIG = "spanish_unaccent"
+
+
+def search_vector(*weighted_fields):
+    """El vector de búsqueda de los campos, cada uno con su peso: el título (A) cuenta más que
+    el cuerpo (D) al ordenar. Es una columna generada: la base lo rehace en cada escritura,
+    también con `update()` o loaddata, y Django ve sus columnas al renombrarlas o borrarlas."""
+    parts = [
+        SearchVector(field, weight=weight, config=SEARCH_CONFIG)
+        for field, weight in weighted_fields
+    ]
+    vector = parts[0]
+    for part in parts[1:]:
+        vector = vector + part
+    return vector
 
 
 class EditorialStatus(models.TextChoices):
@@ -101,10 +121,15 @@ class EditorialItem(models.Model):
     created_at = models.DateTimeField("creado", auto_now_add=True)
     updated_at = models.DateTimeField("actualizado", auto_now=True)
 
-    # Acceso inverso a la bitácora (p. ej. article.transitions / poem.editorial_notes);
-    # related_query_name habilita EditorialTransition.objects.filter(article=…) y (poem=…).
-    transitions = GenericRelation("content.EditorialTransition", related_query_name="%(class)s")
+    # Acceso inverso a las notas (poem.editorial_notes); related_query_name habilita
+    # EditorialNote.objects.filter(article=…) y (poem=…).
     editorial_notes = GenericRelation("content.EditorialNote", related_query_name="%(class)s")
+
+    @property
+    def transitions(self):
+        """La bitácora de la pieza. Es una consulta y no una relación inversa: borrar la pieza
+        no la arrastra."""
+        return EditorialTransition.objects.for_item(self)
 
     objects = publishing.EditorialQuerySet.as_manager()
 
@@ -193,7 +218,11 @@ class Article(EditorialItem):
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
-    search_vector = SearchVectorField(null=True, editable=False)
+    search_vector = models.GeneratedField(
+        expression=search_vector(("title", "A"), ("subtitle", "B"), ("body", "D")),
+        output_field=SearchVectorField(),
+        db_persist=True,
+    )
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
@@ -233,8 +262,7 @@ class Article(EditorialItem):
             return False
 
         def base(texto):
-            sin_tildes = unicodedata.normalize("NFD", texto)
-            return "".join(c for c in sin_tildes if not unicodedata.combining(c)).lower().strip()
+            return strip_accents(texto).lower().strip()
 
         seccion, tipo = base(self.section.name), base(self.get_type_display())
         return not (seccion.startswith(tipo) or tipo.startswith(seccion))
@@ -248,9 +276,6 @@ class Article(EditorialItem):
         self.body = clean_html(self.body)
         self.reading_time = self._calc_reading_time()
         super().save(*args, **kwargs)
-        # `search_vector` lo mantiene un trigger de Postgres (ver migración): se
-        # actualiza en TODA escritura de title/subtitle/body (también bulk_update),
-        # no solo al pasar por save().
 
 
 class ArticleContributor(models.Model):
@@ -329,7 +354,11 @@ class Poem(EditorialItem):
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
     # Mantenido por un trigger de Postgres (ver migración): los poemas son buscables.
-    search_vector = SearchVectorField(null=True, editable=False)
+    search_vector = models.GeneratedField(
+        expression=search_vector(("title", "A"), ("body", "D")),
+        output_field=SearchVectorField(),
+        db_persist=True,
+    )
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
@@ -526,11 +555,25 @@ class Page(models.Model):
         super().save(*args, **kwargs)
 
 
+class ImmutableLogError(Exception):
+    """Un intento de cambiar o borrar una entrada de la bitácora editorial."""
+
+
+class EditorialTransitionQuerySet(models.QuerySet):
+    def for_item(self, item):
+        """Las entradas de una pieza, también después de borrarla (con su pk de entonces)."""
+        return self.filter(content_type=ContentType.objects.get_for_model(item), object_id=item.pk)
+
+
 class EditorialTransition(models.Model):
     """Rastro inmutable de cada movimiento del flujo editorial (artículos y poemas).
 
     Enlace genérico (content_type + object_id) a cualquier pieza que herede de
-    EditorialItem; `item` es el acceso directo al objeto.
+    EditorialItem; `item` es el acceso directo al objeto. Guarda una copia del título de la
+    pieza y del nombre de quien hizo el movimiento: la entrada sobrevive al borrado de la pieza
+    (no hay relación inversa que la arrastre) y al de la cuenta, que solo deja vacío `actor`.
+    Ni el modelo ni la base dejan modificarla o borrarla: un trigger de PostgreSQL lo impide
+    también para `update()` y `delete()` sobre consultas (migración content 0017).
     """
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
@@ -546,8 +589,12 @@ class EditorialTransition(models.Model):
         related_name="editorial_transitions",
         verbose_name="actor",
     )
+    actor_name = models.CharField("quién", max_length=150, blank=True)
+    item_title = models.CharField("pieza", max_length=255, blank=True)
     note = models.TextField("nota", blank=True)
     created_at = models.DateTimeField("fecha", auto_now_add=True)
+
+    objects = EditorialTransitionQuerySet.as_manager()
 
     class Meta:
         verbose_name = "transición editorial"
@@ -556,7 +603,15 @@ class EditorialTransition(models.Model):
         indexes = [models.Index(fields=["content_type", "object_id"], name="edtransition_item_idx")]
 
     def __str__(self):
-        return f"{self.content_type_id}/{self.object_id}: {self.from_status} → {self.to_status}"
+        return f"{self.item_title}: {self.from_status} → {self.to_status}"
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ImmutableLogError("La bitácora editorial no se modifica.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableLogError("La bitácora editorial no se borra.")
 
 
 class EditorialNote(models.Model):

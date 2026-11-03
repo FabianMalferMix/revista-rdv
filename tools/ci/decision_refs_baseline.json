@@ -10,7 +10,7 @@
   "backend/apps/content/management/commands/textos_largos/resena-inventario.html": 1,
   "backend/apps/content/models.py": 2,
   "backend/apps/content/templatetags/versos.py": 1,
-  "backend/apps/content/views.py": 13,
+  "backend/apps/content/views.py": 12,
   "backend/apps/media/filecleanup.py": 2,
   "backend/apps/media/models.py": 3,
   "backend/apps/media/templatetags/embeds.py": 2,

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('agenda', '0003_remove_unused_featured'),
-        ('media', '0014_protect_published_references'),
+        ('media', '0015_protect_published_references'),
     ]
 
     operations = [

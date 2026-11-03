@@ -92,15 +92,19 @@ www.{$SITE_ADDRESS::80} {
 	# workers de gunicorn: consumo del recurso más escaso del sistema para devolver
 	# ficheros inmutables, y superficie extra para el agotamiento de workers (S-07).
 	#
-	# Los nombres llevan hash del contenido (manifiesto de WhiteNoise), así que la caché
-	# puede ser inmutable y eterna: un cambio de contenido cambia el nombre.
+	# Lo que lleva hash del contenido en el nombre (el manifiesto de Django: «site.3f2a9c1b7e4d.css»)
+	# se cachea como inmutable y eterno: un cambio de contenido cambia el nombre. Lo demás (la
+	# carpeta de TinyMCE, que va sin hash porque su cargador pide sus archivos por ruta relativa)
+	# se revalida en cada uso con el ETag: aunque su carpeta lleve la versión, un archivo que
+	# cambie sin cambiarla no se queda viejo en la caché del navegador.
 	handle_path /static/* {
 		root * /srv/static
+		@hashed path_regexp [.][0-9a-f]{12}[.][a-z0-9]+$
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@unhashed not path_regexp [.][0-9a-f]{12}[.][a-z0-9]+$
+		header @unhashed Cache-Control "no-cache"
+		header X-Content-Type-Options nosniff
 		file_server
-		header {
-			Cache-Control "public, max-age=31536000, immutable"
-			X-Content-Type-Options nosniff
-		}
 	}
 
 	# Todo lo demás va a gunicorn. Cuando Django responde con X-Accel-Redirect (el archivo de

@@ -331,6 +331,15 @@ class Recording(models.Model):
         ),
     )
     description = models.TextField(blank=True, verbose_name="descripción")
+    # La alternativa en texto al audio o al video (WCAG 1.2.1): la ficha la enseña plegada justo
+    # después del reproductor. El panel avisa, sin impedirlo, si se publica un audio sin ella ni
+    # un poema enlazado.
+    transcript = models.TextField(
+        "transcripción",
+        blank=True,
+        help_text="Lo que se dice o se lee en el registro, para quien no puede escucharlo. Si "
+        "es la lectura de un poema enlazado, basta con el poema.",
+    )
     recorded_on = models.DateField(null=True, blank=True, verbose_name="grabado el")
     duration_minutes = models.PositiveSmallIntegerField(
         null=True,

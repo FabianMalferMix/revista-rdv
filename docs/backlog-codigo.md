@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 47 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Avance:** 53 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -130,12 +130,12 @@
 | B44 | Registro de derivados | B43 | M | no | hecho (#223) |
 | B45 | Metapruebas de completitud | — | S | no | hecho (#224) |
 | B46 | Lo publicado no se pierde al borrar | — | M | no | hecho (#225) |
-| B47 | Comandos de mantenimiento que avisan | — | S | no | pendiente |
-| B48 | Bitácora editorial que sobrevive | B17 | M | no | pendiente |
-| B49 | El HTML de autor se sanea a la salida | — | S | no | pendiente |
-| B50 | Búsqueda: una regla de acentos y tipos declarados | B20 | M | no | pendiente |
-| B51 | Transcripción de los registros | — | S | no | pendiente |
-| B52 | TinyMCE con la versión en la ruta y lo vendorizado con radar | — | M | no | pendiente |
+| B47 | Comandos de mantenimiento que avisan | — | S | no | hecho (#226) |
+| B48 | Bitácora editorial que sobrevive | B17 | M | no | hecho (#227) |
+| B49 | El HTML de autor se sanea a la salida | — | S | no | hecho (#228) |
+| B50 | Búsqueda: una regla de acentos y tipos declarados | B20 | M | no | hecho (#229) |
+| B51 | Transcripción de los registros | — | S | no | hecho (#230) |
+| B52 | TinyMCE con la versión en la ruta y lo vendorizado con radar | — | M | no | hecho (#231) |
 
 **Tanda 6 — Pruebas y herramientas que vigilan**
 
@@ -977,6 +977,8 @@ Al terminar, se actualizan en el registro D3 (técnicas) y la entrada del FTS.
 Los subtítulos `.vtt` y las varias lecturas por poema quedan fuera (C7 y C9).
 
 **Hecho cuando.** La ficha de un registro con transcripción la muestra después del reproductor, y el panel avisa al guardar un audio publicado sin texto.
+
+**Al cerrarlo (2026-11-03).** El dueño eligió la transcripción plegada en un desplegable «Transcripción», con «Leer el poema →» junto al reproductor cuando hay un poema enlazado.
 
 #### B52 · TinyMCE con la versión en la ruta y lo vendorizado con radar
 

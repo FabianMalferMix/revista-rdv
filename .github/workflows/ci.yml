@@ -162,8 +162,8 @@ jobs:
         run: |
           # Ejercita la ruta REAL de estáticos de producción, que el smoke de gunicorn
           # NO cubre (corre con DEBUG=1). Con DEBUG=0, collectstatic usa
-          # VendoredStaticFilesStorage (hash + manifiesto WhiteNoise, con vendor/tinymce/
-          # exento del hash). No necesita la BD.
+          # VendoredStaticFilesStorage (hash + manifiesto WhiteNoise, con la carpeta de TinyMCE,
+          # vendor/tinymce-<versión>/, exenta del hash). No necesita la BD.
           docker run --name prod-static --entrypoint python \
             -e DJANGO_DEBUG=0 \
             -e DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
@@ -184,9 +184,9 @@ jobs:
           site = [k for k in m if k.endswith("css/site.css")]
           assert site and m[site[0]] != site[0], "css/site.css no quedó hasheado"
           # 2) TinyMCE queda SIN hash: su carga perezosa relativa se rompería si no.
-          tiny = [k for k in m if k.startswith("vendor/tinymce/")]
-          assert tiny, "no hay entradas de vendor/tinymce/ en el manifiesto"
-          assert all(m[k] == k for k in tiny), "vendor/tinymce/ fue hasheado (no debería)"
+          tiny = [k for k in m if k.startswith("vendor/tinymce-")]
+          assert tiny, "no hay entradas de vendor/tinymce-<versión>/ en el manifiesto"
+          assert all(m[k] == k for k in tiny), "la carpeta de TinyMCE fue hasheada (no debería)"
           print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
           PY
 
@@ -385,6 +385,15 @@ jobs:
           [ "$(curl -s -o /dev/null -w '%{http_code}' "$P/static/$CSS")" = 200 ] \
             || { echo "FALLO: Caddy no sirve el estático hasheado"; exit 1; }
           echo "OK: Caddy sirve el estático hasheado"
+          # Lo hasheado se cachea como inmutable; TinyMCE, que va sin hash, se revalida.
+          curl -fsS -D - -o /dev/null "$P/static/$CSS" | grep -qi '^cache-control: public, max-age=31536000, immutable' \
+            || { echo "FALLO: el estático hasheado no se cachea como inmutable"; exit 1; }
+          TINY="$(docker compose exec -T web python -c 'from config.staticfiles import TINYMCE_DIR; print(TINYMCE_DIR)')tinymce.min.js"
+          HT=$(curl -fsS -D - -o /dev/null "$P/static/$TINY")
+          if echo "$HT" | grep -qi immutable || ! echo "$HT" | grep -qi '^cache-control: no-cache'; then
+            echo "FALLO: $TINY llega como inmutable o sin revalidar"; echo "$HT"; exit 1
+          fi
+          echo "OK: TinyMCE ($TINY) se revalida, sin caché inmutable"
           # /readyz/ exige el latido de las tareas: beat despacha la publicación programada
           # al minuto de arrancar y el worker la ejecuta. Se espera hasta tres minutos.
           listo() { curl -fsS "$P/readyz/" | python3 -c "import json,sys; sys.exit(json.load(sys.stdin)['status'] != 'ready')"; }
@@ -498,7 +507,8 @@ jobs:
         run: docker compose logs --no-color --tail 200 release web worker beat proxy
 
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
-  # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
+  # REAL (con el vector de búsqueda generado, su configuración, la extensión unaccent y
+  # datos de migración) se pueda restaurar
   # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.
   backup-restore:
     runs-on: ubuntu-latest
@@ -523,8 +533,8 @@ jobs:
             docker exec bk-db pg_isready -U resenas >/dev/null 2>&1 && break
             sleep 2
           done
-          # Migra el esquema REAL con la imagen prod (triggers FTS, extensión unaccent,
-          # páginas legales de migración).
+          # Migra el esquema REAL con la imagen prod (vector de búsqueda generado, extensión
+          # unaccent, páginas legales de migración).
           docker run --rm --network bknet \
             -e DJANGO_DEBUG=0 \
             -e DJANGO_SECRET_KEY=ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW \
@@ -544,14 +554,15 @@ jobs:
           $PG psql -U resenas -d postgres -qc "CREATE DATABASE restored;"
           $PG pg_restore -U resenas -d restored --clean --if-exists --no-owner --no-acl /tmp/db.dump
           REST=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM content_page;")
-          TRG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_trigger WHERE tgname LIKE '%search_vector_trg';")
+          FTS=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM information_schema.columns WHERE column_name = 'search_vector' AND is_generated = 'ALWAYS';")
+          CFG=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_ts_config WHERE cfgname = 'spanish_unaccent';")
           EXT=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_extension WHERE extname='unaccent';")
-          echo "content_page orig=$ORIG restaurado=$REST | triggers FTS=$TRG | unaccent=$EXT"
+          echo "content_page orig=$ORIG restaurado=$REST | vectores generados=$FTS | configuración=$CFG | unaccent=$EXT"
           # Comprobaciones explícitas: con `set -e`, en `test A && test B` el fallo de A no
           # aborta el paso, y la comprobación nunca podía fallar.
-          [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$TRG" = "2" ] && [ "$EXT" = "1" ] \
+          [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$FTS" = "2" ] && [ "$CFG" = "1" ] && [ "$EXT" = "1" ] \
             || { echo "FALLO: la restauración no coincide con el original"; exit 1; }
-          echo "OK: respaldo restaurado íntegro (datos + triggers FTS + extensión)"
+          echo "OK: respaldo restaurado íntegro (datos + vectores de búsqueda + configuración + extensión)"
 
           # ── backup.sh REAL, con la imagen del sidecar (trae curl para el ping) ──
           # Los artefactos llevan la BD completa y los manuscritos privados: deben quedar
