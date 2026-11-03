@@ -1,0 +1,35 @@
+{
+  "htmx": {
+    "package": "htmx.org",
+    "version": "2.0.10",
+    "integrity": "sha512-kdeJe7ZVwaS6QMz/ebBIVtZdpwen6L0OQ5GOhPV9MKBb196TCZeZu4yA7ZIQsaLKv7EpXz+So7KSXNuHXhj7Cw==",
+    "source": "dist/",
+    "target": "htmx/",
+    "files": {
+      "htmx.min.js": "71ea67185bfa8c98c39d31717c6fce5d852370fcdfd129db4543774d3145c0de"
+    }
+  },
+  "tinymce": {
+    "package": "tinymce",
+    "version": "7.9.3",
+    "integrity": "sha512-Mtm54U5YJ6Pyo/GaAx+JSHXTGEuxrg2AowVWCD9zy1eBolp5Ub7S1rTtsyQdxhPegfhLuR3VLiTKGw1tacv09g==",
+    "source": "",
+    "target": "tinymce-{version}/",
+    "files": {
+      "icons/default/icons.min.js": "6f835998e904252231194141807f190e97342f34e5d390019c1805fd6f7ccaef",
+      "license.md": "2fcd38ecec1bedcf12c8fc7b6d874537028ae36a03ce9d4e9a243ea8371fe7ea",
+      "models/dom/model.min.js": "d6cb35949722f4b836ad383d160b4a77e55ac1e642898af793c2a90bd830dce0",
+      "notices.txt": "658de17590bce4a2fa0c158f9780fae02f75309906cdc7e285e05ab9b166f156",
+      "plugins/autolink/plugin.min.js": "0c88dbb5b98a8891e671884bd22a2ba227f3d8273520746419c88138ded14d1c",
+      "plugins/link/plugin.min.js": "33e0dc25bdab261cc7e53ad8e1f1d4817d1cdecfb66a17191bc6c2ff55b56666",
+      "plugins/lists/plugin.min.js": "a6474b2f8566449fed62e537f47942ff46fbc9b7644f7171766a589c366e900c",
+      "skins/content/default/content.min.css": "8fbc7f18efefe59b8b7d692d25e0c4283aa4100eaba292e1cdda0cd32e20fc88",
+      "skins/ui/oxide/content.inline.min.css": "38b26d400206176ba08eb2a6807194495badebbfcb6b9623ad207de64e28acc0",
+      "skins/ui/oxide/content.min.css": "15901f2ed975b278f065342e7e8c9dc6bbddf664b7b71925290395868682e37a",
+      "skins/ui/oxide/skin.min.css": "35a0a7c567d7cc412f2ce09994b4add600762930300ad5782a46ccc519bcd40e",
+      "skins/ui/oxide/skin.shadowdom.css": "059129c8669b433ed627232748a76f8187ada00c84fb07f29c772fbe2190c848",
+      "themes/silver/theme.min.js": "7dd1082653d06715952f76e24e4c02780620a923d54facd9e3aad76434edc08e",
+      "tinymce.min.js": "ca7a4ae9354b117b3133d5b449b4f807ac1484e66b5019c1381e1990ebb1ecd3"
+    }
+  }
+}
