@@ -245,6 +245,12 @@ paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` q
   Docker, que equivale a ser root en el anfitrión; el monitor externo (C8) avisa en su lugar
   (RES-6).
 - **No se parte `settings.py` en módulos.** Basta un settings de pruebas explícito (B57; OPE-2).
+- **Un umbral propio por cuenta y un enfriamiento progresivo en el bloqueo del panel.** B34
+  bloquea por cuenta e IP, y un acierto solo reinicia su propia combinación. django-axes 8.3
+  compara un único límite con el máximo de todos sus criterios, así que no admite un umbral
+  más alto solo por cuenta, y su enfriamiento no conoce los bloqueos anteriores. Con pocas
+  cuentas del equipo, no compensa reimplementarlo. *Si se retoma:* con el segundo factor,
+  cuando crezcan las cuentas de autor (SEG-3).
 - **No hay modo report-only en la CSP, ni `report-to`.** B27 retiró el interruptor en vez de
   darle un destino para los informes: la prueba de humo del CI abre el sitio en un navegador y
   falla con cualquier error de consola, que es donde aparece una violación, y un interruptor
