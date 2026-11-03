@@ -42,7 +42,7 @@
         {% if rec %}
           <div class="lectura-registro">
             <h2 class="rotulo">Escuchar el poema</h2>
-            {% if rec.file %}<audio controls preload="none" src="{{ rec.file.url }}"></audio>{% endif %}
+            {% if rec.file %}<audio controls preload="none" src="{{ rec.file_url }}"></audio>{% endif %}
             <p><a href="{{ rec.get_absolute_url }}">{% if rec.file %}Ver el registro{% else %}Escuchar en el registro{% endif %} →</a></p>
           </div>
         {% endif %}

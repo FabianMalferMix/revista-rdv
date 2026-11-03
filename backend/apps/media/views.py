@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from apps.content.models import Poem
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
-from config import publishing
+from config import protected_media, publishing
 
 from .models import Recording
 
@@ -41,3 +41,8 @@ def recording_detail(request, slug):
         {"recording": recording, "pie": pie, "preview": preview},
     )
     return publishing.marked_as_preview(response, preview)
+
+
+def recording_file(request, slug, filename):
+    recording, preview = publishing.piece_for(request, Recording.objects, slug=slug)
+    return protected_media.serve(recording.file, filename, preview)

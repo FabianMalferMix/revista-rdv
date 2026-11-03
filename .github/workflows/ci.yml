@@ -464,6 +464,49 @@ jobs:
             || { echo "FALLO: /media/ se sirve sin CSP de aislamiento"; exit 1; }
           echo "OK: /media/ se sirve con nosniff + CSP sandbox (S-01 cerrado en el borde)"
 
+      - name: Lo despublicado deja de servirse, con el Caddy real
+        run: |
+          # Dos registros con audio en la base de prod-web: uno publicado y otro no.
+          ARCHIVOS=$(docker exec prod-web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from django.core.files.base import ContentFile
+          from django.utils import timezone
+          from apps.media.models import Recording
+          for slug, publicado in (('publicado', True), ('despublicado', False)):
+              r = Recording(slug=slug, title=slug, kind='audio', published=publicado, published_at=timezone.now())
+              r.file.save('lectura.mp3', ContentFile(b'ID3' + b'0' * 4096), save=False)
+              r.save()
+              print(r.file_url(), r.file.name)" | tail -2)
+          PUB_URL=$(echo "$ARCHIVOS" | sed -n 1p | cut -d' ' -f1)
+          PUB_FILE=$(echo "$ARCHIVOS" | sed -n 1p | cut -d' ' -f2)
+          DES_URL=$(echo "$ARCHIVOS" | sed -n 2p | cut -d' ' -f1)
+          DES_FILE=$(echo "$ARCHIVOS" | sed -n 2p | cut -d' ' -f2)
+          # Caddy, con el volumen de medios de web y web como upstream (red y alias propios).
+          mkdir -p /tmp/archmedia
+          docker cp prod-web:/app/mediafiles/. /tmp/archmedia/
+          docker network create archnet
+          docker network connect --alias web archnet prod-web
+          docker run -d --name prod-proxy-archivos --network archnet -p 127.0.0.1:8089:80 \
+            -v "$PWD/infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            -v /tmp/archmedia:/srv/media:ro caddy:2-alpine
+          for i in $(seq 1 20); do curl -sf -o /dev/null http://127.0.0.1:8089/healthz/ && break; sleep 2; done
+          codigo() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+          [ "$(codigo "http://127.0.0.1:8089$PUB_URL")" = 200 ] \
+            || { echo "FALLO: el audio publicado no se sirve"; exit 1; }
+          [ "$(codigo -H 'Range: bytes=0-9' "http://127.0.0.1:8089$PUB_URL")" = 206 ] \
+            || { echo "FALLO: el audio publicado no admite saltos (Range)"; exit 1; }
+          [ "$(codigo "http://127.0.0.1:8089$DES_URL")" = 404 ] \
+            || { echo "FALLO: el audio despublicado se sigue sirviendo"; exit 1; }
+          for archivo in "$PUB_FILE" "$DES_FILE"; do
+            [ "$(codigo "http://127.0.0.1:8089/media/$archivo")" = 404 ] \
+              || { echo "FALLO: /media/$archivo se sirve sin pasar por Django"; exit 1; }
+          done
+          curl -s http://127.0.0.1:8089/feed/registros/ | grep -q "$PUB_URL" \
+            || { echo "FALLO: el feed de pódcast no entrega el registro publicado"; exit 1; }
+          docker rm -f prod-proxy-archivos > /dev/null
+          echo "OK: lo publicado se sirve con Range, lo despublicado da 404 y /media/ no lo entrega"
+
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
   # REAL (con triggers FTS, extensión unaccent y datos de migración) se pueda restaurar
   # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.

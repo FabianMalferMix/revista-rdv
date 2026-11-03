@@ -11,6 +11,7 @@ from django.utils import timezone
 from PIL import Image, ImageOps
 
 from config import publishing
+from config.protected_media import file_name, random_upload_path
 
 from .validators import validate_audio_video_extension, validate_image
 
@@ -361,6 +362,10 @@ class MediaAsset(models.Model):
 TIRADA_SIZE = 5
 
 
+def recording_upload_to(instance, filename):
+    return random_upload_path("recordings", filename)
+
+
 class Recording(models.Model):
     """Registro de audio o video de una lectura/recital.
 
@@ -391,7 +396,7 @@ class Recording(models.Model):
         max_length=10, choices=Kind.choices, default=Kind.VIDEO, verbose_name="tipo"
     )
     file = models.FileField(
-        upload_to="recordings/%Y/%m/",
+        upload_to=recording_upload_to,
         blank=True,
         validators=[validate_audio_video_extension],
         verbose_name="archivo",
@@ -476,6 +481,14 @@ class Recording(models.Model):
         from django.urls import reverse
 
         return reverse("media:recording_detail", args=[self.slug])
+
+    def file_url(self):
+        """La dirección de el audio: la vista que lo entrega solo si el registro es público."""
+        from django.urls import reverse
+
+        if not self.file:
+            return ""
+        return reverse("media:recording_file", args=[self.slug, file_name(self.file)])
 
     def social_image(self):
         """La imagen para compartir el registro: su póster (ver `{% social_meta %}`)."""

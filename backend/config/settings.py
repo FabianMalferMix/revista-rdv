@@ -194,6 +194,9 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 # cayera dentro, Caddy serviría los manuscritos en /media/: el arranque se niega, también
 # en desarrollo.
 PRIVATE_MEDIA_ROOT = env_str("DJANGO_PRIVATE_MEDIA_ROOT", str(BASE_DIR / "private_media"))
+# El audio y los PDF que solo se sirven publicados (config/protected_media.py): en producción
+# los entrega Caddy con X-Accel-Redirect; en desarrollo, sin Caddy delante, Django.
+PROTECTED_MEDIA_ACCEL = not DEBUG
 _storage_problems = envguard.check_storage_separation(MEDIA_ROOT, PRIVATE_MEDIA_ROOT)
 if _storage_problems:
     raise ImproperlyConfigured("; ".join(_storage_problems) + ".")
