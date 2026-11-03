@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 33 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
+> **Avance:** 34 de 79 tickets cerrados (32 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 30: los marcados «sí», más B07, que es urgente.
 
 ## Cómo se usa
 
@@ -112,7 +112,7 @@
 | B32 | Avisos: monitor, latido y errores visibles | B31 | M | sí | hecho (#210) |
 | B33 | Límites de subida por ruta y por campo | — | S | sí | pendiente |
 | B34 | Antiabuso del panel | — | S | sí | hecho (#212) |
-| B35 | Plazos y procesos acotados | B06 | S | sí | pendiente |
+| B35 | Plazos y procesos acotados | B06 | S | sí | hecho (#213) |
 | B36 | Redis: la caché, aparte del broker | B27 | M | sí | pendiente |
 | B37 | Lo despublicado deja de servirse | B13 | M | sí | pendiente |
 | B38 | Ciclo de vida del suscriptor y de los envíos | — | M | sí | pendiente |

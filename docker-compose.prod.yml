@@ -46,6 +46,9 @@ services:
       # (hallazgo S-07). Los timeouts del borde están en infra/caddy/Caddyfile.
       - --threads
       - ${GUNICORN_THREADS:-4}
+      # Con gthread, --timeout no es un plazo por petición: el proceso sigue avisando que está
+      # vivo aunque todos sus hilos estén ocupados. El plazo de cada consulta lo pone
+      # statement_timeout (backend/config/settings.py).
       - --timeout
       - "30"
       - --graceful-timeout
