@@ -1,0 +1,387 @@
+"""La hoja de estilos del sitio, analizada para las pruebas.
+
+Las pruebas que miran `site.css` la leen con este módulo y nunca como texto. La hoja se analiza
+una sola vez por proceso, con tinycss2, y cada regla sale con:
+
+- su contexto: la tupla de las at-rules que la contienen, de fuera hacia dentro, como
+  `("@media (min-width:900px)",)`; `()` es el nivel de arriba;
+- su selector: la lista entera (`".nav a, .subnav a"`) y cada selector suelto (`selectors`);
+- sus declaraciones, en el orden de la hoja: `regla["display"]` da el último valor, que es el
+  que aplica el navegador, y `regla.values("min-height")` da todos.
+
+Una regla se busca siempre por su contexto y su selector (`rule`, `rules_with`), de modo que una
+regla que sale de su `@media` ya no se encuentra donde la prueba la busca. Los comentarios no
+cuentan, y los espacios y los saltos de línea se escriben siempre igual, así que formatear la
+hoja no cambia ningún resultado:
+
+- un espacio donde había cualquier blanco, y ninguno al principio o al final de un paréntesis;
+- `", "` tras cada coma, `" / "` y `" * "` alrededor de esas barras y asteriscos, y `" > "`,
+  `" + "` y `" ~ "` alrededor de los combinadores de un selector;
+- en el preludio de una at-rule, nada alrededor de los dos puntos: `(forced-colors:active)`.
+
+Las cadenas y los números se escriben como en la hoja. Las consultas (el contexto y el selector
+que se piden) se normalizan igual.
+"""
+
+import re
+from dataclasses import dataclass, field
+from functools import cache
+from pathlib import Path
+
+import tinycss2
+
+SITE_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "site.css"
+
+# At-rules cuyo bloque contiene reglas: lo que va dentro se analiza con la at-rule como
+# contexto. Las demás con bloque (@font-face, @property…) contienen declaraciones.
+_GROUPING = frozenset(
+    {"media", "supports", "container", "layer", "scope", "starting-style", "document"}
+)
+_KEYFRAMES = frozenset({"keyframes", "-webkit-keyframes"})
+_NTH = frozenset({"nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type"})
+_COMBINATORS = frozenset({">", "+", "~"})
+_VALUE_OPERATORS = frozenset({"/", "*"})
+_TOKEN = re.compile(r"var\((--[\w-]+)\)")
+_PX = re.compile(r"(-?[\d.]+)px")
+_CLAMP = re.compile(r"clamp\((-?[\d.]+)px, [^,]+, (-?[\d.]+)px\)")
+
+
+@dataclass(frozen=True)
+class Declaration:
+    name: str
+    value: str
+    important: bool = False
+
+
+@dataclass(frozen=True)
+class _Block:
+    """Lo común a una regla y a una at-rule con declaraciones."""
+
+    context: tuple[str, ...]
+    declarations: tuple[Declaration, ...]
+    line: int = field(default=0, compare=False)
+
+    def __contains__(self, name):
+        return any(d.name == name for d in self.declarations)
+
+    def __getitem__(self, name):
+        found = self.values(name)
+        if not found:
+            raise KeyError(f"{self._where()} no declara «{name}»")
+        return found[-1]
+
+    def get(self, name, default=None):
+        found = self.values(name)
+        return found[-1] if found else default
+
+    def values(self, name):
+        """Todos los valores de esa propiedad, en el orden de la hoja."""
+        return tuple(d.value for d in self.declarations if d.name == name)
+
+    def is_important(self, name):
+        """Si la última declaración de esa propiedad lleva `!important`."""
+        found = [d for d in self.declarations if d.name == name]
+        return bool(found) and found[-1].important
+
+
+@dataclass(frozen=True)
+class Rule(_Block):
+    selector: str = ""
+    selectors: tuple[str, ...] = ()
+
+    def _where(self):
+        return f"«{self.selector}» en {_describe(self.context)} (línea {self.line})"
+
+
+@dataclass(frozen=True)
+class AtRule(_Block):
+    name: str = ""
+    prelude: str = ""
+
+    def _where(self):
+        return f"@{self.name} {self.prelude} en {_describe(self.context)} (línea {self.line})"
+
+
+class Stylesheet:
+    """Una hoja analizada: sus reglas y sus at-rules con declaraciones, en orden."""
+
+    def __init__(self, text):
+        rules, at_rules = [], []
+        nodes = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
+        _walk(nodes, (), rules, at_rules)
+        self.rules = tuple(rules)
+        self._at_rules = tuple(at_rules)
+
+    def at_rules(self, name=None):
+        """Las at-rules con ese nombre (sin la arroba), o todas, en cualquier contexto."""
+        return tuple(a for a in self._at_rules if name is None or a.name == name)
+
+    def declarations(self):
+        """Cada declaración de la hoja, con la regla o la at-rule que la lleva."""
+        return tuple(
+            (block, d) for block in (*self.rules, *self._at_rules) for d in block.declarations
+        )
+
+    def rule(self, context, selector):
+        """La regla con exactamente esa lista de selectores en exactamente ese contexto.
+
+        Si el mismo selector aparece varias veces en el mismo contexto, sus declaraciones se
+        juntan en el orden de la hoja, como las junta la cascada. Si no está, falla diciendo
+        en qué contextos sí está.
+        """
+        context, selector = normalize_context(context), normalize_selector(selector)
+        found = [r for r in self.rules if r.context == context and r.selector == selector]
+        if not found:
+            elsewhere = sorted({_describe(r.context) for r in self.rules if r.selector == selector})
+            within = sorted(
+                f"«{r.selector}» en {_describe(r.context)}"
+                for r in self.rules
+                if selector in r.selectors and r.selector != selector
+            )
+            raise AssertionError(
+                f"la hoja no tiene la regla «{selector}» en {_describe(context)}; "
+                f"está en: {elsewhere or 'ningún contexto'}"
+                + (f"; forma parte de: {within}" if within else "")
+            )
+        declarations = tuple(d for r in found for d in r.declarations)
+        return Rule(context, declarations, found[0].line, selector, found[0].selectors)
+
+    def rules_with(self, context, selector):
+        """Las reglas de ese contexto cuya lista de selectores incluye ese selector."""
+        context, selector = normalize_context(context), normalize_selector(selector)
+        return tuple(r for r in self.rules if r.context == context and selector in r.selectors)
+
+    def tokens(self, context=()):
+        """Las propiedades personalizadas que declaran las reglas `:root` de ese contexto."""
+        context = normalize_context(context)
+        return {
+            d.name: d.value
+            for r in self.rules
+            if r.context == context and r.selector == ":root"
+            for d in r.declarations
+            if d.name.startswith("--")
+        }
+
+    def resolve(self, value, context=()):
+        """El valor con cada `var(--x)` sustituido por el token de ese contexto, si existe."""
+        tokens = self.tokens(context)
+        for _ in range(10):
+            resolved = _TOKEN.sub(lambda m: tokens.get(m.group(1), m.group(0)), value)
+            if resolved == value:
+                return resolved
+            value = resolved
+        raise AssertionError(f"tokens que se citan en círculo: {value}")
+
+    def px_range(self, value, context=()):
+        """(mínimo, máximo) en px de un tamaño fijo o de un `clamp()` en px, con los tokens
+        resueltos."""
+        resolved = self.resolve(value, context)
+        if fixed := _PX.fullmatch(resolved):
+            return float(fixed.group(1)), float(fixed.group(1))
+        if clamp := _CLAMP.fullmatch(resolved):
+            return float(clamp.group(1)), float(clamp.group(2))
+        raise AssertionError(f"tamaño que no sé leer: {value} ({resolved})")
+
+
+def _describe(context):
+    return " › ".join(context) if context else "el nivel de arriba"
+
+
+def _walk(nodes, context, rules, at_rules):
+    for node in nodes:
+        if node.type == "error":
+            raise AssertionError(f"CSS mal formado en la línea {node.source_line}: {node.message}")
+        if node.type == "qualified-rule":
+            selectors = _selector_list(node.prelude)
+            rules.append(
+                Rule(
+                    context,
+                    _declarations(node.content),
+                    node.source_line,
+                    ", ".join(selectors),
+                    selectors,
+                )
+            )
+            continue
+        name = node.lower_at_keyword
+        prelude = _render(node.prelude, "prelude")
+        if node.content is None:
+            at_rules.append(AtRule(context, (), node.source_line, name, prelude))
+        elif name in _GROUPING or name in _KEYFRAMES:
+            inner = tinycss2.parse_rule_list(node.content, skip_comments=True, skip_whitespace=True)
+            _walk(inner, (*context, f"@{name} {prelude}".rstrip()), rules, at_rules)
+        else:
+            at_rules.append(
+                AtRule(context, _declarations(node.content), node.source_line, name, prelude)
+            )
+
+
+def _declarations(content):
+    found = []
+    for item in tinycss2.parse_blocks_contents(content, skip_comments=True, skip_whitespace=True):
+        if item.type == "error":
+            raise AssertionError(f"CSS mal formado en la línea {item.source_line}: {item.message}")
+        if item.type != "declaration":
+            # El anidamiento de CSS cambiaría el selector de lo anidado: falla en vez de
+            # dar por buenas unas reglas que no son las que aplica el navegador.
+            raise AssertionError(f"regla anidada en la línea {item.source_line}: sin resolver")
+        name = item.name if item.name.startswith("--") else item.lower_name
+        found.append(Declaration(name, _render(item.value, "value"), item.important))
+    return tuple(found)
+
+
+def _split_at_commas(tokens):
+    """Los tramos de una lista separada por comas. Las comas de dentro de un paréntesis (las de
+    `:is()` o de `rgba()`) van dentro de su nodo, así que no la parten."""
+    parts = [[]]
+    for token in tokens:
+        if token.type == "literal" and token.value == ",":
+            parts.append([])
+        else:
+            parts[-1].append(token)
+    return parts
+
+
+def _selector_list(tokens):
+    """Cada selector de una lista, normalizado."""
+    return tuple(_render(part, "selector") for part in _split_at_commas(tokens))
+
+
+def _render(nodes, mode):
+    """Escribe una lista de nodos con los blancos en su forma canónica.
+
+    `mode` es "value" (el valor de una declaración), "selector", "attribute" (dentro de los
+    corchetes de un selector), "nth" (los argumentos de `:nth-child()` y sus hermanos) o
+    "prelude" (lo que sigue al nombre de una at-rule).
+    """
+    pieces = []
+    for node in nodes:
+        kind = node.type
+        if kind == "comment":
+            continue
+        if kind == "whitespace":
+            pieces.append(("space", ""))
+        elif kind == "literal" and node.value == ",":
+            pieces.append(("comma", ","))
+        elif kind == "literal" and _is_spaced(node.value, mode):
+            pieces.append(("spaced", node.value))
+        elif kind == "literal" and _is_tight(node.value, mode):
+            pieces.append(("tight", node.value))
+        elif kind == "function":
+            inner = "nth" if mode == "selector" and node.lower_name in _NTH else mode
+            pieces.append(("text", f"{node.name}({_render(node.arguments, inner)})"))
+        elif kind == "() block":
+            pieces.append(("text", f"({_render(node.content, mode)})"))
+        elif kind == "[] block":
+            inner = "attribute" if mode == "selector" else mode
+            pieces.append(("text", f"[{_render(node.content, inner)}]"))
+        elif kind == "{} block":
+            pieces.append(("text", f"{{{_render(node.content, mode)}}}"))
+        else:
+            pieces.append(("text", node.serialize()))
+    return _join(pieces)
+
+
+def _is_spaced(value, mode):
+    if mode == "selector":
+        return value in _COMBINATORS
+    return mode in ("value", "prelude") and value in _VALUE_OPERATORS
+
+
+def _is_tight(value, mode):
+    if mode == "attribute":
+        return True
+    if mode == "nth":
+        return value in ("+", "-")
+    return mode == "prelude" and value == ":"
+
+
+def _join(pieces):
+    out = []
+    space = False  # hubo un blanco en la hoja
+    after = ""  # lo que pide la pieza anterior: "space", "none" o ""
+    for kind, text in pieces:
+        if kind == "space":
+            space = True
+            continue
+        if kind == "text":
+            if out and after != "none" and (space or after == "space"):
+                out.append(" ")
+            out.append(text)
+            after = ""
+        elif kind == "comma":
+            out.append(",")
+            after = "space"
+        elif kind == "spaced":
+            out.append(f" {text}" if out else text)
+            after = "space"
+        else:
+            out.append(text)
+            after = "none"
+        space = False
+    return "".join(out)
+
+
+def normalize_selector(selector):
+    """Un selector (o una lista) escrito como lo escribe este módulo."""
+    return ", ".join(_selector_list(tinycss2.parse_component_value_list(selector)))
+
+
+def normalize_context(context):
+    """Un contexto (tupla de at-rules) escrito como lo escribe este módulo."""
+    if isinstance(context, str):
+        raise TypeError("el contexto es una tupla de at-rules: ('@media (min-width:900px)',)")
+    return tuple(_normalize_at_rule(at_rule) for at_rule in context)
+
+
+def _normalize_at_rule(text):
+    tokens = tinycss2.parse_component_value_list(text, skip_comments=True)
+    if not tokens or tokens[0].type != "at-keyword":
+        raise ValueError(f"no es una at-rule: {text!r}")
+    prelude = _render(tokens[1:], "prelude")
+    return f"@{tokens[0].lower_value} {prelude}".rstrip()
+
+
+def split_commas(value):
+    """Los elementos de un valor separado por comas, sin partir lo que va entre paréntesis."""
+    tokens = tinycss2.parse_component_value_list(value, skip_comments=True)
+    return tuple(_render(part, "value") for part in _split_at_commas(tokens))
+
+
+@cache
+def site():
+    """La hoja del sitio, analizada una vez por proceso."""
+    return Stylesheet(SITE_CSS.read_text(encoding="utf-8"))
+
+
+def rules():
+    """Todas las reglas de la hoja del sitio, en su orden."""
+    return site().rules
+
+
+def rule(context, selector):
+    return site().rule(context, selector)
+
+
+def rules_with(context, selector):
+    return site().rules_with(context, selector)
+
+
+def at_rules(name=None):
+    return site().at_rules(name)
+
+
+def declarations():
+    return site().declarations()
+
+
+def tokens(context=()):
+    return site().tokens(context)
+
+
+def resolve(value, context=()):
+    return site().resolve(value, context)
+
+
+def px_range(value, context=()):
+    return site().px_range(value, context)

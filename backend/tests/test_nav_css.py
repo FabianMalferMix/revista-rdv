@@ -15,45 +15,35 @@ Este test no puede pintar, así que fija el requisito sobre la hoja de estilos: 
 reescribe ese bloque y vuelve a depender solo del `display` del hijo, falla.
 """
 
-import re
-from pathlib import Path
+from tests import css
 
-CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "site.css"
-
-
-def _bloque_escritorio():
-    """El contenido del @media de escritorio que gobierna la navegación."""
-    texto = CSS.read_text(encoding="utf-8")
-    m = re.search(r"@media \(min-width:900px\)\{(.*?)\n\}", texto, re.S)
-    assert m, "no se encontró el @media de escritorio en site.css"
-    return m.group(1)
+# El bloque de escritorio que gobierna la navegación.
+DESKTOP = ("@media (min-width:900px)",)
 
 
 def test_la_hoja_de_estilos_existe():
-    assert CSS.is_file()
+    assert css.SITE_CSS.is_file()
 
 
 def test_en_escritorio_se_oculta_el_desplegable():
-    assert re.search(r"\.nav-disclosure summary\s*\{[^}]*display:\s*none", _bloque_escritorio())
+    assert css.rule(DESKTOP, ".nav-disclosure summary")["display"] == "none"
 
 
 def test_se_abre_el_pseudo_elemento_de_details():
     """Sin esto, Chrome 131+ deja la navegación invisible aunque el hijo tenga display."""
-    bloque = _bloque_escritorio()
-    assert "::details-content" in bloque, (
+    assert css.rules_with(DESKTOP, ".nav-disclosure::details-content"), (
         "falta abrir ::details-content: en Chrome 131+ el contenido de un <details> "
         "cerrado queda oculto por content-visibility y la navegación desaparece"
     )
-    assert re.search(r"::details-content\s*\{[^}]*content-visibility:\s*visible", bloque)
+    abierto = css.rule(DESKTOP, ".nav-disclosure::details-content")
+    assert abierto["content-visibility"] == "visible"
 
 
 def test_se_conserva_el_display_para_navegadores_antiguos():
     """La regla de siempre sigue haciendo falta donde ::details-content no existe."""
-    assert re.search(r"\.nav-disclosure > \.nav\s*\{[^}]*display:\s*flex", _bloque_escritorio())
+    assert css.rule(DESKTOP, ".nav-disclosure > .nav")["display"] == "flex"
 
 
 def test_en_movil_el_desplegable_sigue_siendo_visible():
     """Fuera del @media, el summary debe verse: es el único acceso a la nav en móvil."""
-    texto = CSS.read_text(encoding="utf-8")
-    fuera = texto.split("@media (min-width:900px)")[0]
-    assert re.search(r"\.nav-disclosure summary\s*\{[^}]*display:\s*inline-flex", fuera)
+    assert css.rule((), ".nav-disclosure summary")["display"] == "inline-flex"

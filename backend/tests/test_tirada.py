@@ -21,6 +21,7 @@ from apps.content.models import EditorialStatus
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
+from tests import css
 from tests.factories import make_event, make_image, make_photo
 
 pytestmark = pytest.mark.django_db
@@ -28,7 +29,6 @@ pytestmark = pytest.mark.django_db
 REGISTROS_JS = (
     Path(__file__).resolve().parent.parent / "static" / "js" / "registros.js"
 ).read_text()
-SITE_CSS = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
 
 
 def _registro(slug, **kw):
@@ -237,13 +237,19 @@ def test_el_panel_nombra_los_campos_en_castellano(client, django_user_model):
 
 def test_desde_1100_px_la_hoja_de_contactos_es_un_indice_al_lado():
     """D29: la pila sola dejaba unos 360 px vacíos a 1900; la hoja de contactos va a la derecha,
-    en columna, y el abanico se ajusta al hueco que deja. El guion ya no busca flechas."""
-    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
-    indice = css[css.index("@media (min-width:1100px){\n  .tirada.con-js{display:grid;") :]
-    assert ".tirada.con-js .tirada-pie{grid-column:3; grid-row:2;" in indice
-    assert ".tirada.con-js .tirada-contactos{flex-direction:column;" in indice
-    assert "--x:min(360px, var(--libre))" in indice
-    assert "tirada-flecha" not in css and "data-siguiente" not in REGISTROS_JS
+    en columna, y el abanico se ajusta al hueco que deja."""
+    indice = ("@media (min-width:1100px)",)
+    pie = css.rule(indice, ".tirada.con-js .tirada-pie")
+    assert (pie["grid-column"], pie["grid-row"]) == ("3", "2")
+    assert css.rule(indice, ".tirada.con-js .tirada-contactos")["flex-direction"] == "column"
+    abanico = [
+        r
+        for r in css.rules()
+        if r.context == indice
+        and re.search(r"\.pliego\[aria-current\](?: \+ \.pliego)+$", r.selector)
+    ]
+    assert abanico, "el abanico no se ajusta al índice"
+    assert all("var(--libre)" in r["--x"] for r in abanico), [r["--x"] for r in abanico]
 
 
 def test_the_pile_has_a_place_for_every_recording_in_the_tirada():
@@ -252,11 +258,17 @@ def test_the_pile_has_a_place_for_every_recording_in_the_tirada():
     hoja no, el pliego que sobra queda tapado bajo el de arriba en el estado inicial."""
     from apps.content.views import TOPE_TIRADA
 
-    hoja = re.sub(r"/\*.*?\*/", "", SITE_CSS, flags=re.S)
-    detras = re.findall(r"\.pliego\[aria-current\]((?: \+ \.pliego)+)\{[^}]*z-index", hoja)
-    delante = re.findall(
-        r"\.pliego:has\(((?:\+ \.pliego ?)+)\[aria-current\]\)\{[^}]*z-index", hoja
-    )
+    apiladas = [r.selector for r in css.rules() if r.context == () and "z-index" in r]
+    detras = [
+        nivel.group(1)
+        for selector in apiladas
+        if (nivel := re.search(r"\.pliego\[aria-current\]((?: \+ \.pliego)+)$", selector))
+    ]
+    delante = [
+        nivel.group(1)
+        for selector in apiladas
+        if (nivel := re.search(r"\.pliego:has\(((?:\+ \.pliego ?)+)\[aria-current\]\)$", selector))
+    ]
     niveles = set(range(1, TOPE_TIRADA))
     assert {nivel.count("+ .pliego") for nivel in detras} == niveles
     assert {nivel.count("+ .pliego") for nivel in delante} == niveles

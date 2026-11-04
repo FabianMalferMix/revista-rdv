@@ -47,14 +47,6 @@ def test_cada_indice_abre_con_la_cabecera_comun(client, nombre):
     assert "page-title" not in html, f"{nombre} conserva el título de 12 px"
 
 
-def test_el_titulo_de_12px_no_vuelve():
-    """Ni la clase en una plantilla ni la regla en la hoja de estilos."""
-    css = (PLANTILLAS.parent / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    assert ".page-title" not in css
-    con_clase = [p.name for p in PLANTILLAS.rglob("*.html") if "page-title" in p.read_text("utf-8")]
-    assert not con_clase, f"plantillas con page-title: {con_clase}"
-
-
 def test_la_cejilla_cuenta_lo_que_hay_y_concuerda_en_numero(client, make_article):
     _pub(make_article, slug="uno", title="Texto uno")
     html = client.get(reverse("content:text_archive")).content.decode()

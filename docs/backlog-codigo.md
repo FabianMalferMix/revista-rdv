@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 60 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 61 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -152,7 +152,7 @@
 | B55 | Contraste de los sellos y axe en el CI | B11 | M | no | hecho (#243) |
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
 | B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
-| B58 | Un analizador de CSS para las pruebas | — | M | no | pendiente |
+| B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
 | B59 | Selectores muertos | B58 | M | no | pendiente |
 | B60 | Migraciones de datos con prueba | — | M | no | pendiente |
 | B61 | Higiene de la suite | — | M | no | pendiente |
@@ -1143,6 +1143,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 **Alcance.** La recomendación de PRU-6: un único ayudante basado en tinycss2 que devuelve cada regla con su contexto (`@media`, `@supports` o `@container`); se busca por contexto y selector, nunca por posición ni anclando en comentarios; se borran las seis copias. De PRU-2: las invariantes de hoja completa pasan a la hoja analizada, y las instantáneas de valores y las lápidas de los archivos que se migran se borran o se sustituyen por comprobaciones de B11.
 
 **Hecho cuando.** Ninguna prueba corta `site.css` como texto, y sacar una regla de su `@media` hace fallar la prueba que la vigila.
+
+**Hecho (2026-11-04).** `tests/css.py`, sobre tinycss2 (dependencia de desarrollo), con `css.rule(contexto, selector)`, que exige la regla en ese contexto y dice dónde está si no la encuentra; trece archivos migrados y los analizadores locales borrados. Se borraron cuatro lápidas (la sombra de las bandas, el sello que flotaba, la cinta y el título de 12 px) y las aserciones lápida de otras pruebas; las instantáneas pasaron a aserciones por contexto, selector y propiedad, y en algunos casos a la relación que de verdad importa (los 44 px como letra por interlínea más relleno, el `text-indent` del verso como su `padding-left` en negativo).
 
 #### B59 · Selectores muertos
 
