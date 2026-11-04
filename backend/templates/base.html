@@ -1,4 +1,4 @@
-{% load social static %}
+{% load newsletter social static %}
 <!doctype html>
 <html lang="es">
 <head>
@@ -168,16 +168,8 @@
          debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
       {% endcomment %}
       {% include "partials/_mapa.html" with sin_contacto=True %}
-      <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <input type="text" name="apodo" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
-        <label for="news-email">Novedades para prensa y gestores:</label>
-        <input id="news-email" type="email" name="email" placeholder="tu@correo.cl" required>
-        <button class="btn" type="submit">Suscribirme</button>
-        <span class="news-consent">Confirmamos por correo (doble opt-in). Al suscribirte aceptas la
-          <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.</span>
-      </form>
+      {# La página del boletín lo pinta en su contenido, con el error junto al campo: ahí no se repite. #}
+      {% block boletin %}{% newsletter_form %}{% endblock %}
       <p class="foot-legal">
         <a href="{% url 'content:page_detail' 'privacidad' %}">Privacidad</a> ·
         <a href="{% url 'content:page_detail' 'cookies' %}">Cookies</a> ·

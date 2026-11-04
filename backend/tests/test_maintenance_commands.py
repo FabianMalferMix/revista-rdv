@@ -34,7 +34,7 @@ def _stale():
     sub = Submission.objects.create(
         author_name="A",
         author_email="a@x.cl",
-        type="poesía",
+        type="poesia",
         title="t",
         body="b",
         status=Submission.Status.REJECTED,

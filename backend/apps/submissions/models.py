@@ -60,6 +60,19 @@ class Call(models.Model):
         return self.opens_at <= timezone.now() <= self.closes_at
 
 
+class SubmissionType(models.TextChoices):
+    """Los tipos de propuesta que ofrece el formulario, en su orden. Las claves van sin tilde: no
+    son texto visible."""
+
+    RESENA = "resena", "Reseña"
+    ENSAYO = "ensayo", "Ensayo"
+    ENTREVISTA = "entrevista", "Entrevista"
+    POESIA = "poesia", "Poesía"
+    NARRATIVA = "narrativa", "Narrativa"
+    CRONICA = "cronica", "Crónica"
+    OTRO = "otro", "Otro"
+
+
 class Submission(models.Model):
     """Envío externo (portal de colaboraciones)."""
 
@@ -70,9 +83,12 @@ class Submission(models.Model):
         REJECTED = "rejected", "Rechazado"
         WITHDRAWN = "withdrawn", "Retirado"
 
+    # Fuera de la clase, porque la restricción de Meta también la nombra.
+    Type = SubmissionType
+
     author_name = models.CharField(max_length=255)
     author_email = models.EmailField()
-    type = models.CharField(max_length=50)
+    type = models.CharField(max_length=50, choices=Type.choices)
     title = models.CharField(max_length=255)
     body = models.TextField()
     file = models.FileField(upload_to="submissions/%Y/%m/", blank=True, storage=private_storage)
@@ -103,6 +119,13 @@ class Submission(models.Model):
         ordering = ["-created_at"]
         verbose_name = "envío"
         verbose_name_plural = "envíos"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(type__in=SubmissionType.values),
+                name="submission_type_is_offered",
+                violation_error_message="Ese tipo de propuesta no está entre los que se ofrecen.",
+            )
+        ]
 
     def __str__(self):
         return f"{self.title} — {self.author_name}"

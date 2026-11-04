@@ -1,7 +1,11 @@
 import pytest
+from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError, transaction
+from django.urls import reverse
 
 from apps.submissions.forms import SubmissionForm
+from apps.submissions.models import Submission
 
 pytestmark = pytest.mark.django_db
 
@@ -10,7 +14,7 @@ def _data(**over):
     data = {
         "author_name": "Ana",
         "author_email": "ana@example.com",
-        "type": "reseña",
+        "type": "resena",
         "title": "Propuesta",
         "body": "Cuerpo de la propuesta.",
         "apodo": "",
@@ -177,3 +181,41 @@ def test_open_now_solo_devuelve_las_convocatorias_abiertas():
         closes_at=ahora + timedelta(days=9),
     )
     assert list(Call.objects.open_now()) == [abierta]
+
+
+def test_the_types_on_offer_keep_their_names_and_their_keys_lose_the_accents(client):
+    """Los tipos que se ofrecen no cambian; sus claves, sin tilde, son las que se guardan."""
+    sopa = BeautifulSoup(client.get(reverse("submissions:submit")).content, "html.parser")
+    opciones = sopa.select('select[name="type"] option')
+    assert [o.get_text() for o in opciones] == [
+        "Reseña",
+        "Ensayo",
+        "Entrevista",
+        "Poesía",
+        "Narrativa",
+        "Crónica",
+        "Otro",
+    ]
+    assert all(o["value"].isascii() for o in opciones)
+    form = SubmissionForm(data=_data(type="poesia"))
+    assert form.is_valid(), form.errors
+    assert form.save().get_type_display() == "Poesía"
+
+
+def test_the_database_refuses_a_type_that_is_not_on_offer():
+    campos = {"author_name": "A", "author_email": "a@example.com", "title": "T", "body": "x"}
+    with pytest.raises(IntegrityError), transaction.atomic():
+        Submission.objects.create(type="reseña", **campos)
+    assert Submission.objects.create(type="resena", **campos).pk
+
+
+def test_the_honeypot_is_a_text_field_without_label(client):
+    """Un `<input type="hidden">` lo devuelven vacío los bots: el campo trampa es de texto, sin
+    etiqueta y fuera del tabulador y del lector. Que no se vea lo mira la prueba de humo."""
+    sopa = BeautifulSoup(client.get(reverse("submissions:submit")).content, "html.parser")
+    form = sopa.select_one("form.form")
+    trampa = form.select_one('input[name="apodo"]')
+    assert trampa["type"] == "text" and "hp" in trampa["class"]
+    assert trampa["tabindex"] == "-1" and trampa["aria-hidden"] == "true"
+    assert form.select_one(f'label[for="{trampa["id"]}"]') is None
+    assert form.select_one('label[for="id_title"]') is not None

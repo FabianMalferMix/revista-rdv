@@ -265,7 +265,7 @@ class Command(BaseCommand):
             author_email="colaborador.externo@example.com",
             defaults={
                 "author_name": "Colaborador Externo",
-                "type": "reseña",
+                "type": Submission.Type.RESENA,
                 "body": "Adjunto una propuesta de reseña para su evaluación.",
                 "status": Submission.Status.RECEIVED,
                 "call": call,

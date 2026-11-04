@@ -2,6 +2,8 @@ import zipfile
 
 from django import forms
 
+from config.forms import HoneypotMixin
+
 from .models import Submission
 
 # En el orden en que los nombra la ayuda del formulario.
@@ -70,21 +72,9 @@ def _content_matches_extension(f, ext):
     return True
 
 
-SUBMISSION_TYPES = [
-    ("reseña", "Reseña"),
-    ("ensayo", "Ensayo"),
-    ("entrevista", "Entrevista"),
-    ("poesía", "Poesía"),
-    ("narrativa", "Narrativa"),
-    ("crónica", "Crónica"),
-    ("otro", "Otro"),
-]
-
-
-class SubmissionForm(forms.ModelForm):
-    # Honeypot anti-spam: oculto para humanos; los bots que rellenan todo caen aquí.
-    apodo = forms.CharField(required=False, widget=forms.HiddenInput)
-    type = forms.ChoiceField(choices=SUBMISSION_TYPES, label="Tipo de propuesta")
+class SubmissionForm(HoneypotMixin, forms.ModelForm):
+    # Sin la opción vacía que Django antepone a un campo con `choices`: la primera ya vale.
+    type = forms.ChoiceField(choices=Submission.Type.choices, label="Tipo de propuesta")
 
     class Meta:
         model = Submission
@@ -127,8 +117,3 @@ class SubmissionForm(forms.ModelForm):
                 "El contenido del archivo no coincide con su extensión. Sube un archivo válido."
             )
         return f
-
-    @property
-    def is_spam(self):
-        """True si el honeypot vino relleno (bot)."""
-        return bool(self.cleaned_data.get("apodo"))

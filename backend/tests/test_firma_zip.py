@@ -21,10 +21,13 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from apps.submissions.forms import SubmissionForm
 
+# Validar el formulario consulta en la base la restricción del tipo de propuesta.
+pytestmark = pytest.mark.django_db
+
 DATOS = {
     "author_name": "Quien Sea",
     "author_email": "quien@example.com",
-    "type": "reseña",
+    "type": "resena",
     "title": "Una propuesta",
     "body": "x" * 40,
 }

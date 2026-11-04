@@ -118,3 +118,25 @@ def test_resolved_submissions_get_the_migration_date():
     )
     assert dates[rejected.pk] is not None
     assert dates[received.pk] is None
+
+
+def test_proposals_lose_the_accent_of_their_type_and_an_unknown_type_becomes_other():
+    old = _migrate("submissions", "0004_submission_resolved_at")
+    Submission = old.get_model("submissions", "Submission")
+    fields = {"author_name": "A", "author_email": "a@example.com", "title": "T", "body": "x"}
+    tipos = ("reseña", "poesía", "crónica", "ensayo", "cuento")
+    ids = {tipo: Submission.objects.create(type=tipo, **fields).pk for tipo in tipos}
+
+    new = _migrate("submissions", "0005_submission_types_without_accents")
+    Submission = new.get_model("submissions", "Submission")
+    assert {tipo: Submission.objects.get(pk=pk).type for tipo, pk in ids.items()} == {
+        "reseña": "resena",
+        "poesía": "poesia",
+        "crónica": "cronica",
+        "ensayo": "ensayo",
+        "cuento": "otro",
+    }
+
+    back = _migrate("submissions", "0004_submission_resolved_at")
+    Submission = back.get_model("submissions", "Submission")
+    assert Submission.objects.get(pk=ids["reseña"]).type == "reseña"

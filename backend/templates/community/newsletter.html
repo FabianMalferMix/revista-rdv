@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load newsletter %}
+
+{% block title %}Novedades para prensa y gestores — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+
+{% block boletin %}{% endblock %}
+
+{% block content %}
+  {% comment %}
+     La página del boletín: la pinta la vista del alta cuando el correo no sirve o se superó el
+     límite de intentos, con lo que se escribió, el error junto al campo y el foco en él. Tras
+     el alta se vuelve a la página desde la que se envió.
+  {% endcomment %}
+  <header class="index-head" data-territorio="prensa">
+    <h1>Novedades para prensa y gestores</h1>
+  </header>
+  {% newsletter_form form next %}
+{% endblock %}

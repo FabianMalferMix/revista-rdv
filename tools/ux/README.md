@@ -63,6 +63,8 @@ guiones ejecutándose de verdad. Comprueba que:
 - «Menú» abre y cierra, también al salir el foco, sin moverlo ni dejar lo enfocado tapado;
 - la lupa busca en vivo, no busca con una letra y anuncia una sola vez el recuento, sin leer los
   resultados;
+- un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado y el foco, y
+  los campos trampa de los formularios no se ven;
 - la cabecera pasa a cápsula al bajar;
 - sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue
   usable: la cabecera clásica, la tirada en fila y el estante con sus enlaces;

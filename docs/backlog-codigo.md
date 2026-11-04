@@ -1120,6 +1120,8 @@ Si no se prueba con un lector de pantalla real, se dice en el ticket.
 
 **Hecho cuando.** El pie y la página del boletín pintan el mismo formulario desde `SubscribeForm`; un correo inválido vuelve al campo con el mensaje junto a él; ya no quedan valores con tilde en `Submission.type`.
 
+**Hecho (2026-11-04).** No había página del boletín: `/novedades/` solo recibía el alta y, ante un error, redirigía con un aviso arriba. Reponer el correo tras la redirección pedía una sesión para visitantes anónimos, que la política de cookies no declara, así que el alta, con un correo que no sirve o con el límite superado, responde la página del boletín (`community/newsletter.html`): el mismo formulario, con lo escrito, el error junto al campo, `aria-invalid` y el foco en él; tras corregirlo vuelve a la página de origen. El pie y esa página lo pintan con `{% newsletter_form %}`. Además, una restricción en la base (`submission_type_is_offered`) impide que vuelva a guardarse un tipo fuera de los que se ofrecen, y el campo trampa es un `HoneypotMixin` en `config/forms.py`.
+
 #### B57 · Configuración de pruebas explícita
 
 **Hallazgos:** OPE-2, MAN-1 (`string_if_invalid`) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —

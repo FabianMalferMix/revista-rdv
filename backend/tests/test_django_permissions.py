@@ -60,7 +60,7 @@ def test_withdrawing_view_submission_hides_the_attachments(client, groups, edito
     submission = Submission.objects.create(
         author_name="A",
         author_email="a@a.com",
-        type="reseña",
+        type="resena",
         title="Privado",
         body="cuerpo",
         file=SimpleUploadedFile("m.txt", b"contenido-secreto"),

@@ -35,6 +35,7 @@ def test_un_adjunto_no_aterriza_en_la_carpeta_privada_real(tmp_path):
     envio = Submission.objects.create(
         author_name="Quien Sea",
         author_email="quien@example.com",
+        type="otro",
         title="Con adjunto",
         body="cuerpo",
         file=SimpleUploadedFile("secreto.txt", b"contenido-que-no-debe-persistir"),

@@ -214,7 +214,7 @@ def test_borrar_un_envio_borra_el_manuscrito_del_disco(django_capture_on_commit_
     sub = Submission.objects.create(
         author_name="Alguien",
         author_email="alguien@example.com",
-        type="poesía",
+        type="poesia",
         title="Propuesta",
         body="texto",
         file=SimpleUploadedFile("manuscrito.pdf", b"%PDF-1.4 contenido"),

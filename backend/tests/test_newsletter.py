@@ -1,12 +1,14 @@
 """Newsletter con doble opt-in + baja, y páginas legales (Lote F1-E)."""
 
 import pytest
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.community.forms import SubscribeForm
 from apps.community.models import NewsletterSubscriber
 
 pytestmark = pytest.mark.django_db
@@ -125,12 +127,11 @@ def test_subscribe_long_email_rejected_cleanly_not_500(client):
     """Un correo con formato válido pero de >254 caracteres se rechaza con error de
     validación, no revienta en un HTTP 500 (DataError) al insertarse (hallazgo #03)."""
     long_email = "a" * 250 + "@example.com"  # 262 caracteres, formato válido
-    resp = client.post(
-        reverse("community:subscribe"), {"email": long_email, "apodo": ""}, follow=True
-    )
+    resp = client.post(reverse("community:subscribe"), {"email": long_email, "apodo": ""})
     assert resp.status_code == 200  # no 500
     assert not NewsletterSubscriber.objects.filter(email=long_email).exists()
-    assert b"Revisa el correo" in resp.content
+    campo = BeautifulSoup(resp.content, "html.parser").select_one("#news-email")
+    assert campo["aria-invalid"] == "true"
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
@@ -158,15 +159,28 @@ def test_subscribe_next_same_site_is_honored(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-@pytest.mark.parametrize("email", ["no-es-un-correo", "valido@example.com"])
 @pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
-def test_subscribe_with_a_bogus_next_returns_home(client, nxt, email):
+def test_subscribe_with_a_bogus_next_returns_home(client, nxt):
     """Una palabra suelta en `next` era un nombre de vista para `redirect()`: «agenda» daba
     un 500 y «feed» llevaba a /feed/. Ahora todo lo que no es una ruta local lleva a la
     portada; el control de que una ruta local sí se respeta es la prueba anterior."""
-    resp = client.post(reverse("community:subscribe"), {"email": email, "apodo": "", "next": nxt})
+    resp = client.post(
+        reverse("community:subscribe"), {"email": "valido@example.com", "apodo": "", "next": nxt}
+    )
     assert resp.status_code == 302
     assert resp["Location"] == reverse("content:home")
+
+
+@pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
+def test_the_newsletter_page_also_sends_a_bogus_next_home(client, nxt):
+    """Con un correo que no sirve, la página del boletín guarda adónde volver tras corregirlo:
+    la misma regla, a la portada."""
+    resp = client.post(
+        reverse("community:subscribe"), {"email": "no-es-un-correo", "apodo": "", "next": nxt}
+    )
+    assert resp.status_code == 200
+    volver = BeautifulSoup(resp.content, "html.parser").select_one('main input[name="next"]')
+    assert volver["value"] == reverse("content:home")
 
 
 def test_subscribe_degrades_gracefully_when_broker_is_down(client):
@@ -240,3 +254,48 @@ def test_privacy_page_cites_ley_21719(client, legal_pages):
     assert resp.status_code == 200
     assert b"21.719" in resp.content
     assert b"19.628" in resp.content
+
+
+# ── El formulario, desde SubscribeForm: en el pie y en la página del boletín ────────
+
+
+def test_the_footer_paints_the_subscribe_form(client):
+    """El pie se pinta desde SubscribeForm: sus campos, el correo con su propósito declarado
+    (`autocomplete`, WCAG 1.3.5) y descrito por el texto de consentimiento."""
+    sopa = BeautifulSoup(client.get(reverse("content:text_archive")).content, "html.parser")
+    form = sopa.select_one("footer form.newsletter")
+    assert form["action"] == reverse("community:subscribe")
+    nombres = {campo["name"] for campo in form.select("input")}
+    assert nombres == {"csrfmiddlewaretoken", "next", *SubscribeForm().fields}
+    correo = form.select_one('input[name="email"]')
+    assert correo["type"] == "email" and correo["autocomplete"] == "email"
+    etiqueta = form.select_one(f'label[for="{correo["id"]}"]')
+    assert etiqueta.get_text() == "Novedades para prensa y gestores:"
+    assert "política de privacidad" in form.select_one(f"#{correo['aria-describedby']}").get_text()
+    trampa = form.select_one('input[name="apodo"]')
+    assert trampa["type"] == "text" and "hp" in trampa["class"]
+    assert trampa["tabindex"] == "-1" and trampa["aria-hidden"] == "true"
+
+
+def test_an_invalid_email_comes_back_to_its_field_with_the_error(client):
+    """El aviso arriba de la página de vuelta quedaba lejos del campo, «Saltar al contenido» se
+    lo saltaba y lo escrito se perdía. Responde la página del boletín: el mismo formulario,
+    en el contenido, con lo escrito, el error junto al campo y el foco en él."""
+    resp = client.post(
+        reverse("community:subscribe"), {"email": "ana@correo", "apodo": "", "next": "/textos/"}
+    )
+    assert resp.status_code == 200
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    campos = sopa.select("#news-email")
+    assert len(campos) == 1, "el pie repite el formulario"
+    correo = campos[0]
+    assert correo.find_parent("main") is not None
+    assert correo["value"] == "ana@correo" and correo["aria-invalid"] == "true"
+    assert correo.has_attr("autofocus")
+    error, consentimiento = (sopa.select_one(f"#{i}") for i in correo["aria-describedby"].split())
+    assert error.find_parent("form") is correo.find_parent("form")
+    assert error.get_text(strip=True) == "Revisa el correo ingresado."
+    assert "política de privacidad" in consentimiento.get_text()
+    assert sopa.select_one('main input[name="next"]')["value"] == "/textos/"
+    assert not sopa.select(".mensajes")
+    assert not NewsletterSubscriber.objects.exists()
