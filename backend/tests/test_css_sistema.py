@@ -267,7 +267,9 @@ def test_el_lienzo_declara_sus_tres_carriles():
         "por defecto se cae en el carril de lectura"
     )
     assert css.rule((), ".lienzo--ancho > *")["grid-column"] == "wide"
-    assert css.rule((), ".lienzo > .sangre, .lienzo > .band")["grid-column"] == "full"
+    # Lo que va a sangre son las bandas de la portada: viven en el telón, que repite los carriles.
+    telon = css.rule((), ".portada-telon > .sangre, .portada-telon > .band")
+    assert telon["grid-column"] == "full"
 
 
 def test_la_columna_de_lectura_no_se_ensancha():

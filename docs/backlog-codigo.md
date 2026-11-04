@@ -1156,6 +1156,8 @@ Las clases de la hoja del panel `admin/editorial_notes.css` (`nota-ajena` y `not
 
 **Hecho cuando.** Una regla nueva que no casa en ninguna página hace fallar la suite.
 
+**Hecho (2026-11-04).** Se borraron cinco reglas con ocho selectores que no casaban en ninguna de 127 páginas de desarrollo ni las pone ningún guion (la banda como hija directa del lienzo, el botón en la cabecera de índice, el monograma en una banda, el subtítulo como primer hijo). `tests/test_css_selectors_match.py` pinta unas 65 páginas con datos que cubren los estados opcionales (también el panel con la nota de otra persona, para la hoja de las notas) y exige que cada selector de `site.css` y de `admin/editorial_notes.css` case en alguna; antes de buscar quita los pseudoelementos, los estados que da el navegador y las 15 marcas que pone un guion, cada una con su motivo, y una invariante comprueba que cada marca de la lista la pone de verdad su guion.
+
 #### B60 · Migraciones de datos con prueba
 
 **Hallazgos:** PRU-5 · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —
