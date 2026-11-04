@@ -111,11 +111,18 @@ www.{$SITE_ADDRESS::80} {
 	# una pieza publicada, backend/config/protected_media.py), Caddy lo lee del volumen de
 	# medios: admite saltos (Range) y gunicorn no ocupa un hilo en enviarlo. Con las mismas
 	# cabeceras defensivas que /media/.
+	#
+	# Las cabeceras de Django no pasan solas a esa respuesta: se copian la de caché (un PDF de
+	# dirección fija se revalida en cada uso, para que tras un reemplazo nadie reciba el viejo)
+	# y las de la vista previa del equipo (ni se guarda ni se indexa).
 	reverse_proxy web:8000 {
 		@archivo_publicado header X-Accel-Redirect *
 		handle_response @archivo_publicado {
 			root * /srv/media
 			rewrite * {rp.header.X-Accel-Redirect}
+			copy_response_headers {
+				include Cache-Control X-Robots-Tag
+			}
 			file_server
 			header {
 				X-Content-Type-Options nosniff

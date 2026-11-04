@@ -19,7 +19,7 @@ from apps.agenda.models import Event
 from apps.media import validators
 from apps.media.models import Recording
 from apps.submissions.forms import ALLOWED_EXTENSIONS, MAX_FILE_MB
-from tests.factories import make_image
+from tests.factories import admin_form_fields, make_image
 
 pytestmark = pytest.mark.django_db
 MB = 1024 * 1024
@@ -72,34 +72,11 @@ def test_the_panel_shows_the_size_error_instead_of_saving(client, editor, monkey
     assert client.post("/admin/media/recording/add/", {**data, "file": small}).status_code == 302
 
 
-def _form_fields(html, form_id):
-    """Los campos del formulario con sus valores iniciales, como los enviaría el navegador."""
-    form = BeautifulSoup(html, "html.parser").select_one(f"form#{form_id}")
-    fields = {}
-    for field in form.select("input[name], textarea[name], select[name]"):
-        name = field["name"]
-        if "__prefix__" in name or field.get("type") in ("submit", "file"):
-            continue
-        if field.name == "select" and field.has_attr("multiple"):
-            chosen = [option["value"] for option in field.select("option[selected]")]
-            if chosen:  # sin nada elegido, el navegador no manda el campo
-                fields[name] = chosen
-        elif field.name == "select":
-            chosen = field.select_one("option[selected]")
-            fields[name] = chosen["value"] if chosen else ""
-        elif field.get("type") == "checkbox":
-            if field.has_attr("checked"):
-                fields[name] = "on"
-        else:
-            fields[name] = field.get("value", field.text if field.name == "textarea" else "")
-    return fields
-
-
 def test_an_event_with_forty_photos_is_saved(client, editor):
     """Cada foto suma cinco campos al formulario: con el límite de 200, no pasaban de 35."""
     client.force_login(editor)
     page = client.get("/admin/agenda/event/add/").content.decode()
-    data = _form_fields(page, "event_form")
+    data = admin_form_fields(page, "event_form")
     prefix = re.search(r'name="([\w-]+)-TOTAL_FORMS"', page).group(1)
     data.update(
         {

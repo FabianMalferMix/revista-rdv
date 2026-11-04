@@ -84,27 +84,21 @@ def test_home_cta_links_to_dossier_page_without_pdf(client, profile):
 
 
 def test_home_cta_descarga_el_pdf_cuando_existe(client, profile):
-    """Con PDF maquetado el botón sí descarga, y enlaza al archivo."""
+    """Con PDF maquetado el botón sí descarga, y enlaza a la dirección fija del dossier."""
     profile.dossier_pdf.name = "dossier/kit-de-prensa.pdf"
     profile.save()
     html = client.get(reverse("content:home")).content.decode()
-    assert "Descargar dossier (PDF)" in html
-    assert "kit-de-prensa.pdf" in html
+    assert f'href="{reverse("showcase:dossier_pdf")}">Descargar dossier (PDF)' in html
     assert "Ver el dossier" not in html
-
-
-def test_home_cta_prefers_uploaded_pdf(client, profile):
-    profile.dossier_pdf = SimpleUploadedFile("dossier.pdf", b"%PDF-1.4 fake")
-    profile.save()
-    resp = client.get(reverse("content:home"))
-    assert profile.dossier_pdf.url.encode() in resp.content
 
 
 def test_dossier_page_offers_pdf_download_when_uploaded(client, profile):
     profile.dossier_pdf = SimpleUploadedFile("dossier2.pdf", b"%PDF-1.4 fake")
     profile.save()
     resp = client.get(reverse("showcase:dossier"))
-    assert b"Descargar PDF maquetado" in resp.content
+    assert (
+        f'href="{reverse("showcase:dossier_pdf")}">Descargar PDF maquetado'.encode() in resp.content
+    )
 
 
 # ── El dossier como kit de prensa (ticket 5.1) ────────────────────────────

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.generic import RedirectView
 
 from apps.content.models import Article
 from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
@@ -131,6 +132,22 @@ def dossier(request):
     )
 
 
-def publication_pdf(request, slug, filename):
+def dossier_pdf(request):
+    """El dossier maquetado, en una dirección que no cambia al reemplazarlo: es lo que un gestor
+    reenvía."""
+    return protected_media.serve_current(request, SiteProfile.load().dossier_pdf, preview=False)
+
+
+def publication_pdf(request, slug):
     publication, preview = publishing.piece_for(request, Publication.objects, slug=slug)
-    return protected_media.serve(publication.pdf, filename, preview)
+    return protected_media.serve_current(request, publication.pdf, preview)
+
+
+class OldPublicationPdf(RedirectView):
+    """La dirección anterior, con el nombre del archivo: lleva a la fija, sea cual sea el
+    nombre, porque ya se repartió."""
+
+    permanent = True
+
+    def get_redirect_url(self, slug, filename):
+        return reverse("showcase:publication_pdf", args=[slug])

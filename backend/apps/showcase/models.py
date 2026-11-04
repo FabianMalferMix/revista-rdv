@@ -5,7 +5,7 @@ from django.db import models
 
 from apps.media.validators import MAX_PDF_MB, validate_pdf_extension, validate_pdf_size
 from config import publishing
-from config.protected_media import file_name, random_upload_path
+from config.protected_media import random_upload_path
 
 
 class PartnerQuerySet(publishing.PublishableQuerySet):
@@ -245,12 +245,12 @@ class Publication(models.Model):
         return reverse("showcase:publication_detail", args=[self.slug])
 
     def pdf_url(self):
-        """La dirección de el PDF: la vista que lo entrega solo si la publicación es público."""
+        """La dirección fija del PDF: la vista lo entrega solo si la publicación es pública."""
         from django.urls import reverse
 
         if not self.pdf:
             return ""
-        return reverse("showcase:publication_pdf", args=[self.slug, file_name(self.pdf)])
+        return reverse("showcase:publication_pdf", args=[self.slug])
 
     def social_image(self):
         """La imagen para compartir la publicación: su cubierta (ver `{% social_meta %}`)."""

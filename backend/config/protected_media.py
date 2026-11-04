@@ -7,6 +7,10 @@ pieza como cualquier ficha (404 si no está publicada; el equipo la ve como vist
 En producción, la vista responde con X-Accel-Redirect y Caddy lee el archivo del volumen
 (infra/caddy/Caddyfile), de modo que el audio admite saltos (Range) y gunicorn no ocupa un
 hilo en enviarlo. En desarrollo, sin Caddy, lo envía Django.
+
+El audio se pide por el nombre de su archivo, que cambia al reemplazarlo. Los PDF que se
+descargan y se reenvían (el dossier y el de cada publicación) tienen una dirección fija que no
+lo nombra: el archivo nuevo no puede tomar el nombre del viejo hasta que se confirma el guardado.
 """
 
 from pathlib import PurePosixPath
@@ -30,12 +34,28 @@ def serve(fieldfile, requested_name, preview):
     (un archivo reemplazado no se sigue sirviendo por su nombre viejo)."""
     if not fieldfile or requested_name != file_name(fieldfile):
         raise Http404
+    return marked_as_preview(_file_response(fieldfile), preview)
+
+
+def serve_current(request, fieldfile, preview):
+    """El archivo vigente en una dirección que no lo nombra, o 404 si no hay archivo. Tras un
+    reemplazo, la misma dirección da el nuevo: se revalida en cada uso, para que ninguna caché
+    retenga el anterior, y se guarda con el nombre de la dirección, no con el del archivo."""
+    if not fieldfile:
+        raise Http404
+    response = _file_response(fieldfile, PurePosixPath(request.path).name)
+    response["Cache-Control"] = "no-cache"
+    return marked_as_preview(response, preview)
+
+
+def _file_response(fieldfile, download_name=""):
     if settings.PROTECTED_MEDIA_ACCEL:
+        # Caddy copia las cabeceras de caché y de vista previa, y la descarga toma el nombre
+        # de la dirección.
         response = HttpResponse()
         response["X-Accel-Redirect"] = "/" + quote(fieldfile.name)
-    else:
-        response = FileResponse(fieldfile.open("rb"))
-    return marked_as_preview(response, preview)
+        return response
+    return FileResponse(fieldfile.open("rb"), filename=download_name)
 
 
 def random_upload_path(folder, filename):
