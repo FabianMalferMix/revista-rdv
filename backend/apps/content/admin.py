@@ -1,12 +1,14 @@
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
+from django.contrib.admin.widgets import AdminTextareaWidget
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.formats import date_format
+from django.utils.html import format_html
 
 from config.publishing import FrozenSlugAdminMixin
 from config.staticfiles import TINYMCE_DIR
@@ -112,6 +114,24 @@ class ReviewedWorkInline(admin.TabularInline):
     autocomplete_fields = ["work"]
 
 
+LOCKED_NOTE = "Solo la puede cambiar quien la escribió"
+
+
+class LockedNoteWidget(AdminTextareaWidget):
+    """El cuadro de una nota ajena: en gris (admin/editorial_notes.css) y con el motivo debajo,
+    que el lector de pantalla anuncia con el cuadro."""
+
+    def __init__(self, attrs=None):
+        super().__init__({"class": "vLargeTextField nota-ajena", **(attrs or {})})
+
+    def render(self, name, value, attrs=None, renderer=None):
+        notice = f"{attrs['id']}-aviso"
+        textarea = super().render(name, value, {**attrs, "aria-describedby": notice}, renderer)
+        return format_html(
+            '{}<p class="nota-ajena-aviso" id="{}">{}</p>', textarea, notice, LOCKED_NOTE
+        )
+
+
 class EditorialNoteFormSet(BaseGenericInlineFormSet):
     """Las notas de otra persona se leen, pero no se editan ni se borran."""
 
@@ -120,6 +140,7 @@ class EditorialNoteFormSet(BaseGenericInlineFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
         if form.instance.pk and form.instance.author_id != self.request.user.pk:
+            form.fields["body"].widget = LockedNoteWidget()
             for field in form.fields.values():
                 field.disabled = True
 
@@ -130,6 +151,9 @@ class EditorialNoteInline(GenericTabularInline):
     extra = 1
     # El autor es quien la escribe (EditorialItemAdmin.save_formset), no un desplegable.
     readonly_fields = ["author", "created_at"]
+
+    class Media:
+        css = {"all": ["admin/editorial_notes.css"]}
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)

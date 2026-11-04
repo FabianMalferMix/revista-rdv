@@ -144,6 +144,26 @@ def test_a_note_is_signed_by_whoever_writes_it_and_others_cannot_touch_it(client
     assert EditorialNote.objects.get(pk=note.pk).body == "Falta la fecha y el lugar del recital."
 
 
+def test_another_persons_note_looks_locked_and_says_who_can_change_it(client, editor, groups):
+    other = get_user_model().objects.create_user("editora_dos", password="pw", is_staff=True)
+    other.groups.add(groups["editor"])
+    article = _article(editor)
+    item = {"content_type": ContentType.objects.get_for_model(Article), "object_id": article.pk}
+    EditorialNote.objects.create(**item, author=other, body="Falta la fecha del recital.")
+    EditorialNote.objects.create(**item, author=editor, body="La fecha está en el afiche.")
+
+    client.force_login(editor)
+    page = client.get(reverse("admin:content_article_change", args=[article.pk]))
+    soup = BeautifulSoup(page.content, "html.parser")
+    boxes = {box.get_text(strip=True): box for box in soup.select("textarea[name$='-body']")}
+    theirs, mine = boxes["Falta la fecha del recital."], boxes["La fecha está en el afiche."]
+    assert theirs.has_attr("disabled")
+    notice = soup.find(id=theirs["aria-describedby"])
+    assert notice.get_text(strip=True) == "Solo la puede cambiar quien la escribió"
+    assert not mine.has_attr("disabled") and not mine.has_attr("aria-describedby")
+    assert soup.get_text().count("Solo la puede cambiar quien la escribió") == 1
+
+
 @pytest.fixture
 def _back_to_the_latest_migrations():
     yield
