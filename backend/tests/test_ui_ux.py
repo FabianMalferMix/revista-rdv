@@ -1,6 +1,7 @@
 """UX y accesibilidad: skip link, buscador overlay, focus, lightbox (Lote UI-3)."""
 
 import pytest
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.urls import reverse
 
@@ -21,11 +22,18 @@ def test_skip_link_and_main_landmark(client):
     assert portada.index('<main id="main"') < portada.index('id="contenido"')
 
 
-def test_search_results_is_live_overlay(client):
-    content = client.get(reverse("content:home")).content
-    assert b'aria-live="polite"' in content
+def test_the_search_panel_announces_a_count_and_not_the_whole_list(client):
+    """Los resultados no son una región viva: el lector los leería enteros en cada pausa. Se
+    anuncia el recuento, en una región de estado aparte que rellena la parcial (test_search)."""
+    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
     # Un solo contenedor de resultados (el div suelto a ancho completo desapareció).
-    assert content.count(b'id="search-results"') == 1
+    resultados = sopa.select("#search-results")
+    assert len(resultados) == 1
+    assert resultados[0].find_parent(attrs={"aria-live": True}) is None
+    assert not resultados[0].has_attr("aria-live")
+    estado = sopa.select(".busqueda #search-status")
+    assert len(estado) == 1 and estado[0]["role"] == "status"
+    assert "sr-only" in estado[0]["class"] and estado[0].get_text() == ""
 
 
 def test_css_has_focus_visible_overlay_and_lightbox():

@@ -142,15 +142,20 @@ def test_llega_bajo_una_pasada_de_tinta():
     assert "clipPath" in INTEGRANTES_JS and "!quieto.matches" in INTEGRANTES_JS
 
 
-def test_las_que_se_ven_van_primero_y_la_que_se_va_espera_al_final():
-    """Los pares van más abajo con nth-child, que cuenta también las escondidas: la que llega
-    ocupa el lugar de la que se va, y esta pasa al final de la espera."""
-    assert "viejo.before(nuevo)" in INTEGRANTES_JS and "lista.append(viejo)" in INTEGRANTES_JS
-    assert ".integrantes-retratos > li:nth-child(2n){translate:0 var(--s3)}" in SITE_CSS
-
-
-def test_el_guion_no_escribe_estilos_ni_toca_la_direccion():
-    for prohibido in (".style", "cssText", "location.hash", "history."):
+def test_the_script_only_writes_each_portraits_place_and_leaves_the_address_alone():
+    """La CSP bloquea el atributo style (y cssText, que lo escribe entero), no el CSSOM: el guion
+    solo le da a cada retrato su lugar en la fila (`order`), porque la lista ya no cambia de
+    orden. El aspecto sigue en site.css. Que la que llega ocupe el lugar de la que se va, que
+    los pares vayan más abajo y que el lector reciba la lista entera lo mira la prueba de humo."""
+    assert set(re.findall(r"\.style\b(\.\w+)?", INTEGRANTES_JS)) == {".order"}
+    for prohibido in (
+        "cssText",
+        "setAttribute('style'",
+        'setAttribute("style"',
+        "setProperty",
+        "location.hash",
+        "history.",
+    ):
         assert prohibido not in INTEGRANTES_JS
 
 

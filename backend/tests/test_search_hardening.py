@@ -118,6 +118,24 @@ def test_el_buscador_limita_por_ip(client, make_article, monkeypatch):
 
 
 @override_settings(RATELIMIT_ENABLE=True)
+def test_the_panel_announces_the_limit_as_well(client, make_article, monkeypatch):
+    """En el panel de la lupa, el aviso llega también a la región que se anuncia: los
+    resultados ya no son una región viva."""
+    from bs4 import BeautifulSoup
+    from django_ratelimit import core
+
+    window = int(time.time()) + 3600
+    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
+    make_article(title="Umbral", status="published")
+    for i in range(65):
+        ultima = client.get(BUSCAR, {"q": f"umbral {i}"}, headers={"HX-Request": "true"})
+    estado = BeautifulSoup(ultima.content, "html.parser").select_one("#search-status")
+    assert estado.get_text() == (
+        "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
+    )
+
+
+@override_settings(RATELIMIT_ENABLE=True)
 def test_el_limite_no_estorba_al_uso_normal(client, make_article):
     """El buscador en vivo dispara una petición por pulsación (con 300 ms de rebote):
     una ráfaga humana razonable no puede quedar bloqueada."""

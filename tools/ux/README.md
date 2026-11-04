@@ -60,14 +60,20 @@ guiones ejecutándose de verdad. Comprueba que:
 
 - las páginas de `pages.txt` no desbordan a lo ancho;
 - los controles de la cabecera miden 44 px o más;
-- «Menú» abre y cierra, y la lupa busca en vivo;
+- «Menú» abre y cierra, también al salir el foco, sin moverlo ni dejar lo enfocado tapado;
+- la lupa busca en vivo, no busca con una letra y anuncia una sola vez el recuento, sin leer los
+  resultados;
 - la cabecera pasa a cápsula al bajar;
 - sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue
   usable: la cabecera clásica, la tirada en fila y el estante con sus enlaces;
-- el estante y la tirada responden al teclado;
+- el estante y la tirada responden al teclado (la tirada, también al dedo, y solo anuncia lo que
+  no mueve el foco);
 - el reproductor externo solo se carga al pulsar;
 - el dossier imprime;
-- «Las voces» van en una fila, y lo que lleva `hidden` no se ve, con los guiones y sin ellos.
+- «Las voces» van en una fila; el relevo no cambia el árbol de accesibilidad de la lista, trae a
+  la que más esperaba al lugar de la que se va, y el tabulador recorre la fila en el orden en que
+  se ve;
+- lo que lleva `hidden` no se ve, con los guiones y sin ellos.
 
 Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
 no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre

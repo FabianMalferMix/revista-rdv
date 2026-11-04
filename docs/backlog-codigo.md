@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 57 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 58 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -148,7 +148,7 @@
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
 | B53 | Mejora progresiva que falla bien | B11 | S | no | hecho (#241) |
-| B54 | Anuncios y foco en los componentes con JS | B11 | M | no | pendiente |
+| B54 | Anuncios y foco en los componentes con JS | B11 | M | no | hecho (#242) |
 | B55 | Contraste de los sellos y axe en el CI | B11 | M | no | pendiente |
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
 | B57 | Configuración de pruebas explícita | — | M | no | pendiente |
@@ -1091,6 +1091,8 @@ Es visual: pasa por el visto bueno del dueño, con capturas de antes y después 
 - el buscador anuncia una sola vez «N resultados para “q”».
 
 Si no se prueba con un lector de pantalla real, se dice en el ticket.
+
+**Hecho (2026-11-04).** Sin lector de pantalla real: lo que se comprobó es el árbol de accesibilidad de Playwright y lo que se escribe en las regiones vivas, en la prueba de humo. El relevo ya no mueve los nodos: las que esperan quedan en la lista para el lector (`sr-only`) y fuera del tabulador, y el guion le da a cada retrato su lugar en la fila con `order` (el dueño aceptó que integrantes.js escriba esa propiedad por el CSSOM, que la CSP admite; la prueba prohíbe lo que la CSP bloquea). Como la lista ya no va en el orden de la fila, el tabulador lo maneja el guion, para recorrerla como se ve. Las pruebas que fijaban el mecanismo viejo se reemplazaron por comprobaciones en el navegador de lo mismo que vigilaban.
 
 #### B55 · Contraste de los sellos y axe en el CI
 

@@ -309,9 +309,13 @@ Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin 
 - **En el teléfono, Textos y el dossier a dos toques**, dentro de «Menú» (paso 18).
 - **La vista ampliada de las fotos sin «anterior» ni «siguiente»**: se cierra y se abre otra.
   Hacerlo sin JavaScript pide un enlace por lado en cada foto.
-- **Sin comprobar con un lector de pantalla** (no hay uno en el entorno): cómo anuncia la región
-  `aria-live` del panel de la lupa los resultados agrupados, y el orden de lectura de la vista
-  ampliada.
+- **Sin comprobar con un lector de pantalla** (no hay uno en el entorno): el recuento que anuncia
+  la lupa, la lista de «Las voces» y el orden de lectura de la vista ampliada. Desde el
+  2026-11-04 (B54), la lupa no lee los resultados agrupados: anuncia «N resultados para “q”» en
+  una región de estado aparte, y no busca con una letra; el relevo de «Las voces» ya no reordena
+  la lista, así que el lector la recorre entera y siempre igual (C22). Lo que se probó, en la
+  prueba de humo, es el árbol de accesibilidad de Playwright y lo que se escribe en las regiones
+  vivas.
 - **LCP y CLS medidos en desarrollo**, con la red y la CPU estranguladas (2,1 s y 0). Repetir en
   la vista previa de producción, que comprime y cachea los estáticos.
 - **Fotos, afiches y cubiertas reales**: el material es genérico hasta que el colectivo aporte el

@@ -88,10 +88,12 @@
     }
 
     function escuchar() {
-      // Elegir en la hoja de contactos lleva el foco al título del registro elegido.
+      // Elegir en la hoja de contactos lleva el foco al título del registro elegido, que el lector
+      // lee al llegar: la región viva no lo repite. Solo anuncia lo que no mueve el foco, como el
+      // deslizamiento del dedo.
       contactos.forEach((c) => c.addEventListener('click', () => {
         const i = Number(c.dataset.marcador);
-        ir(i);
+        ir(i, false);
         enlaces[i].focus({ preventScroll: true });
       }, { signal }));
       // El teclado: el foco que llega al título de un pliego de abajo lo sube (sin anunciarlo: ya
