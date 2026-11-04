@@ -170,7 +170,9 @@ vigente más cercano y no se agrava la deuda.
    Bien: `publish_due_items` (`apps/content/tasks.py`) es idempotente ante un doble beat o un
    reintento.
 10. **Pruebas.** Comprueban lo que ve o hace una persona.
-    - Un `.css` o un `.js` solo se lee para afirmar una invariante.
+    - Un `.css` o un `.js` solo se lee para afirmar una invariante. La hoja se lee con
+      `tests/css.py`, que da cada regla con su contexto (`@media`, `@supports`, `@container`):
+      se busca por contexto y selector, nunca cortando el texto.
     - Toda prueba de «no aparece» lleva un control positivo en la misma respuesta.
     - Los permisos se prueban por HTTP, con los grupos reales.
 

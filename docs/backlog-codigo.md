@@ -1144,6 +1144,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 
 **Hecho cuando.** Ninguna prueba corta `site.css` como texto, y sacar una regla de su `@media` hace fallar la prueba que la vigila.
 
+**Hecho (2026-11-04).** `tests/css.py`, sobre tinycss2 (dependencia de desarrollo), con `css.rule(contexto, selector)`, que exige la regla en ese contexto y dice dónde está si no la encuentra; trece archivos migrados y los analizadores locales borrados. Se borraron cuatro lápidas (la sombra de las bandas, el sello que flotaba, la cinta y el título de 12 px) y las aserciones lápida de otras pruebas; las instantáneas pasaron a aserciones por contexto, selector y propiedad, y en algunos casos a la relación que de verdad importa (los 44 px como letra por interlínea más relleno, el `text-indent` del verso como su `padding-left` en negativo).
+
 #### B59 · Selectores muertos
 
 **Hallazgos:** FRO-8 · **Depende de:** B58 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —

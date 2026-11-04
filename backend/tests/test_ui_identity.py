@@ -6,6 +6,8 @@ import pytest
 from django.conf import settings
 from django.urls import reverse
 
+from tests import css
+
 pytestmark = pytest.mark.django_db
 
 NAV_URLS = [
@@ -65,13 +67,22 @@ def test_la_licencia_de_la_serif_viaja_con_ella():
         assert clave in aviso, f"fonts/NOTICE.txt no menciona «{clave}»"
 
 
+def _requested_fonts():
+    """Cada archivo de fuente que pide una @font-face de la hoja, con su @font-face. La url()
+    es relativa: la reescribe WhiteNoise."""
+    return {
+        archivo: cara
+        for cara in css.at_rules("font-face")
+        for archivo in re.findall(r'url\("\.\./fonts/([^"]+)"\)', cara.get("src", ""))
+    }
+
+
 def test_css_declares_self_hosted_display_font():
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    assert "@font-face" in css
-    assert "bricolage-grotesque.woff2" in css  # url() relativa (la reescribe WhiteNoise)
-    assert "rdv-serif.woff2" in css and "rdv-serif-italic.woff2" in css
-    assert "--display" in css
-    assert "font-display:swap" in css
+    pedidas = _requested_fonts()
+    assert set(FUENTES) <= set(pedidas), sorted(pedidas)
+    assert all(cara["font-display"] == "swap" for cara in pedidas.values())
+    assert pedidas["bricolage-grotesque.woff2"]["font-family"] == '"Bricolage Grotesque"'
+    assert css.split_commas(css.tokens()["--display"])[0] == '"Bricolage Grotesque"'
 
 
 def test_las_fuentes_de_la_primera_pantalla_se_precargan(client):
@@ -107,8 +118,8 @@ def test_no_hay_fuentes_huerfanas():
     """
     fuentes = sorted((settings.BASE_DIR / "static" / "fonts").glob("*.woff2"))
     assert fuentes, "no hay ninguna fuente empaquetada"
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    huerfanas = [f.name for f in fuentes if f.name not in css]
+    pedidas = _requested_fonts()
+    huerfanas = [f.name for f in fuentes if f.name not in pedidas]
     assert not huerfanas, f"fuentes que el CSS no referencia: {huerfanas}"
 
 
@@ -120,11 +131,16 @@ TARJETAS = [
 ]
 
 
-def _selectores_de_titular(css):
-    """Lista de selectores de la regla que fija font-family:var(--display)."""
-    m = re.search(r"([^{}]+)\{[^{}]*font-family:var\(--display\)", css)
-    assert m, "no se encontró la regla que fija la tipografía de titular"
-    return m.group(1)
+def _selectores_de_titular():
+    """Los selectores de las reglas que fijan font-family:var(--display)."""
+    selectores = {
+        selector
+        for regla in css.rules()
+        if regla.context == () and regla.get("font-family") == "var(--display)"
+        for selector in regla.selectors
+    }
+    assert selectores, "no se encontró la regla que fija la tipografía de titular"
+    return selectores
 
 
 def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
@@ -135,8 +151,7 @@ def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
     listados caían a `--serif`, la pila con Georgia. Con una serif de titular
     la diferencia era casi invisible; con cualquier otra familia, evidente.
     """
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    selectores = _selectores_de_titular(css)
+    selectores = _selectores_de_titular()
     for parcial in TARJETAS:
         html = (settings.BASE_DIR / "templates" / parcial).read_text(encoding="utf-8")
         etiqueta = re.search(r"<(h[1-6])[\s>]", html)
@@ -158,22 +173,13 @@ def test_la_cifra_grande_solo_esta_en_el_dossier():
     cifras de cartel sin que nadie lo hubiera pedido. En el dossier sí: es lo primero que
     busca un jurado (D11).
     """
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    raiz = re.search(r":root\{(.*?)\n\}", css, re.S).group(1)
-    escala = dict(re.findall(r"(--t-?\d):\s*([^;]+);", raiz))
-
-    def maximo_px(valor):
-        token = re.fullmatch(r"var\((--t-?\d)\)", valor.strip())
-        valor = escala[token.group(1)] if token else valor
-        return max(float(n) for n in re.findall(r"([\d.]+)px", valor))
-
-    grandes = []
-    for selector, cuerpo in re.findall(r"([^{}]*strong[^{}]*)\{([^{}]*)\}", css):
-        if "stats" not in selector and "cifras" not in selector:
-            continue
-        tam = re.search(r"font-size:\s*([^;]+)", cuerpo)
-        if tam and maximo_px(tam.group(1)) > 24:
-            grandes.append(selector.strip())
+    grandes = [
+        regla.selector
+        for regla in css.rules()
+        if "strong" in regla.selector
+        and ("stats" in regla.selector or "cifras" in regla.selector)
+        and any(css.px_range(tam)[1] > 24 for tam in regla.values("font-size"))
+    ]
     assert grandes == [".dossier-cifras strong"], (
         f"la cifra grande tiene que estar en el dossier y solo ahí: {grandes}"
     )
@@ -211,8 +217,13 @@ def test_ninguna_regla_estiliza_un_titular_que_las_tarjetas_no_emiten():
         emitidas.update(re.findall(r"<(h[1-6])[\s>]", html))
     assert emitidas, "las parciales de tarjeta ya no emiten ningún titular"
 
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    estilizadas = set(re.findall(r"\.article-card\s+(h[1-6])\b", css))
+    estilizadas = {
+        titular
+        for regla in css.rules()
+        for selector in regla.selectors
+        for titular in re.findall(r"\.article-card (h[1-6])\b", selector)
+    }
+    assert estilizadas, "la hoja ya no estiliza el titular de las tarjetas"
     muertas = estilizadas - emitidas
     assert not muertas, (
         f"el CSS estiliza .article-card {sorted(muertas)} pero las parciales emiten "

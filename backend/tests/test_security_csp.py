@@ -13,6 +13,7 @@ from django.utils import timezone
 from apps.content.models import EditorialStatus
 from config.csp import ContentSecurityPolicyMiddleware
 from config.staticfiles import TINYMCE_DIR
+from tests import css
 
 CSP = "Content-Security-Policy"
 CSP_RO = "Content-Security-Policy-Report-Only"
@@ -145,8 +146,8 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)
     assert meta and json.loads(meta.group(1)) == {"includeIndicatorStyles": False}
     assert contenido.index('name="htmx-config"') < contenido.index("vendor/htmx/htmx.min.js")
-    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
-    assert ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}" in css
+    indicador = css.rule((), ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator")
+    assert indicador["opacity"] == "1"
 
 
 def test_los_comentarios_de_una_linea_no_ocupan_dos():

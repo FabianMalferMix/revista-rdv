@@ -13,30 +13,14 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 
+from tests import css
+
 RAIZ = Path(__file__).resolve().parent.parent
-CSS = (RAIZ / "static" / "css" / "site.css").read_text()
 CABECERA_JS = (RAIZ / "static" / "js" / "cabecera.js").read_text()
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 
-
-def _junto(texto):
-    return re.sub(r"\s+", "", texto)
-
-
-def _bloque(cabecera):
-    """El texto de un bloque @media, hasta la llave que lo cierra."""
-    inicio = CSS.index(cabecera) + len(cabecera)
-    nivel = 1
-    for i in range(inicio, len(CSS)):
-        nivel += {"{": 1, "}": -1}.get(CSS[i], 0)
-        if nivel == 0:
-            return CSS[inicio:i]
-    raise AssertionError(f"el bloque «{cabecera}» no cierra")
-
-
-HOJA = _junto(CSS)
 ARRIBA = 'html[data-barra="arriba"]'
-CAPSULA = f':is(html[data-barra="pildora"],{ARRIBA}:has(.hero-nombre))'
+CAPSULA = f':is(html[data-barra="pildora"], {ARRIBA}:has(.hero-nombre))'
 
 
 @pytest.mark.django_db
@@ -53,9 +37,12 @@ def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
     que la esconde, la vuelve transparente o le quita el puntero exige data-barra."""
     cambian = [
         selector
-        for selector, cuerpo in _reglas()
+        for regla in css.rules()
+        if regla.get("opacity") == "0"
+        or regla.get("pointer-events") == "none"
+        or regla.get("background") == "transparent"
+        for selector in regla.selectors
         if re.search(r"\.masthead(-fila)?$", selector)
-        and re.search(r"opacity:0|pointer-events:none|background:transparent", cuerpo)
     ]
     assert len(cambian) >= 2
     assert [s for s in cambian if "data-barra" not in s] == []
@@ -64,33 +51,23 @@ def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
 def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
     """La cápsula escondida y el dossier en el titular, solo con la marca del guion: sin ella,
     la cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
-    escondida = f"{ARRIBA}:has(.hero-nombre).masthead-fila{{opacity:0;"
-    dossier = "html[data-barra]:has(.hero-nombre).hero-dossier{display:inline-flex}"
-    for regla in (escondida, dossier):
-        assert regla in HOJA
-    assert [s for s, c in _reglas() if "hero-dossier" in s and "inline-flex" in c] == [
-        "html[data-barra]:has(.hero-nombre) .hero-dossier"
-    ]
+    assert css.rule((), f"{ARRIBA}:has(.hero-nombre) .masthead-fila")["opacity"] == "0"
+    dossier = "html[data-barra]:has(.hero-nombre) .hero-dossier"
+    assert css.rule((), dossier)["display"] == "inline-flex"
+    assert [
+        r.selector
+        for r in css.rules()
+        if "hero-dossier" in r.selector and r.get("display") == "inline-flex"
+    ] == [dossier]
     # Escondida no es inalcanzable: aparece al recibir el foco.
-    assert f"{ARRIBA}:has(.hero-nombre).masthead-fila:focus-within{{opacity:1;" in HOJA
+    assert css.rule((), f"{ARRIBA}:has(.hero-nombre) .masthead-fila:focus-within")["opacity"] == "1"
 
 
 def test_la_franja_mide_lo_mismo_y_lo_de_abajo_no_se_mueve():
-    assert f"{CAPSULA}.masthead{{height:var(--alto-cabecera);" in HOJA
-    assert (
-        f"{ARRIBA}:not(:has(.hero-nombre)).masthead{{border-bottom-style:none;min-height:var(--alto-cabecera)}}"
-        in HOJA
-    )
-
-
-def _reglas():
-    """(selector, declaraciones) de cada regla de la hoja, también dentro de @media, sin
-    comentarios y sin espacios."""
-    sin_comentarios = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
-    return [
-        (" ".join(selector.split()), _junto(cuerpo))
-        for selector, cuerpo in re.findall(r"([^{}]+)\{([^{}]*)\}", sin_comentarios)
-    ]
+    assert css.rule((), f"{CAPSULA} .masthead")["height"] == "var(--alto-cabecera)"
+    arriba = css.rule((), f"{ARRIBA}:not(:has(.hero-nombre)) .masthead")
+    assert arriba["border-bottom-style"] == "none"
+    assert arriba["min-height"] == "var(--alto-cabecera)"
 
 
 def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
@@ -99,15 +76,19 @@ def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
     portada. Antes, fuera de la portada, un velo de papel la tapaba de lado a lado y cortaba
     el contenido. Ninguna regla de la cápsula le vuelve a dar fondo a la franja (ni a sus
     pseudoelementos), sea para todas las páginas o para algunas."""
-    franja = f"{CAPSULA}.masthead{{height:var(--alto-cabecera);background:transparent;"
-    assert franja in HOJA and "pointer-events:none}" in HOJA[HOJA.index(franja) :]
+    franja = css.rule((), f"{CAPSULA} .masthead")
+    assert franja["background"] == "transparent" and franja["pointer-events"] == "none"
     con_fondo = [
-        selector
-        for selector, cuerpo in _reglas()
-        if 'data-barra="pildora"' in selector
-        and re.search(r"\.masthead(::?(before|after))?$", selector)
-        and re.search(
-            r"(?<![-\w])background(-color|-image)?:(?!transparent[;}]|none[;}])", cuerpo + "}"
+        regla.selector
+        for regla in css.rules()
+        if any(
+            'data-barra="pildora"' in s and re.search(r"\.masthead(::?(before|after))?$", s)
+            for s in regla.selectors
+        )
+        and any(
+            d.name in ("background", "background-color", "background-image")
+            and d.value not in ("transparent", "none")
+            for d in regla.declarations
         )
     ]
     assert not con_fondo, f"la franja de la cápsula vuelve a tapar el contenido: {con_fondo}"
@@ -116,8 +97,11 @@ def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
 def test_la_transicion_no_deja_la_cabecera_vacia():
     """La que se va se desvanece después de que la otra empezó a entrar, y la página no
     entra en la transición."""
-    assert ":root{view-transition-name:none}" in HOJA
-    assert "animation-delay:calc(var(--dur-base)-var(--dur-fast))" in HOJA
+    assert css.rule((), ":root")["view-transition-name"] == "none"
+    sale = css.rule(
+        (), "::view-transition-old(cabecera-abierta), ::view-transition-old(cabecera-capsula)"
+    )
+    assert sale["animation-delay"] == "calc(var(--dur-base) - var(--dur-fast))"
 
 
 def test_el_guion_solo_cambia_un_atributo():
@@ -128,18 +112,19 @@ def test_el_guion_solo_cambia_un_atributo():
 
 def test_enfocar_la_cabecera_no_desplaza_la_pagina():
     """Con el scroll-padding, tabular por la cabecera a mitad de página, o cerrar la lupa con
-    Escape, hacía saltar la página unos 450 px."""
-    assert (
-        ".masthead:is(a,summary,input){scroll-margin-top:calc(-1*(var(--alto-cabecera)+var(--s2)))}"
-        in HOJA
-    )
+    Escape, hacía saltar la página unos 450 px. El margen de los controles de la cabecera
+    descuenta exactamente el relleno de la página."""
+    relleno = css.rule((), "html")["scroll-padding-top"]
+    assert relleno == "calc(var(--alto-cabecera) + var(--s2))"
+    margen = css.rule((), ".masthead :is(a, summary, input)")["scroll-margin-top"]
+    assert margen == f"calc(-1 * ({relleno.removeprefix('calc(').removesuffix(')')}))"
     assert "focus({ preventScroll: true })" in BUSCADOR_JS
 
 
 def test_los_resultados_caben_con_el_zoom_al_400():
-    assert "max-height:min(64vh,100dvh-150px)" in _junto(CSS)
+    assert css.rule((), "#search-results")["max-height"] == "min(64vh, 100dvh - 150px)"
 
 
 def test_en_colores_forzados_se_ve_el_monograma():
-    forzados = _junto(_bloque("@media (forced-colors: active){"))
-    assert ".brand-mono-r,.brand-mono-v{fill:currentColor}" in forzados
+    forzados = css.rule(("@media (forced-colors: active)",), ".brand-mono-r, .brand-mono-v")
+    assert forzados["fill"] == "currentColor"
