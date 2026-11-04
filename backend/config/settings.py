@@ -1,7 +1,6 @@
 """Configuración de Django para el proyecto Reseñas."""
 
 import logging
-import sys
 from pathlib import Path
 
 from celery.schedules import crontab
@@ -157,8 +156,8 @@ AXES_LOCKOUT_TEMPLATE = "axes_lockout.html"
 # django-ratelimit): tras Caddy, la entrada derecha de X-Forwarded-For. Este callable
 # tiene precedencia en axes, así que NO se usan los AXES_IPWARE_*.
 AXES_CLIENT_IP_CALLABLE = "config.clientip.client_ip"
-# En tests se desactiva (usan force_login); el test de bloqueo lo reactiva puntualmente.
-AXES_ENABLED = env_bool("AXES_ENABLED", "pytest" not in sys.modules)
+# La suite lo apaga en config/settings_test.py (usa force_login).
+AXES_ENABLED = env_bool("AXES_ENABLED", True)
 
 # django-ratelimit: contadores en la caché por defecto (LocMem en dev, Redis en prod).
 # La IP se resuelve con el MISMO callable que axes para que ambos cuenten por la misma
@@ -250,9 +249,6 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour=4, minute=30, day_of_week=1),  # lunes 04:30 (minimización)
     },
 }
-# En tests las tareas corren en el acto (síncronas): permite verificar el correo
-# de confirmación por Celery sin worker. En dev/prod es asíncrono normal.
-CELERY_TASK_ALWAYS_EAGER = "pytest" in sys.modules
 
 # Límites de tiempo de cada tarea: sin ellos, un SMTP que acepta la conexión y no
 # responde ocupa un proceso del worker indefinidamente. El blando lanza

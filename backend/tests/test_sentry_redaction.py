@@ -71,7 +71,7 @@ def test_an_error_while_subscribing_reaches_sentry_without_personal_data(
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 def test_a_failed_confirmation_email_reaches_sentry_without_personal_data(
-    sentry_events, monkeypatch
+    sentry_events, monkeypatch, task_failures_stay_in_the_task
 ):
     sub = _pending()
 

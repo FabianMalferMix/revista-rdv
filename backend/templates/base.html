@@ -167,7 +167,7 @@
          Se repiten aquí los cinco de la barra: quien llega al final de una página larga no
          debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
       {% endcomment %}
-      {% include "partials/_mapa.html" with sin_contacto=True %}
+      {% include "partials/_mapa.html" with en_menu=False sin_contacto=True %}
       <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">

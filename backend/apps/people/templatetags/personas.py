@@ -23,9 +23,8 @@ def firmas_sin(personas, persona):
     """Las personas de la lista menos una: la firma propia en la ficha de quien firma.
 
     En la ficha de una integrante, cada fila de sus poemas y textos repetía su nombre. Un
-    texto a cuatro manos sigue nombrando a la otra persona. Es una etiqueta y no un
-    filtro porque la parcial de fila se incluye también donde nadie define `persona`: un
-    argumento de filtro sin definir rompe la plantilla, el de una etiqueta llega vacío.
+    texto a cuatro manos sigue nombrando a la otra persona. Las parciales de fila la llaman
+    con la persona de la ficha, o con None donde no hay ninguna.
     """
     if not persona:
         return list(personas)

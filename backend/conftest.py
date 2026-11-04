@@ -65,6 +65,18 @@ def _isolated_media(settings, tmp_path):
 
 
 @pytest.fixture
+def task_failures_stay_in_the_task():
+    """Para las pruebas que hacen fallar una tarea a propósito: su excepción no llega a la
+    prueba (la suite la propaga, config/settings_test.py), y el reintento corre como en el
+    worker. Celery lee los ajustes una vez, con su prefijo: override_settings no le llega."""
+    from config.celery import app
+
+    app.conf.update(CELERY_TASK_EAGER_PROPAGATES=False)
+    yield
+    app.conf.update(CELERY_TASK_EAGER_PROPAGATES=True)
+
+
+@pytest.fixture
 def groups(db):
     """Los tres grupos CON sus permisos, como en producción.
 

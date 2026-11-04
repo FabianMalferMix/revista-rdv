@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 59 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 60 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -151,7 +151,7 @@
 | B54 | Anuncios y foco en los componentes con JS | B11 | M | no | hecho (#242) |
 | B55 | Contraste de los sellos y axe en el CI | B11 | M | no | hecho (#243) |
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
-| B57 | Configuración de pruebas explícita | — | M | no | pendiente |
+| B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
 | B58 | Un analizador de CSS para las pruebas | — | M | no | pendiente |
 | B59 | Selectores muertos | B58 | M | no | pendiente |
 | B60 | Migraciones de datos con prueba | — | M | no | pendiente |
@@ -1133,6 +1133,8 @@ Si no se prueba con un lector de pantalla real, se dice en el ticket.
 Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del registro.
 
 **Hecho cuando.** Una clave de plantilla mal escrita o un `{% static %}` inexistente hacen fallar la suite.
+
+**Hecho (2026-11-04).** `config/settings_test.py`, en `pytest.ini`; `settings.py` ya no mira `sys.modules`. El `string_if_invalid` que falla destapó tres parámetros opcionales de parciales que se leían con `|default` (con un `string_if_invalid` activo, Django devuelve el reemplazo antes de aplicar los filtros): `_mapa.html` recibe `en_menu` siempre, `etiqueta` se lee con `{% firstof %}` y las filas deciden `sin_firma_de` con un `{% if %}`. Las dos pruebas de la pantalla de bloqueo la pintaban sin petición: ahora provocan el bloqueo por HTTP. `tests/test_static_references.py` recorre las plantillas y los Media de los formularios y del panel, y pinta una página de cada tipo con `DEBUG=0` y el manifiesto de producción tras un `collectstatic` en un directorio temporal, con datos que activan los guiones condicionados de la portada.
 
 #### B58 · Un analizador de CSS para las pruebas
 
