@@ -374,6 +374,7 @@ SEARCH_RESULTS_PANEL = 5
 # Longitud máxima de la consulta: por encima de esto no aporta precisión y solo
 # encarece el `to_tsquery`.
 SEARCH_MAX_QUERY = 120
+TOO_MANY_SEARCHES = "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
 
 
 def _dato(*partes):
@@ -447,7 +448,10 @@ def search(request):
     tope = SEARCH_RESULTS_PANEL if panel else SEARCH_RESULTS
     grupos = []
     limited = bool(getattr(request, "limited", False))
-    unavailable = SERVICE_UNAVAILABLE if limited and not counters_available() else ""
+    # Por qué no se buscó, si no se buscó: el límite de tasa, o sus contadores caídos.
+    aviso = ""
+    if limited:
+        aviso = TOO_MANY_SEARCHES if counters_available() else SERVICE_UNAVAILABLE
     if q and not limited:
         query = SearchQuery(q, config=SEARCH_CONFIG)
         # `[:tope]` en cada queryset hace que el LIMIT viaje al SQL, y `only()` evita
@@ -503,9 +507,9 @@ def search(request):
         template,
         {
             "grupos": grupos,
+            "total": sum(len(grupo["resultados"]) for grupo in grupos),
             "q": q,
-            "limited": limited,
-            "unavailable": unavailable,
+            "aviso": aviso,
             "panel": panel,
         },
     )

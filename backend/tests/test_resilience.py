@@ -63,6 +63,18 @@ def test_el_buscador_no_da_500_con_redis_caido(client):
 
 @pytest.mark.django_db
 @override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
+def test_the_search_panel_announces_that_the_service_is_down(client):
+    """El aviso llega también a la región de estado de la lupa, que es lo que oye el lector."""
+    from bs4 import BeautifulSoup
+
+    resp = client.get(reverse("content:search"), {"q": "umbral"}, headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    estado = BeautifulSoup(resp.content, "html.parser").select_one("#search-status")
+    assert estado.get_text() == SERVICE_UNAVAILABLE
+
+
+@pytest.mark.django_db
+@override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
 def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
     data = {
         "author_name": "Ana",

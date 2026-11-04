@@ -2,11 +2,15 @@
    Los resultados por tipo (ticket 5.4): cada grupo bajo su cejilla, con su tope. Era una
    sola lista de textos y poemas, cada uno con su tipo al lado; ahora el tipo es el grupo y
    al lado va el dato que distingue a cada resultado (el cargo, la fecha, el lugar).
+
+   En el panel de la lupa, además, lo que oye el lector de pantalla: el recuento (o el aviso),
+   que htmx lleva a `search-status` (base.html), la región que se anuncia, y que aquí no se pinta.
 {% endcomment %}
-{% if unavailable %}
-  <p class="empty">{{ unavailable }}</p>
-{% elif limited %}
-  <p class="empty">Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo.</p>
+{% if panel %}
+  <p id="search-status" hx-swap-oob="innerHTML">{% if aviso %}{{ aviso }}{% elif q and total %}{{ total }} resultado{{ total|pluralize }} para “{{ q }}”{% elif q %}Sin resultados para “{{ q }}”.{% endif %}</p>
+{% endif %}
+{% if aviso %}
+  <p class="empty">{{ aviso }}</p>
 {% elif q %}
   {% if grupos %}
     {% for grupo in grupos %}

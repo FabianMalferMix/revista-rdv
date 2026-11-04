@@ -1946,8 +1946,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 
    El relevo (static/js/integrantes.js): cada 1,8 s llega otra integrante a uno de los
    lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de una
-   risógrafo. Las que se ven van siempre primero en la lista: los pares (`nth-child`) son
-   siempre los mismos lugares.
+   risógrafo. Es solo de la vista: la lista no cambia de orden, para que el lector de
+   pantalla la recorra siempre igual. El guion le da a cada retrato su lugar en la fila
+   (`order`) y marca los pares; las que esperan quedan fuera de la fila, solo para el lector.
    ────────────────────────────────────────────────────────────────────────── */
 .integrantes-fila{display:grid; grid-template-columns:minmax(0, 216px) minmax(0, 1fr); column-gap:var(--s4);
   align-items:center}
@@ -1957,8 +1958,10 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .integrantes-cta .btn{gap:8px}
 .integrantes-retratos{list-style:none; margin:0; padding:0 0 var(--s3); display:grid;
   grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:12px}
-.integrantes-retratos > li:nth-child(2n){translate:0 var(--s3)}
+/* Los pares, un poco más abajo: sin el guion, los de la lista; con él, los de la fila. */
+.home-integrantes:not(.con-js) .integrantes-retratos > li:nth-child(2n), .integrante--par{translate:0 var(--s3)}
 .integrante{position:relative}
+.integrante.sr-only{position:absolute}
 .integrante-enlace{display:block; color:var(--ink); text-decoration:none}
 /* El monograma ya trae su caja 4:5 (.retrato) y centra las iniciales: no se toca. */
 .integrante-enlace > .riso-duo{display:block; aspect-ratio:4 / 5; overflow:hidden}

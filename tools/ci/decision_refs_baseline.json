@@ -27,7 +27,6 @@
   "backend/static/css/site.css": 41,
   "backend/static/js/embeds.js": 2,
   "backend/static/js/estante.js": 3,
-  "backend/static/js/integrantes.js": 2,
   "backend/static/js/registros.js": 3,
   "backend/templates/agenda/event_detail.html": 1,
   "backend/templates/base.html": 4,

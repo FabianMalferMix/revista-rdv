@@ -335,3 +335,44 @@ def test_search_puts_the_most_relevant_poem_first(client):
         )
     titles = _result_titles(client.get(reverse("content:search"), {"q": "ballena"}))
     assert titles == ["Ballena", "Orilla"]
+
+
+# ── Lo que anuncia el panel de la lupa ──────────────────────────────────────
+
+
+def _announced(client, q):
+    """Lo que el panel manda, fuera de banda, a la región de estado de la lupa (base.html)."""
+    respuesta = client.get(BUSCAR, {"q": q}, headers={"HX-Request": "true"})
+    sopa = BeautifulSoup(respuesta.content, "html.parser")
+    estado = sopa.select_one("#search-status")
+    assert estado["hx-swap-oob"] == "innerHTML"
+    return estado.get_text(), sopa
+
+
+def test_the_panel_announces_how_many_results_it_brings(client, make_article):
+    for n in range(2):
+        _publish(make_article(slug=f"fts-cuenta-{n}", title=f"Reseña contable {n}"))
+    dicho, sopa = _announced(client, "contable")
+    assert dicho == "2 resultados para “contable”"
+    assert len(sopa.select(".search-list li")) == 2
+
+
+def test_one_result_is_announced_in_the_singular(client, make_article):
+    _publish(make_article(slug="fts-sola", title="Reseña solitaria"))
+    assert _announced(client, "solitaria")[0] == "1 resultado para “solitaria”"
+
+
+def test_no_results_are_announced_too(client):
+    assert _announced(client, "zxqwvk")[0] == "Sin resultados para “zxqwvk”."
+
+
+def test_an_empty_query_leaves_nothing_to_announce(client):
+    assert _announced(client, "")[0] == ""
+
+
+def test_the_search_page_sends_nothing_to_announce(client, make_article):
+    """La página de búsqueda tiene su resumen a la vista y no tiene la lupa."""
+    _publish(make_article(slug="fts-pagina", title="Reseña paginada"))
+    html = client.get(BUSCAR, {"q": "paginada"}).content.decode()
+    assert "Reseña paginada" in html
+    assert 'id="search-status"' not in html

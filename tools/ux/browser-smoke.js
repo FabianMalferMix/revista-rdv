@@ -80,6 +80,40 @@ function expect(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+// Un deslizamiento del dedo sobre lo que señala `locator`: hacia la izquierda si `dx` es negativo.
+// Los guiones solo miran el tipo de puntero y dónde empieza y termina el gesto.
+const swipe = (locator, dx) =>
+  locator.evaluate((element, distance) => {
+    const box = element.getBoundingClientRect();
+    const at = (x) => ({ pointerType: 'touch', isPrimary: true, bubbles: true, clientX: x, clientY: box.top + box.height / 2 });
+    const middle = box.left + box.width / 2;
+    element.dispatchEvent(new PointerEvent('pointerdown', at(middle - distance / 2)));
+    element.dispatchEvent(new PointerEvent('pointerup', at(middle + distance / 2)));
+  }, dx);
+
+// Espera a que `condition` se cumpla, hasta `timeout` ms.
+async function until(condition, timeout) {
+  for (const end = Date.now() + timeout; Date.now() < end; await new Promise((done) => setTimeout(done, 100))) {
+    if (await condition()) return true;
+  }
+  return false;
+}
+
+// Los retratos de «Las voces» que se ven, de izquierda a derecha, con su lugar en la lista
+// (`index`). Las que esperan su turno quedan en la lista para el lector, fuera de la fila (1 px).
+const portraitsInView = async (section) =>
+  (
+    await section.locator('.integrante').evaluateAll((cards) =>
+      cards.map((li, index) => {
+        const box = li.getBoundingClientRect();
+        const shown = getComputedStyle(li).display !== 'none' && box.width > 1;
+        return { index, shown, name: li.querySelector('.member-name').textContent, left: box.left, top: box.top };
+      })
+    )
+  )
+    .filter((card) => card.shown)
+    .sort((a, b) => a.left - b.left);
+
 const CHECKS = [
   {
     name: 'Las páginas de pages.txt cargan sin errores y sin desbordar a lo ancho',
@@ -134,6 +168,47 @@ const CHECKS = [
     },
   },
   {
+    name: 'Al tabular fuera de «Menú» abierto, el menú se cierra sin mover el foco y lo enfocado se ve',
+    widths: [375],
+    async run({ page }) {
+      await visit(page, '/registros/');
+      const menu = page.locator('.nav-disclosure');
+      await menu.locator('summary').click();
+      expect(await menu.evaluate((d) => d.open), '«Menú» no abre');
+      // Dónde está el foco, y si lo que hay en su centro es él o lo tapa otra cosa.
+      const focus = () =>
+        page.evaluate(() => {
+          const el = document.activeElement;
+          const box = el.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return {
+            label: (el.getAttribute('aria-label') || el.textContent).trim().replace(/\s+/g, ' ').slice(0, 40),
+            inMenu: !!el.closest('.nav-disclosure'),
+            inPage: !!el.closest('main'),
+            open: document.querySelector('.nav-disclosure').open,
+            covered: !el.contains(hit),
+          };
+        });
+      let state = await focus();
+      for (let i = 0; i < 40 && state.inMenu; i += 1) {
+        await page.keyboard.press('Tab');
+        state = await focus();
+      }
+      expect(!state.inMenu, 'el tabulador no sale de «Menú»');
+      // El guion mira adónde llegó el foco una vez terminado el cambio: el cierre llega después.
+      await until(async () => !(await menu.evaluate((d) => d.open)), 1000);
+      state = await focus();
+      expect(!state.open, `con el foco en «${state.label}», «Menú» sigue abierto`);
+      expect(state.label === 'Buscar', `al cerrarse, el foco no se queda en lo que sigue a «Menú» sino en «${state.label}»`);
+      for (let i = 0; i < 10 && !state.inPage; i += 1) {
+        await page.keyboard.press('Tab');
+        state = await focus();
+      }
+      expect(state.inPage, 'el tabulador no llega a la página');
+      expect(!state.covered, `«${state.label}» tiene el foco y queda tapado`);
+    },
+  },
+  {
     name: 'La lupa abre el buscador con el foco en el campo, busca en vivo y Escape la cierra',
     widths: [951, 375],
     async run({ page }) {
@@ -156,6 +231,54 @@ const CHECKS = [
       });
       expect(!open, 'Escape no cierra el buscador');
       expect(focusBack, 'al cerrar con Escape, el foco no vuelve a la lupa');
+    },
+  },
+  {
+    name: 'La lupa no busca con una letra y anuncia una sola vez cuántos resultados hay, sin leerlos',
+    widths: [951, 375],
+    async run({ page }) {
+      await visit(page, '/registros/');
+      const searches = [];
+      page.on('request', (request) => {
+        if (request.url().includes('/buscar/')) searches.push(request.url());
+      });
+      await page.click('.busqueda summary');
+      await page.waitForFunction(() => document.activeElement.matches('.busqueda input[type="search"]'), null, { timeout: 2000 });
+      // Lo que oye el lector: cada texto nuevo de la región de estado de la lupa.
+      await page.evaluate(() => {
+        const status = document.querySelector('.busqueda [role="status"]');
+        window.announced = [];
+        new MutationObserver(() => {
+          const text = status.textContent.trim();
+          if (text) window.announced.push(text);
+        }).observe(status, { childList: true, characterData: true, subtree: true });
+      });
+      await page.keyboard.type('c');
+      await page.waitForTimeout(SETTLE_MS);
+      expect(!searches.length, 'con una sola letra, la lupa busca igual');
+      await page.keyboard.type('asa');
+      const found = await page
+        .waitForFunction(() => document.querySelector('#search-results a'), null, { timeout: 5000 })
+        .then(() => true, () => false);
+      expect(found, 'escribir «casa» no trae resultados al panel (htmx)');
+      await page.waitForTimeout(SETTLE_MS);
+      const [announced, live] = await page.evaluate(() => [
+        window.announced,
+        !!document.querySelector('#search-results').closest('[aria-live], [role="status"], [role="alert"], [role="log"]'),
+      ]);
+      expect(!live, 'los resultados van en una región viva: el lector los lee enteros en cada pausa');
+      expect(
+        announced.length === 1 && /^\d+ resultados? para “casa”$/.test(announced[0]),
+        `la lupa anunció ${JSON.stringify(announced)}`
+      );
+      // Al borrar hasta dejar una letra, se va lo que ya no corresponde a lo escrito.
+      for (let i = 0; i < 3; i += 1) await page.keyboard.press('Backspace');
+      await page.waitForTimeout(SETTLE_MS);
+      const left = await page.evaluate(() =>
+        ['#search-results', '.busqueda [role="status"]'].map((s) => document.querySelector(s).textContent.trim()).join('')
+      );
+      expect(!left, `con una letra queda «${left.slice(0, 60)}»`);
+      expect(searches.length === 1, `la lupa buscó ${searches.length} veces`);
     },
   },
   {
@@ -306,7 +429,7 @@ const CHECKS = [
     },
   },
   {
-    name: 'La tirada responde a la hoja de contactos y a las flechas del teclado',
+    name: 'La tirada responde a la hoja de contactos, al teclado y al dedo, y solo anuncia lo que no mueve el foco',
     widths: [951, 375],
     async run({ page }) {
       await visit(page, '/');
@@ -324,11 +447,17 @@ const CHECKS = [
         s.querySelector('[data-anuncio]').textContent,
       ]);
       expect(focused, 'el foco no va al título del registro elegido');
-      expect(announced.startsWith('Registro 2 de '), `el anuncio dice «${announced}»`);
+      // El lector ya lee el título al que llega el foco: la región viva no lo repite.
+      expect(!announced, `al pulsar un contacto, además de llevar el foco al título, se anuncia «${announced}»`);
       await page.keyboard.press('ArrowRight');
       expect((await current()) === 2, 'la flecha derecha no pasa al registro siguiente');
       await page.keyboard.press('ArrowLeft');
       expect((await current()) === 1, 'la flecha izquierda no vuelve al anterior');
+      // Deslizar no mueve el foco: eso sí se anuncia.
+      await swipe(run.locator('.tirada-pista'), -160);
+      expect((await current()) === 2, 'deslizar hacia la izquierda no pasa al registro siguiente');
+      const said = await run.evaluate((s) => s.querySelector('[data-anuncio]').textContent);
+      expect(said.startsWith('Registro 3 de '), `al deslizar se anuncia «${said}»`);
     },
   },
   {
@@ -392,25 +521,113 @@ const CHECKS = [
           const phone = window.matchMedia('(max-width: 719px)').matches;
           const shown = [...section.querySelectorAll('.integrante')]
             .filter((li) => getComputedStyle(li).display !== 'none')
-            .map((li) => li.getBoundingClientRect());
+            .map((li) => li.getBoundingClientRect())
+            .filter((box) => box.width > 1);
           return {
             expected: Number(phone ? section.dataset.aLaVistaTelefono : section.dataset.aLaVista),
             shown: shown.length,
             columns: new Set(shown.map((r) => Math.round(r.left))).size,
             oneRow: shown.every((r) => r.top < shown[0].bottom && r.bottom > shown[0].top),
+            width: shown.length ? Math.round(shown[0].width) : 0,
           };
         });
         expect(row.expected > 0, `${label}: la sección no dice cuántas se ven`);
         expect(row.shown === row.expected, `${label}: se ven ${row.shown} y la portada dice ${row.expected}`);
         expect(row.columns === row.shown && row.oneRow, `${label}: las que se ven no van en una fila`);
+        return row.width;
       };
-      await expectRow(page, 'con el guion');
+      const withScript = await expectRow(page, 'con el guion');
       const noScripts = await context.browser().newContext({ ...WINDOWS[width], javaScriptEnabled: false });
       try {
-        await expectRow(await noScripts.newPage(), 'sin el guion');
+        const bare = await expectRow(await noScripts.newPage(), 'sin el guion');
+        // Las que esperan no le quitan sitio a la fila: cada retrato mide lo mismo que sin el guion.
+        expect(withScript === bare, `con el guion, cada retrato mide ${withScript} px; sin él, ${bare}`);
       } finally {
         await noScripts.close();
       }
+    },
+  },
+  {
+    name: '«Las voces»: el relevo solo cambia lo que se ve, y el lector recibe la lista entera y quieta',
+    widths: [951, 375],
+    async run({ page }, width) {
+      await visit(page, '/');
+      const section = page.locator('[data-integrantes]');
+      await section.scrollIntoViewIfNeeded();
+      const look = async () => {
+        const row = await portraitsInView(section);
+        return {
+          names: row.map((card) => card.name),
+          lefts: row.map((card) => Math.round(card.left)),
+          tops: row.map((card) => Math.round(card.top)),
+        };
+      };
+      const tree = () => section.locator('.integrantes-retratos').ariaSnapshot();
+      const roster = await section.locator('.member-name').allTextContents();
+      const before = await look();
+      const treeBefore = await tree();
+      // En la pantalla ancha llega sola cada 1,8 s; en el teléfono, al deslizar el dedo.
+      if (width === 375) await swipe(section.locator('.integrantes-retratos'), -160);
+      const moved = await until(async () => (await look()).names.join() !== before.names.join(), 5000);
+      expect(moved, 'en 5 s no llega ninguna otra integrante');
+      await page.waitForTimeout(SETTLE_MS);
+      const after = await look();
+      const items = (treeBefore.match(/- listitem/g) || []).length;
+      expect(items === roster.length, `el lector recibe ${items} de las ${roster.length} integrantes`);
+      expect((await tree()) === treeBefore, 'el relevo cambia lo que recibe el lector de pantalla');
+      expect(after.lefts.join() === before.lefts.join(), 'el relevo mueve los lugares de la fila');
+      const pairsLower = (tops) => tops.every((top, i) => i % 2 === 0 || top > tops[i - 1]);
+      expect(pairsLower(before.tops) && pairsLower(after.tops), 'los pares de la fila no van más abajo');
+      // Llega la que más esperaba, al lugar de la que se va, y las demás no se mueven.
+      const arrived = after.names.filter((name) => !before.names.includes(name));
+      const waiting = roster.filter((name) => !before.names.includes(name));
+      expect(
+        arrived.length && arrived.every((name) => waiting.slice(0, arrived.length).includes(name)),
+        `llegan ${arrived.join(', ')}, y las que más esperaban eran ${waiting.slice(0, arrived.length).join(', ')}`
+      );
+      expect(
+        after.names.every((name, i) => name === before.names[i] || arrived.includes(name)),
+        `la fila pasa de ${before.names.join(', ')} a ${after.names.join(', ')}: alguna cambió de lugar`
+      );
+    },
+  },
+  {
+    name: 'El tabulador recorre «Las voces» en el orden en que se ven, también después del relevo',
+    widths: [951],
+    async run({ page }) {
+      await visit(page, '/');
+      const section = page.locator('[data-integrantes]');
+      await section.scrollIntoViewIfNeeded();
+      // Tras el primer relevo, la fila ya no va en el orden de la lista.
+      const scrambled = await until(
+        async () => (await portraitsInView(section)).some((card, i, row) => i && card.index < row[i - 1].index),
+        5000
+      );
+      expect(scrambled, 'en 5 s ningún relevo cambia el orden de la fila: no hay nada que medir');
+      // Con el foco dentro, el relevo se detiene: la fila queda quieta mientras se tabula.
+      await section.locator('.integrantes-cta a').focus();
+      await page.waitForTimeout(SETTLE_MS);
+      const row = (await portraitsInView(section)).map((card) => card.name);
+      const focused = () =>
+        page.evaluate(() => {
+          const el = document.activeElement;
+          return {
+            name: el.closest('.integrante')?.querySelector('.member-name').textContent ?? null,
+            below: !!(document.querySelector('[data-integrantes]').compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING),
+          };
+        });
+      const visited = [];
+      for (let i = 0; i < row.length; i += 1) {
+        await page.keyboard.press('Tab');
+        visited.push((await focused()).name);
+      }
+      expect(visited.join() === row.join(), `el tabulador va por ${visited.join(', ')}, y la fila es ${row.join(', ')}`);
+      await page.keyboard.press('Tab');
+      const out = await focused();
+      expect(!out.name && out.below, 'desde el último retrato, el tabulador no sale de la fila hacia lo que sigue');
+      await page.keyboard.press('Shift+Tab');
+      const back = await focused();
+      expect(back.name === row[row.length - 1], `volviendo desde abajo, el tabulador entra por ${back.name}`);
     },
   },
   {
@@ -432,13 +649,15 @@ const CHECKS = [
           expect(count > 0, `${route}: no hay ningún ${selector} oculto que medir`);
         }
       };
-      // Con los guiones: las fichas del estante que no están al frente y las voces que esperan turno.
-      await expectHidden(page, '/', ['.estante-ficha', '.integrante']);
-      // Sin ellos: la hoja de contactos de la tirada y el botón de imprimir del dossier.
+      // Con los guiones: las fichas del estante que no están al frente. Las voces que esperan
+      // turno ya no llevan hidden: quedan en la lista para el lector, fuera de la fila.
+      await expectHidden(page, '/', ['.estante-ficha']);
+      // Sin ellos: la hoja de contactos de la tirada, las voces que esperan y el botón de
+      // imprimir del dossier.
       const noScripts = await context.browser().newContext({ ...WINDOWS[width], javaScriptEnabled: false });
       try {
         const bare = await noScripts.newPage();
-        await expectHidden(bare, '/', ['.tirada-contactos']);
+        await expectHidden(bare, '/', ['.tirada-contactos', '.integrante']);
         await expectHidden(bare, '/dossier/', ['[data-print]']);
       } finally {
         await noScripts.close();

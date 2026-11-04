@@ -1092,6 +1092,8 @@ Es visual: pasa por el visto bueno del dueño, con capturas de antes y después 
 
 Si no se prueba con un lector de pantalla real, se dice en el ticket.
 
+**Hecho (2026-11-04).** Sin lector de pantalla real: lo que se comprobó es el árbol de accesibilidad de Playwright y lo que se escribe en las regiones vivas, en la prueba de humo. El relevo ya no mueve los nodos: las que esperan quedan en la lista para el lector (`sr-only`) y fuera del tabulador, y el guion le da a cada retrato su lugar en la fila con `order` (el dueño aceptó que integrantes.js escriba esa propiedad por el CSSOM, que la CSP admite; la prueba prohíbe lo que la CSP bloquea). Como la lista ya no va en el orden de la fila, el tabulador lo maneja el guion, para recorrerla como se ve. Las pruebas que fijaban el mecanismo viejo se reemplazaron por comprobaciones en el navegador de lo mismo que vigilaban.
+
 #### B55 · Contraste de los sellos y axe en el CI
 
 **Hallazgos:** COM-2 · **Depende de:** B11 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C27, decisión visual del dueño

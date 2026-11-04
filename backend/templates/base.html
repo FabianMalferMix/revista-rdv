@@ -100,6 +100,9 @@
       {% comment %}
          La lupa abre el buscador en un panel. Sin JavaScript, el <details> abre igual y el
          envío lleva a /buscar/; con htmx, el campo busca en vivo en el panel de resultados.
+         Con una sola letra no busca: `hx-validate` hace que htmx respete el `minlength`.
+         Los resultados no son una región viva, porque el lector los leería enteros en cada
+         pausa: lo que se anuncia es el recuento, en `search-status`, que rellena la parcial.
       {% endcomment %}
       {% block buscador %}
       <details class="busqueda">
@@ -110,10 +113,12 @@
                  hx-trigger="input changed delay:300ms, search"
                  hx-target="#search-results"
                  hx-indicator="#search-ind"
+                 hx-validate="true"
                  autocomplete="off" aria-label="Buscar">
           <span id="search-ind" class="htmx-indicator">…</span>
+          <p id="search-status" class="sr-only" role="status"></p>
           {# Resultados como overlay anclado al buscador (no empujan el layout). #}
-          <div id="search-results" role="region" aria-live="polite" aria-label="Resultados de búsqueda"></div>
+          <div id="search-results" role="region" aria-label="Resultados de búsqueda"></div>
         </form>
       </details>
       {% endblock %}
