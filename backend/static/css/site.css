@@ -418,64 +418,64 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    2026-10-15). Arriba, la cabecera de siempre sin el filete; en la portada, nada: el nombre
    grande es la cabecera, como en brikken.co. Al bajar lo que mide la cabecera, una cápsula
    pequeña y centrada, separada del borde, con el monograma, los cinco enlaces, la lupa y el
-   «Dossier». Lo de arriba lo pinta esta hoja desde el primer cuadro; static/js/cabecera.js
-   solo pone y quita data-barra="pildora" en <html>. Sin JavaScript no aplica nada de esto y
-   queda la cabecera fija de siempre. La franja mide siempre --alto-cabecera: lo fijo de la
-   página (la columna ancla, los años) y los saltos a anclas no se mueven. */
+   «Dossier». static/js/cabecera.js, que se carga en el <head>, pone data-barra="arriba" en
+   <html> antes de la primera pintura y la cambia a "pildora" al bajar; estas reglas solo
+   cambian la cabecera con esa marca. Si el guion no llega o falla al montarse, no hay marca y
+   queda la cabecera fija de siempre, como sin JavaScript. La franja mide siempre
+   --alto-cabecera: lo fijo de la página (la columna ancla, los años) y los saltos a anclas no
+   se mueven. */
 /* --capsula-ancho: lo que mide la cápsula con sus cinco enlaces. Mientras se busca, los
    enlaces se esconden y la cápsula conserva ese ancho. */
 :root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px; --capsula-ancho:625px}
 @media (max-width:899px){
   :root{--capsula-alto:44px; --capsula-relleno:0px; --capsula-arriba:6px}
 }
-@media (scripting: enabled){
-  /* Arriba de las demás páginas: la cabecera sin el filete de abajo. Alto mínimo, no fijo:
-     con el espaciado de texto ampliado (WCAG 1.4.12) crece, como antes. La fila lleva el
-     papel para que nada se transparente a través de ella al pasar a la cápsula. */
-  html:not([data-barra]):not(:has(.hero-nombre)) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
-  html:not([data-barra]):not(:has(.hero-nombre)) .masthead-fila{background:var(--paper)}
-  /* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
-     queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
-     sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
-     portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
-     «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
-     de los botones. */
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
-    margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
-    column-gap:14px; background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1);
-    box-shadow:6px 6px 0 var(--line)}
-  /* El sello se queda en el monograma, de 44 px; el nombre sigue ahí para los lectores. */
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead .brand{width:44px; height:44px; padding:0; gap:0; justify-content:center; border-radius:2px}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead .brand-sep{display:none}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead .brand-nombre{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .nav a:not(:last-child)::after{margin:0 7px}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .nav-disclosure{margin-left:6px}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .busqueda{margin-left:0}
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead-cta{padding:0 16px; border-radius:2px}
-  /* Los paneles de la lupa y de «Menú» cuelgan de la cápsula, con su acabado. */
-  :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .busqueda .search{right:0; top:calc(100% + 8px); border:1px solid var(--line); border-radius:var(--r-1);
-    box-shadow:6px 6px 0 var(--line)}
-  @media (max-width:899px){
-    :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .masthead-fila{width:calc(100% - 24px); padding:0 4px 0 0; column-gap:4px}
-    :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .busqueda{margin-left:auto}
-    :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .busqueda .search{left:0; right:0; width:auto}
-    :is(html[data-barra="pildora"], html:not([data-barra]):has(.hero-nombre)) .menu-mapa{top:calc(100% + 8px); max-height:calc(100dvh - var(--alto-cabecera) - 16px);
-      background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line)}
-  }
-  /* Arriba de la portada la cápsula está escondida: no se ve ni recibe el puntero, pero
-     sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra como en
-     brikken.co: un fundido y 10 px. */
-  html:not([data-barra]):has(.hero-nombre) .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
-  html:not([data-barra]):has(.hero-nombre) .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
-  .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
-  /* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
-  html:has(.hero-nombre) .hero-dossier{display:inline-flex}
-  /* En las demás páginas, de la cabecera a la cápsula hay una transición de vista
-     (cabecera.js): cada forma con su nombre, para que no se deformen. */
-  html:not([data-barra]):not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-abierta}
-  html[data-barra="pildora"]:not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-capsula}
+/* Arriba de las demás páginas: la cabecera sin el filete de abajo. Alto mínimo, no fijo:
+   con el espaciado de texto ampliado (WCAG 1.4.12) crece, como antes. La fila lleva el
+   papel para que nada se transparente a través de ella al pasar a la cápsula. */
+html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
+html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead-fila{background:var(--paper)}
+/* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
+   queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
+   sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
+   portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
+   «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
+   de los botones. */
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
+  margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
+  column-gap:14px; background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1);
+  box-shadow:6px 6px 0 var(--line)}
+/* El sello se queda en el monograma, de 44 px; el nombre sigue ahí para los lectores. */
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand{width:44px; height:44px; padding:0; gap:0; justify-content:center; border-radius:2px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand-sep{display:none}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand-nombre{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .nav a:not(:last-child)::after{margin:0 7px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .nav-disclosure{margin-left:6px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda{margin-left:0}
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-cta{padding:0 16px; border-radius:2px}
+/* Los paneles de la lupa y de «Menú» cuelgan de la cápsula, con su acabado. */
+:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda .search{right:0; top:calc(100% + 8px); border:1px solid var(--line); border-radius:var(--r-1);
+  box-shadow:6px 6px 0 var(--line)}
+@media (max-width:899px){
+  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-fila{width:calc(100% - 24px); padding:0 4px 0 0; column-gap:4px}
+  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda{margin-left:auto}
+  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda .search{left:0; right:0; width:auto}
+  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .menu-mapa{top:calc(100% + 8px); max-height:calc(100dvh - var(--alto-cabecera) - 16px);
+    background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line)}
 }
+/* Arriba de la portada la cápsula está escondida: no se ve ni recibe el puntero, pero
+   sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra como en
+   brikken.co: un fundido y 10 px. */
+html[data-barra="arriba"]:has(.hero-nombre) .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
+html[data-barra="arriba"]:has(.hero-nombre) .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
+html[data-barra] .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
+/* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
+html[data-barra]:has(.hero-nombre) .hero-dossier{display:inline-flex}
+/* En las demás páginas, de la cabecera a la cápsula hay una transición de vista
+   (cabecera.js): cada forma con su nombre, para que no se deformen. */
+html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-abierta}
+html[data-barra="pildora"]:not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-capsula}
 /* Solo la cabecera cambia: la página no entra en la transición. La cápsula llega con el
    fundido de Brikken y la fila se desvanece después, cuando la cápsula ya casi está: el
    centro nunca queda vacío. Al volver arriba, al revés. */

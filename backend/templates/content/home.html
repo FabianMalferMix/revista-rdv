@@ -188,7 +188,7 @@
                  El lomo y el canto llevan el color del borde de su tapa (D28), como rectángulos de
                  SVG: un `fill` no es un estilo en línea, y la CSP del sitio no admite estilos en línea.
               {% endcomment %}
-              <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}">
+              <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}" data-ficha="ficha-{{ pub.slug }}">
                   {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
                   <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
                     {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, (min-width: 1400px) 270px, 200px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
@@ -206,7 +206,7 @@
           </div>
           <div class="estante-fichas">
             {% for pub in publications %}
-              <div class="estante-ficha"{% if not forloop.first %} hidden{% endif %}>
+              <div class="estante-ficha" id="ficha-{{ pub.slug }}"{% if not forloop.first %} hidden{% endif %}>
                 <p class="rotulo rotulo--acento estante-dato">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
                 <h3 class="estante-titulo" tabindex="-1">{{ pub.title }}</h3>
                 {% if pub.synopsis %}<p class="estante-sinopsis">{{ pub.synopsis }}</p>{% endif %}

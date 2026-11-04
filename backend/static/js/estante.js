@@ -1,5 +1,5 @@
 // El estante de la portada (D24): una publicación de frente y las demás de lomo. Sin este guion,
-// cada lomo lleva a su ficha. Con él, el lomo es un botón que saca ese libro al frente: el que
+// o si le falta algo de lo que usa, cada lomo lleva a su ficha. Con él, el lomo es un botón que saca ese libro al frente: el que
 // estaba vuelve a su lugar de lomo y al lado aparece la ficha del nuevo, con el foco en su
 // título. El cambio es suave (D27): cada libro se desliza desde donde estaba hasta su lugar
 // nuevo, el elegido gira desde el lomo hasta quedar de frente y las fichas se funden. Y sin
@@ -17,8 +17,11 @@
 
   function montar(seccion) {
     const ejemplares = [...seccion.querySelectorAll('.ejemplar')];
-    const fichas = [...seccion.querySelectorAll('.estante-ficha')];
-    if (ejemplares.length < 2) return;
+    // Cada libro dice cuál es su ficha (data-ficha, su id): no se emparejan por el orden.
+    const fichas = ejemplares.map((li) => document.getElementById(li.dataset.ficha));
+    const lomos = ejemplares.map((li) => li.querySelector('.ejemplar-lomo'));
+    const sinNodo = fichas.some((f) => !f || !f.querySelector('.estante-titulo')) || lomos.includes(null);
+    if (ejemplares.length < 2 || sinNodo) return;
 
     function alFrente(i) {
       if (ejemplares[i].classList.contains('es-frente')) return;
@@ -64,10 +67,11 @@
     // un enlace y pasa a ser un botón, y un lector de pantalla oye «Sacar al frente» antes del
     // título y el año que se ven.
     ejemplares.forEach((li, i) => {
-      const enlace = li.querySelector('.ejemplar-lomo');
+      const enlace = lomos[i];
       const boton = document.createElement('button');
       boton.type = 'button';
       boton.className = enlace.className;
+      boton.setAttribute('aria-controls', fichas[i].id);
       const accion = document.createElement('span');
       accion.className = 'sr-only';
       accion.textContent = 'Sacar al frente: ';
