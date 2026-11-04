@@ -353,9 +353,10 @@ class Poem(EditorialItem):
     )
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.CharField(max_length=320, blank=True)
-    # Mantenido por un trigger de Postgres (ver migración): los poemas son buscables.
+    # El epígrafe lleva también la dedicatoria: un poema se encuentra por el nombre de a quien
+    # está dedicado, con el peso del cuerpo.
     search_vector = models.GeneratedField(
-        expression=search_vector(("title", "A"), ("body", "D")),
+        expression=search_vector(("title", "A"), ("epigraph", "D"), ("body", "D")),
         output_field=SearchVectorField(),
         db_persist=True,
     )

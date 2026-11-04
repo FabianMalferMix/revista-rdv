@@ -66,7 +66,10 @@ cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigent
   `to_tsvector` con una configuración fija sí es inmutable, así que el vector se declara en el
   modelo y la base lo rehace en toda escritura, también con `update()`, `bulk_update` o
   loaddata. Django ve sus columnas al renombrarlas o borrarlas, cosa que con el trigger no
-  pasaba. El título pesa más que el cuerpo al ordenar (`setweight` A, subtítulo B, cuerpo D).
+  pasaba. El título pesa más que el cuerpo al ordenar (`setweight` A, subtítulo B, cuerpo D). En
+  los poemas se indexa también el epígrafe, donde va la dedicatoria, con el peso del cuerpo (D;
+  2026-11-04, C32, B82, migración `content.0019`). Una columna generada no se altera: para cambiar
+  su expresión, la migración la quita y la vuelve a añadir, con su índice.
 
 - **`CACHES` → Redis (db 2) en prod, LocMem en dev/tests.** Necesario para que los
   contadores de `django-ratelimit` se compartan entre workers. Seguro con `noeviction`
@@ -279,10 +282,10 @@ paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` q
   `seed_material_generico`, que el mismo guion corre, la imagen para compartir (genérica). En
   una base nueva de producción hay que ponerlos en el panel (Perfil del sitio): afectan al
   título, al Open Graph y al JSON-LD.
-- **Índice `Event(published, starts_at)`** y epigraph en el trigger FTS de Poem —
-  micro-optimizaciones de la auditoría #2, sin impacto observado. (El `LIMIT` de la búsqueda
-  ya viaja al SQL desde el hallazgo S-04, y `prefers-reduced-motion` se respeta desde el
-  rediseño UX.)
+- **Índice `Event(published, starts_at)`** — micro-optimización de la auditoría #2, sin
+  impacto observado. El epígrafe de los poemas ya entra en la búsqueda (C32, B82). (El
+  `LIMIT` de la búsqueda ya viaja al SQL desde el hallazgo S-04, y `prefers-reduced-motion`
+  se respeta desde el rediseño UX.)
 
 ### Del rediseño UX/UI (cierre, 2026-10-14)
 
