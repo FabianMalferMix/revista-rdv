@@ -4,6 +4,6 @@
   "description": "No se instala: Dependabot vigila estas versiones. Lo vendorizado se cambia con tools/vendor/update.py.",
   "dependencies": {
     "htmx.org": "2.0.11",
-    "tinymce": "7.9.3"
+    "tinymce": "8.10.1"
   }
 }
