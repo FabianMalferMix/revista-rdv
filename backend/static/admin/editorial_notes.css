@@ -1,0 +1,13 @@
+/* La nota de otra persona se lee, pero no se escribe en ella: el cuadro va en gris y debajo
+   dice por qué. Con las variables del panel, que cambian en el modo oscuro. */
+.nota-ajena:disabled {
+  background: var(--selected-bg);
+  color: var(--body-quiet-color);
+  cursor: not-allowed;
+}
+
+.nota-ajena-aviso {
+  margin: 4px 0 0;
+  color: var(--body-quiet-color);
+  font-size: 0.75rem;
+}
