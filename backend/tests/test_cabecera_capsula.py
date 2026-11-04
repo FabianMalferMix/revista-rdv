@@ -1,10 +1,10 @@
 """La cabecera al bajar: la opción C del tablero de la barra, elegida por el dueño el 2026-10-15.
 
 Arriba, la cabecera de siempre sin el filete; en la portada, nada (el nombre grande es la
-cabecera, como en brikken.co). Al bajar lo que mide la cabecera, una cápsula centrada. Lo de
-arriba lo pinta site.css con `@media (scripting: enabled)` desde el primer cuadro, sin
-parpadeo; static/js/cabecera.js solo pone y quita data-barra="pildora". Sin JavaScript queda
-la cabecera fija de siempre.
+cabecera, como en brikken.co). Al bajar lo que mide la cabecera, una cápsula centrada.
+static/js/cabecera.js se carga en el <head> y pone data-barra="arriba" antes de la primera
+pintura, sin parpadeo, y "pildora" al bajar. site.css solo cambia la cabecera con esa marca: sin
+JavaScript, o si el guion no llega o falla al montarse, queda la cabecera fija de siempre.
 """
 
 import re
@@ -34,37 +34,52 @@ def _bloque(cabecera):
     raise AssertionError(f"el bloque «{cabecera}» no cierra")
 
 
-CON_JS = _junto(_bloque("@media (scripting: enabled){"))
-FUERA = _junto(CSS.replace(_bloque("@media (scripting: enabled){"), ""))
+HOJA = _junto(CSS)
+ARRIBA = 'html[data-barra="arriba"]'
+CAPSULA = f':is(html[data-barra="pildora"],{ARRIBA}:has(.hero-nombre))'
 
 
 @pytest.mark.django_db
-def test_la_cabecera_carga_su_guion_con_defer(client):
+def test_the_header_script_runs_in_the_head_before_the_first_paint(client):
+    """Sin defer ni async: la marca de la que depende la hoja está antes de pintar el cuerpo."""
     pagina = BeautifulSoup(client.get("/").content, "html.parser")
-    guion = pagina.select_one('script[src*="js/cabecera.js"]')
-    assert guion is not None and guion.has_attr("defer")
+    guion = pagina.head.select_one('script[src*="js/cabecera.js"]')
+    assert guion is not None
+    assert not guion.has_attr("defer") and not guion.has_attr("async")
+
+
+def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
+    """Si cabecera.js no llega o falla, no hay marca, y queda la cabecera fija de siempre: lo
+    que la esconde, la vuelve transparente o le quita el puntero exige data-barra."""
+    cambian = [
+        selector
+        for selector, cuerpo in _reglas()
+        if re.search(r"\.masthead(-fila)?$", selector)
+        and re.search(r"opacity:0|pointer-events:none|background:transparent", cuerpo)
+    ]
+    assert len(cambian) >= 2
+    assert [s for s in cambian if "data-barra" not in s] == []
 
 
 def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
-    """La cápsula escondida y el dossier en el titular, solo con JavaScript: sin él, la
-    cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
-    escondida = "html:not([data-barra]):has(.hero-nombre).masthead-fila{opacity:0;"
-    dossier = "html:has(.hero-nombre).hero-dossier{display:inline-flex}"
+    """La cápsula escondida y el dossier en el titular, solo con la marca del guion: sin ella,
+    la cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
+    escondida = f"{ARRIBA}:has(.hero-nombre).masthead-fila{{opacity:0;"
+    dossier = "html[data-barra]:has(.hero-nombre).hero-dossier{display:inline-flex}"
     for regla in (escondida, dossier):
-        assert regla in CON_JS
-        assert regla not in FUERA
+        assert regla in HOJA
+    assert [s for s, c in _reglas() if "hero-dossier" in s and "inline-flex" in c] == [
+        "html[data-barra]:has(.hero-nombre) .hero-dossier"
+    ]
     # Escondida no es inalcanzable: aparece al recibir el foco.
-    assert (
-        "html:not([data-barra]):has(.hero-nombre).masthead-fila:focus-within{opacity:1;" in CON_JS
-    )
+    assert f"{ARRIBA}:has(.hero-nombre).masthead-fila:focus-within{{opacity:1;" in HOJA
 
 
 def test_la_franja_mide_lo_mismo_y_lo_de_abajo_no_se_mueve():
-    capsula = ':is(html[data-barra="pildora"],html:not([data-barra]):has(.hero-nombre))'
-    assert f"{capsula}.masthead{{height:var(--alto-cabecera);" in CON_JS
+    assert f"{CAPSULA}.masthead{{height:var(--alto-cabecera);" in HOJA
     assert (
-        "html:not([data-barra]):not(:has(.hero-nombre)).masthead{border-bottom-style:none;min-height:var(--alto-cabecera)}"
-        in CON_JS
+        f"{ARRIBA}:not(:has(.hero-nombre)).masthead{{border-bottom-style:none;min-height:var(--alto-cabecera)}}"
+        in HOJA
     )
 
 
@@ -84,9 +99,8 @@ def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
     portada. Antes, fuera de la portada, un velo de papel la tapaba de lado a lado y cortaba
     el contenido. Ninguna regla de la cápsula le vuelve a dar fondo a la franja (ni a sus
     pseudoelementos), sea para todas las páginas o para algunas."""
-    capsula = ':is(html[data-barra="pildora"],html:not([data-barra]):has(.hero-nombre))'
-    franja = f"{capsula}.masthead{{height:var(--alto-cabecera);background:transparent;"
-    assert franja in CON_JS and "pointer-events:none}" in CON_JS[CON_JS.index(franja) :]
+    franja = f"{CAPSULA}.masthead{{height:var(--alto-cabecera);background:transparent;"
+    assert franja in HOJA and "pointer-events:none}" in HOJA[HOJA.index(franja) :]
     con_fondo = [
         selector
         for selector, cuerpo in _reglas()
@@ -102,13 +116,12 @@ def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
 def test_la_transicion_no_deja_la_cabecera_vacia():
     """La que se va se desvanece después de que la otra empezó a entrar, y la página no
     entra en la transición."""
-    assert ":root{view-transition-name:none}" in FUERA
-    assert "animation-delay:calc(var(--dur-base)-var(--dur-fast))" in FUERA
+    assert ":root{view-transition-name:none}" in HOJA
+    assert "animation-delay:calc(var(--dur-base)-var(--dur-fast))" in HOJA
 
 
 def test_el_guion_solo_cambia_un_atributo():
     """La CSP no admite estilos en línea: el guion no escribe estilos."""
-    assert 'setAttribute("data-barra", "pildora")' in CABECERA_JS
     for prohibido in (".style", "cssText", 'setAttribute("style"'):
         assert prohibido not in CABECERA_JS
 
@@ -118,7 +131,7 @@ def test_enfocar_la_cabecera_no_desplaza_la_pagina():
     Escape, hacía saltar la página unos 450 px."""
     assert (
         ".masthead:is(a,summary,input){scroll-margin-top:calc(-1*(var(--alto-cabecera)+var(--s2)))}"
-        in FUERA
+        in HOJA
     )
     assert "focus({ preventScroll: true })" in BUSCADOR_JS
 

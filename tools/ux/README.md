@@ -56,15 +56,18 @@ la recorre.
 ## Prueba de humo en navegador
 
 `browser-smoke.js` carga el sitio a 951 px (la ventana del dueño) y a 375 px (un teléfono) con los
-guiones ejecutándose de verdad. Son 15 comprobaciones:
+guiones ejecutándose de verdad. Comprueba que:
 
 - las páginas de `pages.txt` no desbordan a lo ancho;
 - los controles de la cabecera miden 44 px o más;
 - «Menú» abre y cierra, y la lupa busca en vivo;
 - la cabecera pasa a cápsula al bajar;
+- sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue
+  usable: la cabecera clásica, la tirada en fila y el estante con sus enlaces;
 - el estante y la tirada responden al teclado;
 - el reproductor externo solo se carga al pulsar;
-- el dossier imprime.
+- el dossier imprime;
+- «Las voces» van en una fila, y lo que lleva `hidden` no se ve, con los guiones y sin ellos.
 
 Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
 no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre

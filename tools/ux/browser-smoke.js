@@ -164,7 +164,7 @@ const CHECKS = [
     async run({ page }) {
       await visit(page, '/registros/');
       const capsule = () => page.evaluate(() => document.documentElement.getAttribute('data-barra'));
-      expect((await capsule()) === null, 'la página abre ya con la cápsula');
+      expect((await capsule()) === 'arriba', `la página abre con data-barra=${await capsule()}`);
       await page.mouse.wheel(0, 800);
       const down = await page
         .waitForFunction(() => document.documentElement.getAttribute('data-barra') === 'pildora', null, { timeout: 3000 })
@@ -172,9 +172,105 @@ const CHECKS = [
       expect(down, 'al bajar no aparece la cápsula');
       await page.evaluate(() => window.scrollTo(0, 0));
       const up = await page
-        .waitForFunction(() => !document.documentElement.hasAttribute('data-barra'), null, { timeout: 3000 })
+        .waitForFunction(() => document.documentElement.getAttribute('data-barra') === 'arriba', null, { timeout: 3000 })
         .then(() => true, () => false);
       expect(up, 'al volver arriba sigue la cápsula');
+    },
+  },
+  {
+    name: 'Sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue siendo usable',
+    widths: [951, 375],
+    async run({ context }, width) {
+      // Cada caso, en una pestaña aparte: el fallo es el que se provoca, no uno que anotar. Un
+      // guion roto se sirve con un error justo después de lo que tiene que deshacer, y a la
+      // portada sin un nodo se le quita en el HTML: el guion sale sin tocar nada y sin errores.
+      const portada = async (script, { broken = null, html = null } = {}) => {
+        const tab = await context.browser().newContext(WINDOWS[width]);
+        const page = await tab.newPage();
+        const errors = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        const edit = async (route, [from, to], label) => {
+          const response = await route.fetch();
+          const original = await response.text();
+          const body = original.split(from).join(to);
+          expect(body !== original, `${label}: no está «${from}»`);
+          return route.fulfill({ response, body });
+        };
+        await page.route(`**/js/${script}*.js*`, (route) => {
+          if (html) return route.continue();
+          if (!broken) return route.abort();
+          return edit(route, [broken, `${broken}\nthrow new Error('montaje roto');`], script);
+        });
+        if (html) await page.route(BASE + '/', (route) => edit(route, html, 'la portada'));
+        await visit(page, '/');
+        const unexpected = () => errors.filter((message) => !(broken && message.includes('montaje roto')));
+        return { tab, page, unexpected };
+      };
+      const header = (page) => page.evaluate(() => {
+        const row = document.querySelector('.masthead-fila').getBoundingClientRect();
+        return {
+          marked: document.documentElement.hasAttribute('data-barra'),
+          shown: getComputedStyle(document.querySelector('.masthead-fila')).opacity === '1',
+          inView: row.height > 0 && row.top >= 0 && row.bottom <= window.innerHeight,
+        };
+      });
+      for (const broken of [null, 'document.body.insertBefore(centinela, document.body.firstChild);']) {
+        const label = broken ? 'cabecera.js roto' : 'sin cabecera.js';
+        const { tab, page, unexpected } = await portada('cabecera', { broken });
+        try {
+          for (const y of [0, 2500]) {
+            await page.evaluate((top) => window.scrollTo(0, top), y);
+            await page.waitForTimeout(SETTLE_MS);
+            const state = await header(page);
+            expect(!state.marked, `${label}: queda la marca data-barra`);
+            expect(state.shown && state.inView, `${label}: a ${y} px no se ve la cabecera clásica`);
+          }
+          expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
+        } finally {
+          await tab.close();
+        }
+      }
+      const tirada = [
+        ['sin registros.js', {}],
+        ['registros.js roto', { broken: 'hoja.hidden = false;' }],
+        ['la tirada sin su región de anuncios', { html: [' data-anuncio>', '>'] }],
+      ];
+      for (const [label, options] of tirada) {
+        const { tab, page, unexpected } = await portada('registros', options);
+        try {
+          const run = await page.locator('[data-tirada]').evaluate((s) => {
+            const sheets = [...s.querySelectorAll('.pliego')].map((p) => p.getBoundingClientRect());
+            return {
+              js: s.classList.contains('con-js'),
+              contacts: s.querySelector('.tirada-contactos').hidden,
+              current: s.querySelectorAll('[aria-current]').length,
+              row: sheets.every((r, i) => i === 0 || r.left >= sheets[i - 1].right - 1),
+              links: [...s.querySelectorAll('.pliego-titulo a')].every((a) => a.href && a.checkVisibility()),
+            };
+          });
+          expect(!run.js && run.contacts && !run.current, `${label}: la tirada queda a medio montar`);
+          expect(run.row && run.links, `${label}: la tirada no queda en una fila con sus títulos enlazados`);
+          expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
+        } finally {
+          await tab.close();
+        }
+      }
+      const estante = [
+        ['sin estante.js', {}],
+        ['el estante sin los id de sus fichas', { html: ['class="estante-ficha" id=', 'class="estante-ficha" data-id='] }],
+      ];
+      for (const [label, options] of estante) {
+        const { tab, page, unexpected } = await portada('estante', options);
+        try {
+          const spines = page.locator('[data-estante] .ejemplar-lomo');
+          const hrefs = await spines.evaluateAll((links) => links.map((a) => a.getAttribute('href')));
+          expect(hrefs.length >= 2 && new Set(hrefs).size === hrefs.length, `${label}: los lomos no llevan cada uno a su ficha`);
+          expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
+          await Promise.all([page.waitForURL(BASE + hrefs[1]), spines.nth(1).click()]);
+        } finally {
+          await tab.close();
+        }
+      }
     },
   },
   {

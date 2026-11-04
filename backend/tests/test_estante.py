@@ -51,6 +51,20 @@ def test_va_de_frente_la_destacada_y_si_no_la_primera_por_orden(client):
     assert [f.has_attr("hidden") for f in estante.select(".estante-ficha")] == [False, True, True]
 
 
+def test_each_book_names_its_own_card(client):
+    """El guion empareja cada lomo con su ficha por id, no por el orden de los dos bucles."""
+    for i, title in enumerate(["Primera", "Segunda", "Tercera"]):
+        make_publication(slug=f"p{i}", title=title, position=i)
+    sopa, estante = _estante(client)
+    books = estante.select(".ejemplar")
+    assert len(books) == 3
+    for book in books:
+        card = sopa.find(id=book["data-ficha"])
+        assert card is not None and "estante-ficha" in card["class"]
+        spine = book.select_one(".ejemplar-lomo-titulo").get_text()
+        assert card.select_one(".estante-titulo").get_text() == spine
+
+
 def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
     """Más largo desde D25: una de frente y hasta siete de lomo, lo que cabe a 951 px junto a
     la ficha angosta. Quien busca una que no está, tiene «Ver todo el catálogo →» bajo la

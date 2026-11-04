@@ -34,9 +34,11 @@
 
   function montar(seccion) {
     const lista = seccion.querySelector('.integrantes-retratos');
-    const n = lista.children.length;
     const aLaVista = Number(seccion.dataset.aLaVista);
     const enTelefono = Number(seccion.dataset.aLaVistaTelefono);
+    // Sin la fila o sin cuántas se ven, «Las voces» quedan como están: todas en la fila.
+    if (!lista || !(aLaVista > 0) || !(enTelefono > 0)) return;
+    const n = lista.children.length;
     let V = 0;
     let ocupado = 0;
     let turno = 0;
