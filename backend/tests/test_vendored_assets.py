@@ -55,7 +55,7 @@ def test_htmx_esta_al_dia_en_su_linea_2_0():
     consulta la red: se fija el suelo conocido para que un downgrade cante."""
     mayor, menor, parche = (int(p) for p in MANIFEST["htmx"]["version"].split("."))
     assert (mayor, menor) == (2, 0)
-    assert parche >= 10, "htmx quedó por detrás de la 2.0.10 ya verificada"
+    assert parche >= 11, "htmx quedó por detrás de la 2.0.11 ya verificada"
 
 
 def test_dependabot_watches_the_vendored_versions():

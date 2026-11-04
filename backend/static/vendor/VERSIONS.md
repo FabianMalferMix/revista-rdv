@@ -52,3 +52,7 @@ allí.
 - **2026-11-03** — Sin cambio de versión. Lo vendorizado pasa a `manifest.json`, con el sha256
   de los 15 archivos, verificado contra los paquetes de npm; TinyMCE pasa a
   `tinymce-7.9.3/`, y Dependabot vigila `package.json`.
+- **2026-11-04** — htmx 2.0.10 → 2.0.11, con `update.py`. Trae los parciales de la 4.0 (una
+  respuesta puede llevar `<template type="partial" hx-target="…">`, que se inserta en su
+  propio destino) y cinco correcciones. El HTML de autor no puede colar uno: el saneado quita
+  `<template>` y los atributos `hx-*`. `includeIndicatorStyles` sigue existiendo.
