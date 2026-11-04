@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 54 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 55 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -140,7 +140,7 @@
 | B51 | Transcripción de los registros | — | S | no | hecho (#230) |
 | B52 | TinyMCE con la versión en la ruta y lo vendorizado con radar | — | M | no | hecho (#231) |
 | B81 | Las descargas en PDF tienen dirección fija | B42 | S | sí | hecho (#237) |
-| B82 | El epígrafe se encuentra en la búsqueda | B50 | S | no | pendiente |
+| B82 | El epígrafe se encuentra en la búsqueda | B50 | S | no | hecho (#238) |
 | B83 | Las notas ajenas se ven bloqueadas | B48 | S | no | pendiente |
 
 **Tanda 6 — Pruebas y herramientas que vigilan**

@@ -2,8 +2,9 @@
 
 Los textos y los poemas se indexan y se buscan con la misma configuración de la base, que quita
 los acentos también de las letras sin descomposición Unicode (ł, ø): «Wisława», «Søren» y
-«canción» se encuentran escritos con y sin diacríticos, como los nombres de las personas. El
-vector es una columna generada: un `update()` lo rehace. Un tipo de resultado desconocido es un
+«canción» se encuentran escritos con y sin diacríticos, como los nombres de las personas. En los
+poemas cuenta también el epígrafe, donde va la dedicatoria. El vector es una columna generada: un
+`update()` lo rehace. Un tipo de resultado desconocido es un
 error, no una actividad.
 """
 
@@ -51,6 +52,34 @@ def test_a_text_with_the_word_in_its_title_comes_first(client):
     )
     page = _search(client, "cancion")
     first, second = in_title.get_absolute_url(), body_only.get_absolute_url()
+    assert f'href="{second}"' in page
+    assert page.index(f'href="{first}"') < page.index(f'href="{second}"')
+
+
+@pytest.mark.parametrize("q", ["Wisława", "Wislawa"])
+def test_a_poem_is_found_by_the_name_in_its_epigraph(client, q):
+    """La dedicatoria va en el epígrafe: el nombre no está ni en el título ni en los versos."""
+    dedicated = publish(
+        Poem.objects.create(
+            slug="dedicado", title="Puerto", epigraph="Para Wisława", body="El agua vuelve."
+        )
+    )
+    other = publish(Poem.objects.create(slug="otro", title="Otro", body="El agua vuelve."))
+    page = _search(client, q)
+    assert f'href="{dedicated.get_absolute_url()}"' in page
+    assert f'href="{other.get_absolute_url()}"' not in page
+    assert f'href="{other.get_absolute_url()}"' in _search(client, "agua")
+
+
+def test_a_poem_with_the_word_in_its_title_comes_before_its_epigraph(client):
+    dedicated = publish(
+        Poem.objects.create(
+            slug="dedicado", title="Puerto", epigraph="Para Wisława", body="El agua vuelve."
+        )
+    )
+    in_title = publish(Poem.objects.create(slug="titulo", title="Wisława", body="Otra cosa."))
+    page = _search(client, "Wislawa")
+    first, second = in_title.get_absolute_url(), dedicated.get_absolute_url()
     assert f'href="{second}"' in page
     assert page.index(f'href="{first}"') < page.index(f'href="{second}"')
 
