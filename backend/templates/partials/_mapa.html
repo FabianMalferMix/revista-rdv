@@ -5,12 +5,12 @@
 
    etiqueta   nombre del bloque para un lector de pantalla (por defecto «Mapa del sitio»)
    en_menu    en el menú de la cabecera los rótulos no son encabezados: irían antes del
-              título de la página
+              título de la página. Hay que darlo siempre, True o False.
    sin_contacto  sin el correo ni el Instagram: en el pie ya van en la identidad del
               colectivo, que abre el pie. El menú del teléfono los conserva.
 {% endcomment %}
 {% with t=en_menu|yesno:"p,h2" %}
-<nav class="foot-groups" aria-label="{{ etiqueta|default:'Mapa del sitio' }}">
+<nav class="foot-groups" aria-label="{% firstof etiqueta 'Mapa del sitio' %}">
   <div class="foot-group">
     <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>El colectivo</{{ t }}>
     <ul>

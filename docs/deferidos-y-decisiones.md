@@ -75,11 +75,19 @@ cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigent
   contadores de `django-ratelimit` se compartan entre workers. Seguro con `noeviction`
   gracias a los TTLs. **Reabierta el 2026-10-28 (C25).**
 
-- **`CELERY_TASK_ALWAYS_EAGER` en tests** (`"pytest" in sys.modules`). *Porqué:*
-  hermeticidad. *Consecuencia importante:* **la suite normal NO ejecuta reintentos ni
-  concurrencia de Celery** (en eager las tareas no reintentan — es diseño de Celery). Por
-  eso la concurrencia se prueba aparte con `transaction=True` + hilos (`test_concurrency.py`,
-  marcados `integration`) y la política de reintento con tests de contrato.
+- **`CELERY_TASK_ALWAYS_EAGER` en tests**, fijado en `config/settings_test.py`, el módulo de
+  ajustes de la suite (`pytest.ini`), junto con `AXES_ENABLED = False` y
+  `CELERY_TASK_EAGER_PROPAGATES = True`. Hasta el 2026-11-04 (B57) los fijaba `settings.py`
+  según `"pytest" in sys.modules`, y una tarea que fallaba en eager devolvía un resultado
+  fallido sin que la prueba se enterara: ahora su excepción llega a la prueba que la encoló.
+  Las pruebas que hacen fallar una tarea a propósito (el correo rechazado, los reintentos)
+  usan el fixture `task_failures_stay_in_the_task`. *Porqué:* hermeticidad. *Consecuencia
+  importante:* **la suite normal NO ejecuta reintentos ni concurrencia de Celery** (en eager
+  las tareas no reintentan — es diseño de Celery). Por eso la concurrencia se prueba aparte
+  con `transaction=True` + hilos (`test_concurrency.py`, marcados `integration`) y la política
+  de reintento con tests de contrato. El mismo módulo pone un `string_if_invalid` que hace
+  fallar una variable de plantilla que no existe: un parámetro opcional de una parcial se
+  lee con `{% if %}` o `{% firstof %}`, no con `|default`.
 
 - **`serialized_rollback` descartado.** Los tests `transaction=True` vacían la tabla y
   con ella las páginas legales de migración; se intentó `serialized_rollback=True` pero

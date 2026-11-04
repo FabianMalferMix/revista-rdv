@@ -14,6 +14,7 @@ import re
 
 import pytest
 from django.apps import apps
+from django.test import override_settings
 
 pytestmark = pytest.mark.django_db
 
@@ -82,22 +83,31 @@ def test_la_bitacora_se_titula_en_espanol():
     assert str(EditorialTransition._meta.verbose_name_plural) == "transiciones editoriales"
 
 
-def test_la_pantalla_de_bloqueo_esta_en_espanol():
-    """El rótulo sin traducir más visible: lo ve cualquiera que llegue a /admin/login/."""
-    from django.conf import settings
-    from django.template import loader
+def _pantalla_de_bloqueo(client):
+    """Lo que ve quien falla la clave del panel más veces de las que admite axes."""
+    from axes.utils import reset
+    from django.urls import reverse
 
-    assert settings.AXES_LOCKOUT_TEMPLATE == "axes_lockout.html"
-    html = loader.render_to_string(settings.AXES_LOCKOUT_TEMPLATE)
+    reset()
+    for _ in range(3):
+        respuesta = client.post(reverse("admin:login"), {"username": "quien", "password": "mal"})
+    reset()
+    assert respuesta.status_code == 429
+    return respuesta.content.decode()
+
+
+@override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=2)
+def test_la_pantalla_de_bloqueo_esta_en_espanol(client):
+    """El rótulo sin traducir más visible: lo ve cualquiera que llegue a /admin/login/."""
+    html = _pantalla_de_bloqueo(client)
     assert "Demasiados intentos fallidos" in html
     assert "Account locked" not in html
 
 
-def test_la_pantalla_de_bloqueo_no_revela_el_temporizador():
+@override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=2)
+def test_la_pantalla_de_bloqueo_no_revela_el_temporizador(client):
     """No decir cuánto falta ni cuántos intentos quedaban: calibraría a quien prueba claves."""
-    from django.conf import settings
-    from django.template import loader
-
-    html = loader.render_to_string(settings.AXES_LOCKOUT_TEMPLATE).lower()
+    html = _pantalla_de_bloqueo(client).lower()
+    assert "demasiados intentos fallidos" in html
     for pista in ("1 hora", "60 minutos", "intentos restantes", "5 intentos"):
         assert pista not in html

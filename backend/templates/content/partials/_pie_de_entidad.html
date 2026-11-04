@@ -5,7 +5,7 @@
    los lectores de pantalla («Seguir leyendo» si no se da otro).
 {% endcomment %}
 {% if pie %}
-  <nav class="pie-entidad" aria-label="{{ etiqueta|default:'Seguir leyendo' }}">
+  <nav class="pie-entidad" aria-label="{% firstof etiqueta 'Seguir leyendo' %}">
     <ul>
       {% for p in pie %}
         <li><span class="rotulo">{{ p.rotulo }}</span><a href="{{ p.url }}">{{ p.texto }}</a></li>

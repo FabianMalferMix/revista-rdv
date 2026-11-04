@@ -79,7 +79,9 @@ def worker_log(settings):
     root.setLevel(level)
 
 
-def test_a_refused_recipient_is_not_in_the_worker_log(rejecting_smtp, worker_log):
+def test_a_refused_recipient_is_not_in_the_worker_log(
+    rejecting_smtp, worker_log, task_failures_stay_in_the_task
+):
     sub = NewsletterSubscriber.objects.create(
         email=EMAIL, token="baja-tok", confirm_token="alta-tok", confirm_token_at=timezone.now()
     )
