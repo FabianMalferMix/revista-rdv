@@ -59,7 +59,7 @@
            que pasa al pulsar: con PDF se descarga un archivo.
         {% endcomment %}
         {% if site_profile.dossier_pdf %}
-          <a class="btn btn--primary hero-dossier" href="{{ site_profile.dossier_pdf.url }}">Descargar dossier (PDF)</a>
+          <a class="btn btn--primary hero-dossier" href="{% url 'showcase:dossier_pdf' %}">Descargar dossier (PDF)</a>
         {% else %}
           <a class="btn btn--primary hero-dossier" href="{% url 'showcase:dossier' %}">Ver el dossier</a>
         {% endif %}

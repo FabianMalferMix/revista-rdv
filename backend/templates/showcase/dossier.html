@@ -27,7 +27,7 @@
     <div class="no-print dossier-toolbar">
       <button class="btn" type="button" data-print hidden>Imprimir / guardar como PDF</button>
       {% if profile.dossier_pdf %}
-        <a class="btn" href="{{ profile.dossier_pdf.url }}">Descargar PDF maquetado</a>
+        <a class="btn" href="{% url 'showcase:dossier_pdf' %}">Descargar PDF maquetado</a>
       {% endif %}
     </div>
   </header>

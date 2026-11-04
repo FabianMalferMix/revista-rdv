@@ -7,6 +7,7 @@ test importaba fábricas de otro) y la duplicación de helpers (hallazgo #20).
 from datetime import timedelta
 from io import BytesIO
 
+from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from PIL import Image
@@ -72,3 +73,26 @@ def publish(article):
     article.published_at = timezone.now()
     article.save()
     return article
+
+
+def admin_form_fields(html, form_id):
+    """Los campos del formulario con sus valores iniciales, como los enviaría el navegador."""
+    form = BeautifulSoup(html, "html.parser").select_one(f"form#{form_id}")
+    fields = {}
+    for field in form.select("input[name], textarea[name], select[name]"):
+        name = field["name"]
+        if "__prefix__" in name or field.get("type") in ("submit", "file"):
+            continue
+        if field.name == "select" and field.has_attr("multiple"):
+            chosen = [option["value"] for option in field.select("option[selected]")]
+            if chosen:  # sin nada elegido, el navegador no manda el campo
+                fields[name] = chosen
+        elif field.name == "select":
+            chosen = field.select_one("option[selected]")
+            fields[name] = chosen["value"] if chosen else ""
+        elif field.get("type") == "checkbox":
+            if field.has_attr("checked"):
+                fields[name] = "on"
+        else:
+            fields[name] = field.get("value", field.text if field.name == "textarea" else "")
+    return fields

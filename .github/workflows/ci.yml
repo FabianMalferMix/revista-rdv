@@ -449,6 +449,31 @@ jobs:
             || { echo "FALLO: el feed de pódcast no entrega el registro publicado"; exit 1; }
           echo "OK: lo publicado se sirve con Range, lo despublicado da 404 y /media/ no lo entrega"
 
+      # El PDF de una publicación, en su dirección fija: tras reemplazarlo por otro que se llama
+      # igual, la misma dirección da el nuevo, a través de Caddy y con la orden de revalidar.
+      - name: Los PDF, en su dirección fija
+        run: |
+          sube() {
+            docker compose exec -T web python -c "
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()
+          from django.core.files.base import ContentFile
+          from apps.showcase.models import Publication
+          p, _ = Publication.objects.get_or_create(slug='un-libro', defaults={'title': 'Un libro', 'year': 2024, 'published': True})
+          p.pdf.save('un-libro.pdf', ContentFile(b'%PDF-1.4 $1'))
+          print(p.pdf_url())" | tail -1
+          }
+          P=http://127.0.0.1:8080
+          URL=$(sube primera)
+          H=$(curl -fsS -D - -o /tmp/pdf-primera "$P$URL")
+          grep -q primera /tmp/pdf-primera || { echo "FALLO: $URL no da el PDF"; exit 1; }
+          echo "$H" | grep -qi '^cache-control: no-cache' \
+            || { echo "FALLO: $URL llega sin la orden de revalidar"; echo "$H"; exit 1; }
+          [ "$(sube segunda)" = "$URL" ] || { echo "FALLO: la dirección cambió con el reemplazo"; exit 1; }
+          curl -fsS "$P$URL" | grep -q segunda \
+            || { echo "FALLO: tras el reemplazo, $URL sigue dando el PDF viejo"; exit 1; }
+          echo "OK: $URL da el PDF vigente tras un reemplazo y pide revalidar"
+
       # Subidas desde el panel, con el Caddy de producción delante: el límite de /admin/ deja
       # llegar a Django lo que pasa del tope de un campo, para que se vea el mensaje del
       # formulario y no un 413 sin cuerpo; lo que pasa del límite lo corta Caddy.

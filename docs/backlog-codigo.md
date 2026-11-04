@@ -1,8 +1,8 @@
 # Backlog de la auditoría de código
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
-> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28, y C30, el 2026-10-29. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 53 de 80 tickets cerrados (33 S, 43 M y 4 L). Antes del lanzamiento son imprescindibles 31: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, por un hallazgo que la auditoría no tenía.
+> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
+> **Avance:** 53 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -49,6 +49,9 @@
 | C28 | Reabre la extracción de `SiteProfile` como una app del sitio, por etapas | B67 |
 | C29 | «CD real» sigue diferido, con la premisa corregida | B41 |
 | C30 | Hasta el lanzamiento, un cambio de esquema puede ir en un solo paso; desde el lanzamiento, siempre en dos | B25 |
+| C31 | Las descargas en PDF tienen dirección fija: `/dossier.pdf` y `/publicacion/<slug>.pdf` | B81 |
+| C32 | El epígrafe de los poemas, con la dedicatoria, entra en la búsqueda con el peso del cuerpo (D) | B82 |
+| C33 | TinyMCE se queda en 7.9.3; el paso a la 8, o a otro editor, es un ticket propio | B84 |
 
 **Decisiones visuales pendientes**, que se le muestran al dueño al llegar al ticket: el contraste de dos sellos de «Prensa y gestión» (B55) y dónde van Prensa y Aliados en la navegación (B73).
 
@@ -136,6 +139,9 @@
 | B50 | Búsqueda: una regla de acentos y tipos declarados | B20 | M | no | hecho (#229) |
 | B51 | Transcripción de los registros | — | S | no | hecho (#230) |
 | B52 | TinyMCE con la versión en la ruta y lo vendorizado con radar | — | M | no | hecho (#231) |
+| B81 | Las descargas en PDF tienen dirección fija | B42 | S | sí | pendiente |
+| B82 | El epígrafe se encuentra en la búsqueda | B50 | S | no | pendiente |
+| B83 | Las notas ajenas se ven bloqueadas | B48 | S | no | pendiente |
 
 **Tanda 6 — Pruebas y herramientas que vigilan**
 
@@ -173,6 +179,7 @@
 | B77 | Nombres trampa y rótulos completos | — | S | no | pendiente |
 | B78 | Comentarios que dicen el presente | B03 | L | no | pendiente |
 | B79 | La suite, por componente | B61 | L | no | pendiente |
+| B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
 
 ## 3. Tickets
 
@@ -999,6 +1006,58 @@ De HER-4:
 
 **Hecho cuando.** Cambiar la versión de TinyMCE cambia su URL; un archivo de más o de menos en `vendor/` hace fallar la prueba; Dependabot ve la versión de TinyMCE.
 
+#### B81 · Las descargas en PDF tienen dirección fija
+
+**Hallazgos:** fuera de la auditoría: se vio al cerrar B42 · **Depende de:** B42 · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** C31
+
+**Qué pasa.** Desde B42, el archivo nuevo no puede tomar el nombre del viejo hasta que se confirma el guardado: el almacenamiento le añade un sufijo, y la dirección del dossier en `/media/dossier/` cambia con cada reemplazo. La del PDF de una publicación ya cambiaba, porque lleva el nombre al azar del archivo (`archivo/publicacion/<slug>/<nombre>`). Y el dossier es justo lo que un gestor reenvía. Después del lanzamiento, una dirección pública ya no se cambia (regla 8).
+
+**Alcance.** Con C31:
+
+- `/dossier.pdf` entrega el PDF vigente del dossier, y `/publicacion/<slug>.pdf`, el de cada publicación, con las reglas de visibilidad de hoy: una publicación no publicada da 404 y el equipo la ve como vista previa;
+- se entrega el archivo, sin redirigir a `/media/`, y se revalida en cada uso, para que tras un reemplazo ninguna caché retenga el viejo;
+- los botones de la portada, del dossier y de la ficha de la publicación apuntan a la dirección fija;
+- la ruta vieja `archivo/publicacion/<slug>/<nombre>` queda como redirección permanente;
+- las rutas nuevas se clasifican en la tabla de rutas de `tests/test_completeness.py`.
+
+El audio de los registros queda como está.
+
+**Hecho cuando.**
+
+- Tras subir un PDF que se llama igual que el anterior, la dirección fija da el nuevo.
+- La portada y la ficha enlazan esa dirección.
+- Una publicación no publicada da 404, con su control positivo.
+- Con `PROTECTED_MEDIA_ACCEL`, la respuesta lleva lo que Caddy necesita para servir el archivo.
+
+#### B82 · El epígrafe se encuentra en la búsqueda
+
+**Hallazgos:** fuera de la auditoría: el epígrafe que §4 del registro anotaba para el FTS y que B50 no recogió · **Depende de:** B50 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C32
+
+**Qué pasa.** El vector de los poemas indexa el título y el cuerpo, pero no el epígrafe, donde también va la dedicatoria: un poema dedicado a alguien no se encuentra por ese nombre.
+
+**Alcance.** Con C32:
+
+- el vector de los poemas suma el epígrafe con el peso del cuerpo (D), desde el ayudante `search_vector()`;
+- una columna generada no se altera: la migración la quita y la vuelve a añadir, con su índice GIN, como hizo `content.0016`;
+- se actualiza la entrada del registro que dice qué campos se indexan, y se comprueba lo que espera el job `backup-restore` del CI.
+
+**Hecho cuando.** Un poema que nombra a alguien solo en su epígrafe («Para Wisława») se encuentra por ese nombre, con y sin diacríticos, y otro poema con la palabra en el título sale antes.
+
+#### B83 · Las notas ajenas se ven bloqueadas
+
+**Hallazgos:** fuera de la auditoría: se vio al cerrar B48 · **Depende de:** B48 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.** Desde B48, nadie puede cambiar ni borrar en el panel la nota editorial de otra persona: sus campos llegan desactivados. Pero nada lo dice, y quien intenta escribir en ella no sabe por qué no puede.
+
+**Alcance.**
+
+- en la nota de otra persona, el cuadro en gris y la frase «Solo la puede cambiar quien la escribió»;
+- los estilos del panel, sin estilo en línea (CSP).
+
+Es visual: pasa por el visto bueno del dueño, con capturas de antes y después a 951 y 390 px.
+
+**Hecho cuando.** Por HTTP y con los grupos reales, en la nota de otra persona el cuadro está desactivado y se lee «Solo la puede cambiar quien la escribió»; en la propia, ni lo uno ni lo otro.
+
 ### Tanda 6 — Pruebas y herramientas que vigilan
 
 #### B53 · Mejora progresiva que falla bien
@@ -1313,17 +1372,18 @@ La poda de comentarios va en B78.
 
 #### B76 · Rendimiento menor
 
-**Hallazgos:** REN-5, REN-6, REN-7, AGE-4 (punto 5) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C21
+**Hallazgos:** REN-2 (lo opcional), REN-5, REN-6, REN-7, AGE-4 (punto 5) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C21
 
 **Alcance.**
 
 - De REN-5: el perfil se lee una vez por petición, de forma perezosa y con sus relaciones precargadas, con un ayudante para las vistas y los feeds; fuera la copia `profile` del contexto del dossier.
 - De REN-6: la galería precarga tres fotos por evento, con un `Count` aparte, y la tirada, una; la galería se pagina como los demás índices (C21); `only()` en los sitemaps; `cache_page` de una hora en el sitemap y en los feeds; respuestas 304 con `ConditionalGetMiddleware`.
 - De REN-7: `site.css` se sirve sin comentarios ni espacios, quitados en `post_process` antes del hash, comprobando los `url()` de las fuentes y las precargas.
+- De REN-2, lo opcional que B52 no hizo: Caddy sirve los `.gz` que ya escribe el almacenamiento (`precompressed gzip` en el `file_server` de `/static/`), o el almacenamiento deja de escribirlos.
 
 Medir el LCP en la vista previa de producción antes y después, como pide §4 del registro.
 
-**Hecho cuando.** La portada y el dossier leen el perfil una vez; la galería con 30 eventos cuesta las mismas consultas que con 3; el `site.css` servido no tiene comentarios.
+**Hecho cuando.** La portada y el dossier leen el perfil una vez; la galería con 30 eventos cuesta las mismas consultas que con 3; el `site.css` servido no tiene comentarios; un estático pedido a Caddy con `Accept-Encoding: gzip` sale del `.gz` ya escrito, o en `staticfiles/` no queda ningún `.gz`.
 
 #### B77 · Nombres trampa y rótulos completos
 
@@ -1366,6 +1426,20 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** El número de pruebas no baja, salvo por duplicados fusionados que el PR lista, y ningún archivo de prueba se llama como una decisión o un lote.
 
+#### B84 · TinyMCE 8 u otro editor
+
+**Hallazgos:** fuera de la auditoría: el PR #233 de Dependabot, abierto al cerrar B52 · **Depende de:** B52 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C33
+
+**Qué pasa.** TinyMCE se queda en 7.9.3 (C33). La 8 es un salto mayor y cambia la licencia: la 8.10.1 ofrece «GPL v2 o posterior, o los términos de Tiny», pero añade que usarla supone aceptar los términos de Tiny, y npm ya no la registra como GPL.
+
+**Alcance.**
+
+- el dueño lee la licencia y decide;
+- si sigue TinyMCE, se prueba el editor del panel con la 8 (los complementos que pide `richtext_init.js`, la configuración de la licencia y la CSP) y se actualiza con `tools/vendor/update.py`;
+- si no, se elige otro editor, autoalojado y compatible con la CSP del panel.
+
+**Hecho cuando.** El panel edita y guarda un texto con el editor elegido, sin errores de consola ni de CSP, y `tools/vendor/update.py check` pasa.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1380,12 +1454,12 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Calidad y estrategia de la suite de pruebas (PRU):** PRU-1 → B12, B14 · PRU-2 → B02, B03, B11, B58 · PRU-3 → B45 · PRU-4 → B15 · PRU-5 → B60 · PRU-6 → B58 · PRU-7 → B79 · PRU-8 → B61 · PRU-9 → B61 · PRU-10 → B61
 - **Mantenibilidad y salud del código Python (MAN):** MAN-1 → B02, B56, B57, B77 · MAN-2 → B47, B50, B56, B63, B66, B75
 - **Huellas de código generado por agentes de IA (AGE):** AGE-1 → B10, B13 · AGE-2 → B15 · AGE-3 → B01, B02, B03, B09, B78 · AGE-4 → B17, B50, B56, B61, B64, B75, B76, B77
-- **Rendimiento y eficiencia (REN):** REN-1 → B20, B50 · REN-2 → B52 · REN-3 → B44 · REN-4 → B35 · REN-5 → B76 · REN-6 → B76 · REN-7 → B76 · REN-8 → B35
+- **Rendimiento y eficiencia (REN):** REN-1 → B20, B50 · REN-2 → B52, B76 · REN-3 → B44 · REN-4 → B35 · REN-5 → B76 · REN-6 → B76 · REN-7 → B76 · REN-8 → B35
 - **Manejo de errores, resiliencia y observabilidad (RES):** RES-1 → B08 · RES-2 → B04 · RES-3 → B30, B31 · RES-4 → B30 · RES-5 → B36 · RES-6 → B32 · RES-7 → B35 · RES-8 → B08, B43 · RES-9 → B32 · RES-10 → B47
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84
 
 ## 5. Lo diferido
 

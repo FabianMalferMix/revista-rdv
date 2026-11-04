@@ -61,6 +61,7 @@ ROUTES = {
     "robots": UTILITY,
     "favicon": UTILITY,
     "media:recording_file": UTILITY,
+    "showcase:dossier_pdf": UTILITY,
     "showcase:publication_pdf": UTILITY,
     "submissions:file": UTILITY,
     "community:subscribe": UTILITY,
