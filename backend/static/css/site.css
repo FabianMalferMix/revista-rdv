@@ -1286,6 +1286,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .home-cierre .pie-entidad li:nth-child(3){--otra:var(--riso-amarillo); color:var(--caratula); rotate:-1.5deg}
 .home-cierre .pie-entidad li:nth-child(4){--otra:var(--riso-amarillo); rotate:3deg}
 .home-cierre .pie-entidad .rotulo{color:inherit; letter-spacing:.18em}
+/* En los sellos azules, la palabra pequeña va en el azul hundido: el azul del sello le sirve a
+   la palabra grande, por su tamaño (3:1), pero a 12 px no se lee bien sobre el papel. */
+.home-cierre .pie-entidad li:is(:nth-child(2), :nth-child(3)) .rotulo{color:var(--caratula-rotulo)}
 .home-cierre .pie-entidad a{color:inherit; font-family:var(--display); font-size:var(--t5); font-weight:700;
   text-transform:uppercase; letter-spacing:.02em; text-shadow:3px 2px 0 color-mix(in srgb, var(--otra) 85%, transparent)}
 @media (prefers-reduced-motion:no-preference){

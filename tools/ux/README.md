@@ -9,7 +9,7 @@ del despliegue: `tools/` está fuera de la imagen de Docker.
 ## Preparación (una vez)
 
 ```bash
-npm ci --prefix tools/ux             # playwright-core y ESLint, del lockfile; usa el Chrome del sistema
+npm ci --prefix tools/ux             # playwright-core, axe-core y ESLint, del lockfile; usa el Chrome del sistema
 ```
 
 Requiere Node 20.19 o superior (el CI usa el 24) y Chrome en `/usr/bin/google-chrome` (otra ruta: variable
@@ -86,6 +86,19 @@ node tools/ux/browser-smoke.js --base http://127.0.0.1:8096 # otra base
 
 Sale con 1 si falla alguna. Si una falla después de un cambio de diseño, antes de ajustarla hay
 que preguntarse qué vigilaba.
+
+## Contraste en el navegador (axe)
+
+`contraste.js` pasa axe-core, solo con su regla de contraste de color (WCAG 1.4.3, AA), por cada
+página de `pages.txt` a 951 y a 375 px, con «reducir movimiento». La prueba de paleta
+(`backend/tests/test_contraste_paleta.py`) calcula los pares desde el CSS; esto mide lo que queda
+pintado, con los fondos heredados y el tamaño real de cada letra. Sale con 1 si encuentra algún
+texto bajo el mínimo, si una página no responde 200 o si no le da nada que medir; lo que axe deja
+«por revisar» (texto sobre imágenes o degradados) no cuenta. Lo corre el job `navegador` del CI.
+
+```bash
+node tools/ux/contraste.js --base http://127.0.0.1:8000
+```
 
 ## ESLint de los guiones
 

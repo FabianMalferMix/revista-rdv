@@ -96,7 +96,8 @@ puede bajar, y tras quitar alguno se baja con `--update`.
 5. **Pull Request** contra `main`, titulado `rama — qué cambia (Bxx)`, con la lista de
    [.github/pull_request_template.md](.github/pull_request_template.md) en el cuerpo. El CI corre
    ruff, `pip-audit` (bloqueante), migraciones, tests con cobertura (`--cov-fail-under=80`),
-   `check --deploy`, gitleaks y, en el job `navegador`, ESLint y la prueba de humo en navegador.
+   `check --deploy`, gitleaks y, en el job `navegador`, ESLint, la prueba de humo y el contraste
+   con axe, en navegador.
    pip-audit y gitleaks solo corren allí; ESLint y la prueba de humo también se corren en local
    ([tools/ux/README.md](tools/ux/README.md)). El PR está listo cuando el CI está en verde, no
    cuando pasan las pruebas locales.

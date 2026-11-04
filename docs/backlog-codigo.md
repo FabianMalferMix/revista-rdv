@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 58 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 59 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -53,7 +53,7 @@
 | C32 | El epígrafe de los poemas, con la dedicatoria, entra en la búsqueda con el peso del cuerpo (D) | B82 |
 | C33 | TinyMCE se queda en 7.9.3; el paso a la 8, o a otro editor, es un ticket propio | B84 |
 
-**Decisiones visuales pendientes**, que se le muestran al dueño al llegar al ticket: el contraste de dos sellos de «Prensa y gestión» (B55) y dónde van Prensa y Aliados en la navegación (B73).
+**Decisión visual pendiente**, que se le muestra al dueño al llegar al ticket: dónde van Prensa y Aliados en la navegación (B73). La de los sellos de «Prensa y gestión» (B55) la tomó el 2026-11-04: la palabra pequeña de los sellos azules, en el azul hundido.
 
 ## 2. Plan
 
@@ -149,7 +149,7 @@
 | --- | --- | --- | --- | --- | --- |
 | B53 | Mejora progresiva que falla bien | B11 | S | no | hecho (#241) |
 | B54 | Anuncios y foco en los componentes con JS | B11 | M | no | hecho (#242) |
-| B55 | Contraste de los sellos y axe en el CI | B11 | M | no | pendiente |
+| B55 | Contraste de los sellos y axe en el CI | B11 | M | no | hecho (#243) |
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
 | B57 | Configuración de pruebas explícita | — | M | no | pendiente |
 | B58 | Un analizador de CSS para las pruebas | — | M | no | pendiente |
@@ -1105,6 +1105,8 @@ Si no se prueba con un lector de pantalla real, se dice en el ticket.
 - un guion de axe-core con la regla de contraste corre sobre `pages.txt` a 951 y a 375 px, en el CI.
 
 **Hecho cuando.** El dueño aprobó los sellos, y axe no encuentra problemas de contraste en `pages.txt`.
+
+**Hecho (2026-11-04).** El dueño eligió, entre cuatro opciones del tablero «Rótulo de los sellos», la palabra pequeña de los sellos azules en `--caratula-rotulo`. axe-core 4.14.0, fijado en `tools/ux`, corre solo la regla de contraste con `tools/ux/contraste.js` en el job `navegador`: antes del cambio marcaba esos dos rótulos y nada más, en las 21 páginas a 951 y a 375 px; el manifiesto azul de la hoja pasa como letra grande. La prueba de paleta ya no se limita a las reglas que declaran color y fondo: una regla que pinta texto en un color que no llega a AA sobre el papel, sin fondo propio, tiene que decir por qué se lee.
 
 #### B56 · Formularios públicos de un solo origen y accesibles
 
