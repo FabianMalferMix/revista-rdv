@@ -157,8 +157,9 @@ def test_toda_regla_que_fija_texto_y_fondo_cumple_aa():
     """La tabla de arriba enumera pares; esto comprueba los que el CSS usa DE VERDAD.
 
     Cualquier regla que declare a la vez `color` y `background` con colores de la paleta
-    (o hexadecimales) debe dar 4,5:1. Así un par prohibido no puede colarse en una regla
-    nueva aunque nadie lo haya añadido a la tabla.
+    (o hexadecimales) debe dar 4,5:1: un par prohibido no puede colarse en una regla que
+    declare los dos. Las que heredan el fondo las vigila la prueba siguiente, y la página
+    entera, en el navegador, axe (tools/ux/contraste.js).
     """
     colores = _paleta()
     comprobadas, malas = 0, []
@@ -178,6 +179,38 @@ def test_toda_regla_que_fija_texto_y_fondo_cumple_aa():
         "la prueba dejó de encontrar reglas con texto y fondo: revisar la regex"
     )
     assert not malas, f"reglas con texto y fondo por debajo de AA: {malas}"
+
+
+# Las reglas que pintan texto en un color que no llega a AA sobre el papel sin declarar su
+# fondo: cada una dice por qué se lee. Una regla nueva así hace fallar la prueba hasta que
+# alguien lo explica aquí; lo que ve el navegador lo mide axe (tools/ux/contraste.js).
+SIN_FONDO_PROPIO = {
+    ".hero-manifesto": "letra de cartel: AA pide 3:1",
+    ".home-cierre .pie-entidad li:nth-child(2)": "el marco y la palabra grande del sello; "
+    "la pequeña va en el azul hundido",
+    ".home-cierre .pie-entidad li:nth-child(3)": "el marco y la palabra grande del sello; "
+    "la pequeña va en el azul hundido",
+    ".foot-group h2": "sobre la tinta del pie",
+    ".site-foot .news-consent": "sobre la tinta del pie",
+}
+
+
+def test_text_that_fails_on_the_paper_says_where_it_is_read():
+    """El sello «Prensa» pintaba su palabra pequeña en el azul de la carátula, 3,88:1 sobre el
+    papel, y la prueba de arriba no lo veía: la regla no declara fondo, lo hereda."""
+    flojos = {frente for _, frente, fondo in PROHIBIDOS if fondo == "paper"}
+    assert "caratula" in flojos
+    encontradas = {
+        " ".join(selector.split())
+        for selector, cuerpo in _reglas()
+        if (color := re.search(r"(?<![-\w])color:\s*var\(--([a-z0-9-]+)\)", cuerpo))
+        and color.group(1) in flojos
+        and not re.search(r"background(?:-color)?:", cuerpo)
+    }
+    assert encontradas == set(SIN_FONDO_PROPIO), (
+        f"sin explicar: {sorted(encontradas - set(SIN_FONDO_PROPIO))}; "
+        f"ya no están: {sorted(set(SIN_FONDO_PROPIO) - encontradas)}"
+    )
 
 
 # El magenta como color de TEXTO en reposo: solo la receta de la cejilla y el asterisco
