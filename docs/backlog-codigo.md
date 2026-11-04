@@ -1123,7 +1123,7 @@ Si no se prueba con un lector de pantalla real, se dice en el ticket.
 **Alcance.** La recomendación de OPE-2, sin partir `settings.py` (§3 del registro):
 
 - un `DJANGO_SETTINGS_MODULE` de pruebas en `pytest.ini` que fija `AXES_ENABLED`, `CELERY_TASK_ALWAYS_EAGER` y `CELERY_TASK_EAGER_PROPAGATES` sin mirar `sys.modules`, y un `string_if_invalid` que hace fallar las claves equivocadas en las plantillas;
-- una prueba de que existe cada referencia estática de las plantillas, de los Media de los formularios y de los `static()`;
+- una prueba de que existe cada referencia estática de las plantillas, de los Media de los formularios y de los del panel (desde B83, el inline de las notas pide `admin/editorial_notes.css`), y de los `static()`;
 - otra que ejecuta `collectstatic` con el almacenamiento de producción en un directorio temporal y renderiza una página de cada tipo.
 
 Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del registro.
@@ -1143,6 +1143,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 **Hallazgos:** FRO-8 · **Depende de:** B58 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —
 
 **Alcance.** La recomendación de FRO-8: se borran las cinco reglas y se reapunta la aserción de `test_css_sistema.py:285`. Una prueba con bs4 y soupsieve exige que cada selector case en alguna página renderizada, con datos que cubren los estados opcionales y una lista explícita de las marcas que pone el JS.
+
+Las clases de la hoja del panel `admin/editorial_notes.css` (`nota-ajena` y `nota-ajena-aviso`) no las pone una plantilla, sino Python (`LockedNoteWidget`, en `apps/content/admin.py`): si la prueba recorre esa hoja, sus datos incluyen una ficha del panel con la nota de otra persona.
 
 **Hecho cuando.** Una regla nueva que no casa en ninguna página hace fallar la suite.
 
@@ -1166,7 +1168,7 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 **Alcance.**
 
 - De PRU-8: los cuatro casos de la ficha, y toda prueba de «no aparece», con un control positivo en la misma respuesta.
-- De PRU-9: un solo mecanismo de fábricas; `make_published_article` y `make_published_poem`, con fecha; `itertools.count` para los slugs; un `soup(client, url)` que además afirma el 200.
+- De PRU-9: un solo mecanismo de fábricas; `make_published_article` y `make_published_poem`, con fecha; `itertools.count` para los slugs; un `soup(client, url)` que además afirma el 200. El `_form_data` de `test_editorial_log.py` duplica `admin_form_fields` (`tests/factories.py`, desde B81): queda uno solo.
 - De PRU-10: `BASE_DIR` apunta a una copia en `tmp_path`; las marcas de base de datos, solo donde se usa; fuera el `cache.clear()` redundante.
 
 **Hecho cuando.** Después de correr la suite, `git status` no muestra cambios, y las fábricas viven en un solo módulo.
@@ -1178,7 +1180,7 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 **Alcance.** La recomendación de HER-6:
 
 - `capture.js` y `metrics.py` exigen un 200;
-- `mutar.sh` corre primero sin mutar, y trabaja sobre un worktree temporal;
+- `mutar.sh` corre primero sin mutar, y trabaja sobre un worktree temporal; admite recrear la base de pruebas, porque la base sale de las migraciones y, con el `--reuse-db` de `pytest.ini`, mutar una migración no surte efecto (se vio en B82);
 - un `tools/ux/common.js` con la URL base, la ruta de Chrome y la lectura de las páginas;
 - cada `metrics.json` guarda el commit, la versión del navegador y la huella de `datos.json`;
 - una prueba de que cada ruta de `pages.txt` existe en `datos.json`.
