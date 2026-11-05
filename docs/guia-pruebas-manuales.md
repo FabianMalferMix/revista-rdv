@@ -686,7 +686,8 @@ docker compose exec web python manage.py check --deploy
 ### Recrear la vista previa de producción
 
 ```bash
-# 1. un .env de prueba (NO uses el tuyo)
+# 1. un .env de prueba (NO uses el tuyo). Con DEBUG=0, el guard de producción exige SITE_URL y
+#    el remitente, y que se nombren las defensas apagadas: aquí no hay Sentry ni HSTS.
 cat > /tmp/prod.env <<'EOF'
 DJANGO_DEBUG=0
 DJANGO_SECRET_KEY=<50+ caracteres variados>
@@ -694,12 +695,16 @@ DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost
 DJANGO_SECURE_SSL_REDIRECT=0
 DJANGO_HSTS_SECONDS=0
+DJANGO_ALLOW_WEAKENED=SENTRY_DSN,DJANGO_HSTS_SECONDS
+SITE_URL=https://localhost
+DEFAULT_FROM_EMAIL=no-reply@example.com
 POSTGRES_DB=resenas
 POSTGRES_USER=resenas
 POSTGRES_PASSWORD=<contraseña>
 REDIS_PASSWORD=<contraseña>
 SITE_ADDRESS=:80
 PROXY_HTTP_PORT=8090
+PROXY_HTTPS_PORT=8443
 EOF
 
 # 2. un override que sustituya el env_file de desarrollo
@@ -715,11 +720,12 @@ EOF
 C="docker compose --env-file /tmp/prod.env -p resenasprod -f docker-compose.yml -f docker-compose.prod.yml -f /tmp/prod.override.yml"
 $C up -d --build
 # La imagen de producción no trae las herramientas de desarrollo ni la copia: se cargan con la
-# imagen de desarrollo y el código montado, en la red y en el volumen de medios de la vista previa
-# (sin probar).
+# imagen de desarrollo y el código montado, en la red y en el volumen de medios de la vista
+# previa. El release de producción no crea la tabla de la marca de desarrollo, que `cargar` pone
+# al terminar: la crea antes `migrate devtools`.
 docker run --rm --network resenasprod_default --env-file /tmp/prod.env -e DJANGO_DEBUG=1 \
   -v "$PWD/backend:/app" -v resenasprod_media:/app/mediafiles \
-  resenas-app:dev python manage.py datos_de_desarrollo cargar
+  resenas-app:dev sh -c "python manage.py migrate devtools && python manage.py datos_de_desarrollo cargar"
 $C exec web python manage.py createsuperuser
 
 # bajar y borrar sus datos
