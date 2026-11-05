@@ -91,8 +91,11 @@ cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigent
 
 - **`serialized_rollback` descartado.** Los tests `transaction=True` vacían la tabla y
   con ella las páginas legales de migración; se intentó `serialized_rollback=True` pero
-  es **inestable con `--reuse-db`**. Solución adoptada: fixture `legal_pages` (reutiliza
-  las funciones `RunPython` de las migraciones 0007/0010) en los tests que las consultan.
+  es **inestable con `--reuse-db`**. Solución adoptada: fixture `legal_pages` en los tests
+  que las consultan. Desde el 2026-11-04 (B60) el fixture y la migración 0007 crean las
+  páginas con la misma función, `apps/content/legal.py:create_pages`, con el texto vigente,
+  así que el fixture ya no importa las migraciones por su nombre de archivo. Las migraciones
+  de datos se prueban aparte, con sus modelos históricos (fixture `migrate`).
 
 - **`filterwarnings = error` + `pytest-randomly`.** Los warnings fallan la suite (obliga
   a atender deprecations de cara a Django 6.x) y el orden se aleatoriza (detecta

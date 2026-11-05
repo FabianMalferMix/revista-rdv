@@ -161,7 +161,8 @@ vigente más cercano y no se agrava la deuda.
 9. **Tareas y migraciones.**
    - Cada tarea declara sus límites de tiempo, su política de reintento y si es idempotente, y se
      encola con `delay_on_commit`.
-   - Toda migración de datos usa `apps.get_model` y lleva su prueba.
+   - Toda migración de datos usa `apps.get_model` y lleva su prueba, con el fixture `migrate`
+     (`conftest.py`): la ida con los modelos de la migración anterior y, si existe, la vuelta.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
      anterior siga funcionando mientras se despliega. Hasta el lanzamiento pueden ir en uno (C30).
    - Los permisos de un modelo nuevo se reparten a los roles de forma explícita, en la matriz de

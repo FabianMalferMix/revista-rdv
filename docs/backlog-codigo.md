@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 62 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 63 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -154,7 +154,7 @@
 | B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
 | B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
 | B59 | Selectores muertos | B58 | M | no | hecho (#247) |
-| B60 | Migraciones de datos con prueba | — | M | no | pendiente |
+| B60 | Migraciones de datos con prueba | — | M | no | hecho (#248) |
 | B61 | Higiene de la suite | — | M | no | pendiente |
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | pendiente |
 | B63 | Herramientas de desarrollo en su propia app | B07 | M | no | pendiente |
@@ -1170,6 +1170,8 @@ Las clases de la hoja del panel `admin/editorial_notes.css` (`nota-ajena` y `not
 Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del registro.
 
 **Hecho cuando.** 0007 y 0010 tienen prueba de ida (y de vuelta, si existe), y la migración y el fixture leen el texto legal de la misma función.
+
+**Hecho (2026-11-04).** El fixture `migrate` (`conftest.py`, con `MigrationExecutor`) sustituye a los ayudantes locales. Cada `RunPython` tiene prueba: siete nuevas en `tests/test_data_migrations.py` (community 0003 y content 0004, también de vuelta; content 0007 y 0010, showcase 0004) y las que ya había. `apps/content/legal.py` da el texto vigente y crea las páginas que falten; lo usan 0007, 0010 y el fixture `legal_pages`.
 
 #### B61 · Higiene de la suite
 
