@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from config.publishing import FrozenSlugAdminMixin
+from config.publishing import FrozenSlugAdminMixin, ViewOnSiteIfVisibleMixin
 
 from .models import Contributor, SocialLink
 
@@ -11,7 +11,7 @@ class SocialLinkInline(admin.TabularInline):
 
 
 @admin.register(Contributor)
-class ContributorAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class ContributorAdmin(ViewOnSiteIfVisibleMixin, FrozenSlugAdminMixin, admin.ModelAdmin):
     list_display = ["display_name", "is_member", "active", "role", "member_since", "user"]
     list_filter = ["is_member", "active"]
     search_fields = ["display_name", "bio", "short_bio"]

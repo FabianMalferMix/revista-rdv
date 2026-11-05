@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from apps.content.models import ArticleContributor, EditorialStatus
 from apps.media.models import Recording
-from apps.people.models import Contributor
+from apps.people.models import Contributor, url_for_person
 from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
@@ -96,6 +96,31 @@ def test_get_absolute_url_depends_on_membership(member):
     externa = Contributor.objects.create(slug="externa", display_name="Externa")
     assert member.get_absolute_url() == reverse("people:member_detail", args=[member.slug])
     assert externa.get_absolute_url() == reverse("content:contributor_detail", args=["externa"])
+
+
+@pytest.mark.parametrize(
+    ("is_member", "address", "other_address"),
+    [
+        (True, "/integrante/una-voz/", "/colaborador/una-voz/"),
+        (False, "/colaborador/una-voz/", "/integrante/una-voz/"),
+    ],
+    ids=["member", "collaborator"],
+)
+def test_a_person_has_one_address_wherever_she_is_linked(client, is_member, address, other_address):
+    """La regla vive en `url_for_person`: lleva a la misma ficha la firma de un texto, el
+    resultado de la búsqueda y la otra ruta, que redirige."""
+    person = Contributor.objects.create(slug="una-voz", display_name="Una Voz", is_member=is_member)
+    article = make_article(status=EditorialStatus.PUBLISHED)
+    article.authors.add(person)
+
+    assert url_for_person("una-voz", is_member) == address
+    byline = client.get(article.get_absolute_url()).content.decode()
+    assert f'href="{address}">Una Voz</a>' in byline
+    found = client.get(reverse("content:search"), {"q": "Una Voz"}).content.decode()
+    assert f'href="{address}">Una Voz</a>' in found
+    redirected = client.get(other_address)
+    assert (redirected.status_code, redirected["Location"]) == (302, address)
+    assert client.get(address).status_code == 200
 
 
 def test_home_shows_member_grid(client, member):

@@ -4,7 +4,7 @@
    Sin foto, el monograma en la misma caja. Toda la tarjeta es el enlace (ver site.css).
 {% endcomment %}
 <li class="member-card">
-  <a href="{% url 'people:member_detail' m.slug %}">
+  <a href="{{ m.get_absolute_url }}">
     {% if m.photo %}
       <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 720px) 45vw, 290px" %}</span>
     {% else %}

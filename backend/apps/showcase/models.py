@@ -2,9 +2,11 @@ from functools import cached_property
 from urllib.parse import urlsplit
 
 from django.db import models
+from django.urls import reverse
 
 from apps.media.validators import MAX_PDF_MB, validate_pdf_extension, validate_pdf_size
 from config import publishing
+from config.models import TimestampedModel
 from config.protected_media import random_upload_path
 
 
@@ -182,7 +184,13 @@ def publication_upload_to(instance, filename):
     return random_upload_path("publications", filename)
 
 
-class Publication(models.Model):
+def url_for_publication(slug):
+    """La dirección de la ficha de una publicación. La usan su modelo y las filas de la búsqueda,
+    que solo traen el slug."""
+    return reverse("showcase:publication_detail", args=[slug])
+
+
+class Publication(TimestampedModel):
     """Publicación del catálogo vitrina (libro, plaquette, fanzine…). Sin pagos:
     la compra se deriva a enlaces externos (WhereToBuy) o a un PDF de descarga.
 
@@ -240,14 +248,10 @@ class Publication(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        from django.urls import reverse
-
-        return reverse("showcase:publication_detail", args=[self.slug])
+        return url_for_publication(self.slug)
 
     def pdf_url(self):
         """La dirección fija del PDF: la vista lo entrega solo si la publicación es pública."""
-        from django.urls import reverse
-
         if not self.pdf:
             return ""
         return reverse("showcase:publication_pdf", args=[self.slug])
@@ -298,7 +302,7 @@ class WhereToBuy(models.Model):
         return f"{self.publication} · {self.label}"
 
 
-class PressMention(models.Model):
+class PressMention(TimestampedModel):
     """Mención en prensa: entrevistas, reseñas de terceros, notas (legitimidad externa)."""
 
     class Kind(models.TextChoices):
@@ -334,7 +338,7 @@ class PressMention(models.Model):
         return f"{self.outlet} — {self.title}"
 
 
-class Partner(models.Model):
+class Partner(TimestampedModel):
     """Aliado del colectivo: fondos, instituciones, editoriales, espacios."""
 
     class Kind(models.TextChoices):

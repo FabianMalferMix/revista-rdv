@@ -7,10 +7,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils import timezone
 from PIL import Image, ImageOps
 
 from config import publishing
+from config.models import TimestampedModel
 from config.protected_media import file_name, random_upload_path
 
 from .validators import (
@@ -274,7 +276,13 @@ def recording_upload_to(instance, filename):
     return random_upload_path("recordings", filename)
 
 
-class Recording(models.Model):
+def url_for_recording(slug):
+    """La dirección de la ficha de un registro. La usan su modelo y las filas de la búsqueda, que
+    solo traen el slug."""
+    return reverse("media:recording_detail", args=[slug])
+
+
+class Recording(TimestampedModel):
     """Registro de audio o video de una lectura/recital.
 
     La fuente es un archivo subido (`file`) **o** un enlace de YouTube o Vimeo
@@ -371,7 +379,6 @@ class Recording(models.Model):
         verbose_name="posición",
         help_text="Orden en la tirada de la portada y en el índice: primero el número más bajo.",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="creado el")
 
     objects = publishing.PublishableQuerySet.as_manager()
 
@@ -399,14 +406,10 @@ class Recording(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        from django.urls import reverse
-
-        return reverse("media:recording_detail", args=[self.slug])
+        return url_for_recording(self.slug)
 
     def file_url(self):
         """La dirección de el audio: la vista que lo entrega solo si el registro es público."""
-        from django.urls import reverse
-
         if not self.file:
             return ""
         return reverse("media:recording_file", args=[self.slug, file_name(self.file)])

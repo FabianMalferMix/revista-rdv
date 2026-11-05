@@ -10,14 +10,28 @@ formado y que las etiquetas clave existen, sin añadir dependencias (feedparser)
 """
 
 import xml.dom.minidom as minidom
+from datetime import UTC, datetime
 
 import pytest
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import EditorialStatus
+from apps.agenda.models import Event
+from apps.content.models import Article, EditorialStatus, Poem
 from apps.content.sitemaps import SITEMAPS
-from tests.factories import make_article, make_poem
+from apps.media.models import Recording
+from apps.showcase.models import Publication
+from config.models import TimestampedModel
+from tests.factories import (
+    make_article,
+    make_event,
+    make_poem,
+    make_publication,
+    make_published_article,
+    make_published_poem,
+    make_recording,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -68,6 +82,47 @@ def test_every_sitemap_section_builds_urls_without_error():
     site = RequestSite(RequestFactory().get("/"))
     for cls in SITEMAPS.values():
         list(cls().get_urls(site=site))  # no debe lanzar en ninguna sección
+
+
+# Las fichas cuyo modelo guarda cuándo se editó, con cómo crear una publicada.
+EDITED_PIECES = {
+    Article: make_published_article,
+    Poem: make_published_poem,
+    Event: make_event,
+    Publication: make_publication,
+    Recording: make_recording,
+}
+
+
+def _lastmod(client, piece):
+    """La fecha de la última edición que el sitemap anuncia para la ficha de la pieza."""
+    dom = minidom.parseString(client.get(reverse("sitemap")).content)
+    for url in dom.getElementsByTagName("url"):
+        if url.getElementsByTagName("loc")[0].firstChild.data.endswith(piece.get_absolute_url()):
+            (lastmod,) = url.getElementsByTagName("lastmod")
+            return lastmod.firstChild.data
+    raise AssertionError(f"{piece.get_absolute_url()} no está en el sitemap")
+
+
+def test_every_sitemap_section_of_pieces_that_keep_their_last_edit_is_checked_below():
+    items = [cls().items() for cls in SITEMAPS.values()]
+    edited = {
+        rows.model
+        for rows in items
+        if isinstance(rows, QuerySet) and issubclass(rows.model, TimestampedModel)
+    }
+    assert edited == set(EDITED_PIECES)
+
+
+@pytest.mark.parametrize("model", list(EDITED_PIECES), ids=lambda model: model.__name__)
+def test_the_sitemap_says_when_each_page_was_last_edited(client, model):
+    """Un buscador vuelve a leer una ficha cuando el sitemap le dice que cambió."""
+    piece = EDITED_PIECES[model]()
+    model.objects.filter(pk=piece.pk).update(updated_at=datetime(2026, 3, 14, 12, tzinfo=UTC))
+    assert _lastmod(client, piece) == "2026-03-14"
+    piece.refresh_from_db()
+    piece.save()  # una edición en el panel
+    assert _lastmod(client, piece) == timezone.localdate().isoformat()
 
 
 # ── RSS de artículos (/feed/) ────────────────────────────────

@@ -10,6 +10,8 @@ import pytest
 from django.apps import apps
 from django.conf import settings
 from django.db.models import FileField
+from django.db.models.expressions import Col
+from django.db.models.lookups import Exact
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch.dispatcher import _make_id
 from django.urls import URLResolver, get_resolver, resolve, reverse
@@ -95,14 +97,21 @@ def _named_routes():
 
 
 def _sitemap_routes():
-    """La ficha que lista cada sección del sitemap: la de la dirección de una pieza cualquiera."""
+    """La ficha que lista cada sección del sitemap: la de la dirección de una pieza de su consulta,
+    con los valores que la consulta fija. Así las dos secciones de personas dan cada una su ruta:
+    la de las integrantes y la de quien colabora desde fuera."""
     routes = set()
     for section in SITEMAPS.values():
         sitemap = section()
         items = sitemap.items()
         if isinstance(items, list):
             continue
-        routes.add(resolve(sitemap.location(items.model(slug="x"))).view_name)
+        fixed = {
+            condition.lhs.target.attname: condition.rhs
+            for condition in items.query.where.children
+            if isinstance(condition, Exact) and isinstance(condition.lhs, Col)
+        }
+        routes.add(resolve(sitemap.location(items.model(slug="x", **fixed))).view_name)
     return routes
 
 

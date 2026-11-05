@@ -10,8 +10,8 @@
     {% comment %} Los separadores solo entre piezas: sin autores, la línea empezaba con «·». {% endcomment %}
     {% with autores=work.authors.all %}
       <p class="meta">
-        {% for ba in autores %}<a href="{% url 'reviews:bookauthor_detail' ba.slug %}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-        {% if work.publisher %}{% if autores %} · {% endif %}<a href="{% url 'reviews:publisher_detail' work.publisher.slug %}">{{ work.publisher.name }}</a>{% endif %}
+        {% for ba in autores %}<a href="{{ ba.get_absolute_url }}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% if work.publisher %}{% if autores %} · {% endif %}<a href="{{ work.publisher.get_absolute_url }}">{{ work.publisher.name }}</a>{% endif %}
         {% if work.publication_year %}{% if autores or work.publisher %} · {% endif %}{{ work.publication_year }}{% endif %}
         {% if work.isbn %}{% if autores or work.publisher or work.publication_year %} · {% endif %}ISBN {{ work.isbn }}{% endif %}
       </p>

@@ -198,7 +198,7 @@ PUBLIC_FIELDS = {
         "slug", "title", "kind", "file", "embed_url", "poster", "description", "transcript",
         "recorded_on",
         "duration_minutes", "event", "featured", "published", "published_at", "position",
-        "created_at", "participants",
+        "created_at", "updated_at", "participants",
     },
     "content.Section": {"slug", "name", "description", "position"},
     "content.Tag": {"slug", "name"},
@@ -223,7 +223,7 @@ PUBLIC_FIELDS = {
     "agenda.Event": {
         "slug", "title", "type", "starts_at", "ends_at", "venue_name", "address", "city",
         "description", "poster", "is_external", "host", "registration_url", "published",
-        "participants",
+        "participants", "created_at", "updated_at",
     },
     "agenda.EventPhoto": {"event", "asset", "caption", "position"},
     "agenda.Milestone": {"year", "title", "description"},
@@ -233,14 +233,17 @@ PUBLIC_FIELDS = {
     },
     "showcase.Publication": {
         "slug", "title", "kind", "publisher", "year", "isbn", "cover", "synopsis", "is_own",
-        "pdf", "featured", "published", "position", "participants",
+        "pdf", "featured", "published", "position", "participants", "created_at", "updated_at",
     },
     "showcase.WhereToBuy": {"publication", "label", "url", "position"},
     "showcase.PressMention": {
         "title", "outlet", "author", "kind", "published_on", "url", "quote", "logo",
-        "published", "position",
+        "published", "position", "created_at", "updated_at",
     },
-    "showcase.Partner": {"name", "kind", "logo", "url", "description", "active", "position"},
+    "showcase.Partner": {
+        "name", "kind", "logo", "url", "description", "active", "position", "created_at",
+        "updated_at",
+    },
     "submissions.Call": {"slug", "title", "description", "opens_at", "closes_at"},
 }  # fmt: skip
 

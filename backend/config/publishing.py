@@ -77,6 +77,18 @@ def marked_as_preview(response, preview):
     return response
 
 
+class ViewOnSiteIfVisibleMixin:
+    """«Ver en el sitio» solo cuando la ficha existe, para lo que no tiene vista previa: una obra,
+    una editorial o una autora de obra tienen ficha mientras algo publicado las respalda, y una
+    persona si es integrante o firma algo publicado. El criterio es el de sus vistas públicas,
+    `visible()`; sin ficha, el botón llevaría a un 404."""
+
+    def view_on_site(self, obj):
+        if type(obj).objects.visible().filter(pk=obj.pk).exists():
+            return obj.get_absolute_url()
+        return None
+
+
 class FrozenSlugAdminMixin:
     """En el panel, la dirección (slug) de lo que ya es público es de solo lectura.
 

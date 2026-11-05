@@ -41,7 +41,7 @@
     <div class="lectura-sala">
     <header class="lectura-ancla">
       <span class="kicker">
-        {% if article.section and article.seccion_aporta %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{% url 'content:section_detail' article.section.slug %}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
+        {% if article.section and article.seccion_aporta %}<a href="{{ article.section.get_absolute_url }}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{{ article.section.get_absolute_url }}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
       </span>
       <h1{% if article.title|length > 90 %} class="titulo-largo"{% endif %}>{{ article.title }}</h1>
       {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
@@ -56,8 +56,8 @@
               <div class="obra">
                 {% if w.cover_image %}{% responsive_img w.cover_image css_class="obra-cubierta" sizes="96px" decorativa=True %}{% endif %}
                 <p>
-                  <a href="{% url 'reviews:work_detail' w.slug %}">{{ w.title }}</a>
-                  {% if w.publisher or w.publication_year %}<span class="meta">{% if w.publisher %}<a href="{% url 'reviews:publisher_detail' w.publisher.slug %}">{{ w.publisher.name }}</a>{% endif %}{% if w.publisher and w.publication_year %} · {% endif %}{% if w.publication_year %}{{ w.publication_year }}{% endif %}</span>{% endif %}
+                  <a href="{{ w.get_absolute_url }}">{{ w.title }}</a>
+                  {% if w.publisher or w.publication_year %}<span class="meta">{% if w.publisher %}<a href="{{ w.publisher.get_absolute_url }}">{{ w.publisher.name }}</a>{% endif %}{% if w.publisher and w.publication_year %} · {% endif %}{% if w.publication_year %}{{ w.publication_year }}{% endif %}</span>{% endif %}
                 </p>
               </div>
             {% endfor %}
@@ -68,7 +68,7 @@
       {% with tags=article.tags.all %}
         {% if tags %}
           <p class="tags">
-            {% for t in tags %}<a class="tag" href="{% url 'content:tag_detail' t.slug %}">{{ t.name }}</a>{% endfor %}
+            {% for t in tags %}<a class="tag" href="{{ t.get_absolute_url }}">{{ t.name }}</a>{% endfor %}
           </p>
         {% endif %}
       {% endwith %}
