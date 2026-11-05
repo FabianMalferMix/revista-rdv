@@ -42,13 +42,11 @@ docker compose logs -f web worker      # deja esto abierto en otra terminal
 ### Credenciales
 
 **Desarrollo** — `admin` (tu contraseña de siempre) · `editora` / `demo12345` ·
-`autor1` / `demo12345`.
+`autor1` / `demo12345`. Existen solo en tu base de desarrollo, que escucha solo en el propio
+equipo.
 
-**Vista previa de producción** — `admin` / `bx0JqJp1po715yZq` ·
-`editora` / `FTSUIgr79m9AJpKz` · `autor1` / `fdYrUkFqw7LZ8gOz`.
-
-> Estas cuentas existen solo en esas dos bases: las de la vista previa de producción se
-> generaron al azar y se imprimieron una sola vez, y las de desarrollo conservan `demo12345`.
+**Vista previa de producción** — las cuentas que crees al recrearla (§11). Como en producción,
+sus contraseñas no se apuntan en el repositorio, que es público.
 
 **Las cuentas no viajan con los datos de desarrollo.** En una base nueva, el superusuario se hace
 con `createsuperuser` y las de los roles desde el panel (Usuarios: `is_staff` y el grupo `editor`
@@ -687,7 +685,8 @@ docker compose exec web python manage.py check --deploy
 
 ```bash
 # 1. un .env de prueba (NO uses el tuyo). Con DEBUG=0, el guard de producción exige SITE_URL y
-#    el remitente, y que se nombren las defensas apagadas: aquí no hay Sentry ni HSTS.
+#    el remitente, y que se nombren las defensas apagadas: aquí no hay Sentry ni HSTS. Los
+#    puertos se abren solo en el propio equipo (127.0.0.1), no en la red.
 cat > /tmp/prod.env <<'EOF'
 DJANGO_DEBUG=0
 DJANGO_SECRET_KEY=<50+ caracteres variados>
@@ -703,8 +702,8 @@ POSTGRES_USER=resenas
 POSTGRES_PASSWORD=<contraseña>
 REDIS_PASSWORD=<contraseña>
 SITE_ADDRESS=:80
-PROXY_HTTP_PORT=8090
-PROXY_HTTPS_PORT=8443
+PROXY_HTTP_PORT=127.0.0.1:8090
+PROXY_HTTPS_PORT=127.0.0.1:8443
 EOF
 
 # 2. un override que sustituya el env_file de desarrollo
