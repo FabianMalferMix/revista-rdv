@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config import publishing
+from config.models import TimestampedModel
 from config.text import strip_accents
 
 from . import legal
@@ -32,6 +33,9 @@ class Section(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("content:section_detail", args=[self.slug])
+
 
 class Tag(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
@@ -44,6 +48,9 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("content:tag_detail", args=[self.slug])
 
 
 class ArticleType(models.TextChoices):
@@ -93,7 +100,7 @@ DATED_STATUSES = (EditorialStatus.PUBLISHED, EditorialStatus.SCHEDULED, Editoria
 DATED_MESSAGE = "Lo publicado, programado o archivado necesita fecha de publicación."
 
 
-class EditorialItem(models.Model):
+class EditorialItem(TimestampedModel):
     """Base abstracta del flujo editorial: estado + dueño + fecha de publicación.
 
     La comparten Artículo y Poema. Las transiciones y notas viven en tablas genéricas
@@ -119,8 +126,6 @@ class EditorialItem(models.Model):
     published_at = models.DateTimeField(
         "fecha de publicación", null=True, blank=True, db_index=True
     )
-    created_at = models.DateTimeField("creado", auto_now_add=True)
-    updated_at = models.DateTimeField("actualizado", auto_now=True)
 
     # Acceso inverso a las notas (poem.editorial_notes); related_query_name habilita
     # EditorialNote.objects.filter(article=…) y (poem=…).

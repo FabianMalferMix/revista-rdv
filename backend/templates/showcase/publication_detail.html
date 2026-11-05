@@ -28,7 +28,7 @@
         <h1>{{ publication.title }}</h1>
         <p class="meta">
           {% if publication.year %}{{ publication.year }}{% endif %}
-          {% if publication.publisher %} · <a href="{% url 'reviews:publisher_detail' publication.publisher.slug %}">{{ publication.publisher.name }}</a>{% endif %}
+          {% if publication.publisher %} · <a href="{{ publication.publisher.get_absolute_url }}">{{ publication.publisher.name }}</a>{% endif %}
           {% if publication.isbn %} · ISBN {{ publication.isbn }}{% endif %}
         </p>
         {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}

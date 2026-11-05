@@ -6,6 +6,15 @@ from django.urls import reverse
 from apps.content.models import Article, Poem
 
 
+def url_for_person(slug, is_member):
+    """La dirección de la ficha de una persona: la integrante tiene su perfil en /integrante/ y
+    quien colabora desde fuera, su página de firmas en /colaborador/. Es la única regla: la usan
+    `Contributor.get_absolute_url`, las filas de la búsqueda y la redirección entre las dos."""
+    if is_member:
+        return reverse("people:member_detail", args=[slug])
+    return reverse("content:contributor_detail", args=[slug])
+
+
 class ContributorQuerySet(models.QuerySet):
     def visible(self):
         """Quien tiene ficha pública: las integrantes, también las históricas, y quien firma
@@ -91,10 +100,7 @@ class Contributor(models.Model):
         return self.display_name
 
     def get_absolute_url(self):
-        # Integrante → perfil rico; colaborador externo → página de byline.
-        if self.is_member:
-            return reverse("people:member_detail", args=[self.slug])
-        return reverse("content:contributor_detail", args=[self.slug])
+        return url_for_person(self.slug, self.is_member)
 
 
 class SocialLink(models.Model):

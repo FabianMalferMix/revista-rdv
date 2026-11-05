@@ -7,7 +7,7 @@
    en la fila ancha pero no en el teléfono, cuando no corre el guion.
 {% endcomment %}
 <li class="integrante{% if solo_ancho %} integrante--solo-ancho{% endif %}"{% if escondida %} hidden{% endif %}>
-  <a class="integrante-enlace" href="{% url 'people:member_detail' m.slug %}">
+  <a class="integrante-enlace" href="{{ m.get_absolute_url }}">
     {% if m.photo %}
       <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 719px) 31vw, 210px" decorativa=True %}</span>
     {% else %}

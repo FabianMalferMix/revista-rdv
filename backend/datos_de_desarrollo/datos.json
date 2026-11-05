@@ -1,5 +1,5 @@
 {
- "exported_at": "2026-11-05T03:46:35Z",
+ "exported_at": "2026-11-05T14:21:08Z",
  "objects": [
   {
    "model": "people.contributor",
@@ -1468,6 +1468,8 @@
    "model": "media.recording",
    "pk": 1,
    "fields": {
+    "created_at": "2026-07-27T16:56:19.445Z",
+    "updated_at": "2026-11-05T14:14:40.779Z",
     "slug": "recital-nuevas-voces",
     "title": "Recital «Nuevas voces» (registro)",
     "kind": "video",
@@ -1483,7 +1485,6 @@
     "published": true,
     "published_at": "2026-07-26T16:56:19.289Z",
     "position": 0,
-    "created_at": "2026-07-27T16:56:19.445Z",
     "participants": [
      1,
      3
@@ -1494,6 +1495,8 @@
    "model": "media.recording",
    "pk": 2,
    "fields": {
+    "created_at": "2026-07-27T17:40:57.785Z",
+    "updated_at": "2026-11-05T14:14:40.779Z",
     "slug": "umbral-lectura",
     "title": "«Umbral» — lectura de la autora",
     "kind": "audio",
@@ -1509,7 +1512,6 @@
     "published": true,
     "published_at": "2026-07-25T17:40:57.636Z",
     "position": 1,
-    "created_at": "2026-07-27T17:40:57.785Z",
     "participants": [
      1
     ]
@@ -1519,6 +1521,8 @@
    "model": "media.recording",
    "pk": 7,
    "fields": {
+    "created_at": "2026-10-22T12:38:33.755Z",
+    "updated_at": "2026-11-05T14:14:40.779Z",
     "slug": "demo-recital-de-invierno",
     "title": "Recital de invierno",
     "kind": "video",
@@ -1534,7 +1538,6 @@
     "published": true,
     "published_at": "2026-10-22T12:38:33.750Z",
     "position": 2,
-    "created_at": "2026-10-22T12:38:33.755Z",
     "participants": [
      19,
      16,
@@ -1546,6 +1549,8 @@
    "model": "media.recording",
    "pk": 8,
    "fields": {
+    "created_at": "2026-10-22T12:38:33.863Z",
+    "updated_at": "2026-11-05T14:14:40.779Z",
     "slug": "demo-verso-vivo-cierre",
     "title": "El verso vivo: lectura de cierre",
     "kind": "audio",
@@ -1561,7 +1566,6 @@
     "published": true,
     "published_at": "2026-10-22T12:38:33.861Z",
     "position": 3,
-    "created_at": "2026-10-22T12:38:33.863Z",
     "participants": [
      14,
      17
@@ -1572,6 +1576,8 @@
    "model": "media.recording",
    "pk": 9,
    "fields": {
+    "created_at": "2026-10-22T12:38:33.877Z",
+    "updated_at": "2026-11-05T14:14:40.779Z",
     "slug": "demo-festival-poesia-joven",
     "title": "Lectura en el Festival de Poesía Joven",
     "kind": "video",
@@ -1587,7 +1593,6 @@
     "published": true,
     "published_at": "2026-10-22T12:38:33.875Z",
     "position": 4,
-    "created_at": "2026-10-22T12:38:33.877Z",
     "participants": [
      18,
      1,
@@ -1833,10 +1838,10 @@
    "model": "content.article",
    "pk": 2,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-07T16:23:13.513Z",
     "created_at": "2026-07-09T16:23:14.207Z",
     "updated_at": "2026-07-09T16:23:14.207Z",
+    "status": "published",
+    "published_at": "2026-07-07T16:23:13.513Z",
     "slug": "resena-el-invierno-de-las-cosas",
     "title": "El invierno de las cosas: una poética de la intemperie",
     "subtitle": "El debut de Valentina Aguirre convierte el frío en método.",
@@ -1859,10 +1864,10 @@
    "model": "content.article",
    "pk": 3,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-03T16:23:13.513Z",
     "created_at": "2026-07-09T16:23:14.235Z",
     "updated_at": "2026-07-09T16:23:14.235Z",
+    "status": "published",
+    "published_at": "2026-07-03T16:23:13.513Z",
     "slug": "resena-territorio-en-fuga",
     "title": "Territorio en fuga, o la novela como mapa roto",
     "subtitle": "Ignacio Bravo escribe una geografía de la pérdida.",
@@ -1884,10 +1889,10 @@
    "model": "content.article",
    "pk": 4,
    "fields": {
-    "status": "published",
-    "published_at": "2026-06-27T16:23:13.513Z",
     "created_at": "2026-07-09T16:23:14.255Z",
     "updated_at": "2026-07-09T16:23:14.255Z",
+    "status": "published",
+    "published_at": "2026-06-27T16:23:13.513Z",
     "slug": "resena-cuadernos-del-sur",
     "title": "Cuadernos del sur: pensar desde el margen",
     "subtitle": "El ensayo de Camila Reyes reordena nuestra cartografía crítica.",
@@ -1909,10 +1914,10 @@
    "model": "content.article",
    "pk": 5,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-05T16:23:13.513Z",
     "created_at": "2026-07-09T16:23:14.275Z",
     "updated_at": "2026-07-09T16:23:14.275Z",
+    "status": "published",
+    "published_at": "2026-07-05T16:23:13.513Z",
     "slug": "ensayo-sobre-el-oficio-de-la-critica",
     "title": "Sobre el oficio de la crítica",
     "subtitle": "Notas para una reseña que no adula ni destruye.",
@@ -1934,10 +1939,10 @@
    "model": "content.article",
    "pk": 6,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-01T16:23:13.513Z",
     "created_at": "2026-07-09T16:23:14.289Z",
     "updated_at": "2026-07-09T16:23:14.289Z",
+    "status": "published",
+    "published_at": "2026-07-01T16:23:13.513Z",
     "slug": "entrevista-editorial-independiente",
     "title": "Conversación con una editorial independiente",
     "subtitle": "Hablamos sobre catálogos, riesgo y supervivencia.",
@@ -1959,10 +1964,10 @@
    "model": "content.article",
    "pk": 7,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-09T16:26:06.728Z",
     "created_at": "2026-07-09T16:23:14.304Z",
     "updated_at": "2026-07-09T16:26:13.948Z",
+    "status": "published",
+    "published_at": "2026-07-09T16:26:06.728Z",
     "slug": "resena-la-casa-vacia",
     "title": "La casa vacía: el regreso como forma del duelo",
     "subtitle": "Vergara vuelve a la casa de la infancia: el duelo como arqueología doméstica.",
@@ -1984,10 +1989,10 @@
    "model": "content.article",
    "pk": 8,
    "fields": {
-    "status": "archived",
-    "published_at": "2026-08-18T15:14:53Z",
     "created_at": "2026-07-09T16:23:14.323Z",
     "updated_at": "2026-08-18T15:48:20.193Z",
+    "status": "archived",
+    "published_at": "2026-08-18T15:14:53Z",
     "slug": "resena-antologia-del-margen",
     "title": "Antología del margen (borrador)",
     "subtitle": "En preparación.",
@@ -2009,10 +2014,10 @@
    "model": "content.article",
    "pk": 9,
    "fields": {
-    "status": "in_review",
-    "published_at": null,
     "created_at": "2026-07-09T16:23:14.340Z",
     "updated_at": "2026-09-02T20:15:28.285Z",
+    "status": "in_review",
+    "published_at": null,
     "slug": "resena-en-revision",
     "title": "Una reseña en revisión editorial",
     "subtitle": "Enviada, esperando decisión del comité.",
@@ -2034,10 +2039,10 @@
    "model": "content.article",
    "pk": 11,
    "fields": {
-    "status": "published",
-    "published_at": "2026-06-01T16:00:00Z",
     "created_at": "2026-10-14T15:09:48.733Z",
     "updated_at": "2026-10-14T15:09:48.733Z",
+    "status": "published",
+    "published_at": "2026-06-01T16:00:00Z",
     "slug": "zz-demo-resena-cuadernos-del-ruido",
     "title": "Reseña de prueba: Cuadernos del ruido",
     "subtitle": "Texto de prueba para ver el enlace entre una publicación y sus reseñas. Se borrará.",
@@ -2057,10 +2062,10 @@
    "model": "content.article",
    "pk": 16,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-12T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.706Z",
     "updated_at": "2026-10-14T19:27:34.706Z",
+    "status": "published",
+    "published_at": "2026-10-12T17:27:34.694Z",
     "slug": "zz-largo-la-casa-como-lengua-extranjera",
     "title": "La casa como lengua extranjera",
     "subtitle": "Inventario de lo que no se dijo, el primer libro de Marta Ilabaca, convierte una mudanza familiar en una gramática del silencio. Una lectura lenta de sus cinco secciones.",
@@ -2084,10 +2089,10 @@
    "model": "content.article",
    "pk": 17,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-13T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.780Z",
     "updated_at": "2026-10-14T19:27:34.780Z",
+    "status": "published",
+    "published_at": "2026-10-13T17:27:34.694Z",
     "slug": "zz-largo-repetir-el-verso",
     "title": "Repetir el verso: notas sobre la lectura en voz alta, la memoria y el error",
     "subtitle": "Un colectivo que se llama Repitentes del Verso tendría que explicar alguna vez por qué repetir no es fracasar. Este ensayo lo intenta en siete movimientos y una partitura.",
@@ -2112,10 +2117,10 @@
    "model": "content.article",
    "pk": 18,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-11T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.819Z",
     "updated_at": "2026-10-14T19:27:34.819Z",
+    "status": "published",
+    "published_at": "2026-10-11T17:27:34.694Z",
     "slug": "zz-largo-escribir-es-volver-a-oir",
     "title": "«Escribir es volver a oír»: conversación con Ignacio Bravo",
     "subtitle": "Llegó al colectivo por una puerta equivocada y hoy coordina el taller de los jueves y la gestión. Hablamos de talleres, de fondos públicos, de su padre electricista y de las salas donde se lee.",
@@ -2138,10 +2143,10 @@
    "model": "content.article",
    "pk": 19,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-10T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.843Z",
     "updated_at": "2026-10-14T19:27:34.843Z",
+    "status": "published",
+    "published_at": "2026-10-10T17:27:34.694Z",
     "slug": "zz-largo-doce-sillas-y-un-paraguas",
     "title": "Doce sillas y un paraguas: crónica de una lectura bajo la lluvia en el Barrio Yungay",
     "subtitle": "Treinta y dos personas bajo un alero, un micrófono que funcionaba a ratos y un poema cuya última estrofa la escribió la lluvia.",
@@ -2164,10 +2169,10 @@
    "model": "content.article",
    "pk": 20,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-14T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.866Z",
     "updated_at": "2026-10-14T19:27:34.866Z",
+    "status": "published",
+    "published_at": "2026-10-14T17:27:34.694Z",
     "slug": "zz-largo-contra-la-lectura-apurada",
     "title": "Contra la lectura apurada, a favor de la relectura obstinada: once objeciones (y una concesión) a la costumbre de juzgar un libro de poemas por su primer verso, su contratapa y su número de seguidores",
     "subtitle": "Una discusión del taller de los jueves que duró más de lo razonable, escrita a ocho manos: por qué el primer verso dice menos de lo que creemos, por qué la relectura es donde ocurre la poesía, y una concesión para quien abandona libros sin culpa.",
@@ -2196,10 +2201,10 @@
    "model": "content.article",
    "pk": 21,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-09T17:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.906Z",
     "updated_at": "2026-10-14T19:27:34.906Z",
+    "status": "published",
+    "published_at": "2026-10-09T17:27:34.694Z",
     "slug": "zz-largo-dos-libros-sobre-el-agua",
     "title": "Dos libros sobre el agua que ya no está",
     "subtitle": "Un manual para cruzar ríos secos y un registro de lluvias recordadas forman, leídos el mismo día, una conversación involuntaria sobre la sequía.",
@@ -2456,10 +2461,10 @@
    "model": "content.poem",
    "pk": 1,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-24T17:24:41.163Z",
     "created_at": "2026-07-27T17:24:41.310Z",
     "updated_at": "2026-07-27T17:24:41.310Z",
+    "status": "published",
+    "published_at": "2026-07-24T17:24:41.163Z",
     "slug": "umbral",
     "title": "Umbral",
     "epigraph": "a los que llegan tarde",
@@ -2474,10 +2479,10 @@
    "model": "content.poem",
    "pk": 2,
    "fields": {
-    "status": "published",
-    "published_at": "2026-07-20T17:24:41.163Z",
     "created_at": "2026-07-27T17:24:41.321Z",
     "updated_at": "2026-07-27T17:24:41.321Z",
+    "status": "published",
+    "published_at": "2026-07-20T17:24:41.163Z",
     "slug": "oficio-de-la-lluvia",
     "title": "Oficio de la lluvia",
     "epigraph": "",
@@ -2492,10 +2497,10 @@
    "model": "content.poem",
    "pk": 3,
    "fields": {
-    "status": "draft",
-    "published_at": null,
     "created_at": "2026-07-27T17:24:41.332Z",
     "updated_at": "2026-07-27T17:24:41.332Z",
+    "status": "draft",
+    "published_at": null,
     "slug": "borrador-de-invierno",
     "title": "Borrador de invierno",
     "epigraph": "",
@@ -2510,10 +2515,10 @@
    "model": "content.poem",
    "pk": 25,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-14T16:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.946Z",
     "updated_at": "2026-10-14T19:27:34.946Z",
+    "status": "published",
+    "published_at": "2026-10-14T16:27:34.694Z",
     "slug": "zz-largo-sobre-la-imposibilidad-de-terminar-un-poema",
     "title": "Sobre la imposibilidad de terminar un poema cuando afuera alguien está aprendiendo a tocar la trompeta con la ventana abierta",
     "epigraph": "",
@@ -2528,10 +2533,10 @@
    "model": "content.poem",
    "pk": 26,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-13T16:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.961Z",
     "updated_at": "2026-10-14T19:27:34.961Z",
+    "status": "published",
+    "published_at": "2026-10-13T16:27:34.694Z",
     "slug": "zz-largo-escalera",
     "title": "Escalera",
     "epigraph": "",
@@ -2546,10 +2551,10 @@
    "model": "content.poem",
    "pk": 27,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-12T16:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.969Z",
     "updated_at": "2026-10-14T19:27:34.969Z",
+    "status": "published",
+    "published_at": "2026-10-12T16:27:34.694Z",
     "slug": "zz-largo-oda-a-los-que-llegan-tarde",
     "title": "Oda a los que llegan tarde a la lectura",
     "epigraph": "Para quienes llegaron a la lectura de otoño cuando ya estábamos en el tercer poema, empapados, pidiendo disculpas con la mirada, y se quedaron de pie junto a la puerta hasta el final.",
@@ -2564,10 +2569,10 @@
    "model": "content.poem",
    "pk": 28,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-11T16:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.977Z",
     "updated_at": "2026-10-14T19:27:34.977Z",
+    "status": "published",
+    "published_at": "2026-10-11T16:27:34.694Z",
     "slug": "zz-largo-inventario-del-patio",
     "title": "Inventario del patio",
     "epigraph": "",
@@ -2582,10 +2587,10 @@
    "model": "content.poem",
    "pk": 29,
    "fields": {
-    "status": "published",
-    "published_at": "2026-10-10T16:27:34.694Z",
     "created_at": "2026-10-14T19:27:34.987Z",
     "updated_at": "2026-10-14T19:27:34.987Z",
+    "status": "published",
+    "published_at": "2026-10-10T16:27:34.694Z",
     "slug": "zz-largo-letania-para-una-casa-que-se-vende",
     "title": "Letanía para una casa que se vende",
     "epigraph": "Toda casa es un idioma que se olvida al mudarse. (Lo decía mi abuela.)",
@@ -2752,6 +2757,8 @@
    "model": "agenda.event",
    "pk": 1,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.682Z",
+    "updated_at": "2026-11-05T14:14:40.732Z",
     "slug": "recital-nuevas-voces-lanzamiento",
     "title": "Recital «Nuevas voces»",
     "type": "recital",
@@ -2777,6 +2784,8 @@
    "model": "agenda.event",
    "pk": 2,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.682Z",
+    "updated_at": "2026-11-05T14:14:40.732Z",
     "slug": "lectura-festival-poesia-joven",
     "title": "Lectura en Festival de Poesía Joven",
     "type": "festival",
@@ -2801,6 +2810,8 @@
    "model": "agenda.event",
    "pk": 3,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.682Z",
+    "updated_at": "2026-11-05T14:14:40.732Z",
     "slug": "taller-el-verso-vivo",
     "title": "Taller de escritura: el verso vivo",
     "type": "taller",
@@ -2824,6 +2835,8 @@
    "model": "agenda.event",
    "pk": 4,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.682Z",
+    "updated_at": "2026-11-05T14:14:40.732Z",
     "slug": "recital-de-invierno",
     "title": "Recital de invierno",
     "type": "recital",
@@ -3120,6 +3133,8 @@
    "model": "showcase.publication",
    "pk": 1,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "umbral-y-otras-salidas",
     "title": "Umbral y otras salidas",
     "kind": "plaquette",
@@ -3144,6 +3159,8 @@
    "model": "showcase.publication",
    "pk": 2,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "cuadernos-del-ruido",
     "title": "Cuadernos del ruido",
     "kind": "libro",
@@ -3166,6 +3183,8 @@
    "model": "showcase.publication",
    "pk": 3,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "correspondencias",
     "title": "Correspondencias",
     "kind": "fanzine",
@@ -3189,6 +3208,8 @@
    "model": "showcase.publication",
    "pk": 4,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-cartografia-del-eco",
     "title": "Cartografía del eco",
     "kind": "libro",
@@ -3211,6 +3232,8 @@
    "model": "showcase.publication",
    "pk": 5,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-hilo-de-cobre",
     "title": "Hilo de cobre",
     "kind": "plaquette",
@@ -3233,6 +3256,8 @@
    "model": "showcase.publication",
    "pk": 6,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-ruidos-de-la-tarde",
     "title": "Ruidos de la tarde",
     "kind": "fanzine",
@@ -3257,6 +3282,8 @@
    "model": "showcase.publication",
    "pk": 7,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-antologia-del-patio",
     "title": "Antología del patio",
     "kind": "antologia",
@@ -3281,6 +3308,8 @@
    "model": "showcase.publication",
    "pk": 8,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-bitacora-de-los-martes",
     "title": "Bitácora de los martes",
     "kind": "revista",
@@ -3304,6 +3333,8 @@
    "model": "showcase.publication",
    "pk": 9,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-lengua-de-sal",
     "title": "Lengua de sal",
     "kind": "libro",
@@ -3326,6 +3357,8 @@
    "model": "showcase.publication",
    "pk": 10,
    "fields": {
+    "created_at": "2026-11-05T14:14:41.049Z",
+    "updated_at": "2026-11-05T14:14:41.090Z",
     "slug": "demo-voces-en-la-sala-b",
     "title": "Voces en la sala B",
     "kind": "disco",
@@ -3369,6 +3402,8 @@
    "model": "showcase.pressmention",
    "pk": 1,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.939Z",
+    "updated_at": "2026-11-05T14:14:40.976Z",
     "title": "«La poesía vuelve a los recitales»",
     "outlet": "Gaceta de Prueba",
     "author": "",
@@ -3385,6 +3420,8 @@
    "model": "showcase.pressmention",
    "pk": 2,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.939Z",
+    "updated_at": "2026-11-05T14:14:40.976Z",
     "title": "Entrevista al colectivo tras su plaquette",
     "outlet": "Radio Muestra",
     "author": "M. Torres",
@@ -3401,6 +3438,8 @@
    "model": "showcase.partner",
    "pk": 1,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.870Z",
+    "updated_at": "2026-11-05T14:14:40.904Z",
     "name": "Fondo Imaginario de las Letras",
     "kind": "financiamiento",
     "logo": 59,
@@ -3414,6 +3453,8 @@
    "model": "showcase.partner",
    "pk": 2,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.870Z",
+    "updated_at": "2026-11-05T14:14:40.904Z",
     "name": "Librería La Muestra",
     "kind": "espacio",
     "logo": 60,
@@ -3427,6 +3468,8 @@
    "model": "showcase.partner",
    "pk": 3,
    "fields": {
+    "created_at": "2026-11-05T14:14:40.870Z",
+    "updated_at": "2026-11-05T14:14:40.904Z",
     "name": "Editorial El Ejemplo",
     "kind": "editorial",
     "logo": 61,
