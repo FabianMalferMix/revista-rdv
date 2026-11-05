@@ -1203,6 +1203,8 @@ De HER-7: la fuente de titulares se lee de `--display` en ejecución, una prueba
 
 **Hecho cuando.** Una página que da 404 hace fallar `capture.js`, y cambiar la fuente de titulares no deja ninguna herramienta midiendo la anterior.
 
+**Hecho (2026-11-04).** `capture.js` y `metrics.py` exigen el 200, y cada medición guarda el commit, el navegador y la huella de `datos.json`. `tools/ux/common.js` reúne la base, Chrome y `pages.txt`. `mutar.sh` corre la prueba primero sin mutar, en un worktree temporal y en un contenedor desechable con su propia base recreada (`test_resenas_mutar`), así que mutar una migración surte efecto sin envoltorios. La fuente de titulares se lee de `--display`; NOTICE.md y LICENSE ya no nombran Syne, y una prueba los ata a los `@font-face`. Otra exige que cada ruta de `pages.txt` exista en los datos de desarrollo.
+
 #### B63 · Herramientas de desarrollo en su propia app
 
 **Hallazgos:** HER-2 (puntos 1 y 2), MAN-2 (punto 3: la guarda común) · **Depende de:** B07 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3

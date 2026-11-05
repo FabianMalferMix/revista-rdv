@@ -13,15 +13,9 @@
 // animación deje un texto a medio pintar.
 const { chromium } = require('playwright-core');
 const fs = require('fs');
-const path = require('path');
+const { CHROME, readPages, siteBase } = require('./common');
 
-const args = process.argv.slice(2);
-const option = (name, fallback) => {
-  const i = args.indexOf(name);
-  return i >= 0 ? args[i + 1] : fallback;
-};
-const BASE = option('--base', process.env.UX_BASE || 'http://localhost:8000');
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
+const BASE = siteBase(process.argv.slice(2));
 // El guion de axe se evalúa por el protocolo del navegador: la CSP del sitio no admite scripts en
 // línea, y así la página se mide con su CSP puesta.
 const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
@@ -31,12 +25,7 @@ const WINDOWS = {
   375: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
 };
 
-const PAGES = fs
-  .readFileSync(path.join(__dirname, 'pages.txt'), 'utf8')
-  .split('\n')
-  .map((line) => line.trim())
-  .filter((line) => line && !line.startsWith('#'))
-  .map((line) => line.split(/\s+/)[1]);
+const PAGES = readPages().map((page) => page.route);
 
 (async () => {
   const browser = await chromium.launch({ executablePath: CHROME });
