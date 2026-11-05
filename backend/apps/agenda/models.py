@@ -3,6 +3,13 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config import publishing
+from config.models import TimestampedModel
+
+
+def url_for_event(slug):
+    """La dirección de la ficha de una actividad. La usan su modelo y las filas de la búsqueda,
+    que solo traen el slug."""
+    return reverse("agenda:event_detail", args=[slug])
 
 
 class EventQuerySet(publishing.PublishableQuerySet):
@@ -22,7 +29,7 @@ class EventQuerySet(publishing.PublishableQuerySet):
         return self.published().filter(starts_at__lt=timezone.now()).select_related("poster")
 
 
-class Event(models.Model):
+class Event(TimestampedModel):
     """Actividad del colectivo: recital, lanzamiento, taller, festival…
 
     Un solo modelo alimenta dos vistas públicas: los eventos futuros forman la
@@ -79,7 +86,7 @@ class Event(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("agenda:event_detail", args=[self.slug])
+        return url_for_event(self.slug)
 
     def social_image(self):
         """La imagen para compartir la actividad: su afiche (ver `{% social_meta %}`)."""

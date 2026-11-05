@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Exists, OuterRef
+from django.urls import reverse
 
 from apps.content.models import Article
 from apps.showcase.models import Publication
@@ -48,6 +49,9 @@ class Publisher(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("reviews:publisher_detail", args=[self.slug])
+
 
 class BookAuthor(models.Model):
     """Autor de la obra reseñada. Distinto del Contributor de la revista."""
@@ -65,6 +69,9 @@ class BookAuthor(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("reviews:bookauthor_detail", args=[self.slug])
 
 
 class Work(models.Model):
@@ -137,6 +144,9 @@ class Work(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("reviews:work_detail", args=[self.slug])
 
     @property
     def public_publication(self):

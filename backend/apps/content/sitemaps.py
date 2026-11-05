@@ -43,18 +43,24 @@ class StaticViewSitemap(Sitemap):
         return 1.0 if item == "content:home" else 0.6
 
 
-class ArticleSitemap(Sitemap):
+class TimestampedSitemap(Sitemap):
+    """Las fichas que guardan cuándo se editaron (config.models.TimestampedModel): `lastmod` es
+    la última edición."""
+
+    def lastmod(self, obj):
+        return obj.updated_at
+
+
+# Las secciones de fichas no redefinen `location`: la dirección de cada pieza es la de su
+# `get_absolute_url`.
+
+
+class ArticleSitemap(TimestampedSitemap):
     changefreq = "weekly"
     priority = 0.8
 
     def items(self):
         return Article.objects.published()
-
-    def lastmod(self, obj):
-        return obj.updated_at
-
-    def location(self, obj):
-        return reverse("content:article_detail", args=[obj.slug])
 
 
 class SectionSitemap(Sitemap):
@@ -64,22 +70,13 @@ class SectionSitemap(Sitemap):
     def items(self):
         return Section.objects.all()
 
-    def location(self, obj):
-        return reverse("content:section_detail", args=[obj.slug])
 
-
-class PoemSitemap(Sitemap):
+class PoemSitemap(TimestampedSitemap):
     changefreq = "monthly"
     priority = 0.8
 
     def items(self):
         return Poem.objects.published()
-
-    def lastmod(self, obj):
-        return obj.updated_at
-
-    def location(self, obj):
-        return obj.get_absolute_url()
 
 
 class CollectionSitemap(Sitemap):
@@ -89,9 +86,6 @@ class CollectionSitemap(Sitemap):
     def items(self):
         return Collection.objects.published()
 
-    def location(self, obj):
-        return reverse("content:collection_detail", args=[obj.slug])
-
 
 class PageSitemap(Sitemap):
     changefreq = "yearly"
@@ -100,41 +94,29 @@ class PageSitemap(Sitemap):
     def items(self):
         return Page.objects.published()
 
-    def location(self, obj):
-        return reverse("content:page_detail", args=[obj.slug])
 
-
-class EventSitemap(Sitemap):
+class EventSitemap(TimestampedSitemap):
     changefreq = "weekly"
     priority = 0.6
 
     def items(self):
         return Event.objects.published()
 
-    def location(self, obj):
-        return obj.get_absolute_url()
 
-
-class PublicationSitemap(Sitemap):
+class PublicationSitemap(TimestampedSitemap):
     changefreq = "monthly"
     priority = 0.7
 
     def items(self):
         return Publication.objects.published()
 
-    def location(self, obj):
-        return obj.get_absolute_url()
 
-
-class RecordingSitemap(Sitemap):
+class RecordingSitemap(TimestampedSitemap):
     changefreq = "monthly"
     priority = 0.5
 
     def items(self):
         return Recording.objects.published()
-
-    def location(self, obj):
-        return obj.get_absolute_url()
 
 
 class MemberSitemap(Sitemap):
@@ -143,9 +125,6 @@ class MemberSitemap(Sitemap):
 
     def items(self):
         return Contributor.objects.members()
-
-    def location(self, obj):
-        return reverse("people:member_detail", args=[obj.slug])
 
 
 class CollaboratorSitemap(Sitemap):
@@ -157,36 +136,23 @@ class CollaboratorSitemap(Sitemap):
     def items(self):
         return Contributor.objects.visible().filter(is_member=False).order_by("display_name")
 
-    def location(self, obj):
-        return reverse("content:contributor_detail", args=[obj.slug])
-
 
 class _ReviewsSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.4
-    url_name = None
-
-    def location(self, obj):
-        return reverse(self.url_name, args=[obj.slug])
 
 
 class WorkSitemap(_ReviewsSitemap):
-    url_name = "reviews:work_detail"
-
     def items(self):
         return Work.objects.visible()
 
 
 class PublisherSitemap(_ReviewsSitemap):
-    url_name = "reviews:publisher_detail"
-
     def items(self):
         return Publisher.objects.visible()
 
 
 class BookAuthorSitemap(_ReviewsSitemap):
-    url_name = "reviews:bookauthor_detail"
-
     def items(self):
         return BookAuthor.objects.visible()
 

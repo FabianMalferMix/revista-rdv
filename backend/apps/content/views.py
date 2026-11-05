@@ -13,11 +13,11 @@ from django.utils.formats import date_format
 from django.views.decorators.http import require_safe
 from django_ratelimit.decorators import ratelimit
 
-from apps.agenda.models import Event, EventPhoto
-from apps.media.models import TIRADA_SIZE, Recording
-from apps.people.models import Contributor
+from apps.agenda.models import Event, EventPhoto, url_for_event
+from apps.media.models import TIRADA_SIZE, Recording, url_for_recording
+from apps.people.models import Contributor, url_for_person
 from apps.reviews.models import Work
-from apps.showcase.models import Publication, SiteProfile
+from apps.showcase.models import Publication, SiteProfile, url_for_publication
 from apps.submissions.models import Call
 from config import publishing
 from config.cache import SERVICE_UNAVAILABLE, counters_available
@@ -256,13 +256,7 @@ def article_detail(request, slug):
     )
     pie = [puerta("Índice", "Todos los textos", reverse("content:text_archive"))]
     if article.section:
-        pie.append(
-            puerta(
-                "Sección",
-                article.section.name,
-                reverse("content:section_detail", args=[article.section.slug]),
-            )
-        )
+        pie.append(puerta("Sección", article.section.name, article.section.get_absolute_url()))
     pie += firmas(article.bylines)
     anterior, siguiente = vecinos(Article.objects.published(), article)
     pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
@@ -296,7 +290,7 @@ def contributor_detail(request, slug):
     contributor = get_object_or_404(Contributor.objects.visible(), slug=slug)
     if contributor.is_member:
         # URL canónica única por persona: el integrante vive en su perfil rico.
-        return redirect("people:member_detail", slug=slug)
+        return redirect(url_for_person(slug, is_member=True))
     return render(
         request,
         "content/contributor_detail.html",
@@ -383,25 +377,24 @@ def _dato(*partes):
 
 
 def _person(fila):
-    if fila["integrante"]:
-        return reverse("people:member_detail", args=[fila["slug"]]), fila["dato"] or "Integrante"
-    return reverse("content:contributor_detail", args=[fila["slug"]]), "Colaborador"
+    dato = (fila["dato"] or "Integrante") if fila["integrante"] else "Colaborador"
+    return url_for_person(fila["slug"], fila["integrante"]), dato
 
 
 def _recording(fila):
     clase = dict(Recording.Kind.choices).get(fila["dato"], fila["dato"])
-    return reverse("media:recording_detail", args=[fila["slug"]]), _dato(clase, fila["anio"])
+    return url_for_recording(fila["slug"]), _dato(clase, fila["anio"])
 
 
 def _publication(fila):
     clase = dict(Publication.Kind.choices).get(fila["dato"], fila["dato"])
-    return reverse("showcase:publication_detail", args=[fila["slug"]]), _dato(clase, fila["anio"])
+    return url_for_publication(fila["slug"]), _dato(clase, fila["anio"])
 
 
 def _event(fila):
     clase = dict(Event.Type.choices).get(fila["dato"], fila["dato"])
     cuando = date_format(timezone.localtime(fila["fecha"]), "j M Y")
-    return reverse("agenda:event_detail", args=[fila["slug"]]), _dato(clase, cuando, fila["lugar"])
+    return url_for_event(fila["slug"]), _dato(clase, cuando, fila["lugar"])
 
 
 # Adónde lleva cada tipo de coincidencia por nombre y qué la acompaña.
@@ -489,11 +482,7 @@ def search(request):
         por_tipo = {tipo: [] for tipo, _ in SEARCH_TYPES}
         try:
             por_tipo[TEXT] = [
-                {
-                    "url": reverse("content:article_detail", args=[a.slug]),
-                    "title": a.title,
-                    "dato": a.get_type_display(),
-                }
+                {"url": a.get_absolute_url(), "title": a.title, "dato": a.get_type_display()}
                 for a in articles
             ]
             por_tipo[POEM] = [

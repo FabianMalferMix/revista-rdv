@@ -33,9 +33,7 @@ def publication_detail(request, slug):
     if publication.publisher:
         pie.append(
             puerta(
-                "Editorial",
-                publication.publisher.name,
-                reverse("reviews:publisher_detail", args=[publication.publisher.slug]),
+                "Editorial", publication.publisher.name, publication.publisher.get_absolute_url()
             )
         )
     if publication.year:

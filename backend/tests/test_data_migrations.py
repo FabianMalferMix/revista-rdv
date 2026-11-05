@@ -9,6 +9,8 @@ Las migraciones que corrigen datos antes de una restricción nueva se prueban en
 `test_constraint_migrations.py`, y la de la bitácora editorial, en `test_editorial_log.py`.
 """
 
+from datetime import UTC, datetime
+
 from django.utils import timezone
 
 from apps.content import legal
@@ -167,3 +169,37 @@ def test_the_site_profile_exists_after_migrating_and_an_existing_one_is_kept(mig
     new = migrate("showcase", "0004_ensure_siteprofile_singleton")
     profiles = new.get_model("showcase", "SiteProfile").objects.values_list("pk", "name")
     assert list(profiles) == [(1, "Repitentes")]
+
+
+def test_the_rows_already_there_take_the_date_of_the_migration(migrate):
+    """Las actividades, las publicaciones, las menciones de prensa y los aliados que ya había quedan
+    creados y editados en la fecha de la migración. Un registro, que ya guardaba cuándo se creó, lo
+    conserva."""
+    long_ago = datetime(2026, 3, 14, 12, tzinfo=UTC)
+    old = migrate("agenda", "0004_protect_published_references")
+    old.get_model("agenda", "Event").objects.create(
+        slug="lectura", title="Lectura", starts_at=long_ago
+    )
+    old = migrate("showcase", "0014_protect_published_references")
+    old.get_model("showcase", "Publication").objects.create(slug="plaquette", title="Plaquette")
+    old.get_model("showcase", "PressMention").objects.create(title="Una nota", outlet="Un diario")
+    old.get_model("showcase", "Partner").objects.create(name="Un fondo")
+    old = migrate("media", "0015_protect_published_references")
+    recordings = old.get_model("media", "Recording").objects
+    recordings.create(slug="lectura", title="Lectura", embed_url="https://vimeo.com/1")
+    recordings.update(created_at=long_ago)
+    before = timezone.now()
+
+    new = migrate("agenda", "0005_event_timestamps")
+    dates = list(new.get_model("agenda", "Event").objects.values_list("created_at", "updated_at"))
+    new = migrate("showcase", "0015_timestamps")
+    for name in ("Publication", "PressMention", "Partner"):
+        dates += new.get_model("showcase", name).objects.values_list("created_at", "updated_at")
+    new = migrate("media", "0016_recording_updated_at")
+    recording = new.get_model("media", "Recording").objects.values_list("created_at", "updated_at")
+    after = timezone.now()
+
+    assert len(dates) == 4 and all(before <= date <= after for row in dates for date in row)
+    ((created, updated),) = recording
+    assert created == long_ago
+    assert before <= updated <= after

@@ -6,7 +6,7 @@ from django.urls import reverse
 from apps.content.models import Article, Poem
 from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
 
-from .models import Contributor
+from .models import Contributor, url_for_person
 
 
 def member_index(request):
@@ -21,7 +21,7 @@ def member_detail(request, slug):
         # y la dirección que ya circula lleva hasta ella. Con un 302 y no un 301: la membresía
         # puede volver a cambiar, y dos 301 guardados en el navegador acabarían en un bucle.
         if Contributor.objects.visible().filter(slug=slug).exists():
-            return redirect("content:contributor_detail", slug=slug)
+            return redirect(url_for_person(slug, is_member=False))
         raise Http404
     articles = (
         member.articles.published()
