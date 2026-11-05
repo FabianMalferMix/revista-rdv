@@ -1,9 +1,9 @@
 <ul class="filas">
   {% for p in poems %}
-    {% include "content/partials/_poem_card.html" with sin_cejilla=True %}
+    {% include "partials/_poem_card.html" with sin_cejilla=True %}
   {% empty %}
     <li class="empty">Aún no hay poemas publicados.</li>
   {% endfor %}
 </ul>
 
-{% include "content/partials/_pagination.html" with pagina=poems unidad="poemas" %}
+{% include "partials/_pagination.html" with pagina=poems unidad="poemas" %}

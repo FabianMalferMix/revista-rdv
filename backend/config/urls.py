@@ -6,8 +6,8 @@ from django.urls import include, path
 
 from apps.content.feeds import LatestArticlesFeed
 from apps.content.sitemaps import SITEMAPS
-from apps.content.views import favicon, healthz, readyz, robots
 from apps.media.feeds import RecordingsFeed
+from config.views import favicon, healthz, readyz, robots
 
 # Las rutas públicas son permanentes: las URL ya difundidas (prensa, dossiers, buscadores,
 # lectores de feeds) no se pueden corregir desde aquí. Renombrar una ruta exige dejar la

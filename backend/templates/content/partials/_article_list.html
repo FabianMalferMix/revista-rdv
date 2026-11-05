@@ -1,9 +1,0 @@
-<ul class="filas">
-  {% for a in articles %}
-    {% include "content/partials/_article_card.html" %}
-  {% empty %}
-    <li class="empty">Aún no hay publicaciones aquí.</li>
-  {% endfor %}
-</ul>
-
-{% include "content/partials/_pagination.html" with pagina=articles unidad="textos" %}

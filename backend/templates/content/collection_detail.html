@@ -14,9 +14,9 @@
   <ul class="filas">
     {% for item in items %}
       {% if item.kind == "poem" %}
-        {% include "content/partials/_poem_card.html" with p=item.object %}
+        {% include "partials/_poem_card.html" with p=item.object %}
       {% else %}
-        {% include "content/partials/_article_card.html" with a=item.object %}
+        {% include "partials/_article_card.html" with a=item.object %}
       {% endif %}
     {% empty %}
       <li class="empty">Aún no hay publicaciones aquí.</li>

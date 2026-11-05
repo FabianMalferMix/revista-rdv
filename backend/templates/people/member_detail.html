@@ -55,7 +55,7 @@
         <h2 class="subhead">Poemas</h2>
         <ul class="filas">
           {% for p in poems %}
-            {% include "content/partials/_poem_card.html" with sin_cejilla=True sin_firma_de=member %}
+            {% include "partials/_poem_card.html" with sin_cejilla=True sin_firma_de=member %}
           {% endfor %}
         </ul>
       </section>
@@ -91,10 +91,10 @@
     {% if articles %}
       <section>
         <h2 class="subhead">Textos</h2>
-        {% include "content/partials/_article_list.html" with sin_firma_de=member %}
+        {% include "partials/_article_list.html" with sin_firma_de=member %}
       </section>
     {% endif %}
 
-    {% include "content/partials/_pie_de_entidad.html" %}
+    {% include "partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

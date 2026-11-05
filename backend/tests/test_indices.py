@@ -114,9 +114,7 @@ def test_toda_cabecera_de_pagina_lleva_su_firma():
             seen += 1
             if "data-territorio" not in etiqueta:
                 sin_firma.append(plantilla.name)
-        for inclusion in re.findall(
-            r'\{% include "content/partials/_index_head.html"[^%]*%\}', texto
-        ):
+        for inclusion in re.findall(r'\{% include "partials/_index_head.html"[^%]*%\}', texto):
             seen += 1
             if 'territorio="' not in inclusion and plantilla.name != "search.html":
                 sin_firma.append(plantilla.name)

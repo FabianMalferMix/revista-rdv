@@ -125,6 +125,8 @@ vigente más cercano y no se agrava la deuda.
    - Los cálculos visuales, templatetags.
    - Las señales, `signals.py`, conectado desde `ready()`.
    - Lo transversal, `config/`.
+   - Las parciales que pintan varias apps, `templates/partials/`; la de una sola, en la carpeta
+     de su app (`tests/test_partial_folders.py`).
 
    Bien: `perform_transition` (`apps/content/workflow.py`) concentra los cambios de estado
    editorial, con su bloqueo y su bitácora. Mal: el alta, la confirmación y la baja del boletín
