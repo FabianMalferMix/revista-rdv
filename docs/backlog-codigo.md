@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 61 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 62 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -153,7 +153,7 @@
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
 | B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
 | B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
-| B59 | Selectores muertos | B58 | M | no | pendiente |
+| B59 | Selectores muertos | B58 | M | no | hecho (#247) |
 | B60 | Migraciones de datos con prueba | — | M | no | pendiente |
 | B61 | Higiene de la suite | — | M | no | pendiente |
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | pendiente |
@@ -1155,6 +1155,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 Las clases de la hoja del panel `admin/editorial_notes.css` (`nota-ajena` y `nota-ajena-aviso`) no las pone una plantilla, sino Python (`LockedNoteWidget`, en `apps/content/admin.py`): si la prueba recorre esa hoja, sus datos incluyen una ficha del panel con la nota de otra persona.
 
 **Hecho cuando.** Una regla nueva que no casa en ninguna página hace fallar la suite.
+
+**Hecho (2026-11-04).** Se borraron cinco reglas con ocho selectores que no casaban en ninguna de 127 páginas de desarrollo ni las pone ningún guion (la banda como hija directa del lienzo, el botón en la cabecera de índice, el monograma en una banda, el subtítulo como primer hijo). `tests/test_css_selectors_match.py` pinta unas 65 páginas con datos que cubren los estados opcionales (también el panel con la nota de otra persona, para la hoja de las notas) y exige que cada selector de `site.css` y de `admin/editorial_notes.css` case en alguna; antes de buscar quita los pseudoelementos, los estados que da el navegador y las 15 marcas que pone un guion, cada una con su motivo, y una invariante comprueba que cada marca de la lista la pone de verdad su guion.
 
 #### B60 · Migraciones de datos con prueba
 
