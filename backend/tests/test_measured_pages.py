@@ -15,7 +15,7 @@ import pytest
 from django.core import serializers
 from django.urls import Resolver404, resolve
 
-from apps.content.management.commands.datos_de_desarrollo import CARPETA
+from apps.devtools.management.commands.datos_de_desarrollo import CARPETA
 
 PAGES = Path(__file__).resolve().parents[2] / "tools" / "ux" / "pages.txt"
 

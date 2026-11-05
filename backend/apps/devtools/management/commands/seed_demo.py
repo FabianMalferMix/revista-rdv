@@ -1,15 +1,16 @@
 """Carga datos de demostración para desarrollo. Idempotente: se puede repetir.
 
 docker compose exec web python manage.py seed_demo
+
+Crea cuentas de staff, contenido ficticio y la marca de base de desarrollo: como todo comando
+de desarrollo, solo corre con DEBUG y fuera de producción (DevelopmentCommand).
 """
 
 from datetime import timedelta
 from pathlib import Path
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
@@ -32,6 +33,7 @@ from apps.content.models import (
     Section,
     Tag,
 )
+from apps.devtools.management.base import DevelopmentCommand
 from apps.devtools.models import DevelopmentMarker
 from apps.media.models import MediaAsset, Recording
 from apps.people import roles
@@ -54,31 +56,12 @@ def body(*paras):
     return "\n".join(P.format(p) for p in paras)
 
 
-class Command(BaseCommand):
+class Command(DevelopmentCommand):
     help = "Carga datos de demostración (idempotente)."
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--force",
-            action="store_true",
-            help="Permite ejecutarlo con DEBUG=0. Crea cuentas de STAFF: nunca en producción.",
-        )
-
     def handle(self, *args, **options):
-        # Guarda de producción (hallazgo S-03): el comando crea contenido ficticio y,
-        # sobre todo, CUENTAS DE STAFF. Correrlo contra producción dejaba dos cuentas de
-        # panel utilizables; como `editora` pertenece al grupo `editor`, encadenaba hasta
-        # superusuario. Se anunciaba como «idempotente», lo que invitaba a ejecutarlo.
-        if not settings.DEBUG and not options["force"]:
-            raise CommandError(
-                "seed_demo carga datos ficticios y crea cuentas de staff: no debe correr "
-                "en producción. Con DEBUG=0 exige --force explícito."
-            )
-
-        # La marca de base de desarrollo, que pide `datos_de_desarrollo exportar`; con --force y
-        # DEBUG=0 no se pone, para que una base de producción nunca pase por una de desarrollo.
-        if settings.DEBUG:
-            DevelopmentMarker.mark()
+        # La marca de base de desarrollo, que pide `datos_de_desarrollo exportar`.
+        DevelopmentMarker.mark()
 
         User = get_user_model()
         now = timezone.now()

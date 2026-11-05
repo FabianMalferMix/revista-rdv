@@ -31,7 +31,8 @@ ADMIN_ONLY = frozenset(
         "showcase.SiteSocialLink",
         # El registro de lo que repartió setup_groups.
         "people.RoleGrant",
-        # La marca de una base de desarrollo.
+        # La marca de una base de desarrollo: solo existe donde se instalan las herramientas de
+        # desarrollo, y en producción no hay permisos suyos que repartir.
         "devtools.DevelopmentMarker",
     }
 )

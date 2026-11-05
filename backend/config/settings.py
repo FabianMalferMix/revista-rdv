@@ -1,13 +1,14 @@
 """Configuración de Django para el proyecto Reseñas."""
 
 import logging
+from importlib.util import find_spec
 from pathlib import Path
 
 from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 from config import envguard
-from config.env import env_bool, env_float, env_int, env_list, env_str
+from config.env import env_bool, env_choice, env_float, env_int, env_list, env_str
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,6 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Fail-safe: DEBUG apagado por defecto; en producción exige credenciales propias (el guard
 # de producción, al final de este archivo).
 DEBUG = env_bool("DJANGO_DEBUG", False)
+# docker-compose.prod.yml declara la producción (DJANGO_ENVIRONMENT=production): ahí las
+# herramientas de desarrollo no corren, aunque alguien encienda DEBUG.
+ENVIRONMENT = env_choice("DJANGO_ENVIRONMENT", ("development", "production"), "development")
 
 SECRET_KEY = env_str("DJANGO_SECRET_KEY", envguard.INSECURE_SECRET)
 # Rotación de clave con solapamiento (las sesiones firmadas con claves previas siguen válidas).
@@ -51,11 +55,16 @@ INSTALLED_APPS = [
     "apps.agenda",
     "apps.community",
     "apps.submissions",
-    # La marca de base de desarrollo, que exige la exportación de los datos de desarrollo.
-    "apps.devtools",
     # Anti-fuerza-bruta en el login del admin.
     "axes",
 ]
+# Las herramientas de desarrollo (apps/devtools): los comandos que siembran contenido ficticio o
+# copian la base, y la marca de una base de desarrollo. Se instalan con DEBUG o con
+# DJANGO_DEV_TOOLS=1, y solo donde está su código: la imagen de producción no lo trae
+# (backend/.dockerignore), así que ahí no se instalan aunque se pidan.
+_DEV_TOOLS_REQUESTED = env_bool("DJANGO_DEV_TOOLS", False)
+if (DEBUG or _DEV_TOOLS_REQUESTED) and find_spec("apps.devtools") is not None:
+    INSTALLED_APPS.append("apps.devtools")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

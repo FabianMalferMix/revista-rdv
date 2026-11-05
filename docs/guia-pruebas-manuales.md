@@ -47,7 +47,7 @@ docker compose logs -f web worker      # deja esto abierto en otra terminal
 **Vista previa de producción** — `admin` / `bx0JqJp1po715yZq` ·
 `editora` / `FTSUIgr79m9AJpKz` · `autor1` / `fdYrUkFqw7LZ8gOz`.
 
-> Las de producción las generó `seed_demo --force` **al azar** y las imprimió una sola
+> Las de la vista previa de producción las generó `seed_demo` **al azar** y las imprimió una sola
 > vez. Las de desarrollo conservan `demo12345` porque se crearon antes de ese cambio.
 
 **`admin` no lo crea `seed_demo`**, solo `editora` y `autor1`. El superusuario se hace a
@@ -562,8 +562,9 @@ docker compose exec web python manage.py generate_image_derivatives
 - [x] **`purge_stale_data`** — Con `--dry-run` solo informa. Purga suscriptores nunca
       confirmados, **los dados de baja**, envíos resueltos (con su adjunto) y los intentos
       de acceso de más de 90 días.
-- [x] **`seed_demo`** — En producción (`DEBUG=0`) **debe negarse** sin `--force`, y las
-      contraseñas que genera son **aleatorias**.
+- [x] **`seed_demo`** — Con `DEBUG=0` o `DJANGO_ENVIRONMENT=production` **se niega** (no hay
+      `--force`), y la imagen de producción ni siquiera lo trae. Las contraseñas que genera son
+      **aleatorias**.
 - [x] **Tareas automáticas:** `publish_due_items` cada minuto y `purge_stale_pii` los lunes
       a las 04:30 (`docker compose logs beat`).
 
@@ -715,7 +716,10 @@ EOF
 # 3. levantar (el release migra y siembra los grupos) y sembrar la demostración
 C="docker compose --env-file /tmp/prod.env -p resenasprod -f docker-compose.yml -f docker-compose.prod.yml -f /tmp/prod.override.yml"
 $C up -d --build
-$C run --rm --entrypoint python web manage.py seed_demo --force   # anota las contraseñas
+# La imagen de producción no trae las herramientas de desarrollo: la demostración se siembra con
+# la de desarrollo, en la red de la vista previa (sin probar desde que se separaron).
+docker run --rm --network resenasprod_default --env-file /tmp/prod.env -e DJANGO_DEBUG=1 \
+  resenas-app:dev python manage.py seed_demo   # anota las contraseñas
 
 # bajar y borrar sus datos
 $C down -v

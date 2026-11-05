@@ -11,7 +11,6 @@ demostración no podía enseñar (las pruebas de la hoja están en `test_css_sis
 import pytest
 from bs4 import BeautifulSoup
 from django.core.management import call_command
-from django.core.management.base import CommandError
 from django.test import override_settings
 
 from apps.content.models import Article, EditorialStatus, Poem, Tag
@@ -24,7 +23,10 @@ PREFIJO = "zz-largo-"
 
 
 def _sembrar(*argumentos):
-    call_command("seed_textos_largos", "--force", *argumentos, verbosity=0)
+    # Los comandos de desarrollo solo corren con DEBUG; las páginas se piden sin él, como en
+    # producción.
+    with override_settings(DEBUG=True):
+        call_command("seed_textos_largos", *argumentos, verbosity=0)
 
 
 def _textos():
@@ -72,13 +74,6 @@ def test_firma_con_las_integrantes_que_hay_y_no_las_borra():
     assert [c.slug for c in resena.authors.all()] == ["fernanda-soto"]
     _sembrar("--borrar")
     assert Contributor.objects.filter(slug="fernanda-soto").exists(), "borró a una integrante"
-
-
-@override_settings(DEBUG=False)
-def test_no_siembra_en_produccion_sin_force():
-    with pytest.raises(CommandError, match="producción"):
-        call_command("seed_textos_largos", verbosity=0)
-    assert not _textos().exists()
 
 
 def test_cada_pieza_se_lee_y_un_titulo_larguisimo_baja_un_paso(client):

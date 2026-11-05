@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 65 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 66 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -157,7 +157,7 @@
 | B60 | Migraciones de datos con prueba | — | M | no | hecho (#248) |
 | B61 | Higiene de la suite | — | M | no | hecho (#249) |
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | hecho (#250) |
-| B63 | Herramientas de desarrollo en su propia app | B07 | M | no | pendiente |
+| B63 | Herramientas de desarrollo en su propia app | B07 | M | no | hecho (#251) |
 | B64 | Un solo camino para poblar desarrollo | B63 | M | no | pendiente |
 | B65 | Higiene del repositorio | — | S | no | pendiente |
 
@@ -1217,6 +1217,8 @@ De HER-7: la fuente de titulares se lee de `--display` en ejecución, una prueba
 Las pruebas fijan `settings.DEBUG = True`.
 
 **Hecho cuando.** En la imagen de producción, `manage.py help` no lista los comandos de desarrollo, y ninguno acepta `--force`.
+
+**Hecho (2026-11-04).** `seed_demo`, `seed_textos_largos`, `datos_de_desarrollo` y `seed_material_generico`, con sus datos, viven en `apps.devtools`, que se instala con `DEBUG` o `DJANGO_DEV_TOOLS=1` y queda fuera de la imagen de producción; `DevelopmentMarker` se queda ahí (en producción su tabla no existe y nada depende de ella). Heredan `DevelopmentCommand`, con una sola guarda (DEBUG, y que `DJANGO_ENVIRONMENT` no sea `production`, fijado en el compose de producción) y sin abreviaturas de opciones: Django aceptaba `--force` como abreviatura de `--force-color`. El job build-prod comprueba que la imagen de producción no ofrezca ninguno de los comandos, también con `DJANGO_DEBUG=1` y `DJANGO_DEV_TOOLS=1`.
 
 #### B64 · Un solo camino para poblar desarrollo
 

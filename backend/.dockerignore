@@ -28,6 +28,10 @@ conftest.py
 # Los datos de desarrollo (contenido de prueba para otro equipo): en desarrollo llegan por el
 # código montado; la imagen de producción no los necesita.
 datos_de_desarrollo
+# Las herramientas de desarrollo: los comandos que siembran contenido ficticio o copian la base,
+# con sus datos. En desarrollo llegan por el código montado; sin su código, settings.py no las
+# instala, así que la imagen de producción ni las trae ni las ofrece.
+apps/devtools
 pytest.ini
 requirements-dev.in
 .coverage

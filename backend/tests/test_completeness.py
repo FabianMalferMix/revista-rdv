@@ -14,9 +14,9 @@ from django.db.models.signals import post_delete, pre_save
 from django.dispatch.dispatcher import _make_id
 from django.urls import URLResolver, get_resolver, resolve, reverse
 
-from apps.content.management.commands.datos_de_desarrollo import MODELOS, NOT_EXPORTED
 from apps.content.models import Article
 from apps.content.sitemaps import EXCLUDED_FROM_SITEMAP, SITEMAPS, StaticViewSitemap
+from apps.devtools.management.commands.datos_de_desarrollo import MODELOS, NOT_EXPORTED
 from apps.media.filecleanup import EXEMPT
 from apps.people.models import Contributor
 from config.celery import app as celery_app
