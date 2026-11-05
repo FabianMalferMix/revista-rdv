@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from apps.people.models import Contributor
 from apps.people.templatetags.personas import iniciales
-from tests.factories import make_publication
+from tests.factories import make_image, make_publication
 
 pytestmark = pytest.mark.django_db
 
@@ -33,6 +33,16 @@ def test_quien_no_tiene_retrato_lleva_su_monograma(client):
     )
     html = client.get(reverse("people:member_index")).content.decode()
     assert '<span class="retrato monograma" aria-hidden="true">RC</span>' in html
+
+
+def test_a_member_with_a_portrait_shows_it_instead_of_the_monogram(client):
+    portrait = make_image("retrato-con-foto", alt="Retrato de Con Foto")
+    Contributor.objects.create(
+        slug="con-foto", display_name="Con Foto", is_member=True, active=True, photo=portrait
+    )
+    html = client.get(reverse("people:member_index")).content.decode()
+    assert 'class="retrato"' in html and "Retrato de Con Foto" in html
+    assert "monograma" not in html
 
 
 def test_una_publicacion_sin_cubierta_ensena_su_titulo(client):

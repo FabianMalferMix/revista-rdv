@@ -253,7 +253,8 @@ jobs:
           pre-commit run --all-files --show-diff-on-failure
 
   # Los guiones del sitio, ejecutados en un navegador: la suite de Python solo lee su texto.
-  # Levanta el stack de desarrollo con la copia de backend/datos_de_desarrollo/ y corre
+  # Levanta el stack de desarrollo, lo puebla con `datos_de_desarrollo cargar` (el único camino
+  # para poblar desarrollo, el mismo del README y de tools/ux/preparar-entorno.sh) y corre
   # tools/ux/browser-smoke.js y el contraste de axe (tools/ux/contraste.js) a 951 y a 375 px,
   # con el Chrome que trae el runner.
   navegador:

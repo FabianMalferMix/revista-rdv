@@ -64,22 +64,26 @@ docker compose up --build
 Antes de que arranquen `web`, `worker` y `beat`, el servicio `release` aplica las migraciones
 y crea los grupos `admin · editor · autor`.
 
-Crear un superusuario:
+### Los datos de desarrollo
+
+Una base recién creada está vacía. Se puebla con un solo comando, el único camino para poblar
+desarrollo: carga la copia del contenido de desarrollo que trae el repositorio
+(`backend/datos_de_desarrollo/`). Después, la cuenta del panel:
 
 ```bash
+docker compose exec web python manage.py datos_de_desarrollo cargar
 docker compose exec web python manage.py createsuperuser
 ```
 
-Cargar datos de demostración (opcional):
-
-```bash
-docker compose exec web python manage.py seed_demo
-```
-
-Crea secciones, editoriales, obras, colaboradores y varias reseñas —incluida una
-**programada** que Celery publica solo a los pocos minutos—. Crea también los usuarios
-demo `editora` y `autor1` con una **contraseña aleatoria que el comando imprime al
-terminar** (se muestra una sola vez; apúntala).
+`cargar` copia los archivos, carga las filas, pone la identidad del colectivo (nombre, lema,
+correo, manifiesto y redes, de `backend/apps/devtools/identity.py`) y rehace las copias de las
+imágenes a otros tamaños. Corre las fechas: lo que estaba a N días de la exportación queda a N
+días de hoy, así que las próximas actividades, la convocatoria abierta y los últimos textos siguen
+siéndolo. No toca lo que dejan las migraciones: las páginas legales conservan su texto vigente.
+En una base de desarrollo que ya tiene contenido no hace nada (para empezar de cero:
+`docker compose down -v` y volver a levantar), y se niega en una base con contenido que no se
+declara de desarrollo. El mismo comando usan `tools/ux/preparar-entorno.sh` y el job `navegador`
+del CI.
 
 Como todas las herramientas de desarrollo (`backend/apps/devtools/`), **se niega a correr con
 `DEBUG=0`** y donde el entorno se declara de producción (`DJANGO_ENVIRONMENT=production`, que fija
@@ -87,37 +91,28 @@ Como todas las herramientas de desarrollo (`backend/apps/devtools/`), **se niega
 con `DEBUG=1` o con `DJANGO_DEV_TOOLS=1` (ver `.env.example`), y la imagen de producción ni
 siquiera las trae.
 
-### Ver en otro equipo lo mismo que en el de desarrollo
-
-El repositorio trae una copia del contenido de desarrollo (`backend/datos_de_desarrollo/`):
-la identidad del colectivo, integrantes, poemas, textos, registros, eventos, publicaciones
-con sus tapas, fotos y PDF. Después de `docker compose up --build`, en una base recién
-creada:
-
-```bash
-docker compose exec web python manage.py datos_de_desarrollo cargar
-docker compose exec web python manage.py createsuperuser
-```
-
-`cargar` copia los archivos, carga los datos y rehace las copias de las imágenes a otros
-tamaños. Se niega a correr sobre una base que ya tiene contenido (para empezar de cero:
-`docker compose down -v` y volver a levantar) y fuera de desarrollo (`DEBUG=0`). En lugar
-de `seed_demo`, no además.
-
 Solo viaja lo que el sitio ya muestra: lo publicado, lo que lo acompaña y las imágenes y el
-catálogo que eso nombra, más tres piezas sin publicar que enseñan el flujo editorial en el panel.
-**No** viajan las cuentas de usuario, las sesiones, los registros de acceso y del panel, los
-suscriptores del boletín, los envíos a convocatorias ni el historial editorial (por eso hay que
-crear la cuenta del panel). Los medios, fondos, librerías y editoriales de la demostración son
-ficticios. Para actualizar la copia con lo que haya hoy en desarrollo, en una base marcada como
-de desarrollo (`cargar` la marca; si no, `datos_de_desarrollo marcar`):
+catálogo que eso nombra, más tres piezas sin publicar que enseñan el flujo editorial en el panel,
+y los textos y poemas largos de prueba (prefijo `zz-largo-`). **No** viajan las cuentas de
+usuario, las sesiones, los registros de acceso y del panel, los suscriptores del boletín, los
+envíos a convocatorias ni el historial editorial. Por eso, para probar los roles, se crean desde el
+panel las cuentas que hagan falta: `is_staff = True` y el grupo `editor` o `autor`. Los medios,
+fondos, librerías y editoriales de la demostración son ficticios.
+
+### Cambiar los datos de desarrollo
+
+Se cambian en el sitio de desarrollo (el panel, o las dos herramientas de abajo) y se exportan,
+en una base marcada como de desarrollo (`cargar` la marca; si no, `datos_de_desarrollo marcar`):
 
 ```bash
 docker compose exec web python manage.py datos_de_desarrollo exportar
 ```
 
-Material visual genérico (marcadores con proporciones reales, dibujados con Pillow) para
-diseñar antes de que llegue el material del colectivo:
+`exportar` reescribe la copia con la fecha de la exportación, y se niega si la identidad de la base
+no es la de `identity.py`: la copia no la lleva, así que se cambia en ese módulo.
+
+Material visual genérico (marcadores con proporciones reales, dibujados con Pillow) para lo que se
+añada sin imagen antes de que llegue el material del colectivo; la copia ya trae el de lo que hay:
 
 ```bash
 docker compose exec web python manage.py seed_material_generico
@@ -126,18 +121,14 @@ docker compose exec web python manage.py seed_material_generico
 Idempotente y seguro: nunca reemplaza una imagen cuyo crédito no sea de marcador. Qué pedir y
 cómo reemplazar cada pieza: [docs/contenido-visual.md](docs/contenido-visual.md).
 
-Textos y poemas largos, cercanos a los reales, para probar las páginas de lectura (una reseña
-de once minutos, un ensayo de quince, una crítica con todos los casos límite, una letanía de
-más de cien versos, un poema en prosa…). Llevan el prefijo `zz-largo-` y se borran con una
-orden:
+Los textos y poemas largos de prueba (una reseña de once minutos, un ensayo de quince, una crítica
+con todos los casos límite, una letanía de más de cien versos, un poema en prosa…) los escribe y
+los quita una orden:
 
 ```bash
 docker compose exec web python manage.py seed_textos_largos            # siembra o pone al día
 docker compose exec web python manage.py seed_textos_largos --borrar   # los quita
 ```
-
-Para que un usuario use el panel editorial, marca `is_staff = True` y asígnale el grupo
-`editor` o `autor` desde el admin.
 
 ### Migraciones
 
@@ -195,8 +186,9 @@ cierre (criterio a criterio, con capturas de antes y después) se retiraron del 
 `git show 38fdf03:docs/auditoria-ux-ui-verificacion.md`. Sus decisiones están en
 [docs/deferidos-y-decisiones.md](docs/deferidos-y-decisiones.md), y las métricas de antes y de
 después, versionadas en `tools/ux/linea-base/` y `tools/ux/final/`. Para
-trabajar sobre el diseño en una máquina nueva, un solo guion reconstruye el entorno (demostración,
-identidad del colectivo, doce integrantes y material genérico):
+trabajar sobre el diseño en una máquina nueva, un guion levanta el stack, lo puebla con
+`datos_de_desarrollo cargar` (el mismo camino de arriba), instala las herramientas de `tools/ux` y
+pasa la prueba de humo:
 
 ```bash
 bash tools/ux/preparar-entorno.sh

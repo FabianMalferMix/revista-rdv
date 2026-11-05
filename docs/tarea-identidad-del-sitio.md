@@ -70,8 +70,10 @@ Verificado con `SiteProfile.load()` y con los cuatro comandos del §5.
 > **Esto está SOLO en el entorno de desarrollo.** La vista previa de `:8090` tiene su
 > propia base de datos y conserva los datos antiguos. El despliegue real tendrá la suya.
 
-> **`seed_demo` lo borra todo.** Usa `update_or_create` y reescribe el perfil. No lo
-> ejecutes después de aplicar esto.
+> **En desarrollo, la identidad vive en `backend/apps/devtools/identity.py`.** Son estos valores,
+> y el manifiesto provisional. `datos_de_desarrollo cargar` los pone en el perfil de cada base
+> de desarrollo, y `datos_de_desarrollo exportar` se niega si la base tiene otros: la copia de
+> desarrollo no los lleva.
 
 ## 4. Cómo aplicarlo
 
@@ -139,12 +141,12 @@ una regresión de eso, no un despiste de configuración.
 
 ## 6. Advertencias
 
-**No hace falta ningún commit de código.** Esto son datos en la base de datos. Si te ves
+**En producción no hace falta ningún commit de código.** Son datos de la base. Si te ves
 editando `.py` o `.html`, algo se ha torcido: para.
 
-**Resembrar pisa esto.** `seed_demo` usa `update_or_create` y reescribe el perfil. Si
-alguien corre `python manage.py seed_demo` después, la identidad real se pierde. No lo
-ejecutes tras aplicar los cambios.
+**En desarrollo, el módulo manda.** `datos_de_desarrollo cargar` pone la identidad de
+`backend/apps/devtools/identity.py`. Un cambio que se haga en el panel de desarrollo hay que
+llevarlo también al módulo, o `exportar` se niega a escribir la copia.
 
 **Cuidado con `og_image`.** Es una clave foránea a `media.MediaAsset`: hay que subir la
 imagen primero en **Medios → Recursos** y luego seleccionarla. No acepta una ruta.

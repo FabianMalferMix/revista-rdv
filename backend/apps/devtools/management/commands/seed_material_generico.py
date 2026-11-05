@@ -5,9 +5,13 @@ que el diseño pueda evaluarse antes de que llegue el material verdadero.
 
 Idempotente: cada pieza es un MediaAsset identificado por su `alt_text` (todos contienen la
 palabra «provisional») y se genera una sola vez. Solo se asigna donde el campo está vacío o
-donde lo que hay es otro marcador (crédito con «Placeholder» o «provisional»): nunca pisa
-material real. Para reemplazar una pieza basta subir el archivo real en el panel
-(Medios → Recursos) y seleccionarlo en el campo correspondiente; ver docs/contenido-visual.md.
+donde lo que hay es otro marcador (`is_placeholder`): nunca pisa material real. Para reemplazar
+una pieza basta subir el archivo real en el panel (Medios → Recursos) y seleccionarlo en el
+campo correspondiente; ver docs/contenido-visual.md.
+
+Los datos de desarrollo ya traen este material: el comando sirve para lo que se añada después
+(una integrante, una actividad, una publicación), y lo nuevo viaja con `datos_de_desarrollo
+exportar`.
 """
 
 import random
@@ -20,14 +24,13 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from apps.agenda.models import Event, EventPhoto
 from apps.content.models import Article
+from apps.devtools import identity
 from apps.devtools.management.base import DevelopmentCommand
+from apps.devtools.placeholders import PLACEHOLDER_CREDIT, is_placeholder
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
 from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
-
-CREDITO = "Material genérico provisional (reemplazar por el real)"
-MARCADORES = ("placeholder", "provisional")
 
 PAPEL = (217, 232, 247)
 TINTA = (18, 24, 35)
@@ -35,15 +38,6 @@ MAGENTA = (184, 8, 107)
 AZUL = (31, 115, 199)
 AMARILLO = (252, 228, 60)
 BLANCO = (255, 255, 255)
-
-MANIFIESTO_GENERICO = (
-    "Repitentes del Verso es un colectivo de poesía que se reúne para leer en voz alta, "
-    "escribir en compañía y llevar los poemas a lugares donde no suelen llegar: salas de "
-    "clases, ferias, plazas, bibliotecas y escenarios compartidos con otras disciplinas. "
-    "Trabajamos la escritura como un oficio que se afina en público: lo que resiste la "
-    "lectura colectiva se publica, lo demás vuelve al taller. Guardamos registro de cada "
-    "encuentro porque la memoria de un colectivo también se escribe entre todos."
-)
 
 PIES_DE_FOTO = (
     "Apertura de la lectura",
@@ -308,17 +302,18 @@ def _foto_grupo(nombres):
     img = _tinta(img, lambda d, c: siluetas(d, c, 0), MAGENTA, (10, 6))
     img = _tinta(img, lambda d, c: siluetas(d, c, 1), AZUL)
     img = _grano(img)
+    profile = identity.PROFILE
     _escribir(
         img,
         (110, 110),
-        "Repitentes del Verso",
+        profile["name"],
         150,
         TINTA,
         ancho_max=2100,
         interlinea=1.0,
         peso=800,
     )
-    _escribir(img, (110, 300), "Colectivo de poesía · Chile", 56, TINTA)
+    _escribir(img, (110, 300), f"{profile['tagline']} · {profile['location']}", 56, TINTA)
     _etiqueta(img, "foto de grupo provisional · reemplazar", posicion=(110, 400))
     return img, "JPEG"
 
@@ -364,7 +359,7 @@ class Command(DevelopmentCommand):
                 f"afiche-{e.slug}",
                 partial(_afiche, e, e.slug),
             )
-            reales = e.photos.exclude(asset__credit=CREDITO).count()
+            reales = sum(not is_placeholder(f.asset) for f in e.photos.select_related("asset"))
             for n in range(1, max(0, fotos_por_evento - reales) + 1):
                 foto = self._asset(
                     f"Foto provisional {n} · {e.title}",
@@ -388,7 +383,7 @@ class Command(DevelopmentCommand):
                 "cover",
                 f"Cubierta provisional · {p.title}",
                 f"cubierta-{p.slug}",
-                partial(_cubierta, p.title, "Repitentes del Verso", pie, p.slug),
+                partial(_cubierta, p.title, identity.PROFILE["name"], pie, p.slug),
             )
 
         # Registros: carátula 16:9.
@@ -439,20 +434,15 @@ class Command(DevelopmentCommand):
                 partial(_cubierta, w.title, autores, pie, f"obra:{w.slug}", fondo=BLANCO),
             )
 
-        # Perfil del sitio: foto de grupo (og_image) y manifiesto si aún es el de la siembra.
-        perfil = SiteProfile.load()
+        # Perfil del sitio: la foto de grupo (og_image).
         nombres = [m.display_name for m in Contributor.objects.members()]
         self._colocar(
-            perfil,
+            SiteProfile.load(),
             "og_image",
-            "Foto de grupo provisional · Repitentes del Verso",
+            f"Foto de grupo provisional · {identity.PROFILE['name']}",
             "foto-grupo",
             partial(_foto_grupo, nombres),
         )
-        if len(perfil.manifesto.split()) < 40:
-            perfil.manifesto = MANIFIESTO_GENERICO
-            perfil.save(update_fields=["manifesto"])
-            self.stdout.write("manifiesto: texto genérico aplicado (provisional)")
 
         self.stdout.write(
             self.style.SUCCESS(f"material genérico listo: {self.creados} imágenes dibujadas")
@@ -461,7 +451,9 @@ class Command(DevelopmentCommand):
     # ── helpers ──
 
     def _asset(self, alt_text, nombre, generar):
-        asset, _ = MediaAsset.objects.get_or_create(alt_text=alt_text, defaults={"credit": CREDITO})
+        asset, _ = MediaAsset.objects.get_or_create(
+            alt_text=alt_text, defaults={"credit": PLACEHOLDER_CREDIT}
+        )
         existe = bool(asset.file) and asset.file.storage.exists(asset.file.name)
         if existe and not self.regenerar:
             return asset
@@ -489,7 +481,7 @@ class Command(DevelopmentCommand):
         marcador. Si hay material real, no se toca y ni siquiera se crea el recurso:
         un marcador sin usar sería ruido en la biblioteca de medios."""
         actual = getattr(obj, campo)
-        if actual is not None and not any(m in (actual.credit or "").lower() for m in MARCADORES):
+        if actual is not None and not is_placeholder(actual):
             return
         asset = self._asset(alt_text, nombre, generar)
         if actual is None or actual.pk != asset.pk:

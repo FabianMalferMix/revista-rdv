@@ -56,18 +56,16 @@ cp .env.example .env
 
 **Los volúmenes de Docker.** Se pierden la base de datos, los medios subidos y —esto
 importa— la **bitácora editorial** que construimos en §5, con las ocho transiciones de
-«Antología del margen». Para repoblar:
+«Antología del margen»: la copia de desarrollo no la lleva. Para repoblar (el release migra y
+reparte los grupos al levantar):
 
 ```bash
 docker compose up -d
-docker compose exec web python manage.py migrate
-docker compose exec web python manage.py seed_demo     # apunta las claves que imprime
-docker compose exec web python manage.py setup_groups
+docker compose exec web python manage.py datos_de_desarrollo cargar
 ```
 
-**Las credenciales.** `seed_demo` genera contraseñas **aleatorias por corrida** y las
-imprime **solo al terminar**: anótalas en ese momento, no hay forma de recuperarlas. El
-superusuario no lo crea el seed; hazlo tú:
+**Las credenciales.** Las cuentas no viajan con la copia. El superusuario hazlo tú, y las de los
+roles (`editor`, `autor`), desde el panel:
 
 ```bash
 docker compose exec web python manage.py createsuperuser
@@ -233,8 +231,6 @@ La tercera necesita mirar **Actions** en GitHub: cinco jobs (`test`, `build-prod
 - **Decisiones que siguen siendo del dueño**: la licencia de TinyMCE, la identidad del sitio
   en la base de producción (en desarrollo ya está) y el `chown` del directorio de respaldos
   para que el sidecar no corra como root.
-- **Resembrar pisa el estado editorial.** `seed_demo` usa `update_or_create` y reescribe
-  el campo `status` directamente, sin pasar por el flujo: si resiembras, pierdes el
-  recorrido de la bitácora y aparecen transiciones duplicadas. Y **no se corre sobre una
-  base con la identidad aplicada**: el entorno de diseño se reconstruye con
-  `tools/ux/preparar-entorno.sh`.
+- **Los datos de desarrollo se cargan una vez.** `datos_de_desarrollo cargar` puebla una base
+  nueva y no toca una de desarrollo que ya tiene contenido; el entorno de diseño se reconstruye
+  con `tools/ux/preparar-entorno.sh`, que lo llama.

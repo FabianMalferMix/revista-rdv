@@ -209,8 +209,9 @@ Otras notas técnicas:
 
 ## 9. Plan de ejecución por lotes
 
-Cada lote: migraciones aditivas → admin → plantillas/vistas → **pruebas** → actualización del `seed_demo`
-→ PR contra `main` → merge. Orden pensado para que cada lote deje el sitio funcionando.
+Cada lote: migraciones aditivas → admin → plantillas/vistas → **pruebas** → actualización de los
+datos de desarrollo (`datos_de_desarrollo exportar`) → PR contra `main` → merge. Orden pensado para
+que cada lote deje el sitio funcionando.
 
 ### Lote A — Cimientos y renombres
 - **RENAME** `Dossier → Collection` (data migration; actualizar admin, vistas, seed, plantillas).

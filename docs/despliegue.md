@@ -33,8 +33,9 @@ enlaces del boletín) salen de `SITE_URL`, nunca del Host de la petición. Crea 
 registro DNS de `www`: Caddy obtiene su certificado y lo redirige al dominio sin www.
 
 `docker-compose.prod.yml` fija `DJANGO_ENVIRONMENT=production` en release, web, worker y beat:
-los comandos de desarrollo (`seed_demo`, `datos_de_desarrollo`…) se niegan a correr ahí, y la
-imagen de producción ni siquiera los trae (`apps/devtools` queda fuera en `backend/.dockerignore`).
+los comandos de desarrollo (`datos_de_desarrollo`, `seed_material_generico`…) se niegan a correr
+ahí, y la imagen de producción ni siquiera los trae (`apps/devtools` queda fuera en
+`backend/.dockerignore`).
 
 ## Primer despliegue
 

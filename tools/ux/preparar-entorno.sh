@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# preparar-entorno.sh — deja una máquina nueva lista para trabajar sobre el diseño:
-# demostración, identidad del colectivo, integrantes y material genérico.
+# preparar-entorno.sh — deja una máquina nueva lista para trabajar sobre el diseño, con los mismos
+# datos con que se diseñó y se midió cada paso.
 #
 #   tools/ux/preparar-entorno.sh
 #
-# La base de datos y los medios NO viajan con el repositorio. Este guion reconstruye el
-# estado con el que se diseñó y se midió cada paso:
-#   1. contenido de demostración (`seed_demo`), solo si la base está vacía;
-#   2. la identidad real del colectivo (docs/tarea-identidad-del-sitio.md §3);
-#   3. integrantes de relleno hasta 12, más de las que la portada muestra a la vez, para
-#      que el relevo de retratos tenga a quién traer;
-#   4. el material visual genérico (`seed_material_generico`);
-#   5. las dependencias de tools/ux y una pasada de humo.
+# La base de datos y los medios NO viajan con el repositorio; su copia sí
+# (backend/datos_de_desarrollo/). Este guion:
+#   1. comprueba los requisitos y crea el .env desde .env.example si falta;
+#   2. levanta los contenedores y espera al sitio;
+#   3. puebla la base con `datos_de_desarrollo cargar`, el mismo comando que usan el README y el
+#      job navegador del CI: la copia, la identidad del colectivo y las copias de las imágenes;
+#   4. instala las dependencias de tools/ux;
+#   5. pasa la prueba de humo.
 #
-# Es IDEMPOTENTE: en un entorno ya preparado no cambia nada. Y es prudente: `seed_demo`
-# reescribe el perfil del sitio, así que solo se ejecuta sobre una base sin artículos.
-# Solo para desarrollo: se niega a correr con DJANGO_DEBUG=0.
+# Se puede repetir: en un entorno ya preparado no cambia nada, porque `cargar` deja como está una
+# base de desarrollo que ya tiene contenido. Solo para desarrollo: `cargar` se niega a correr con
+# DJANGO_DEBUG=0 o donde el entorno se declara de producción.
 #
 # Variables: COMPOSE (por defecto «docker compose») y UX_BASE (http://localhost:8000).
 set -euo pipefail
@@ -45,96 +45,11 @@ echo
 [ "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/healthz/" || true)" = "200" ] || {
   echo "el sitio no responde en $BASE. Mira «$COMPOSE logs web»"; exit 1; }
 
-paso "3/5 Contenido, identidad e integrantes"
-$COMPOSE exec -T web python - <<'PY'
-import os
-
-import django
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
-from django.conf import settings  # noqa: E402
-from django.core.management import call_command  # noqa: E402
-
-from apps.content.models import Article  # noqa: E402
-from apps.people.models import Contributor  # noqa: E402
-from apps.showcase.models import SiteProfile, SiteSocialLink  # noqa: E402
-
-if not settings.DEBUG:
-    raise SystemExit("Este guion es solo para desarrollo (DJANGO_DEBUG=1).")
-
-NOMBRE = "Repitentes del Verso"
-perfil = SiteProfile.load()
-
-# 1. Demostración: solo en una base vacía. `seed_demo` reescribe el perfil del sitio.
-if Article.objects.exists():
-    print("contenido: ya hay artículos, no se ejecuta seed_demo")
-elif perfil.name == NOMBRE:
-    raise SystemExit(
-        "El perfil ya lleva la identidad real pero no hay artículos: estado inesperado. "
-        "No se ejecuta seed_demo para no pisar el perfil; revísalo a mano."
-    )
-else:
-    print("contenido: base vacía, se ejecuta seed_demo (apunta la contraseña que imprime)")
-    call_command("seed_demo")
-    perfil = SiteProfile.load()
-
-# 2. Identidad real: los valores de docs/tarea-identidad-del-sitio.md §3.
-if perfil.name == NOMBRE:
-    print(f"identidad: ya aplicada ({perfil.name} — {perfil.tagline})")
-else:
-    perfil.name = NOMBRE
-    perfil.tagline = "Colectivo de poesía"
-    perfil.founded_year = 2023
-    perfil.general_email = "repitentesdelverso@gmail.com"
-    perfil.location = "Chile"
-    # seed_demo pone un correo de gestión en un dominio que no es del colectivo.
-    perfil.booking_email = ""
-    perfil.save()
-    SiteSocialLink.objects.filter(profile=perfil).delete()
-    SiteSocialLink.objects.create(
-        profile=perfil,
-        platform="Instagram",
-        url="https://www.instagram.com/repitentesdelverso",
-        position=0,
-    )
-    print(f"identidad: aplicada ({perfil.name} — {perfil.tagline})")
-
-# 3. Integrantes de relleno hasta 12.
-RELLENO = [
-    ("Camila Reyes", "Poeta"),
-    ("Tomás Figueroa", "Poeta · taller"),
-    ("Javiera Núñez", "Poeta"),
-    ("Matías Olivares", "Poeta · edición"),
-    ("Antonia Vergara", "Poeta"),
-    ("Ignacio Bravo", "Poeta · gestión"),
-    ("Rocío Carrasco", "Poeta"),
-    ("Felipe Astorga", "Poeta"),
-    ("Valentina Aguirre", "Poeta · taller"),
-]
-activos = Contributor.objects.filter(is_member=True, active=True)
-creados = 0
-for i, (nombre, rol) in enumerate(RELLENO):
-    if activos.count() >= 12:
-        break
-    _, nuevo = Contributor.objects.get_or_create(
-        slug=f"relleno-{i}",
-        defaults={
-            "display_name": nombre,
-            "role": rol,
-            "position": 10 + i,
-            "is_member": True,
-            "active": True,
-            "short_bio": "Integrante de relleno para probar la cinta.",
-        },
-    )
-    creados += nuevo
-print(f"integrantes: {activos.count()} activos ({creados} de relleno creados ahora)")
-
-# 4. Material visual genérico: idempotente, nunca pisa material real.
-call_command("seed_material_generico")
-PY
+paso "3/5 Datos de desarrollo"
+# El único camino para poblar desarrollo (ver el README): en una base recién creada carga la copia
+# de backend/datos_de_desarrollo/ con la identidad del colectivo; en una de desarrollo que ya
+# tiene contenido no hace nada, y fuera de desarrollo se niega.
+$COMPOSE exec -T web python manage.py datos_de_desarrollo cargar
 
 paso "4/5 Herramienta de capturas"
 [ -d tools/ux/node_modules/playwright-core ] || npm --prefix tools/ux install --no-audit --no-fund
@@ -145,5 +60,6 @@ python3 tools/ux/smoke.py "$BASE"
 cat <<FIN
 
 Entorno listo en $BASE.
+Para entrar al panel, crea tu cuenta: $COMPOSE exec web python manage.py createsuperuser
 Siguiente: el trabajo pendiente está en docs/backlog-codigo.md.
 FIN
