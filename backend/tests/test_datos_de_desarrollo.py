@@ -17,8 +17,8 @@ from django.core.management.base import CommandError
 from django.db import models
 from django.utils import timezone
 
-from apps.content.management.commands import datos_de_desarrollo as comando
 from apps.content.models import Article, EditorialStatus
+from apps.devtools.management.commands import datos_de_desarrollo as comando
 from apps.devtools.models import DevelopmentMarker
 from apps.media.models import MediaAsset
 from apps.showcase.models import Publication
@@ -120,14 +120,15 @@ def test_la_copia_entra_en_una_base_recien_migrada():
 
 @pytest.fixture
 def carpeta(settings, tmp_path, monkeypatch):
+    # Los comandos de desarrollo solo corren con DEBUG.
+    settings.DEBUG = True
     settings.MEDIA_ROOT = tmp_path / "media"
     monkeypatch.setattr(comando, "CARPETA", tmp_path / "datos")
     return tmp_path / "datos"
 
 
 @pytest.mark.django_db
-def test_de_ida_y_vuelta_sin_la_cuenta(settings, carpeta, django_user_model):
-    settings.DEBUG = True
+def test_de_ida_y_vuelta_sin_la_cuenta(carpeta, django_user_model):
     DevelopmentMarker.mark()
     tapa = make_image("tapa-ida-y-vuelta")
     tapa.uploaded_by = django_user_model.objects.create_user("alguien", "alguien@ejemplo.cl")
@@ -203,10 +204,3 @@ def test_cargar_no_pisa_una_base_con_contenido(settings):
     make_publication(slug="ya-estaba")
     with pytest.raises(CommandError, match="ya tiene contenido"):
         call_command("datos_de_desarrollo", "cargar")
-
-
-@pytest.mark.parametrize("accion", ["cargar", "marcar"])
-def test_cargar_y_marcar_solo_en_desarrollo(settings, accion):
-    settings.DEBUG = False
-    with pytest.raises(CommandError, match="Solo en desarrollo"):
-        call_command("datos_de_desarrollo", accion)

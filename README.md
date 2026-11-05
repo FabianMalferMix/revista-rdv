@@ -37,7 +37,7 @@ backend/
     agenda/             Event, EventPhoto y Milestone; la trayectoria
     community/          NewsletterSubscriber (el boletín, con doble confirmación)
     submissions/        Call y Submission (convocatorias y envíos)
-    devtools/           DevelopmentMarker (la marca de una base de desarrollo)
+    devtools/           las herramientas de desarrollo y DevelopmentMarker (no van a producción)
   templates/            base y vistas htmx
   static/               css, js, fuentes, imágenes y bibliotecas de terceros (vendor/)
   tests/                la suite de pytest
@@ -81,8 +81,11 @@ Crea secciones, editoriales, obras, colaboradores y varias reseñas —incluida 
 demo `editora` y `autor1` con una **contraseña aleatoria que el comando imprime al
 terminar** (se muestra una sola vez; apúntala).
 
-Como crea cuentas de staff, el comando **se niega a correr con `DEBUG=0`** salvo que se
-le pase `--force` de forma explícita: nunca debe ejecutarse contra producción.
+Como todas las herramientas de desarrollo (`backend/apps/devtools/`), **se niega a correr con
+`DEBUG=0`** y donde el entorno se declara de producción (`DJANGO_ENVIRONMENT=production`, que fija
+`docker-compose.prod.yml`), aunque DEBUG esté encendido; ninguna opción se lo salta. Se instalan
+con `DEBUG=1` o con `DJANGO_DEV_TOOLS=1` (ver `.env.example`), y la imagen de producción ni
+siquiera las trae.
 
 ### Ver en otro equipo lo mismo que en el de desarrollo
 

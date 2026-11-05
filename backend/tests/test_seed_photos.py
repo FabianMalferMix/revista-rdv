@@ -1,16 +1,17 @@
 """Placeholders de imagen empaquetados y su uso en los perfiles (fotos de demo)."""
 
 import pytest
-from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
+from apps.devtools.management.commands.seed_demo import Command as SeedDemo
 from apps.media.models import MediaAsset
 from apps.people.models import Contributor
 
 pytestmark = pytest.mark.django_db
 
-ASSETS = settings.BASE_DIR / "apps" / "content" / "management" / "commands" / "seed_assets"
+# La carpeta de la que `seed_demo` lee los marcadores.
+ASSETS = SeedDemo.ASSETS
 BUNDLED = [
     "member-fernanda.jpg",
     "member-andres.jpg",

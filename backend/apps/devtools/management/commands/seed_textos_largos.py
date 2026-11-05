@@ -23,16 +23,15 @@ Todo lo que crea lleva el prefijo `zz-largo-` en el slug, para encontrarlo y bor
 
 Las firmas son integrantes del colectivo si existen (por su slug); si no, firmas invitadas que
 el comando crea y después borra. Las fechas de publicación son recientes, así que los textos y
-los poemas aparecen arriba en los índices y en la portada. Con DEBUG=0 exige --force: es
-contenido de prueba.
+los poemas aparecen arriba en los índices y en la portada. Es contenido de prueba publicado:
+como todo comando de desarrollo, solo corre con DEBUG y fuera de producción
+(DevelopmentCommand).
 """
 
 import re
 from datetime import timedelta
 from pathlib import Path
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
@@ -48,6 +47,7 @@ from apps.content.models import (
     Section,
     Tag,
 )
+from apps.devtools.management.base import DevelopmentCommand
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from config.text import strip_accents
@@ -234,19 +234,13 @@ def _slug(texto):
     return PREFIJO + re.sub(r"[^a-z0-9]+", "-", plano.lower()).strip("-")[:200]
 
 
-class Command(BaseCommand):
+class Command(DevelopmentCommand):
     help = "Siembra textos y poemas largos de prueba (prefijo zz-largo-), o los borra."
 
     def add_arguments(self, parser):
         parser.add_argument("--borrar", action="store_true", help="Borra lo que sembró.")
-        parser.add_argument("--force", action="store_true", help="Permite correrlo con DEBUG=0.")
 
     def handle(self, *args, **options):
-        if not settings.DEBUG and not options["force"]:
-            raise CommandError(
-                "seed_textos_largos crea contenido de prueba publicado: no se corre en "
-                "producción. Con DEBUG=0 exige --force explícito."
-            )
         with transaction.atomic():
             if options["borrar"]:
                 self._borrar()

@@ -20,8 +20,11 @@ x-logging: &logging
 
 services:
   release:
+    # Los cuatro servicios de la app se declaran de producción: ahí las herramientas de desarrollo
+    # se niegan a correr aunque alguien encienda DEBUG (y la imagen ni siquiera las trae).
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_ENVIRONMENT: production
     mem_limit: ${WEB_MEM_LIMIT:-768m}
     cpus: ${WEB_CPUS:-1.5}
     pids_limit: 256
@@ -35,6 +38,7 @@ services:
     stop_grace_period: 40s
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_ENVIRONMENT: production
     # Aislamiento de recursos (hallazgo S-08): sin límites, un pico de `web` podía
     # llevarse por delante a `db` en el mismo host y convertir una degradación en
     # indisponibilidad total. Ajusta los valores a la RAM real de tu host: la suma de
@@ -64,6 +68,7 @@ services:
     stop_grace_period: 75s
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_ENVIRONMENT: production
     mem_limit: ${WORKER_MEM_LIMIT:-512m}
     cpus: ${WORKER_CPUS:-1.0}
     pids_limit: 256
@@ -82,6 +87,7 @@ services:
   beat:
     environment:
       DJANGO_DEBUG: "0"
+      DJANGO_ENVIRONMENT: production
     mem_limit: ${BEAT_MEM_LIMIT:-256m}
     cpus: ${BEAT_CPUS:-0.5}
     pids_limit: 128

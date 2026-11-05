@@ -1216,6 +1216,8 @@ Las pruebas fijan `settings.DEBUG = True`.
 
 **Hecho cuando.** En la imagen de producción, `manage.py help` no lista los comandos de desarrollo, y ninguno acepta `--force`.
 
+**Hecho (2026-11-04).** `seed_demo`, `seed_textos_largos`, `datos_de_desarrollo` y `seed_material_generico`, con sus datos, viven en `apps.devtools`, que se instala con `DEBUG` o `DJANGO_DEV_TOOLS=1` y queda fuera de la imagen de producción; `DevelopmentMarker` se queda ahí (en producción su tabla no existe y nada depende de ella). Heredan `DevelopmentCommand`, con una sola guarda (DEBUG, y que `DJANGO_ENVIRONMENT` no sea `production`, fijado en el compose de producción) y sin abreviaturas de opciones: Django aceptaba `--force` como abreviatura de `--force-color`. El job build-prod comprueba que la imagen de producción no ofrezca ninguno de los comandos, también con `DJANGO_DEBUG=1` y `DJANGO_DEV_TOOLS=1`.
+
 #### B64 · Un solo camino para poblar desarrollo
 
 **Hallazgos:** HER-3, HER-5, AGE-4 (punto 7) · **Depende de:** B63 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3, C4

@@ -46,6 +46,20 @@ def env_bool(name, default, environ=None):
     )
 
 
+def env_choice(name, choices, default, environ=None):
+    """Uno de los valores de `choices`, sin distinguir mayúsculas. Cualquier otro detiene el
+    arranque: una errata no puede valer en silencio por el valor por defecto."""
+    value = _raw(name, environ)
+    if value is None:
+        return default
+    normalized = value.strip().lower()
+    if normalized not in choices:
+        raise ImproperlyConfigured(
+            f"{name}={value!r} no es un valor admitido: usa {' o '.join(choices)}."
+        )
+    return normalized
+
+
 def env_int(name, default, environ=None):
     value = _raw(name, environ)
     if value is None:
