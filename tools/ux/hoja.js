@@ -10,13 +10,13 @@
 const { chromium } = require('playwright-core');
 const fs = require('fs');
 const path = require('path');
+const { CHROME } = require('./common');
 
 const [, , DIR, OUT, SUFIJO, ANCHO, COLUMNAS, ...NOMBRES] = process.argv;
 if (!DIR || !OUT || !SUFIJO || !ANCHO || !COLUMNAS || !NOMBRES.length) {
   console.error('Uso: node tools/ux/hoja.js <dirCapturas> <salida.png> <sufijo> <anchoCelda> <columnas> nombre [nombre …]');
   process.exit(2);
 }
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
 
 (async () => {
   const celdas = NOMBRES.map(

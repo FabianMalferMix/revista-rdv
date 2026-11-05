@@ -6,9 +6,21 @@
 // Por cada página de pages.txt y cada viewport (d1440, m390 y, si la página lleva
 // «ancho», w1920) escribe <nombre>-<viewport>-view.png, -full.png y -metrics.json.
 // Usa playwright-core con el Chrome del sistema: no descarga navegadores.
+//
+// Solo se mide una página que responde 200. Otra respuesta es un FALLO que nombra la ruta y
+// el código, y no deja métricas ni capturas de esa página (si las había de una corrida
+// anterior en el mismo directorio, las borra): las métricas de una página de error pasarían
+// por las de la página. Sale con 1 si falla alguna y con 2 ante un error de uso.
+//
+// Cada -metrics.json guarda con qué se midió (`provenance`): el commit y si había cambios sin
+// confirmar en los archivos con seguimiento, la versión del navegador y el sha256 de
+// backend/datos_de_desarrollo/datos.json.
 const { chromium } = require('playwright-core');
+const crypto = require('crypto');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { CHROME, REPO_ROOT, displayFamily, readPages, siteBase } = require('./common');
 
 const args = process.argv.slice(2);
 if (!args[0] || args[0].startsWith('--')) {
@@ -20,21 +32,33 @@ const opt = (nombre, porDefecto) => {
   const i = args.indexOf(nombre);
   return i >= 0 ? args[i + 1] : porDefecto;
 };
-const BASE = opt('--base', process.env.UX_BASE || 'http://localhost:8000');
+const BASE = siteBase(args);
 const ONLY = (opt('--only', '') || '').split(',').filter(Boolean);
 const CAPTURAS = !args.includes('--sin-capturas');
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
 
-const PAGINAS = fs
-  .readFileSync(path.join(__dirname, 'pages.txt'), 'utf8')
-  .split('\n')
-  .map((l) => l.trim())
-  .filter((l) => l && !l.startsWith('#'))
-  .map((l) => {
-    const [nombre, ruta, ancho] = l.split(/\s+/);
-    return { nombre, ruta, ancho: ancho === 'ancho' };
-  })
-  .filter((p) => !ONLY.length || ONLY.includes(p.nombre));
+const TODAS = readPages();
+// Un nombre mal escrito en --only no puede dejar la corrida sin nada que medir y en verde.
+const desconocidas = ONLY.filter((nombre) => !TODAS.some((p) => p.name === nombre));
+if (desconocidas.length) {
+  console.error(`--only: no están en pages.txt: ${desconocidas.join(', ')}`);
+  process.exit(2);
+}
+const PAGINAS = TODAS.filter((p) => !ONLY.length || ONLY.includes(p.name));
+
+// Con qué se mide esta corrida: se guarda en cada -metrics.json.
+function procedencia(navegador) {
+  const git = (...argumentos) => execFileSync('git', argumentos, { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
+  const datos = fs.readFileSync(path.join(REPO_ROOT, 'backend', 'datos_de_desarrollo', 'datos.json'));
+  return {
+    commit: git('rev-parse', 'HEAD'),
+    uncommittedChanges: git('status', '--porcelain', '--untracked-files=no') !== '',
+    browser: navegador.version(),
+    devDataSha256: crypto.createHash('sha256').update(datos).digest('hex'),
+  };
+}
+
+// Lo que esta herramienta escribe de una página en un viewport.
+const salidas = (etiqueta) => ['-view.png', '-full.png', '-metrics.json'].map((fin) => path.join(OUT, etiqueta + fin));
 
 const UA_MOVIL =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -44,8 +68,9 @@ const VIEWPORTS = [
   { id: 'm390', ancho: 390, alto: 844, escala: 2, movil: true, todas: true },
 ];
 
-// Se ejecuta DENTRO de la página.
-const METRICAS = () => {
+// Se ejecuta DENTRO de la página. `titulares` es la familia de --display (common.js): un texto
+// cuya primera familia es esa cuenta como «display».
+const METRICAS = (titulares) => {
   const cs = (el) => getComputedStyle(el);
   const visible = (el) => {
     const r = el.getBoundingClientRect();
@@ -53,7 +78,8 @@ const METRICAS = () => {
     return r.width > 1 && r.height > 1 && s.visibility !== 'hidden' && s.display !== 'none';
   };
   const familia = (el) => cs(el).fontFamily.split(',')[0].replace(/["']/g, '').trim();
-  const tipo = (f) => (/mono|menlo|consolas|courier/i.test(f) ? 'mono' : /syne/i.test(f) ? 'display' : 'lectura');
+  const tipo = (f) =>
+    /mono|menlo|consolas|courier/i.test(f) ? 'mono' : f.toLowerCase() === titulares.toLowerCase() ? 'display' : 'lectura';
   const describir = (sel) => {
     const el = [...document.querySelectorAll(sel)].find((e) => visible(e) && (e.innerText || '').trim());
     if (!el) return null;
@@ -224,9 +250,10 @@ async function recorrer(page, alto) {
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox', '--disable-gpu'] });
+  const origen = procedencia(browser);
   let fallos = 0;
   for (const vp of VIEWPORTS) {
-    const paginas = PAGINAS.filter((p) => vp.todas || p.ancho);
+    const paginas = PAGINAS.filter((p) => vp.todas || p.wide);
     if (!paginas.length) continue;
     const contexto = await browser.newContext({
       viewport: { width: vp.ancho, height: vp.alto },
@@ -238,13 +265,16 @@ async function recorrer(page, alto) {
     });
     const page = await contexto.newPage();
     for (const p of paginas) {
-      const etiqueta = `${p.nombre}-${vp.id}`;
+      const etiqueta = `${p.name}-${vp.id}`;
       try {
-        const respuesta = await page.goto(BASE + p.ruta, { waitUntil: 'networkidle', timeout: 45000 });
+        const respuesta = await page.goto(BASE + p.route, { waitUntil: 'networkidle', timeout: 45000 });
+        const estado = respuesta ? respuesta.status() : null;
+        if (estado !== 200) throw new Error(`${p.route} respondió ${estado ?? 'nada'}`);
         await recorrer(page, vp.alto);
-        const metricas = await page.evaluate(METRICAS);
-        metricas.ruta = p.ruta;
-        metricas.estado = respuesta ? respuesta.status() : null;
+        const metricas = await page.evaluate(METRICAS, await displayFamily(page));
+        metricas.ruta = p.route;
+        metricas.estado = estado;
+        metricas.provenance = origen;
         if (CAPTURAS) {
           await page.screenshot({ path: path.join(OUT, `${etiqueta}-view.png`) });
           await page.screenshot({ path: path.join(OUT, `${etiqueta}-full.png`), fullPage: true });
@@ -259,11 +289,16 @@ async function recorrer(page, alto) {
         console.log('OK   ', etiqueta, metricas.estado, 'alto', metricas.altoPagina);
       } catch (e) {
         fallos += 1;
+        for (const archivo of salidas(etiqueta)) fs.rmSync(archivo, { force: true });
         console.error('FALLO', etiqueta, String(e.message).slice(0, 160));
       }
     }
     await contexto.close();
   }
   await browser.close();
+  if (fallos) console.error(`\n${fallos} sin medir: sus métricas no están en ${OUT}.`);
   process.exit(fallos ? 1 : 0);
-})();
+})().catch((error) => {
+  console.error(error);
+  process.exit(2);
+});

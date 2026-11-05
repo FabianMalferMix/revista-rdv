@@ -12,14 +12,14 @@
 const { chromium } = require('playwright-core');
 const fs = require('fs');
 const path = require('path');
+const { CHROME, siteBase } = require('./common');
 
 const [, , OUT, ANCHO, ALTO, ...PARES] = process.argv;
 if (!OUT || !ANCHO || !ALTO || !PARES.length) {
   console.error('Uso: node tools/ux/ver.js <dirSalida> <ancho> <alto> nombre=ruta [nombre=ruta …]');
   process.exit(2);
 }
-const BASE = process.env.UX_BASE || 'http://localhost:8000';
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
+const BASE = siteBase();
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

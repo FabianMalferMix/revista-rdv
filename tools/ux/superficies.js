@@ -16,23 +16,16 @@
 // Sale con código 1 si alguna página no cumple, o si no responde 200.
 
 const { chromium } = require('playwright-core');
-const fs = require('fs');
-const path = require('path');
+const { CHROME, readPages, siteBase } = require('./common');
 
 const [, , ANCHO, ALTO, ...SOLO] = process.argv;
 if (!ANCHO || !ALTO) {
   console.error('Uso: node tools/ux/superficies.js <ancho> <alto> [nombre …]');
   process.exit(2);
 }
-const BASE = process.env.UX_BASE || 'http://localhost:8000';
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
+const BASE = siteBase();
 
-const paginas = fs
-  .readFileSync(path.join(__dirname, 'pages.txt'), 'utf8')
-  .split('\n')
-  .filter((l) => l.trim() && !l.startsWith('#'))
-  .map((l) => l.trim().split(/\s+/))
-  .filter(([nombre]) => !SOLO.length || SOLO.includes(nombre));
+const paginas = readPages().filter(({ name }) => !SOLO.length || SOLO.includes(name));
 
 // Se ejecuta dentro de la página.
 function medir() {
@@ -124,7 +117,7 @@ function medir() {
   const pagina = await contexto.newPage();
   let fallos = 0;
   console.log(`${'página'.padEnd(14)} tinta amarillo cajas  <AA   (a ${ANCHO}×${ALTO})`);
-  for (const [nombre, ruta] of paginas) {
+  for (const { name: nombre, route: ruta } of paginas) {
     const respuesta = await pagina.goto(BASE + ruta, { waitUntil: 'networkidle' });
     await pagina.evaluate(() => document.fonts.ready);
     const m = await pagina.evaluate(medir);

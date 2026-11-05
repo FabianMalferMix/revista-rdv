@@ -18,14 +18,14 @@
 const { chromium } = require('playwright-core');
 const fs = require('fs');
 const path = require('path');
+const { CHROME, siteBase } = require('./common');
 
 const [, , OUT, ANCHO, ALTO, RUTA, PIEZA, ...VARIANTES] = process.argv;
 if (!OUT || !ANCHO || !ALTO || !RUTA || !PIEZA || !VARIANTES.length) {
   console.error('Uso: node tools/ux/variantes.js <dirSalida> <ancho> <alto> <ruta> <selector|ventana> nombre=archivo[+archivo…] …');
   process.exit(2);
 }
-const BASE = process.env.UX_BASE || 'http://localhost:8000';
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
+const BASE = siteBase();
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

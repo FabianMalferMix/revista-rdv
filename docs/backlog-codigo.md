@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 64 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 65 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -156,7 +156,7 @@
 | B59 | Selectores muertos | B58 | M | no | hecho (#247) |
 | B60 | Migraciones de datos con prueba | — | M | no | hecho (#248) |
 | B61 | Higiene de la suite | — | M | no | hecho (#249) |
-| B62 | Herramientas de medición que no dan por bueno un error | — | S | no | pendiente |
+| B62 | Herramientas de medición que no dan por bueno un error | — | S | no | hecho (#250) |
 | B63 | Herramientas de desarrollo en su propia app | B07 | M | no | pendiente |
 | B64 | Un solo camino para poblar desarrollo | B63 | M | no | pendiente |
 | B65 | Higiene del repositorio | — | S | no | pendiente |
@@ -1202,6 +1202,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 De HER-7: la fuente de titulares se lee de `--display` en ejecución, una prueba compara los `@font-face` con NOTICE.md y se quita la referencia a `UMBRAL_CINTA`.
 
 **Hecho cuando.** Una página que da 404 hace fallar `capture.js`, y cambiar la fuente de titulares no deja ninguna herramienta midiendo la anterior.
+
+**Hecho (2026-11-04).** `capture.js` y `metrics.py` exigen el 200, y cada medición guarda el commit, el navegador y la huella de `datos.json`. `tools/ux/common.js` reúne la base, Chrome y `pages.txt`. `mutar.sh` corre la prueba primero sin mutar, en un worktree temporal y en un contenedor desechable con su propia base recreada (`test_resenas_mutar`), así que mutar una migración surte efecto sin envoltorios. La fuente de titulares se lee de `--display`; NOTICE.md y LICENSE ya no nombran Syne, y una prueba los ata a los `@font-face`. Otra exige que cada ruta de `pages.txt` exista en los datos de desarrollo.
 
 #### B63 · Herramientas de desarrollo en su propia app
 

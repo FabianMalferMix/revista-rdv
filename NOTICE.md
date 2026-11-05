@@ -39,7 +39,7 @@ cero y es la que está aplicada):
 | Componente | Ubicación | Licencia | Obligaciones |
 |---|---|---|---|
 | htmx 2.0.11 | `backend/static/vendor/htmx/` | 0BSD | Ninguna (ni siquiera atribución) |
-| Syne | `backend/static/fonts/` | SIL Open Font License 1.1 | Conservar el aviso; ver `fonts/NOTICE.txt` |
+| Bricolage Grotesque, con el eje de peso recortado a 400-700 | `backend/static/fonts/` | SIL Open Font License 1.1 | Conservar el aviso y la licencia (`fonts/OFL-bricolage-grotesque.txt`); ver `fonts/NOTICE.txt` |
 | Source Serif 4 (Adobe), modificada y renombrada «RdV Serif» | `backend/static/fonts/` | SIL Open Font License 1.1, con nombre reservado «Source» | Conservar el aviso y la licencia (`fonts/OFL-source-serif-4.txt`); una versión modificada no puede llamarse «Source»; ver `fonts/NOTICE.txt` |
 | DOMPurify | dentro del bundle de TinyMCE | Apache-2.0 / MPL-2.0 | Ver `vendor/tinymce/notices.txt` |
 | Imágenes de demostración | `backend/apps/devtools/management/commands/seed_assets/` | CC0 y Licencia Unsplash | Ninguna; son marcadores reemplazables (ver su `NOTICE.txt`) |
