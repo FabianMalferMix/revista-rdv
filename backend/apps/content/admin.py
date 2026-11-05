@@ -11,6 +11,7 @@ from django.utils.formats import date_format
 from django.utils.html import format_html
 
 from apps.people.roles import is_editor
+from config.content_policy import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 from config.publishing import FrozenSlugAdminMixin
 from config.staticfiles import TINYMCE_DIR
 
@@ -35,12 +36,24 @@ from .permissions import can_edit_item
 from .sanitize import clean_html
 
 
+def tinymce_valid_elements():
+    """La lista blanca del HTML de autor en la sintaxis de `valid_elements` de TinyMCE:
+    «a[href|title],b,blockquote,…»."""
+    return ",".join(
+        f"{tag}[{'|'.join(sorted(ALLOWED_ATTRIBUTES[tag]))}]" if tag in ALLOWED_ATTRIBUTES else tag
+        for tag in sorted(ALLOWED_TAGS)
+    )
+
+
 class RichTextWidget(forms.Textarea):
     """Textarea con editor TinyMCE (ver static/admin/richtext_init.js).
 
     TinyMCE va auto-hospedado en `static/vendor/tinymce-<versión>/` (sin CDN): su cargador
     perezoso resuelve tema/modelo/iconos/skin/plugins relativos a este archivo,
     por eso ese subárbol se sirve sin hash (ver config.staticfiles).
+
+    Las etiquetas y atributos que admite el editor viajan en `data-valid-elements`, desde la
+    misma lista que aplica nh3 al guardar: lo que el editor deja escribir es lo que se publica.
     """
 
     class Media:
@@ -52,6 +65,7 @@ class RichTextWidget(forms.Textarea):
     def __init__(self, *args, **kwargs):
         attrs = kwargs.setdefault("attrs", {})
         attrs.setdefault("class", "richtext")
+        attrs["data-valid-elements"] = tinymce_valid_elements()
         super().__init__(*args, **kwargs)
 
 

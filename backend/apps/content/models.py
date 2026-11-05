@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config import publishing
+from config.content_policy import AUTHORED_HTML_HELP
 from config.models import TimestampedModel
 from config.text import strip_accents
 
@@ -195,7 +196,7 @@ class Article(EditorialItem):
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
     subtitle = models.CharField(max_length=255, blank=True, help_text="Bajada")
-    body = models.TextField()
+    body = models.TextField(help_text=AUTHORED_HTML_HELP)
     excerpt = models.TextField(blank=True, help_text="Extracto autoral (opcional)")
     type = models.CharField(max_length=20, choices=ArticleType.choices, default=ArticleType.RESENA)
     section = models.ForeignKey(
@@ -521,7 +522,7 @@ class Page(models.Model):
 
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
-    body = models.TextField()
+    body = models.TextField(help_text=AUTHORED_HTML_HELP)
     status = models.CharField(
         max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT
     )
