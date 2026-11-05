@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 69 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 69 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -180,6 +180,7 @@
 | B78 | Comentarios que dicen el presente | B03 | L | no | pendiente |
 | B79 | La suite, por componente | B61 | L | no | pendiente |
 | B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
+| B85 | La búsqueda recorta la consulta por palabras | — | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1419,11 +1420,12 @@ Medir el LCP en la vista previa de producción antes y después, como pide §4 d
 
 - `stats()` devuelve `festivals_and_fairs` para la suma y `festivals` solo para los festivales, y se corrigen su docstring y los comentarios de `test_agenda.py`;
 - fuera la clave `integrantes` del contexto de la portada;
-- se completan los `verbose_name` que faltan, con una prueba de rótulos que recorre todos los campos.
+- se completan los `verbose_name` que faltan, con una prueba de rótulos que recorre todos los campos (hoy salen en inglés, por ejemplo, «Type» y «Author email» en la ficha de un envío y las cabeceras de las notas editoriales);
+- `EditorialNote`, `CollectionArticle` y `CollectionPoem`, los modelos del panel que usan el `__str__` de Django, tienen uno propio: hoy cada fila de las notas editoriales dice «EditorialNote object (N)».
 
 Las anotaciones de tipo del punto 4 de MAN-1 no entran: siguen diferidas («mypy + type hints incremental», §3 del registro). De ese punto, `string_if_invalid` va en B57.
 
-**Hecho cuando.** Ninguna clave del contexto tiene una gemela con otro significado, y un campo sin `verbose_name` hace fallar la prueba de rótulos.
+**Hecho cuando.** Ninguna clave del contexto tiene una gemela con otro significado, y un campo sin `verbose_name` o un modelo del panel sin `__str__` propio hacen fallar la prueba de rótulos.
 
 #### B78 · Comentarios que dicen el presente
 
@@ -1466,6 +1468,20 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** El panel edita y guarda un texto con el editor elegido, sin errores de consola ni de CSP, y `tools/vendor/update.py check` pasa.
 
+#### B85 · La búsqueda recorta la consulta por palabras
+
+**Hallazgos:** fuera de la auditoría: visto en B61, al probar la búsqueda larga · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.** La vista recorta la consulta a `SEARCH_MAX_QUERY` (120 caracteres) carácter a carácter. Si el corte cae a mitad de una palabra, el pedazo que queda entra en la búsqueda, que exige todas las palabras (`SearchQuery` en modo `plain`), y no encuentra nada: pegar un verso largo puede no encontrar el poema que lo contiene. La prueba de la búsqueda larga (`test_search_hardening.py`) alinea la consulta para no caer en ese caso.
+
+**Alcance.**
+
+- el tope sigue en 120 caracteres, pero si el corte parte una palabra, esa palabra queda fuera entera; una consulta sin espacios dentro del tope se recorta como hoy;
+- el cambio va donde viva la vista de la búsqueda: hoy `apps/content/views.py`, y la etapa 2 de B67 la muda a `apps.site`;
+- una prueba con el carácter 120 a mitad de una palabra, que falla si se vuelve a cortar por carácter.
+
+**Hecho cuando.** Una búsqueda de más de 120 caracteres cuyo corte cae a mitad de una palabra encuentra el texto que piden sus palabras enteras, y al SQL siguen llegando como mucho 120 caracteres.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1485,7 +1501,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85
 
 ## 5. Lo diferido
 
