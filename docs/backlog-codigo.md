@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 69 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
+> **Avance:** 70 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -165,7 +165,7 @@
 
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
-| B66 | Contratos de entidad completos | — | M | no | pendiente |
+| B66 | Contratos de entidad completos | — | M | no | hecho (#256) |
 | B67 | La app del sitio, por etapas | B15 | L | no | pendiente |
 | B68 | Una política de contenido y una tabla de proveedores | — | S | no | pendiente |
 | B69 | La composición visual sale de las vistas | B26 | M | no | pendiente |
@@ -1343,6 +1343,7 @@ De WEB-4:
 - `_index_head.html` en sección, etiqueta y colección;
 - parciales para participantes, tapa y retrato o monograma;
 - la cejilla y el umbral de título largo, como propiedades del modelo;
+- en la vista previa de un texto sin publicar, la obra que reseña se enlaza solo si tiene ficha (hoy puede llevar a un 404; visto en B66);
 - una clase de enlace total que incluye la regla de los enlaces secundarios.
 
 **Hecho cuando.** Un separador sin año o sin país ya no deja un « · » colgando, y todas las páginas y el 500 toman el nombre del sitio de la misma fuente.
