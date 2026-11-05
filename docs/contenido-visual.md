@@ -50,5 +50,8 @@ docker compose exec web python manage.py seed_material_generico            # gen
 docker compose exec web python manage.py seed_material_generico --fotos-por-evento 3
 ```
 
-Idempotente: vuelve a correr sin duplicar. Nunca reemplaza una pieza cuyo crédito no sea de
-marcador, así que es seguro ejecutarlo después de cargar material real.
+Los datos de desarrollo (`datos_de_desarrollo cargar`) ya traen estos marcadores: el comando hace
+falta para lo que se añada después sin imagen, y lo nuevo viaja con `datos_de_desarrollo
+exportar`. Idempotente: vuelve a correr sin duplicar. Nunca reemplaza una pieza cuyo crédito no
+sea de marcador (`is_placeholder`, en `backend/apps/devtools/placeholders.py`), así que es seguro
+ejecutarlo después de cargar material real.

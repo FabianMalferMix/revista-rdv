@@ -2,9 +2,9 @@
 
 Sus comandos siembran contenido ficticio, con cuentas del panel incluidas, o copian la base al
 repositorio público. La app se instala con DEBUG o con DJANGO_DEV_TOOLS=1, y la imagen de
-producción no trae su código (lo comprueba el job build-prod del CI). Los cuatro comandos
-heredan una sola guarda, que exige DEBUG y un entorno que no se declare de producción, y
-ninguna opción la salta.
+producción no trae su código (lo comprueba el job build-prod del CI). Sus comandos heredan una
+sola guarda, que exige DEBUG y un entorno que no se declare de producción, y ninguna opción la
+salta.
 """
 
 import os
@@ -24,7 +24,6 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 # Los comandos de desarrollo, con los argumentos con que se los llama aquí.
 DEV_COMMANDS = {
-    "seed_demo": (),
     "seed_textos_largos": (),
     "seed_material_generico": (),
     "datos_de_desarrollo": ("marcar",),
@@ -90,7 +89,7 @@ def test_no_dev_command_accepts_force(name, settings, handled):
     settings.DEBUG = True
     with pytest.raises(CommandError, match="unrecognized arguments: --force"):
         _run(name, "--force")
-    # Tampoco desde el código, como lo llama tools/ux/preparar-entorno.sh.
+    # Tampoco desde el código, con call_command.
     with pytest.raises(TypeError, match="Unknown option"):
         call_command(name, *DEV_COMMANDS[name], force=True, verbosity=0)
     assert handled == []
@@ -148,7 +147,7 @@ def test_debug_or_dev_tools_install_them(env):
 
 
 def test_a_declared_production_refuses_from_the_command_line_even_with_debug():
-    result = _manage("seed_demo", DJANGO_DEBUG="1", DJANGO_ENVIRONMENT="production")
+    result = _manage("seed_textos_largos", DJANGO_DEBUG="1", DJANGO_ENVIRONMENT="production")
     assert result.returncode == 1
     assert "se declara de producción" in result.stderr, result.stderr[-500:]
 
@@ -180,7 +179,7 @@ def test_the_production_compose_declares_production_wherever_the_app_runs():
     }
     assert all(len(values) == 1 for values in declared.values()), declared
     (value,) = {values[0] for values in declared.values()}
-    result = _manage("seed_demo", DJANGO_DEBUG="1", DJANGO_ENVIRONMENT=value)
+    result = _manage("seed_textos_largos", DJANGO_DEBUG="1", DJANGO_ENVIRONMENT=value)
     assert result.returncode == 1
     assert "se declara de producción" in result.stderr, result.stderr[-500:]
 

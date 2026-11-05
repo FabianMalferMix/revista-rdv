@@ -16,10 +16,21 @@ from django.core.management import call_command
 from PIL import Image
 
 from apps.agenda.models import Event
+from apps.content.models import ArticleType
+from apps.devtools import identity
 from apps.devtools.management.commands import seed_material_generico as cmd
+from apps.devtools.placeholders import PLACEHOLDER_CREDIT, is_placeholder
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
-from apps.showcase.models import Partner, Publication, SiteProfile
+from apps.reviews.models import Work
+from apps.showcase.models import Partner, PressMention, Publication, SiteProfile
+from tests.factories import (
+    make_event,
+    make_photo,
+    make_publication,
+    make_published_article,
+    make_recording,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -50,20 +61,47 @@ def dibujantes_diminutos(monkeypatch):
         monkeypatch.setattr(cmd, nombre, stub)
 
 
+def _credited(photo, credit):
+    photo.asset.credit = credit
+    photo.asset.save(update_fields=["credit"])
+    return photo
+
+
+@pytest.fixture
+def unillustrated_content():
+    """Un poco de cada cosa que lleva imagen, sin ninguna: dos integrantes, dos actividades (una
+    con tres fotos del colectivo), dos publicaciones, un registro, un aliado, una mención en
+    prensa, un texto y una obra reseñada."""
+    for slug, name in (("fernanda-soto", "Fernanda Soto"), ("paula-miranda", "Paula Miranda")):
+        Contributor.objects.create(slug=slug, display_name=name, is_member=True, active=True)
+    with_photos = make_event(slug="recital-con-fotos", title="Recital con fotos")
+    for position in range(3):
+        _credited(make_photo(with_photos, position), "Archivo del colectivo")
+    make_event(slug="taller-sin-fotos", title="Taller sin fotos")
+    make_publication(slug="plaquette", title="Plaquette")
+    make_publication(slug="fanzine", title="Fanzine")
+    make_recording(slug="recital-grabado", title="Recital grabado")
+    Partner.objects.create(name="Fondo Imaginario de las Letras", kind=Partner.Kind.FINANCIAMIENTO)
+    PressMention.objects.create(
+        title="Nota de prueba", outlet="Gaceta de Prueba", kind=PressMention.Kind.NOTA
+    )
+    make_published_article(slug="resena", title="Una reseña", type=ArticleType.RESENA)
+    Work.objects.create(slug="libro-resenado", title="Libro reseñado", kind=Work.Kind.LIBRO)
+
+
 def test_asigna_marcadores_sin_pisar_material_real_y_es_idempotente(
-    settings, tmp_path, dibujantes_diminutos
+    settings, tmp_path, dibujantes_diminutos, unillustrated_content
 ):
     settings.DEBUG = True
     settings.MEDIA_ROOT = tmp_path
-    call_command("seed_demo", verbosity=0)
 
     # Material REAL simulado: una integrante con retrato cuyo crédito no es de marcador.
     real = MediaAsset(alt_text="Retrato de Fernanda Soto", credit="Foto: Alguien Real")
     real.file.save("real.png", ContentFile(_png_diminuto()), save=True)
-    fernanda = Contributor.objects.members().first()
+    fernanda = Contributor.objects.get(slug="fernanda-soto")
     fernanda.photo = real
     fernanda.save(update_fields=["photo"])
-    libro = Publication.objects.first()
+    libro = Publication.objects.get(slug="plaquette")
     libro.cover = real
     libro.save(update_fields=["cover"])
 
@@ -80,21 +118,56 @@ def test_asigna_marcadores_sin_pisar_material_real_y_es_idempotente(
     assert not Contributor.objects.members().filter(photo=None).exists()
     assert not Event.objects.filter(poster=None).exists()
     assert all(e.photos.count() >= 1 for e in Event.objects.all())
-    # El cupo se completa, no se excede: un evento que ya trae fotos (aquí, las tres de la
-    # siembra frente a un cupo de una) no recibe marcadores mezclados con ellas.
-    con_fotos = [e for e in Event.objects.all() if e.photos.exclude(asset__credit=cmd.CREDITO)]
-    assert con_fotos, "la siembra ya no trae un evento con fotos: revisar esta prueba"
-    assert all(not e.photos.filter(asset__credit=cmd.CREDITO).exists() for e in con_fotos)
+    # El cupo se completa, no se excede: la actividad que ya trae fotos (tres del colectivo
+    # frente a un cupo de una) no recibe marcadores mezclados con ellas.
+    con_fotos = Event.objects.get(slug="recital-con-fotos")
+    assert [is_placeholder(f.asset) for f in con_fotos.photos.all()] == [False] * 3
     assert all(p.cover_id for p in Publication.objects.all())
     assert not Recording.objects.filter(poster=None).exists()
     assert not Partner.objects.filter(logo=None).exists()
-    perfil = SiteProfile.load()
-    assert perfil.og_image_id is not None
-    assert len(perfil.manifesto.split()) >= 40
+    assert SiteProfile.load().og_image.alt_text == (
+        f"Foto de grupo provisional · {identity.PROFILE['name']}"
+    )
 
     cuantos = MediaAsset.objects.count()
     call_command("seed_material_generico", "--fotos-por-evento", "1", verbosity=0)
     assert MediaAsset.objects.count() == cuantos, "la segunda corrida duplicó recursos"
+
+
+def test_placeholder_photos_do_not_count_towards_the_gallery_quota(
+    settings, tmp_path, dibujantes_diminutos
+):
+    """Una actividad cuyas fotos son marcadores recibe el cupo entero, como si no tuviera
+    ninguna; una con fotos reales, solo lo que falta."""
+    settings.DEBUG = True
+    settings.MEDIA_ROOT = tmp_path
+    demo = make_event(slug="con-fotos-de-demostracion", title="Con fotos de demostración")
+    for position in range(2):
+        _credited(make_photo(demo, position), "Placeholder de demo (reemplazable)")
+    real = make_event(slug="con-una-foto-real", title="Con una foto real")
+    _credited(make_photo(real, 0), "Archivo del colectivo")
+
+    call_command("seed_material_generico", "--fotos-por-evento", "2", verbosity=0)
+
+    drawn = demo.photos.filter(asset__credit=PLACEHOLDER_CREDIT)
+    assert drawn.count() == 2, "las fotos de demostración contaron como reales"
+    assert real.photos.filter(asset__credit=PLACEHOLDER_CREDIT).count() == 1
+
+
+@pytest.mark.parametrize(
+    "credit,placeholder",
+    [
+        (PLACEHOLDER_CREDIT, True),
+        ("Placeholder de demo (reemplazable)", True),
+        ("Foto PROVISIONAL", True),
+        ("Archivo del colectivo", False),
+        ("Foto: Alguien Real", False),
+        ("", False),
+        (None, False),
+    ],
+)
+def test_a_placeholder_is_recognised_by_its_credit(credit, placeholder):
+    assert is_placeholder(SimpleNamespace(credit=credit)) is placeholder
 
 
 @pytest.mark.parametrize(

@@ -47,32 +47,29 @@ docker compose logs -f web worker      # deja esto abierto en otra terminal
 **Vista previa de producción** — `admin` / `bx0JqJp1po715yZq` ·
 `editora` / `FTSUIgr79m9AJpKz` · `autor1` / `fdYrUkFqw7LZ8gOz`.
 
-> Las de la vista previa de producción las generó `seed_demo` **al azar** y las imprimió una sola
-> vez. Las de desarrollo conservan `demo12345` porque se crearon antes de ese cambio.
+> Estas cuentas existen solo en esas dos bases: las de la vista previa de producción se
+> generaron al azar y se imprimieron una sola vez, y las de desarrollo conservan `demo12345`.
 
-**`admin` no lo crea `seed_demo`**, solo `editora` y `autor1`. El superusuario se hace a
-mano con `createsuperuser`, así que su contraseña no está en ninguna parte del repositorio
+**Las cuentas no viajan con los datos de desarrollo.** En una base nueva, el superusuario se hace
+con `createsuperuser` y las de los roles desde el panel (Usuarios: `is_staff` y el grupo `editor`
+o `autor`), con la contraseña que elijas. La de `admin` no está en ninguna parte del repositorio
 y no se puede recuperar. Si se olvida:
 
 ```bash
 docker compose exec web python manage.py changepassword admin
 ```
 
-Dos advertencias sobre resembrar, ambas descubiertas en las pruebas manuales del §5:
-
-- **La contraseña aleatoria solo se genera al CREAR el usuario.** Resembrar no la cambia:
-  `_user()` solo entra en `set_password` cuando `get_or_create` devuelve `created=True`.
-  Por eso `editora` y `autor1` siguen con `demo12345` por muchas veces que se resiembre.
-- **Resembrar pisa el estado editorial.** Los artículos se cargan con `update_or_create`
-  escribiendo `status` directo, sin pasar por el flujo, así que una pieza publicada a mano
-  vuelve al estado que dicta el guion. La bitácora, en cambio, no se borra: quedan
-  transiciones huérfanas que ya no explican el estado actual. Se ve en «La casa vacía»,
-  con dos `scheduled → published` de dos siembras distintas.
-
 ### Volver a empezar
 
+Una base de desarrollo nueva se puebla con un solo comando, que carga la copia del repositorio
+(README, «Los datos de desarrollo»). Borrar la base pierde lo que no se haya exportado antes con
+`datos_de_desarrollo exportar`, y las cuentas:
+
 ```bash
-docker compose exec web python manage.py seed_demo   # idempotente: se puede repetir
+docker compose down -v   # borra la base y los medios de desarrollo
+docker compose up -d
+docker compose exec web python manage.py datos_de_desarrollo cargar
+docker compose exec web python manage.py createsuperuser
 ```
 
 ---
@@ -218,12 +215,12 @@ no una plantilla vacía.
       Trayectoria · Agenda · Galería · Prensa · Aliados».
 - [ ] **Teclado.** El primer Tab de cualquier página enseña «Saltar al contenido», y todo lo
       que se puede pulsar lleva un contorno magenta al recibir el foco.
-- [ ] **Textos largos.** Con `python manage.py seed_textos_largos` (en desarrollo) hay seis
-      textos y cinco poemas largos, con el prefijo `zz-largo-` en la dirección. A 390 px y a
-      951, ninguno debe salirse de la pantalla. El ensayo «Repetir el verso…» tiene una
-      partitura que se desplaza dentro de su caja. La crítica «Contra la lectura apurada…»
-      tiene una columna izquierda más alta que la pantalla, que se recorre por dentro. Al
-      terminar, `seed_textos_largos --borrar` los quita.
+- [ ] **Textos largos.** Los datos de desarrollo traen seis textos y cinco poemas largos, con el
+      prefijo `zz-largo-` en la dirección (si faltan, `python manage.py seed_textos_largos`).
+      A 390 px y a 951, ninguno debe salirse de la pantalla. El ensayo «Repetir el verso…»
+      tiene una partitura que se desplaza dentro de su caja. La crítica «Contra la lectura
+      apurada…» tiene una columna izquierda más alta que la pantalla, que se recorre por
+      dentro. `seed_textos_largos --borrar` los quita.
 
 ### 1.6 Catálogo bibliográfico
 
@@ -234,7 +231,7 @@ no una plantilla vacía.
 
 ## 2. Buscador
 
-> Los términos de abajo están elegidos contra los datos que siembra `seed_demo`. El que
+> Los términos de abajo están elegidos contra los datos de desarrollo (`datos.json`). El que
 > proponía antes esta guía —«poesia»— devuelve **cero resultados**, así que la prueba de
 > acentos no demostraba nada: dos búsquedas vacías también «encuentran lo mismo».
 
@@ -552,7 +549,7 @@ docker compose exec web python manage.py axes_reset      # para desbloquearte
 ```bash
 docker compose exec web python manage.py setup_groups              # idempotente
 docker compose exec web python manage.py purge_stale_data --dry-run --days 180
-docker compose exec web python manage.py seed_demo
+docker compose exec web python manage.py datos_de_desarrollo cargar   # en una base nueva
 docker compose exec web python manage.py generate_image_derivatives
 ```
 
@@ -562,9 +559,10 @@ docker compose exec web python manage.py generate_image_derivatives
 - [x] **`purge_stale_data`** — Con `--dry-run` solo informa. Purga suscriptores nunca
       confirmados, **los dados de baja**, envíos resueltos (con su adjunto) y los intentos
       de acceso de más de 90 días.
-- [x] **`seed_demo`** — Con `DEBUG=0` o `DJANGO_ENVIRONMENT=production` **se niega** (no hay
-      `--force`), y la imagen de producción ni siquiera lo trae. Las contraseñas que genera son
-      **aleatorias**.
+- [x] **Los comandos de desarrollo** (`datos_de_desarrollo`, `seed_material_generico`,
+      `seed_textos_largos`) — Con `DEBUG=0` o `DJANGO_ENVIRONMENT=production` **se niegan** (no
+      hay `--force`), y la imagen de producción ni siquiera los trae. `cargar` en una base de
+      desarrollo ya poblada no hace nada.
 - [x] **Tareas automáticas:** `publish_due_items` cada minuto y `purge_stale_pii` los lunes
       a las 04:30 (`docker compose logs beat`).
 
@@ -713,13 +711,16 @@ services:
   beat:    { env_file: !override [/tmp/prod.env] }
 EOF
 
-# 3. levantar (el release migra y siembra los grupos) y sembrar la demostración
+# 3. levantar (el release migra y siembra los grupos) y cargar los datos de desarrollo
 C="docker compose --env-file /tmp/prod.env -p resenasprod -f docker-compose.yml -f docker-compose.prod.yml -f /tmp/prod.override.yml"
 $C up -d --build
-# La imagen de producción no trae las herramientas de desarrollo: la demostración se siembra con
-# la de desarrollo, en la red de la vista previa (sin probar desde que se separaron).
+# La imagen de producción no trae las herramientas de desarrollo ni la copia: se cargan con la
+# imagen de desarrollo y el código montado, en la red y en el volumen de medios de la vista previa
+# (sin probar).
 docker run --rm --network resenasprod_default --env-file /tmp/prod.env -e DJANGO_DEBUG=1 \
-  resenas-app:dev python manage.py seed_demo   # anota las contraseñas
+  -v "$PWD/backend:/app" -v resenasprod_media:/app/mediafiles \
+  resenas-app:dev python manage.py datos_de_desarrollo cargar
+$C exec web python manage.py createsuperuser
 
 # bajar y borrar sus datos
 $C down -v
