@@ -4,16 +4,17 @@ producción (tests/test_dev_tools.py).
 
 Las pruebas de asignación sustituyen los dibujantes por imágenes diminutas: lo que se
 verifica es la lógica (asignación e idempotencia), no el dibujo. El dibujo se
-prueba aparte, una vez por tipo, comprobando solo el tamaño del lienzo.
+prueba aparte, una vez por tipo, comprobando solo el tamaño del lienzo. Y una prueba lo dibuja
+de verdad, dos veces, para ver que cada pieza da siempre los mismos bytes.
 """
 
-from io import BytesIO
+from io import BytesIO, StringIO
 from types import SimpleNamespace
 
 import pytest
 from django.core.files.base import ContentFile
 from django.core.management import call_command
-from PIL import Image
+from PIL import Image, ImageStat
 
 from apps.agenda.models import Event
 from apps.content.models import ArticleType
@@ -198,3 +199,54 @@ def test_afiche_y_caratula_respetan_su_proporcion():
     registro = SimpleNamespace(title="Lectura", get_kind_display=lambda: "Video")
     assert cmd._afiche(evento, "recital")[0].size == (1200, 1600)
     assert cmd._caratula_registro(registro, "lectura")[0].size == (1920, 1080)
+
+
+def _drawn_files():
+    """Los bytes de cada marcador dibujado, por su texto alternativo."""
+    drawn = {}
+    for asset in MediaAsset.objects.filter(credit=PLACEHOLDER_CREDIT):
+        with asset.file.open("rb") as stored:
+            drawn[asset.alt_text] = stored.read()
+    return drawn
+
+
+def test_regenerating_with_a_new_piece_keeps_the_bytes_of_the_others(settings):
+    """Cada pieza siembra su azar, también el del grano, con su propia clave: `--regenerar` con
+    una actividad nueva, cuyas piezas se dibujan antes que el texto y la foto de grupo, vuelve a
+    dar los mismos bytes en las piezas que ya estaban."""
+    settings.DEBUG = True
+    Contributor.objects.create(
+        slug="fernanda-soto", display_name="Fernanda Soto", is_member=True, active=True
+    )
+    make_published_article(slug="resena", title="Una reseña", type=ArticleType.RESENA)
+    call_command("seed_material_generico", "--fotos-por-evento", "1", verbosity=0)
+    before = _drawn_files()
+    assert set(before) == {
+        "Retrato provisional de Fernanda Soto",
+        "Imagen provisional · Una reseña",
+        f"Foto de grupo provisional · {identity.PROFILE['name']}",
+    }, "control: las tres piezas llevan grano"
+
+    make_event(slug="lectura-nueva", title="Lectura nueva")
+    output = StringIO()
+    call_command("seed_material_generico", "--fotos-por-evento", "1", "--regenerar", stdout=output)
+    assert "5 imágenes dibujadas" in output.getvalue(), "control: se volvieron a dibujar las tres"
+    after = _drawn_files()
+    assert set(after) - set(before) == {
+        "Afiche provisional · Lectura nueva",
+        "Foto provisional 1 · Lectura nueva",
+    }
+    assert sorted(name for name in before if after[name] != before[name]) == []
+
+
+def test_each_piece_has_its_own_grain_with_the_spread_of_effect_noise():
+    """La misma clave da el mismo grano y otra clave, otro; y es el ruido de `Image.effect_noise`,
+    con el que se diseñó el grano: la misma media y la misma desviación."""
+    grain = cmd._noise((200, 150), 26, "retrato:fernanda-soto").tobytes()
+    assert grain == cmd._noise((200, 150), 26, "retrato:fernanda-soto").tobytes()
+    assert grain != cmd._noise((200, 150), 26, "retrato:paula-miranda").tobytes()
+    for sigma in (26, 34):
+        ours = ImageStat.Stat(cmd._noise((400, 300), sigma, "foto:recital:1"))
+        pillow = ImageStat.Stat(Image.effect_noise((400, 300), sigma))
+        assert ours.mean[0] == pytest.approx(pillow.mean[0], abs=0.5)
+        assert ours.stddev[0] == pytest.approx(pillow.stddev[0], abs=0.5)

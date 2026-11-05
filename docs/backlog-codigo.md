@@ -1251,6 +1251,8 @@ De HER-5:
 
 **Hecho cuando.** Regenerar las variantes de la lámina desde el repositorio da los mismos bytes, y `--regenerar` con un elemento nuevo no cambia los bytes de los demás.
 
+**Hecho (2026-11-05).** Las maestras de la lámina se reconstruyeron desde las variantes más grandes (como decidió el dueño) y viven en `apps/devtools/management/commands/lamina/`, en PNG partidas en franjas para no pasar de 2 MB por archivo; `generate_lamina_variants` rehace las 15 copias con parámetros fijos (AVIF con un solo hilo: con los hilos por defecto, los bytes cambiaban de una máquina a otra) y una prueba exige bytes idénticos. Las copias se sustituyeron una vez: no se distinguen de las anteriores (37 dB) y pesan un 12 % menos; visto bueno dado por Claude en nombre del dueño, con capturas en `tools/ux/out/higiene-del-repositorio/`. El grano de las siembras sale de una semilla por pieza, y `--regenerar` ya rehace la copia sin metadatos de cada archivo.
+
 ### Tanda 7 — Orden interno
 
 #### B66 · Contratos de entidad completos

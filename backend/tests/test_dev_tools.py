@@ -27,6 +27,7 @@ DEV_COMMANDS = {
     "seed_textos_largos": (),
     "seed_material_generico": (),
     "datos_de_desarrollo": ("marcar",),
+    "generate_lamina_variants": ("--check",),
 }
 
 

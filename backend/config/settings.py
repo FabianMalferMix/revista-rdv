@@ -58,10 +58,10 @@ INSTALLED_APPS = [
     # Anti-fuerza-bruta en el login del admin.
     "axes",
 ]
-# Las herramientas de desarrollo (apps/devtools): los comandos que siembran contenido ficticio o
-# copian la base, y la marca de una base de desarrollo. Se instalan con DEBUG o con
-# DJANGO_DEV_TOOLS=1, y solo donde está su código: la imagen de producción no lo trae
-# (backend/.dockerignore), así que ahí no se instalan aunque se pidan.
+# Las herramientas de desarrollo (apps/devtools): los comandos que siembran contenido ficticio,
+# copian la base o rehacen la lámina de la portada, y la marca de una base de desarrollo. Se
+# instalan con DEBUG o con DJANGO_DEV_TOOLS=1, y solo donde está su código: la imagen de
+# producción no lo trae (backend/.dockerignore), así que ahí no se instalan aunque se pidan.
 _DEV_TOOLS_REQUESTED = env_bool("DJANGO_DEV_TOOLS", False)
 if (DEBUG or _DEV_TOOLS_REQUESTED) and find_spec("apps.devtools") is not None:
     INSTALLED_APPS.append("apps.devtools")

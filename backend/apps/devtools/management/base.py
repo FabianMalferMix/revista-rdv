@@ -8,7 +8,8 @@ PRODUCTION = "production"
 
 
 class DevelopmentCommand(BaseCommand):
-    """Un comando que siembra contenido ficticio o copia la base: solo corre en desarrollo.
+    """Un comando que siembra contenido ficticio, copia la base o rehace archivos del repositorio
+    desde sus fuentes: solo corre en desarrollo.
 
     La guarda está en `execute`, por donde pasan `manage.py` y `call_command` antes de llegar a
     `handle`: exige DEBUG y un entorno que no se declare de producción. Ninguna opción la salta.
