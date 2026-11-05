@@ -37,6 +37,7 @@ backend/
     agenda/             Event, EventPhoto y Milestone; la trayectoria
     community/          NewsletterSubscriber (el boletín, con doble confirmación)
     submissions/        Call y Submission (convocatorias y envíos)
+    site/               la portada, la búsqueda, el pie de las fichas, la navegación y los sitemaps
     devtools/           las herramientas de desarrollo y DevelopmentMarker (no van a producción)
   templates/            base y vistas htmx
   static/               css, js, fuentes, imágenes y bibliotecas de terceros (vendor/)

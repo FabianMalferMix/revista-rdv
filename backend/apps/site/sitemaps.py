@@ -1,24 +1,24 @@
+"""El sitemap del sitio: la portada, los índices y las fichas."""
+
 from django.urls import reverse
 
 from apps.agenda.models import Event
+from apps.content.models import Article, Collection, Page, Poem, Section
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Publication
 from config.origin import FixedOriginSitemap as Sitemap
 
-from .models import Article, Collection, Page, Poem, Section
-
 
 class StaticViewSitemap(Sitemap):
-    """Portada y páginas índice/aterrizaje (estables, sin modelo). Antes el sitemap
-    solo listaba el detalle de cada pieza y omitía estas rutas de navegación (#12)."""
+    """La portada y los índices: las páginas estables, sin modelo detrás."""
 
     changefreq = "weekly"
 
     # Nombres de URL de las landing públicas y estables.
     _views = [
-        "content:home",
+        "site:home",
         "content:text_archive",
         "content:poem_index",
         "content:collection_index",
@@ -40,7 +40,7 @@ class StaticViewSitemap(Sitemap):
         return reverse(item)
 
     def priority(self, item):
-        return 1.0 if item == "content:home" else 0.6
+        return 1.0 if item == "site:home" else 0.6
 
 
 class TimestampedSitemap(Sitemap):

@@ -120,7 +120,7 @@ def test_el_adelanto_no_cita_un_resto_diminuto():
 
 def test_la_portada_no_se_llena_con_un_poema_en_prosa(client):
     make_published_poem(slug="prosa", body=("Un párrafo de prosa muy largo. " * 30 + "\n") * 3)
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     citado = sopa.select_one("li.fila--poema .fila-versos").get_text()
     assert len(citado) <= 162 and citado.endswith("…")
 

@@ -132,7 +132,7 @@ def test_does_not_override_upstream_policy():
 
 @pytest.mark.django_db
 def test_home_carries_csp_and_selfhosts_htmx(client):
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     assert CSP in resp
     assert b"unpkg.com" not in resp.content
@@ -146,7 +146,7 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     y la consola avisa en cada página. Con `includeIndicatorStyles: false` no lo intenta, y sus
     reglas viven en site.css, también la del indicador que es el propio elemento marcado (el
     buscador lo nombra con hx-indicator, y sin ella el «…» no aparecía nunca)."""
-    contenido = client.get(reverse("content:home")).content.decode()
+    contenido = client.get(reverse("site:home")).content.decode()
     meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)
     assert meta and json.loads(meta.group(1)) == {"includeIndicatorStyles": False}
     assert contenido.index('name="htmx-config"') < contenido.index("vendor/htmx/htmx.min.js")
@@ -201,7 +201,7 @@ def test_admin_article_add_selfhosts_tinymce(admin_client):
 @pytest.mark.django_db
 def test_permissions_policy_header_is_restrictive(client):
     """Se emite una Permissions-Policy restrictiva en las respuestas (hallazgo #16)."""
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     pp = resp.get("Permissions-Policy", "")
     assert "geolocation=()" in pp
     assert "camera=()" in pp

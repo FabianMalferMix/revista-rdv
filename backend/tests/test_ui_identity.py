@@ -24,7 +24,7 @@ NAV_URLS = [
 
 
 def test_nav_links_intact_in_disclosure(client):
-    content = client.get(reverse("content:home")).content
+    content = client.get(reverse("site:home")).content
     assert b"nav-disclosure" in content
     assert b"<summary>Men\xc3\xba</summary>" in content
     # El disclosure no quita enlaces del DOM: los 9 siguen presentes.
@@ -95,7 +95,7 @@ def test_las_fuentes_de_la_primera_pantalla_se_precargan(client):
     es obligatorio en una precarga de fuente, aunque sea del mismo origen: sin él el
     navegador la descarta y vuelve a pedirla.
     """
-    html = client.get(reverse("content:home")).content.decode()
+    html = client.get(reverse("site:home")).content.decode()
     precargas = re.findall(r'<link rel="preload"[^>]*>', html)
     assert len(precargas) == 2, f"se esperaban dos precargas, hay {len(precargas)}"
     archivos = sorted(re.search(r'href="[^"?]*fonts/([^"?/]+)"', p).group(1) for p in precargas)

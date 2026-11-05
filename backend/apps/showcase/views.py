@@ -2,8 +2,12 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import RedirectView
 
+from apps.agenda.models import Event, Milestone
+from apps.agenda.services import cronologia, stats
 from apps.content.models import Article
-from apps.content.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
+from apps.people.models import Contributor
+from apps.site.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
+from apps.site.services import ultima_publicacion
 from config import protected_media, publishing
 
 from .models import Partner, PressMention, Publication, SiteProfile
@@ -105,11 +109,6 @@ def dossier(request):
     publicaciones y los ocho últimos eventos. Eran dos listas seguidas, y los años salían
     desordenados. Retratos, cubiertas y logos vienen en la consulta de su lista.
     """
-    from apps.agenda.models import Event, Milestone
-    from apps.agenda.services import cronologia, stats
-    from apps.content.services import ultima_publicacion
-    from apps.people.models import Contributor
-
     profile = SiteProfile.load()
     publicaciones = list(_published())
     return render(

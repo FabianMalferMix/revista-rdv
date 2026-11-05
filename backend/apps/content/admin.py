@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.html import format_html
 
+from apps.people.roles import is_editor
 from config.publishing import FrozenSlugAdminMixin
 from config.staticfiles import TINYMCE_DIR
 
@@ -30,7 +31,7 @@ from .models import (
     Section,
     Tag,
 )
-from .permissions import can_edit_item, is_editor
+from .permissions import can_edit_item
 from .sanitize import clean_html
 
 

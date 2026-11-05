@@ -2,6 +2,7 @@ import pytest
 
 from apps.content import permissions
 from apps.content.models import EditorialStatus
+from apps.people import roles
 from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
@@ -41,5 +42,5 @@ def test_non_owner_cannot_edit(autor, django_user_model):
 
 
 def test_is_editor_flags(editor, autor):
-    assert permissions.is_editor(editor)
-    assert not permissions.is_editor(autor)
+    assert roles.is_editor(editor)
+    assert not roles.is_editor(autor)

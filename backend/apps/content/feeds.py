@@ -1,6 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.urls import reverse
 
+from apps.showcase.models import SiteProfile
 from config.feeds import stable_guid
 from config.origin import absolute_url
 
@@ -21,12 +22,10 @@ class LatestArticlesFeed(Feed):
     DESCRIPCION_POR_DEFECTO = "Últimas reseñas, ensayos y entrevistas."
 
     def _perfil(self):
-        from apps.showcase.models import SiteProfile
-
         return SiteProfile.load()
 
     def link(self):
-        return absolute_url(reverse("content:home"))
+        return absolute_url(reverse("site:home"))
 
     def feed_url(self):
         return absolute_url(reverse("feed"))

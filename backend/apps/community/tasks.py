@@ -7,7 +7,10 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.showcase.models import SiteProfile
 from config.origin import absolute_url
+
+from .models import NewsletterSubscriber
 
 # Rechazos que no cambian por insistir: el destinatario o el remitente rechazados, unas
 # credenciales que no valen o una extensión que el servidor no admite. El resto de errores
@@ -52,10 +55,6 @@ def send_confirmation_email(subscriber_id):
     SITE_URL. Deja en el suscriptor la fecha del envío o el último error, que el panel
     enseña junto a una acción para reenviar.
     """
-    from apps.showcase.models import SiteProfile
-
-    from .models import NewsletterSubscriber
-
     sub = NewsletterSubscriber.objects.filter(pk=subscriber_id).first()
     if sub is None or not sub.confirm_token:
         return  # se dio de baja, ya confirmó o se borró mientras esperaba en la cola

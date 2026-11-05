@@ -211,11 +211,11 @@ def test_home_shows_featured_recording_when_published(client):
     rec = make_recording(slug="destacado", title="Registro En Portada")
     profile.featured_recording = rec
     profile.save()
-    assert b"Registro En Portada" in client.get(reverse("content:home")).content
+    assert b"Registro En Portada" in client.get(reverse("site:home")).content
 
     rec.published = False
     rec.save(update_fields=["published"])
-    content = client.get(reverse("content:home")).content.decode()
+    content = client.get(reverse("site:home")).content.decode()
     assert "Ver el dossier" in content  # control: la portada se dibuja entera
     assert "Registro En Portada" not in content
 
@@ -269,7 +269,7 @@ def test_un_registro_publicado_no_ensena_su_evento_oculto(client, publicado):
     )
     make_recording(slug="con-evento", title="Registro con evento", featured=True, event=evento)
     paginas = [
-        reverse("content:home"),
+        reverse("site:home"),
         reverse("media:recording_index"),
         reverse("media:recording_detail", args=["con-evento"]),
         reverse("recordings_feed"),

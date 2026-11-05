@@ -37,3 +37,57 @@ exclude_lines = [
     "def __str__",
     "def __repr__",
 ]
+
+# ── Las aristas entre apps (import-linter) ────────────────
+# `lint-imports`, desde backend/, falla ante un import nuevo entre dos apps que hoy no se importan:
+# las aristas de hoy son la lista de ignore_imports, una por cada app que importa a otra. Cuenta
+# los imports de Python, también los que van dentro de una función; no ve las relaciones entre
+# modelos por nombre ("agenda.Event") ni los reverse() hacia otra app. Una arista que ya no existe
+# también lo hace fallar, para que su línea se borre.
+[tool.importlinter]
+root_packages = ["apps"]
+
+[[tool.importlinter.contracts]]
+name = "Las apps solo se importan por las aristas de hoy"
+type = "independence"
+modules = ["apps.*"]
+ignore_imports = [
+    "apps.agenda.** -> apps.showcase.**",
+    "apps.agenda.** -> apps.site.**",
+    "apps.community.** -> apps.showcase.**",
+    "apps.content.** -> apps.people.**",
+    "apps.content.** -> apps.reviews.**",
+    "apps.content.** -> apps.showcase.**",
+    "apps.content.** -> apps.site.**",
+    "apps.devtools.** -> apps.agenda.**",
+    "apps.devtools.** -> apps.content.**",
+    "apps.devtools.** -> apps.media.**",
+    "apps.devtools.** -> apps.people.**",
+    "apps.devtools.** -> apps.reviews.**",
+    "apps.devtools.** -> apps.showcase.**",
+    "apps.devtools.** -> apps.site.**",
+    "apps.media.** -> apps.content.**",
+    "apps.media.** -> apps.showcase.**",
+    "apps.media.** -> apps.site.**",
+    "apps.people.** -> apps.content.**",
+    "apps.people.** -> apps.site.**",
+    "apps.reviews.** -> apps.content.**",
+    "apps.reviews.** -> apps.showcase.**",
+    "apps.showcase.** -> apps.agenda.**",
+    "apps.showcase.** -> apps.content.**",
+    "apps.showcase.** -> apps.media.**",
+    "apps.showcase.** -> apps.people.**",
+    "apps.showcase.** -> apps.site.**",
+    "apps.site.** -> apps.agenda.**",
+    "apps.site.** -> apps.content.**",
+    "apps.site.** -> apps.media.**",
+    "apps.site.** -> apps.people.**",
+    "apps.site.** -> apps.reviews.**",
+    "apps.site.** -> apps.showcase.**",
+    "apps.site.** -> apps.submissions.**",
+    "apps.submissions.** -> apps.community.**",
+]
+broken_contract_guidance = """\
+Un import nuevo entre dos apps que no se importaban. Lo que usan varias apps va en apps/site/ o \
+en config/; si la arista hace falta de verdad, se añade a ignore_imports en \
+backend/pyproject.toml."""

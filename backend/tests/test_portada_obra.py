@@ -19,9 +19,9 @@ from django.urls import reverse
 from PIL import Image
 
 from apps.media.models import MediaAsset
-from apps.media.templatetags.images import LAMINA, PORTADA_TELEFONO
 from apps.showcase.admin import SiteProfileAdmin
 from apps.showcase.models import SiteProfile
+from apps.site.templatetags.portada import LAMINA, PORTADA_TELEFONO
 from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
@@ -48,7 +48,7 @@ def _guardar(perfil):
 
 
 def _obra(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     return sopa, sopa.select_one("section.portada-arte picture.portada-imagen")
 
 
@@ -227,7 +227,7 @@ def test_la_hoja_y_lo_que_sigue_suben_en_el_telon(client):
 def test_saltar_al_contenido_lleva_a_la_hoja(client):
     """En la portada, «Saltar al contenido» salta la obra y lleva a la hoja; en las demás
     páginas, al principio de <main>."""
-    portada = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    portada = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     assert portada.select_one("a.skip")["href"] == "#contenido"
     assert portada.select_one("#contenido")["class"] == ["hero"]
     otra = BeautifulSoup(client.get(reverse("content:text_archive")).content, "html.parser")
@@ -247,7 +247,7 @@ def test_los_posteres_de_la_tirada_esperan_y_el_de_la_ficha_no(client):
         published=True,
         featured=True,
     )
-    portada = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    portada = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     assert portada.select_one(".tirada .pliego-placa img")["loading"] == "lazy"
     ficha = BeautifulSoup(client.get(registro.get_absolute_url()).content, "html.parser")
     assert not ficha.select_one(".player-frame img").has_attr("loading")

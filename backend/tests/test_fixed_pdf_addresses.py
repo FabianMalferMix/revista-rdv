@@ -106,10 +106,10 @@ def test_the_buttons_link_the_fixed_address(client):
     profile.save()
     publication = _publication(pdf=_pdf("un-libro.pdf", b"libro"))
 
-    assert "/dossier.pdf" in _links(client, reverse("content:home"))
+    assert "/dossier.pdf" in _links(client, reverse("site:home"))
     assert "/dossier.pdf" in _links(client, reverse("showcase:dossier"))
     assert "/publicacion/un-libro.pdf" in _links(client, publication.get_absolute_url())
-    for page in (reverse("content:home"), reverse("showcase:dossier")):
+    for page in (reverse("site:home"), reverse("showcase:dossier")):
         assert not [href for href in _links(client, page) if href.startswith("/media/dossier/")]
 
 

@@ -21,7 +21,7 @@ IMG = Path(settings.BASE_DIR) / "static" / "img"
 
 
 def _sopa(client):
-    return soup(client, reverse("content:home"))
+    return soup(client, reverse("site:home"))
 
 
 def test_el_sello_de_la_cabecera_lleva_el_monograma_y_se_llama_como_el_colectivo(client):

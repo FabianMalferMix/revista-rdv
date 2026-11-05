@@ -82,7 +82,7 @@ def test_la_portada_no_contacta_con_terceros(client):
     perfil.featured_recording = rec
     perfil.save(update_fields=["featured_recording"])
 
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     assert _iframes(resp.content) == [], "la portada incrusta un tercero sin permiso"
     assert b"embed-play" not in resp.content and b"data-embed-src" not in resp.content

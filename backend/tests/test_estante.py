@@ -16,9 +16,9 @@ from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 
-from apps.content.views import ESTANTE
 from apps.media.models import MediaAsset
 from apps.reviews.models import Publisher
+from apps.site.portada import ESTANTE
 from tests import css
 from tests.factories import make_image, make_publication, soup
 
@@ -29,7 +29,7 @@ ESTANTE_JS = (BACKEND / "static" / "js" / "estante.js").read_text()
 
 
 def _estante(client):
-    sopa = soup(client, reverse("content:home"))
+    sopa = soup(client, reverse("site:home"))
     return sopa, sopa.select_one("section.home-publicaciones")
 
 
@@ -236,5 +236,5 @@ def test_en_pantallas_anchas_los_libros_crecen():
     libro = css.rule(ancho, ".ejemplar--libro .ejemplar-lomo")
     assert (libro["width"], libro["height"]) == ("64px", "400px")
     # La tapa de frente pide la copia del ancho que le da la hoja en ese mismo corte.
-    plantilla = (BACKEND / "templates" / "content" / "home.html").read_text()
+    plantilla = (BACKEND / "templates" / "site" / "home.html").read_text()
     assert f"(min-width: 1400px) {frente}" in plantilla

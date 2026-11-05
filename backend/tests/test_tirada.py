@@ -43,7 +43,7 @@ def _registro(slug, **kw):
 
 
 def _tirada(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     return sopa, sopa.select_one("section.tirada")
 
 
@@ -256,7 +256,7 @@ def test_the_pile_has_a_place_for_every_recording_in_the_tirada():
     """Cada pliego tiene su lugar en la pila: TOPE_TIRADA − 1 niveles detrás del de arriba y
     otros tantos delante, cada uno con su desplazamiento y su `z-index`. Si sube el tope y la
     hoja no, el pliego que sobra queda tapado bajo el de arriba en el estado inicial."""
-    from apps.content.views import TOPE_TIRADA
+    from apps.site.portada import TOPE_TIRADA
 
     apiladas = [r.selector for r in css.rules() if r.context == () and "z-index" in r]
     detras = [

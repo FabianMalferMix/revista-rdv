@@ -17,10 +17,10 @@ from django.dispatch.dispatcher import _make_id
 from django.urls import URLResolver, get_resolver, resolve, reverse
 
 from apps.content.models import Article
-from apps.content.sitemaps import EXCLUDED_FROM_SITEMAP, SITEMAPS, StaticViewSitemap
 from apps.devtools.management.commands.datos_de_desarrollo import MODELOS, NOT_EXPORTED
 from apps.media.filecleanup import EXEMPT
 from apps.people.models import Contributor
+from apps.site.sitemaps import EXCLUDED_FROM_SITEMAP, SITEMAPS, StaticViewSitemap
 from config.celery import app as celery_app
 from tests.factories import publish
 
@@ -28,7 +28,7 @@ INDEX, ENTITY, UTILITY = "índice", "ficha", "utilidad"
 # Toda ruta con nombre fuera del panel, en su categoría. Los índices son los del sitemap; las
 # fichas, una por pieza; el resto no se anuncia (archivos, feeds, formularios, salud del sitio).
 ROUTES = {
-    "content:home": INDEX,
+    "site:home": INDEX,
     "content:text_archive": INDEX,
     "content:poem_index": INDEX,
     "content:collection_index": INDEX,
@@ -71,7 +71,7 @@ ROUTES = {
     "community:unsubscribe": UTILITY,
     "submissions:submit": UTILITY,
     "submissions:submit_thanks": UTILITY,
-    "content:search": UTILITY,
+    "site:search": UTILITY,
 }
 
 

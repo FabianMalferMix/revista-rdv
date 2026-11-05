@@ -1,12 +1,15 @@
+"""Lo que el sitio da a todas las plantillas: la navegación, con lo actual marcado, y la URL
+canónica de la página."""
+
 from django.urls import reverse
 
 from config.origin import absolute_url
 
-# La barra principal: cinco enlaces (D9, decidido por el dueño del sitio). Cada uno marca
-# como suyas las vistas de su territorio: en la ficha de un poema queda marcado «Poemas»,
-# y en la agenda, «Colectivo», que es el centro de todo lo del colectivo. Las fichas de una
-# obra reseñada, su editorial y su autor son de «Textos»: se llega a ellas desde una reseña.
-# Las colecciones y los colaboradores no marcan ninguno: reúnen poemas y textos.
+# La barra principal: cinco enlaces. Cada uno marca como suyas las vistas de su territorio: en la
+# ficha de un poema queda marcado «Poemas», y en la agenda, «Colectivo», que es el centro de todo
+# lo del colectivo. Las fichas de una obra reseñada, su editorial y su autor son de «Textos»: se
+# llega a ellas desde una reseña. Las colecciones y los colaboradores no marcan ninguno: reúnen
+# poemas y textos.
 NAV_PRINCIPAL = (
     ("Poemas", "content:poem_index", ("content:poem_detail",)),
     (
@@ -38,7 +41,7 @@ NAV_PRINCIPAL = (
     ),
 )
 
-# La sub-fila del colectivo (D9): en la cabecera de cada uno de estos índices, el resto.
+# La sub-fila del colectivo: en la cabecera de cada uno de estos índices, el resto.
 SUBNAV_COLECTIVO = (
     ("Integrantes", "people:member_index"),
     ("Trayectoria", "agenda:trayectoria"),

@@ -84,7 +84,7 @@ def test_gallery_lists_only_events_with_photos(client):
 def test_home_shows_next_event(client):
     make_event(slug="siguiente", title="Actividad Siguiente")
     make_event(slug="hecho", title="Hecho", starts_at=timezone.now() - timedelta(days=5))
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert b"Actividad Siguiente" in resp.content
 
 

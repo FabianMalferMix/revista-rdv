@@ -116,7 +116,7 @@ def test_a_person_has_one_address_wherever_she_is_linked(client, is_member, addr
     assert url_for_person("una-voz", is_member) == address
     byline = client.get(article.get_absolute_url()).content.decode()
     assert f'href="{address}">Una Voz</a>' in byline
-    found = client.get(reverse("content:search"), {"q": "Una Voz"}).content.decode()
+    found = client.get(reverse("site:search"), {"q": "Una Voz"}).content.decode()
     assert f'href="{address}">Una Voz</a>' in found
     redirected = client.get(other_address)
     assert (redirected.status_code, redirected["Location"]) == (302, address)
@@ -124,6 +124,6 @@ def test_a_person_has_one_address_wherever_she_is_linked(client, is_member, addr
 
 
 def test_home_shows_member_grid(client, member):
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     assert b"Poeta Uno" in resp.content

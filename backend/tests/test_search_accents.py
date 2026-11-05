@@ -11,9 +11,9 @@ error, no una actividad.
 import pytest
 from django.urls import reverse
 
-from apps.content import services
 from apps.content.models import Article, Poem
 from apps.people.models import Contributor
+from apps.site import services
 from tests.factories import publish
 
 pytestmark = pytest.mark.django_db
@@ -21,7 +21,7 @@ WORDS = [("Wisława", "Wislawa"), ("Søren", "Soren"), ("canción", "cancion")]
 
 
 def _search(client, q):
-    return client.get(reverse("content:search"), {"q": q}).content.decode()
+    return client.get(reverse("site:search"), {"q": q}).content.decode()
 
 
 @pytest.mark.parametrize(("written", "plain"), WORDS)
@@ -93,7 +93,7 @@ def test_the_index_follows_a_body_written_without_save(client):
 def test_an_unknown_result_type_is_an_error_not_an_event(client, monkeypatch):
     row = {"tipo": "obra", "slug": "x", "titulo": "Obra", "dato": "", "lugar": "", "fecha": None}
     monkeypatch.setattr(
-        "apps.content.views.coincidencias_por_nombre",
+        "apps.site.views.coincidencias_por_nombre",
         lambda term, top: [{**row, "anio": None, "integrante": False}],
     )
     with pytest.raises(ValueError, match="obra"):

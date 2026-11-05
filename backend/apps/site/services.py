@@ -1,11 +1,14 @@
-"""Consultas de contenido que usan varias apps (la portada, el dossier, la búsqueda)."""
+"""Consultas que cruzan varias apps: cuándo publicó el colectivo por última vez (la portada y el
+dossier) y las coincidencias por nombre de la búsqueda."""
 
 from django.db.models import DateTimeField, F, IntegerField, Value
 from django.db.models.functions import Cast, ExtractYear
 
+from apps.agenda.models import Event
+from apps.content.models import editorial_models
 from apps.media.models import Recording
-
-from .models import editorial_models
+from apps.people.models import Contributor
+from apps.showcase.models import Publication
 
 
 def ultima_publicacion():
@@ -41,7 +44,7 @@ def _columnas(filas, tipo, titulo, dato="", lugar="", fecha=None, anio=None, int
     """Las columnas de una parte de la UNION. Todas son anotaciones y van en el mismo orden
     en las cuatro partes: la UNION empareja las columnas por su posición, no por su nombre.
     Un hueco es un NULL con su tipo (`Cast`): PostgreSQL resuelve los tipos de la UNION de
-    dos en dos, y dos NULL sin tipo quedaban como texto, que luego no casaba con una fecha."""
+    dos en dos, y dos NULL sin tipo quedarían como texto, que luego no casa con una fecha."""
     nombres = [f"r_{c}" for c in COLUMNAS_DE_COINCIDENCIA]
     valores = (
         Value(tipo),
@@ -82,15 +85,11 @@ def coincidencias_por_nombre(termino, tope):
     término, sin distinguir acentos ni mayúsculas: la base quita los acentos de los dos lados
     (`unaccent`). Es UNA consulta: las cuatro partes van unidas
     (UNION ALL), cada una con su orden y su tope. Con una consulta por tipo, la búsqueda
-    pasaba del techo de diez consultas de su prueba de rendimiento.
+    pasaría del techo de diez consultas de su prueba de rendimiento.
 
     Cada fila trae las columnas de COLUMNAS_DE_COINCIDENCIA; `tipo` dice qué es y cómo se
     enlaza. Las personas son las integrantes, también las históricas, y quien firma algo
     publicado: una firma sin nada publicado no tiene qué enseñar en su página."""
-    from apps.agenda.models import Event
-    from apps.people.models import Contributor
-    from apps.showcase.models import Publication
-
     personas = _columnas(
         Contributor.objects.visible().filter(display_name__unaccent__icontains=termino),
         PERSON,

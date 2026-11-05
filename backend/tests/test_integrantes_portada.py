@@ -14,8 +14,8 @@ from pathlib import Path
 import pytest
 from django.urls import reverse
 
-from apps.content.views import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from apps.people.models import Contributor
+from apps.site.portada import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from tests import css
 from tests.factories import make_image, soup
 
@@ -39,7 +39,7 @@ def _integrantes(n):
 
 
 def _seccion(client):
-    sopa = soup(client, reverse("content:home"))
+    sopa = soup(client, reverse("site:home"))
     return sopa, sopa.select_one("section.home-integrantes")
 
 

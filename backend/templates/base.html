@@ -67,7 +67,7 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body>
-  {# La portada lo lleva a la hoja, bajo la obra (bloque `salto` de content/home.html). #}
+  {# La portada lo lleva a la hoja, bajo la obra (bloque `salto` de site/home.html). #}
   <a class="skip" href="#{% block salto %}main{% endblock %}">Saltar al contenido</a>
   {% if preview %}
     {# La vista previa del equipo (config/publishing.py): lo que aún no se publicó, servido a quien puede verlo en el panel. #}
@@ -107,9 +107,9 @@
       {% block buscador %}
       <details class="busqueda">
         <summary aria-label="Buscar"><svg class="lupa" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5"/><path d="M15 15 21 21"/></svg></summary>
-        <form class="search" role="search" action="{% url 'content:search' %}">
+        <form class="search" role="search" action="{% url 'site:search' %}">
           <input type="search" name="q" placeholder="Buscar en el sitio…" minlength="2"
-                 hx-get="{% url 'content:search' %}"
+                 hx-get="{% url 'site:search' %}"
                  hx-trigger="input changed delay:300ms, search"
                  hx-target="#search-results"
                  hx-indicator="#search-ind"

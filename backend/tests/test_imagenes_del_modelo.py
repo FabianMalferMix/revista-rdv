@@ -77,7 +77,7 @@ def test_la_agenda_ensena_el_afiche_de_cada_actividad(client):
 
 def test_la_proxima_actividad_de_la_portada_lleva_su_afiche(client):
     make_event(slug="proxima", title="Próxima", poster=_imagen("afiche-proximo"))
-    proxima = soup(client, reverse("content:home")).select_one(".next-event")
+    proxima = soup(client, reverse("site:home")).select_one(".next-event")
     assert proxima.select_one(".next-event-afiche img") is not None
 
 

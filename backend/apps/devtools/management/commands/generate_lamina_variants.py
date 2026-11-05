@@ -30,7 +30,7 @@ from PIL import Image
 
 from apps.devtools.management.base import DevelopmentCommand
 from apps.media.models import MediaAsset
-from apps.media.templatetags.images import LAMINA, LAMINA_FALLBACK, lamina_path
+from apps.site.templatetags.portada import LAMINA, LAMINA_FALLBACK, lamina_path
 
 MASTERS_DIR = Path(__file__).resolve().parent / "lamina"
 STATIC_DIR = Path(settings.STATICFILES_DIRS[0])

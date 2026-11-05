@@ -15,7 +15,7 @@ from django.core.management.base import CommandError
 from PIL import Image
 
 from apps.devtools.management.commands import generate_lamina_variants as cmd
-from apps.media.templatetags.images import LAMINA
+from apps.site.templatetags.portada import LAMINA
 
 PORTADA = Path(__file__).resolve().parent.parent / "static" / "img" / "portada"
 # Lo que sirve la portada: cada copia de LAMINA en AVIF y en WebP, y la reserva en JPEG.

@@ -40,6 +40,7 @@ docker compose exec web ruff check .                             # lint
 docker compose exec web ruff format .                            # formato
 docker compose exec web python manage.py makemigrations --check --dry-run   # sin drift
 docker compose exec web python manage.py check                  # chequeos del framework
+docker compose exec web lint-imports --no-cache                  # aristas entre apps
 docker compose exec web python manage.py generate_image_derivatives  # derivados srcset
 ```
 
@@ -97,6 +98,7 @@ puede bajar, y tras quitar alguno se baja con `--update`.
    - `pytest`
    - `python manage.py makemigrations --check --dry-run` (sin drift)
    - `python manage.py check`
+   - `lint-imports --no-cache` (aristas entre apps)
 4. **Commit.** Cada archivo se añade por su nombre, nunca una carpeta entera: en `docs/` hay un
    documento personal que no es del repositorio. Mensaje: `rama: qué cambia (Bxx)`, y en el
    cuerpo, el porqué del cambio, que es lo que no va en los comentarios del código.
@@ -124,9 +126,12 @@ vigente más cercano y no se agrava la deuda.
    - Los cambios de estado, servicios (`services.py`, `workflow.py`).
    - Los cálculos visuales, templatetags.
    - Las señales, `signals.py`, conectado desde `ready()`.
-   - Lo transversal, `config/`.
+   - Lo transversal: la infraestructura, `config/`; lo que pinta el sitio entero (portada,
+     búsqueda, pie de las fichas, sitemaps), `apps/site/`.
    - Las parciales que pintan varias apps, `templates/partials/`; la de una sola, en la carpeta
      de su app (`tests/test_partial_folders.py`).
+   - Las apps se importan solo por las aristas de hoy: `lint-imports --no-cache` (el contrato, en
+     `backend/pyproject.toml`) falla ante un import nuevo entre dos apps que no se importaban.
 
    Bien: `perform_transition` (`apps/content/workflow.py`) concentra los cambios de estado
    editorial, con su bloqueo y su bitácora. Mal: el alta, la confirmación y la baja del boletín
@@ -140,7 +145,7 @@ vigente más cercano y no se agrava la deuda.
 3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas, se decide en un lugar y
    viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la
    relación entre la fuente y la copia. Mal: el número de integrantes que se ven en la portada está
-   en `A_LA_VISTA` (`apps/content/views.py`), en `site.css`, en `integrantes.js` y en los `sizes`, y
+   en `A_LA_VISTA` (`apps/site/portada.py`), en `site.css`, en `integrantes.js` y en los `sizes`, y
    una prueba fija cada copia por separado. Bien: las rutas se resuelven con `{% url %}` y
    `reverse()` en todo el sitio, y la dirección de cada pieza sale de su `get_absolute_url`, que
    `tests/test_get_absolute_url.py` exige a todo modelo con ficha.

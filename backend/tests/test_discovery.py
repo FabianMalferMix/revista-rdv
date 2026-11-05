@@ -19,9 +19,9 @@ from django.utils import timezone
 
 from apps.agenda.models import Event
 from apps.content.models import Article, EditorialStatus, Poem
-from apps.content.sitemaps import SITEMAPS
 from apps.media.models import Recording
 from apps.showcase.models import Publication
+from apps.site.sitemaps import SITEMAPS
 from config.models import TimestampedModel
 from tests.factories import (
     make_article,
@@ -60,7 +60,7 @@ def test_sitemap_includes_static_landing_pages(client):
     """El sitemap incluye la portada y los índices; antes los omitía (#12)."""
     content = client.get(reverse("sitemap")).content.decode()
     for name in [
-        "content:home",
+        "site:home",
         "content:poem_index",
         "people:member_index",
         "agenda:agenda",

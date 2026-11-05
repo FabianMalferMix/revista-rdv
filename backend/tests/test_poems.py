@@ -140,10 +140,10 @@ def test_home_shows_featured_poem_only_if_published(client):
     draft = make_poem(slug="dest-borrador", title="Destacado Borrador")
     profile.featured_poem = draft
     profile.save()
-    content = client.get(reverse("content:home")).content.decode()
+    content = client.get(reverse("site:home")).content.decode()
     assert "Ver el dossier" in content  # control: la portada se dibuja entera
     assert "Destacado Borrador" not in content
 
     profile.featured_poem = make_published_poem(slug="dest-pub", title="Destacado Público")
     profile.save()
-    assert b"Destacado P\xc3\xbablico" in client.get(reverse("content:home")).content
+    assert b"Destacado P\xc3\xbablico" in client.get(reverse("site:home")).content

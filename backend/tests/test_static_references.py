@@ -137,14 +137,14 @@ def one_of_each(db):
 def test_every_kind_of_page_renders_with_the_production_static_storage(
     client, django_user_model, production_statics, one_of_each
 ):
-    portada = client.get(reverse("content:home")).content.decode()
+    portada = client.get(reverse("site:home")).content.decode()
     for guion in ("registros", "integrantes", "estante"):
         assert re.search(rf"/static/js/{guion}\.[0-9a-f]{{12}}\.js", portada), guion
     assert re.search(r"/static/img/portada/lamina-ancha-1440\.[0-9a-f]{12}\.jpg", portada)
     paginas = [
         *one_of_each.values(),
         reverse("showcase:dossier"),
-        reverse("content:search") + "?q=texto",
+        reverse("site:search") + "?q=texto",
         reverse("submissions:submit"),
         reverse("admin:login"),
     ]

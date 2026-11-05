@@ -17,7 +17,7 @@ def test_skip_link_and_main_landmark(client):
     # clase `wrap`; <main> dejó de ser la caja de 820 px al pasar a ser el lienzo.)
     assert b'<main id="main" class="lienzo' in content
     # En la portada salta también la obra (D18): lleva a la hoja, que está dentro de <main>.
-    portada = client.get(reverse("content:home")).content.decode()
+    portada = client.get(reverse("site:home")).content.decode()
     assert 'class="skip" href="#contenido"' in portada
     assert portada.index('<main id="main"') < portada.index('id="contenido"')
 
@@ -25,7 +25,7 @@ def test_skip_link_and_main_landmark(client):
 def test_the_search_panel_announces_a_count_and_not_the_whole_list(client):
     """Los resultados no son una región viva: el lector los leería enteros en cada pausa. Se
     anuncia el recuento, en una región de estado aparte que rellena la parcial (test_search)."""
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     # Un solo contenedor de resultados (el div suelto a ancho completo desapareció).
     resultados = sopa.select("#search-results")
     assert len(resultados) == 1
@@ -65,7 +65,7 @@ def test_event_gallery_renders_lightbox(client):
 
 def test_home_has_an_h1(client):
     # La portada (la página más enlazada) debe tener su <h1> (SEO + encabezados a11y).
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert b"<h1" in resp.content
 
 

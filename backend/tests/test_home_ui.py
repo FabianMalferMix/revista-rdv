@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 def test_home_caps_articles_and_links_to_archive(client):
     for i in range(8):
         make_published_article(slug=f"t{i}", title=f"Texto {i}")
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     # Portada curada: los tres últimos textos (ticket 4.3; eran cinco). El resto vive en el
     # archivo, a un enlace.
@@ -55,7 +55,7 @@ def test_con_un_registro_destacado_no_sale_el_poema_destacado(client):
         published=True,
     )
     profile.save()
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     # Con los dos, el registro manda: va en la tirada (D19; el del perfil es el respaldo
     # cuando no hay ninguno marcado) y el poema no sale como un segundo destacado.
     sopa = BeautifulSoup(resp.content, "html.parser")
@@ -73,7 +73,7 @@ def test_sin_registros_destacados_vuelve_el_poema_destacado(client):
         published_at=timezone.now(),
     )
     profile.save()
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     assert sopa.select_one(".tirada") is None
     assert sopa.select_one(".featured h2").get_text() == "Poema Destacado"
 
@@ -88,7 +88,7 @@ def _featured_excerpt(client, body):
         published_at=timezone.now(),
     )
     profile.save()
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     assert sopa.select_one(".tirada") is None
     return sopa.select_one(".featured .poem-excerpt")
 
@@ -124,7 +124,7 @@ def test_home_texts_appear_before_members(client):
     dueño del sitio, al ver la portada completa, pidió la obra primero (paso 20)."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     make_published_article(slug="tx", title="Texto Portada")
-    content = client.get(reverse("content:home")).content
+    content = client.get(reverse("site:home")).content
     assert content.index(b"Texto Portada") < content.index(b"Integrante Uno")
 
 
@@ -138,7 +138,7 @@ def test_home_hero_has_manifesto_and_name(client):
     profile.founded_year = 2019
     profile.save()
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert b"hero-manifesto" in resp.content
     assert b"Poes\xc3\xada en voz alta." in resp.content
     assert b"desde 2019" in resp.content
@@ -164,7 +164,7 @@ def test_la_portada_lleva_el_sello_mientras_hay_una_convocatoria_abierta(client)
     from django.utils.dateformat import format as formato
 
     abierta = _convocatoria(timedelta(days=-3), timedelta(days=12))
-    html = client.get(reverse("content:home")).content.decode()
+    html = client.get(reverse("site:home")).content.decode()
     sello = re.search(r'<a class="sello-convocatoria" href="([^"]+)">(.*?)</a>', html, re.S)
     assert sello, "con una convocatoria abierta, la portada no lleva el sello"
     assert sello.group(1) == reverse("submissions:submit")
@@ -178,6 +178,6 @@ def test_sin_convocatoria_abierta_no_hay_sello(client):
 
     _convocatoria(timedelta(days=-40), timedelta(days=-5), slug="cerrada")
     _convocatoria(timedelta(days=5), timedelta(days=40), slug="futura")
-    page = soup(client, reverse("content:home"))
+    page = soup(client, reverse("site:home"))
     assert page.select_one("section.hero .hero-dossier")  # control: la hoja está, con su botón
     assert page.select_one(".sello-convocatoria") is None

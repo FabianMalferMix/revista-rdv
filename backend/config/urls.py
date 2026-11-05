@@ -5,8 +5,8 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from apps.content.feeds import LatestArticlesFeed
-from apps.content.sitemaps import SITEMAPS
 from apps.media.feeds import RecordingsFeed
+from apps.site.sitemaps import SITEMAPS
 from config.views import favicon, healthz, readyz, robots
 
 # Las rutas públicas son permanentes: las URL ya difundidas (prensa, dossiers, buscadores,
@@ -24,6 +24,7 @@ urlpatterns = [
     path("feed/registros/", RecordingsFeed(), name="recordings_feed"),
     path("robots.txt", robots, name="robots"),
     path("favicon.ico", favicon, name="favicon"),
+    path("", include("apps.site.urls")),
     path("", include("apps.people.urls")),
     path("", include("apps.media.urls")),
     path("", include("apps.agenda.urls")),

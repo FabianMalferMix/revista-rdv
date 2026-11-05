@@ -52,11 +52,11 @@ def test_ningun_comentario_de_una_linea_abarca_varias(plantilla):
 @pytest.mark.parametrize(
     "ruta",
     [
-        "content:home",
+        "site:home",
         "content:text_archive",
         "content:poem_index",
         "content:collection_index",
-        "content:search",
+        "site:search",
         "people:member_index",
         "agenda:agenda",
         "agenda:trayectoria",
