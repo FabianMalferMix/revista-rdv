@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 66 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 67 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -158,7 +158,7 @@
 | B61 | Higiene de la suite | — | M | no | hecho (#249) |
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | hecho (#250) |
 | B63 | Herramientas de desarrollo en su propia app | B07 | M | no | hecho (#251) |
-| B64 | Un solo camino para poblar desarrollo | B63 | M | no | pendiente |
+| B64 | Un solo camino para poblar desarrollo | B63 | M | no | hecho (#252) |
 | B65 | Higiene del repositorio | — | S | no | pendiente |
 
 **Tanda 7 — Orden interno**
@@ -1240,6 +1240,8 @@ De HER-5:
 - el JSON no lleva el vector de búsqueda.
 
 **Hecho cuando.** Una base nueva se puebla con un solo comando y queda como la del dueño, y cargar una copia vieja no pisa el texto legal vigente.
+
+**Hecho (2026-11-05).** `datos_de_desarrollo cargar` es el único camino (lo llaman el guion de preparación y el job navegador; en una base ya poblada no hace nada). `seed_demo` se retiró: sus cuentas y sus datos personales no viajan (C4), y lo demás ya estaba en la copia. La identidad vive en `apps/devtools/identity.py` y `is_placeholder` en `apps/devtools/placeholders.py`. `datos.json` lleva `exported_at`, las fechas se desplazan al cargar, solo viajan los campos públicos (nunca una columna generada), las páginas legales no se exportan y las demás páginas viajan por su slug; `cargar` se niega antes de pisar una fila que ya existe. Ensayado en un proyecto aparte con una base nueva: las 258 filas quedan idénticas y el texto legal es el vigente.
 
 #### B65 · Higiene del repositorio
 

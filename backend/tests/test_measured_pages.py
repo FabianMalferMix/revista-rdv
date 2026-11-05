@@ -15,7 +15,7 @@ import pytest
 from django.core import serializers
 from django.urls import Resolver404, resolve
 
-from apps.devtools.management.commands.datos_de_desarrollo import CARPETA
+from apps.devtools.management.commands.datos_de_desarrollo import CARPETA, read_copy
 
 PAGES = Path(__file__).resolve().parents[2] / "tools" / "ux" / "pages.txt"
 
@@ -31,7 +31,8 @@ def _routes():
 def _addresses_in_development_data():
     """La dirección de cada ficha de datos.json, la que da su modelo con get_absolute_url: así
     una ficha se reconoce por su modelo y su slug juntos, como la busca la vista."""
-    rows = serializers.deserialize("json", (CARPETA / "datos.json").read_text(encoding="utf-8"))
+    _, objects = read_copy(CARPETA / "datos.json")
+    rows = serializers.deserialize("python", objects)
     return {
         row.object.get_absolute_url() for row in rows if hasattr(row.object, "get_absolute_url")
     }

@@ -14,14 +14,21 @@ las convenciones y el flujo de trabajo.
 El `docker-compose.override.yml` se carga solo y monta el código con recarga en caliente.
 
 ```bash
-docker compose up -d                              # release, web, worker, beat, db, redis
-docker compose exec web python manage.py seed_demo        # datos de demostración
+docker compose up -d                                                  # release, web, worker, beat, db, redis
+docker compose exec web python manage.py datos_de_desarrollo cargar   # la copia de desarrollo
 docker compose exec web python manage.py createsuperuser
 ```
 
 El sitio queda en <http://127.0.0.1:8000/> (solo escucha en 127.0.0.1). Cada `docker compose up`
 corre antes el servicio `release` (`backend/release.sh`), que aplica las migraciones y sincroniza
 los grupos; web, worker y beat esperan a que termine bien.
+
+`datos_de_desarrollo cargar` es el único camino para poblar desarrollo: carga la copia de
+`backend/datos_de_desarrollo/`, con la identidad del colectivo y las fechas corridas a hoy, sin
+tocar lo que dejan las migraciones; en una base de desarrollo ya poblada no hace nada. Lo usan
+también `tools/ux/preparar-entorno.sh`, que deja lista una máquina para trabajar sobre el diseño,
+y el job `navegador` del CI. Las cuentas no viajan en la copia: las de los roles se crean en el
+panel. Qué viaja, y cómo se cambia y se exporta la copia: «Los datos de desarrollo» en el README.
 
 ## Comandos habituales
 
@@ -186,8 +193,10 @@ vigente más cercano y no se agrava la deuda.
     viven en `apps/devtools`, que solo se instala con `DEBUG` o `DJANGO_DEV_TOOLS=1` y no entra en
     la imagen de producción, y heredan de `DevelopmentCommand` (`apps/devtools/management/base.py`),
     cuya guarda exige DEBUG y un entorno que no se declare de producción, sin opción que la salte.
-    Mal: hay cuatro caminos para poblar desarrollo (`seed_demo`, `datos_de_desarrollo cargar`,
-    `tools/ux/preparar-entorno.sh` y `seed_textos_largos`), y cada uno deja una base distinta.
+    Y toda base de desarrollo se puebla con `datos_de_desarrollo cargar`, también la del guion de
+    preparación y la del CI; la identidad del colectivo vive en `apps/devtools/identity.py` y qué
+    es un marcador lo decide `is_placeholder` (`apps/devtools/placeholders.py`). Mal: una siembra
+    aparte que deja una base distinta de la copia, o que repite la identidad con otros valores.
 
 ## Documentación relacionada
 

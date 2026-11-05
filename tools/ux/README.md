@@ -91,7 +91,7 @@ guiones ejecutándose de verdad. Comprueba que:
 
 Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
 no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre
-el stack de desarrollo con los datos de `backend/datos_de_desarrollo/`.
+el stack de desarrollo poblado con `datos_de_desarrollo cargar`, el mismo comando que en local.
 
 ```bash
 node tools/ux/browser-smoke.js                              # contra http://localhost:8000
@@ -131,7 +131,7 @@ cualquier máquina.
 
 | Archivo | Para qué | Uso |
 |---|---|---|
-| `preparar-entorno.sh` | Reconstruye el entorno de diseño en una máquina nueva: demostración, identidad real, 12 integrantes y material genérico. Idempotente. | `bash tools/ux/preparar-entorno.sh` |
+| `preparar-entorno.sh` | Reconstruye el entorno de diseño en una máquina nueva: levanta el stack, lo puebla con `datos_de_desarrollo cargar` (el único camino; ver el README), instala estas herramientas y pasa la prueba de humo. Se puede repetir: en una base de desarrollo ya poblada, `cargar` no hace nada. | `bash tools/ux/preparar-entorno.sh` |
 | `ver.js` | Capturas sueltas a cualquier ancho y de cualquier ruta, con aviso de scroll horizontal. | `node tools/ux/ver.js tools/ux/out/prueba 768 900 poemas=/poemas/` |
 | `hoja.js` | Hoja de contactos: varias capturas en una sola imagen. | `node tools/ux/hoja.js tools/ux/out/prueba tools/ux/out/prueba/hoja.png -d1440-full.png 620 3 home poemas` |
 | `superficies.js` | Bandas de tinta, planos de amarillo por pantalla, cajas blancas con borde y textos bajo AA contra el fondo que tienen debajo, página a página (pasos 13 y siguientes). Sale con 1 si una página no cumple. | `node tools/ux/superficies.js 951 900` (todas) o `… 390 800 home dossier` |

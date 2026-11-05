@@ -289,11 +289,11 @@ paréntesis, la ficha de la auditoría y el ticket de `docs/backlog-codigo.md` q
 - **Portada de podcast cuadrada (`itunes:image`).** Para publicar el feed
   `/feed/registros/` en Apple Podcasts falta un asset cuadrado ≥1400px en `SiteProfile`.
   El namespace iTunes ya se emite (`media/feeds.py`).
-- **Configurar la identidad del sitio en producción.** En desarrollo ya está:
-  `tools/ux/preparar-entorno.sh` pone el nombre, el lema y las redes, y el comando
-  `seed_material_generico`, que el mismo guion corre, la imagen para compartir (genérica). En
-  una base nueva de producción hay que ponerlos en el panel (Perfil del sitio): afectan al
-  título, al Open Graph y al JSON-LD.
+- **Configurar la identidad del sitio en producción.** En desarrollo ya está: la pone
+  `datos_de_desarrollo cargar` desde `apps/devtools/identity.py` (nombre, lema, redes…), y la
+  imagen para compartir (genérica) viaja en la copia de desarrollo. En una base nueva de
+  producción hay que ponerlos en el panel (Perfil del sitio): afectan al título, al Open Graph
+  y al JSON-LD.
 - **Índice `Event(published, starts_at)`** — micro-optimización de la auditoría #2, sin
   impacto observado. El epígrafe de los poemas ya entra en la búsqueda (C32, B82). (El
   `LIMIT` de la búsqueda ya viaja al SQL desde el hallazgo S-04, y `prefers-reduced-motion`

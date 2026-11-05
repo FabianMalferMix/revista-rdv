@@ -10,10 +10,10 @@ from django.db import DatabaseError, models
 class DevelopmentMarker(models.Model):
     """La marca de que esta base es de desarrollo.
 
-    La crean `datos_de_desarrollo cargar`, `datos_de_desarrollo marcar` y `seed_demo`, que solo
-    corren en desarrollo, y `datos_de_desarrollo exportar` se niega a correr sin ella: una copia
-    de producción restaurada en local no la tiene, y su contenido no debe acabar en el
-    repositorio público.
+    La crean `datos_de_desarrollo cargar` y `datos_de_desarrollo marcar`, que solo corren en
+    desarrollo. `datos_de_desarrollo exportar` se niega a correr sin ella: una copia de
+    producción restaurada en local no la tiene, y su contenido no debe acabar en el repositorio
+    público. Y `cargar` deja como está una base marcada que ya tiene contenido.
     """
 
     created_at = models.DateTimeField(auto_now_add=True)

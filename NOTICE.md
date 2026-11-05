@@ -42,7 +42,7 @@ cero y es la que está aplicada):
 | Bricolage Grotesque, con el eje de peso recortado a 400-700 | `backend/static/fonts/` | SIL Open Font License 1.1 | Conservar el aviso y la licencia (`fonts/OFL-bricolage-grotesque.txt`); ver `fonts/NOTICE.txt` |
 | Source Serif 4 (Adobe), modificada y renombrada «RdV Serif» | `backend/static/fonts/` | SIL Open Font License 1.1, con nombre reservado «Source» | Conservar el aviso y la licencia (`fonts/OFL-source-serif-4.txt`); una versión modificada no puede llamarse «Source»; ver `fonts/NOTICE.txt` |
 | DOMPurify | dentro del bundle de TinyMCE | Apache-2.0 / MPL-2.0 | Ver `vendor/tinymce/notices.txt` |
-| Imágenes de demostración | `backend/apps/devtools/management/commands/seed_assets/` | CC0 y Licencia Unsplash | Ninguna; son marcadores reemplazables (ver su `NOTICE.txt`) |
+| Fotos de demostración (`event-*.jpg`): de Lorem Picsum, originadas en Unsplash y pasadas a escala de grises | `backend/datos_de_desarrollo/media/assets/2026/07/` | Licencia Unsplash (uso libre, también comercial) | Ninguna; son marcadores reemplazables. Las demás imágenes de esa copia son marcadores dibujados para el proyecto (`seed_material_generico`) |
 
 Las versiones exactas y los `sha256` de lo vendorizado están en
 [`backend/static/vendor/VERSIONS.md`](backend/static/vendor/VERSIONS.md).
