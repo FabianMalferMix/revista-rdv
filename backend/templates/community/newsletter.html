@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load newsletter %}
 
-{% block title %}Novedades para prensa y gestores — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}Suscripción a las novedades — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 
 {% block boletin %}{% endblock %}
 
@@ -12,7 +12,7 @@
      el alta se vuelve a la página desde la que se envió.
   {% endcomment %}
   <header class="index-head" data-territorio="prensa">
-    <h1>Novedades para prensa y gestores</h1>
+    <h1>Suscripción a las novedades</h1>
   </header>
   {% newsletter_form form next %}
 {% endblock %}
