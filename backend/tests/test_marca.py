@@ -8,12 +8,12 @@ sello a toda la tarjeta. Antes la pestaña no tenía icono y /favicon.ico daba 4
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.urls import reverse
 from PIL import Image
 
 from apps.showcase.models import SiteProfile
+from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 
@@ -21,7 +21,7 @@ IMG = Path(settings.BASE_DIR) / "static" / "img"
 
 
 def _sopa(client):
-    return BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    return soup(client, reverse("content:home"))
 
 
 def test_el_sello_de_la_cabecera_lleva_el_monograma_y_se_llama_como_el_colectivo(client):

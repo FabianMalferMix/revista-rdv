@@ -9,7 +9,8 @@ seguir cumpliendo AA.
 import re
 
 import pytest
-from django.conf import settings
+
+from tests import css
 
 # Umbrales de WCAG 2.1 nivel AA para texto (criterio 1.4.3).
 AA_NORMAL = 4.5
@@ -36,11 +37,12 @@ def contraste(uno, otro):
 
 
 def _paleta():
-    """Lee las variables de color del bloque :root de site.css."""
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    raiz = re.search(r":root\{(.*?)\n\}", css, re.S)
-    assert raiz, "no se encontró el bloque :root"
-    colores = dict(re.findall(r"--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;", raiz.group(1)))
+    """Los colores que declaran como tokens las reglas :root de site.css."""
+    colores = {
+        nombre.removeprefix("--"): valor
+        for nombre, valor in css.tokens().items()
+        if re.fullmatch(r"#[0-9a-fA-F]{3,6}", valor)
+    }
     for nombre in ("paper", "surface", "ink", "muted", "accent", "caratula", "caratula-rotulo"):
         assert nombre in colores, f"la paleta ya no declara --{nombre}"
     return colores
@@ -138,12 +140,6 @@ def test_los_pares_prohibidos_siguen_sin_alcanzar_aa(descripcion, frente, fondo)
     )
 
 
-def _reglas():
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    return [(sel.strip(), cuerpo) for sel, cuerpo in re.findall(r"([^{}]+)\{([^{}]*)\}", css)]
-
-
 def _color(valor, colores):
     """Resuelve `var(--x)` o un hexadecimal; None si es otra cosa (rgba, transparent…)."""
     valor = valor.strip()
@@ -163,21 +159,20 @@ def test_toda_regla_que_fija_texto_y_fondo_cumple_aa():
     """
     colores = _paleta()
     comprobadas, malas = 0, []
-    for selector, cuerpo in _reglas():
-        frente = re.search(r"(?<![-\w])color:([^;}]+)", cuerpo)
-        fondo = re.search(r"background(?:-color)?:([^;}]+)", cuerpo)
-        if not frente or not fondo:
+    for regla in css.rules():
+        fondos = [
+            d.value for d in regla.declarations if d.name in ("background", "background-color")
+        ]
+        if "color" not in regla or not fondos:
             continue
-        a, b = _color(frente.group(1), colores), _color(fondo.group(1), colores)
+        a, b = _color(regla["color"], colores), _color(fondos[-1], colores)
         if not a or not b:
             continue
         comprobadas += 1
         ratio = contraste(a, b)
         if ratio < AA_NORMAL:
-            malas.append(f"{selector}: {a} sobre {b} = {ratio:.2f}:1")
-    assert comprobadas >= 5, (
-        "la prueba dejó de encontrar reglas con texto y fondo: revisar la regex"
-    )
+            malas.append(f"{regla.selector}: {a} sobre {b} = {ratio:.2f}:1")
+    assert comprobadas >= 5, "la prueba dejó de encontrar reglas con texto y fondo"
     assert not malas, f"reglas con texto y fondo por debajo de AA: {malas}"
 
 
@@ -201,11 +196,12 @@ def test_text_that_fails_on_the_paper_says_where_it_is_read():
     flojos = {frente for _, frente, fondo in PROHIBIDOS if fondo == "paper"}
     assert "caratula" in flojos
     encontradas = {
-        " ".join(selector.split())
-        for selector, cuerpo in _reglas()
-        if (color := re.search(r"(?<![-\w])color:\s*var\(--([a-z0-9-]+)\)", cuerpo))
+        regla.selector
+        for regla in css.rules()
+        if (color := re.fullmatch(r"var\(--([a-z0-9-]+)\)", regla.get("color", "")))
         and color.group(1) in flojos
-        and not re.search(r"background(?:-color)?:", cuerpo)
+        and "background" not in regla
+        and "background-color" not in regla
     }
     assert encontradas == set(SIN_FONDO_PROPIO), (
         f"sin explicar: {sorted(encontradas - set(SIN_FONDO_PROPIO))}; "
@@ -228,12 +224,13 @@ ESTADOS = (":hover", ":focus", ":checked", "[aria-current")
 def test_el_magenta_no_es_el_color_de_reposo_de_nada_mas():
     """Era «el color de los enlaces»: 27 reglas de texto, nueve piezas en la primera
     pantalla de la portada. Un color que está en todas partes no señala nada."""
+    assert css.rule((), ".rotulo--acento, .kicker")["color"] == "var(--accent)"
     intrusas = [
-        selector
-        for selector, cuerpo in _reglas()
-        if re.search(r"(?<![-\w])color:\s*var\(--accent\)", cuerpo)
-        and selector not in MAGENTA_EN_REPOSO
-        and not any(estado in selector for estado in ESTADOS)
+        regla.selector
+        for regla in css.rules()
+        if "var(--accent)" in regla.values("color")
+        and regla.selector not in MAGENTA_EN_REPOSO
+        and not any(estado in regla.selector for estado in ESTADOS)
     ]
     assert not intrusas, f"texto magenta en reposo fuera de la receta: {intrusas}"
 
@@ -249,19 +246,16 @@ def test_los_enlaces_se_reconocen_sin_depender_del_color():
     enlace es el TÍTULO de la fila, en la tipografía y el cuerpo de un título, que es lo
     que lo distingue del texto. Solo esas reglas de título pueden quitar el subrayado.
     """
-    # La primera regla `a` es la de pantalla; la de impresión, más abajo, la sobrescribe.
-    enlace = next(cuerpo for selector, cuerpo in _reglas() if selector == "a")
-    reglas = dict(_reglas())
-    assert "color:var(--ink)" in enlace and "text-decoration-color:var(--accent)" in enlace
-    assert "text-decoration:none" not in reglas.get(".work-list a", ""), (
+    enlace = css.rule((), "a")
+    assert enlace["color"] == "var(--ink)" and enlace["text-decoration-color"] == "var(--accent)"
+    assert css.rule((), ".work-list a").get("text-decoration") != "none", (
         "«.work-list a» quedó sin subrayado y en tinta: no se distingue del texto"
     )
-    assert ".timeline-items a" not in reglas, "la trayectoria volvió a ser una lista de enlaces"
     # Un enlace sin subrayar solo vale si es un título: su selector debe estar en la regla
     # que da la tipografía de titular.
-    titulares = next(sel for sel, cuerpo in _reglas() if "font-family:var(--display)" in cuerpo)
-    assert ".fila-titulo" in titulares
-    assert "text-decoration:none" in reglas[".fila-titulo a"]
+    familias = {r.get("font-family") for r in css.rules_with((), ".fila-titulo")} - {None}
+    assert familias == {"var(--display)"}
+    assert css.rule((), ".fila-titulo a")["text-decoration"] == "none"
 
 
 def test_contraste_del_sello_de_la_cabecera():

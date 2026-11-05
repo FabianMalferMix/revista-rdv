@@ -258,9 +258,6 @@ p{text-wrap:pretty}
   flex:1 0 auto; align-content:start}
 .lienzo > *{grid-column:content; min-width:0}
 .lienzo--ancho > *{grid-column:wide}
-.lienzo > .sangre, .lienzo > .band{grid-column:full}
-/* Una banda que cierra la página llega hasta el pie, sin franja de papel entre los dos. */
-.lienzo > .band:last-child{margin-bottom:calc(-1 * var(--s6))}
 /* Dentro de una banda a sangre, su contenido vuelve al carril ancho. */
 .band-in{width:min(var(--wide), 100% - 2*var(--gutter)); margin-inline:auto}
 a{color:var(--ink); text-decoration-color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
@@ -588,7 +585,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .index-head[data-territorio="colectivo"] h1::after,
 .seccion-cabeza[data-territorio="colectivo"] h2::after{background-color:var(--caratula)}
 .index-head .meta{margin:12px 0 0}
-.index-head > .btn, .index-head > p > .btn{margin-top:16px}
 /* Título de sección: un encabezado no puede medir menos que el texto que encabeza. Era
    un rótulo de 12 px sobre párrafos de 17; el del dossier lo fue hasta el ticket 5.1. */
 .subhead{margin:var(--s5) 0 var(--s3); font-size:var(--t5); font-weight:700; line-height:var(--lh-titulo);
@@ -723,11 +719,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .member-bio{color:var(--muted); font-size:var(--t0); margin:0}
 /* Sin marco ni esquinas: una foto impresa en la página. */
 .retrato{display:block; width:100%; height:auto; aspect-ratio:4/5; object-fit:cover}
-/* Sin foto, el monograma en la misma caja 4:5, sobre la hoja clara; en una banda, que ya
-   es la hoja clara, sobre el papel. */
+/* Sin foto, el monograma en la misma caja 4:5, sobre la hoja clara. */
 .monograma{display:flex; align-items:center; justify-content:center; background:var(--paper-2);
   font-family:var(--display); font-weight:700; font-size:var(--t6); letter-spacing:-.02em; color:var(--ink)}
-.band .monograma{background:var(--paper)}
 
 /* Duotono risográfico: la foto como una impresión a una tinta sobre el papel. Las sombras
    toman el azul del cartel (la tinta de la placa del reproductor) y las luces, el papel
@@ -1166,7 +1160,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* El aire entre bloques: era de hasta 112 px arriba y abajo, y con seis bloques sumaba más
    de una pantalla de papel vacío a 1440. */
 .home-block{padding-block:clamp(48px, 5vw, 80px)}
-.home-block > .subhead:first-child, .band-in > .subhead:first-child{margin-top:0}
 /* Cabeza de sección (D13): la cejilla dice a qué parte del sitio pertenece —los grupos del
    pie— y el título lleva el filete de su territorio, como las cabeceras de índice. */
 .seccion-cabeza{margin:0 0 var(--s4)}

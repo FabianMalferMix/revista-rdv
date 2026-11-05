@@ -8,7 +8,9 @@ diciendo qué variable la trae.
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from config.env import env_bool, env_float, env_int, env_list, env_str
+from config.env import env_bool, env_choice, env_float, env_int, env_list, env_str
+
+ENVIRONMENTS = ("development", "production")
 
 
 @pytest.mark.parametrize(
@@ -58,6 +60,21 @@ def test_env_list_drops_spaces_and_empty_items():
     assert env_list("DJANGO_ALLOWED_HOSTS", environ=environ) == ["revista.cl", "www.revista.cl"]
     # El valor por defecto se escribe como la variable, y se lee igual.
     assert env_list("DJANGO_ALLOWED_HOSTS", "a.cl, b.cl", environ={}) == ["a.cl", "b.cl"]
+
+
+def test_env_choice_understands_its_values_in_any_case():
+    environ = {"DJANGO_ENVIRONMENT": " Production "}
+    assert env_choice("DJANGO_ENVIRONMENT", ENVIRONMENTS, "development", environ) == "production"
+    # Control: sin la variable vale el valor por defecto, que es el otro.
+    assert env_choice("DJANGO_ENVIRONMENT", ENVIRONMENTS, "development", {}) == "development"
+
+
+def test_env_choice_rejects_an_unknown_value_naming_the_variable():
+    """Una errata en la declaración de producción no puede valer en silencio por desarrollo."""
+    with pytest.raises(ImproperlyConfigured, match="DJANGO_ENVIRONMENT='produccion'"):
+        env_choice(
+            "DJANGO_ENVIRONMENT", ENVIRONMENTS, "development", {"DJANGO_ENVIRONMENT": "produccion"}
+        )
 
 
 def test_env_str_keeps_secrets_untouched():

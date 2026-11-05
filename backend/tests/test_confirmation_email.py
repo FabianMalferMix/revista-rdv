@@ -25,7 +25,7 @@ EMAIL = "lectora@example.com"
 
 
 @pytest.fixture
-def flaky():
+def flaky(task_failures_stay_in_the_task):
     FlakyBackend.calls = 0
     mail_backends.failures.clear()
     with override_settings(EMAIL_BACKEND="tests.mail_backends.FlakyBackend"):

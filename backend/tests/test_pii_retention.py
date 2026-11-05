@@ -130,6 +130,9 @@ def test_sentry_no_recibe_el_token():
         "request": {"url": "https://sitio.cl/novedades/baja/SECRETO-123/"},
     }
     limpio = sentry_before_send(evento, {})
+    # Control: el evento conserva la ruta, con el token tapado.
+    assert limpio["transaction"] == "/novedades/baja/<redactado>/"
+    assert limpio["request"]["url"] == "https://sitio.cl/novedades/baja/<redactado>/"
     assert "SECRETO-123" not in limpio["transaction"]
     assert "SECRETO-123" not in limpio["request"]["url"]
 

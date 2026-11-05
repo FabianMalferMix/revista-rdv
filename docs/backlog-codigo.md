@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 60 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 67 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -151,13 +151,13 @@
 | B54 | Anuncios y foco en los componentes con JS | B11 | M | no | hecho (#242) |
 | B55 | Contraste de los sellos y axe en el CI | B11 | M | no | hecho (#243) |
 | B56 | Formularios públicos de un solo origen y accesibles | — | M | no | hecho (#244) |
-| B57 | Configuración de pruebas explícita | — | M | no | pendiente |
-| B58 | Un analizador de CSS para las pruebas | — | M | no | pendiente |
-| B59 | Selectores muertos | B58 | M | no | pendiente |
-| B60 | Migraciones de datos con prueba | — | M | no | pendiente |
-| B61 | Higiene de la suite | — | M | no | pendiente |
-| B62 | Herramientas de medición que no dan por bueno un error | — | S | no | pendiente |
-| B63 | Herramientas de desarrollo en su propia app | B07 | M | no | pendiente |
+| B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
+| B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
+| B59 | Selectores muertos | B58 | M | no | hecho (#247) |
+| B60 | Migraciones de datos con prueba | — | M | no | hecho (#248) |
+| B61 | Higiene de la suite | — | M | no | hecho (#249) |
+| B62 | Herramientas de medición que no dan por bueno un error | — | S | no | hecho (#250) |
+| B63 | Herramientas de desarrollo en su propia app | B07 | M | no | hecho (#251) |
 | B64 | Un solo camino para poblar desarrollo | B63 | M | no | pendiente |
 | B65 | Higiene del repositorio | — | S | no | pendiente |
 
@@ -1136,6 +1136,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 
 **Hecho cuando.** Una clave de plantilla mal escrita o un `{% static %}` inexistente hacen fallar la suite.
 
+**Hecho (2026-11-04).** `config/settings_test.py`, en `pytest.ini`; `settings.py` ya no mira `sys.modules`. El `string_if_invalid` que falla destapó tres parámetros opcionales de parciales que se leían con `|default` (con un `string_if_invalid` activo, Django devuelve el reemplazo antes de aplicar los filtros): `_mapa.html` recibe `en_menu` siempre, `etiqueta` se lee con `{% firstof %}` y las filas deciden `sin_firma_de` con un `{% if %}`. Las dos pruebas de la pantalla de bloqueo la pintaban sin petición: ahora provocan el bloqueo por HTTP. `tests/test_static_references.py` recorre las plantillas y los Media de los formularios y del panel, y pinta una página de cada tipo con `DEBUG=0` y el manifiesto de producción tras un `collectstatic` en un directorio temporal, con datos que activan los guiones condicionados de la portada.
+
 #### B58 · Un analizador de CSS para las pruebas
 
 **Hallazgos:** PRU-6, PRU-2 (invariantes e instantáneas) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —
@@ -1143,6 +1145,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 **Alcance.** La recomendación de PRU-6: un único ayudante basado en tinycss2 que devuelve cada regla con su contexto (`@media`, `@supports` o `@container`); se busca por contexto y selector, nunca por posición ni anclando en comentarios; se borran las seis copias. De PRU-2: las invariantes de hoja completa pasan a la hoja analizada, y las instantáneas de valores y las lápidas de los archivos que se migran se borran o se sustituyen por comprobaciones de B11.
 
 **Hecho cuando.** Ninguna prueba corta `site.css` como texto, y sacar una regla de su `@media` hace fallar la prueba que la vigila.
+
+**Hecho (2026-11-04).** `tests/css.py`, sobre tinycss2 (dependencia de desarrollo), con `css.rule(contexto, selector)`, que exige la regla en ese contexto y dice dónde está si no la encuentra; trece archivos migrados y los analizadores locales borrados. Se borraron cuatro lápidas (la sombra de las bandas, el sello que flotaba, la cinta y el título de 12 px) y las aserciones lápida de otras pruebas; las instantáneas pasaron a aserciones por contexto, selector y propiedad, y en algunos casos a la relación que de verdad importa (los 44 px como letra por interlínea más relleno, el `text-indent` del verso como su `padding-left` en negativo).
 
 #### B59 · Selectores muertos
 
@@ -1153,6 +1157,8 @@ Al terminar, se actualiza la entrada «`CELERY_TASK_ALWAYS_EAGER` en tests» del
 Las clases de la hoja del panel `admin/editorial_notes.css` (`nota-ajena` y `nota-ajena-aviso`) no las pone una plantilla, sino Python (`LockedNoteWidget`, en `apps/content/admin.py`): si la prueba recorre esa hoja, sus datos incluyen una ficha del panel con la nota de otra persona.
 
 **Hecho cuando.** Una regla nueva que no casa en ninguna página hace fallar la suite.
+
+**Hecho (2026-11-04).** Se borraron cinco reglas con ocho selectores que no casaban en ninguna de 127 páginas de desarrollo ni las pone ningún guion (la banda como hija directa del lienzo, el botón en la cabecera de índice, el monograma en una banda, el subtítulo como primer hijo). `tests/test_css_selectors_match.py` pinta unas 65 páginas con datos que cubren los estados opcionales (también el panel con la nota de otra persona, para la hoja de las notas) y exige que cada selector de `site.css` y de `admin/editorial_notes.css` case en alguna; antes de buscar quita los pseudoelementos, los estados que da el navegador y las 15 marcas que pone un guion, cada una con su motivo, y una invariante comprueba que cada marca de la lista la pone de verdad su guion.
 
 #### B60 · Migraciones de datos con prueba
 
@@ -1167,6 +1173,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 
 **Hecho cuando.** 0007 y 0010 tienen prueba de ida (y de vuelta, si existe), y la migración y el fixture leen el texto legal de la misma función.
 
+**Hecho (2026-11-04).** El fixture `migrate` (`conftest.py`, con `MigrationExecutor`) sustituye a los ayudantes locales. Cada `RunPython` tiene prueba: siete nuevas en `tests/test_data_migrations.py` (community 0003 y content 0004, también de vuelta; content 0007 y 0010, showcase 0004) y las que ya había. `apps/content/legal.py` da el texto vigente y crea las páginas que falten; lo usan 0007, 0010 y el fixture `legal_pages`.
+
 #### B61 · Higiene de la suite
 
 **Hallazgos:** PRU-8, PRU-9, PRU-10, AGE-4 (punto 6) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3
@@ -1178,6 +1186,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 - De PRU-10: `BASE_DIR` apunta a una copia en `tmp_path`; las marcas de base de datos, solo donde se usa; fuera el `cache.clear()` redundante.
 
 **Hecho cuando.** Después de correr la suite, `git status` no muestra cambios, y las fábricas viven en un solo módulo.
+
+**Hecho (2026-11-04).** Las fábricas son solo funciones de `tests/factories.py` (fuera los fixtures `make_article` y `make_poem`), con `make_published_article`, `make_published_poem`, slugs de un contador común y `soup(client, url)`, que exige el 200: así salieron dos pruebas que pasaban mirando un 404. 66 pruebas de «no aparece» ganaron su control positivo, más los cuatro casos de PRU-8 (la portada, ahora con una prueba de consultas con una pieza de cada cosa o con cuatro). La prueba de la versión de los estáticos trabaja sobre una copia. El fixture `frozen_rate_limit_window` fija la ventana de django-ratelimit en las nueve pruebas que agotan o cuentan un límite: fallaban si sus peticiones cruzaban el cambio de minuto. Las dos pruebas de filas que comparaban la fecha local con una en UTC se arreglaron en B60, porque bloqueaban el CI de 21:00 a 24:00 en Santiago.
 
 #### B62 · Herramientas de medición que no dan por bueno un error
 
@@ -1195,6 +1205,8 @@ De HER-7: la fuente de titulares se lee de `--display` en ejecución, una prueba
 
 **Hecho cuando.** Una página que da 404 hace fallar `capture.js`, y cambiar la fuente de titulares no deja ninguna herramienta midiendo la anterior.
 
+**Hecho (2026-11-04).** `capture.js` y `metrics.py` exigen el 200, y cada medición guarda el commit, el navegador y la huella de `datos.json`. `tools/ux/common.js` reúne la base, Chrome y `pages.txt`. `mutar.sh` corre la prueba primero sin mutar, en un worktree temporal y en un contenedor desechable con su propia base recreada (`test_resenas_mutar`), así que mutar una migración surte efecto sin envoltorios. La fuente de titulares se lee de `--display`; NOTICE.md y LICENSE ya no nombran Syne, y una prueba los ata a los `@font-face`. Otra exige que cada ruta de `pages.txt` exista en los datos de desarrollo.
+
 #### B63 · Herramientas de desarrollo en su propia app
 
 **Hallazgos:** HER-2 (puntos 1 y 2), MAN-2 (punto 3: la guarda común) · **Depende de:** B07 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3
@@ -1207,6 +1219,8 @@ De HER-7: la fuente de titulares se lee de `--display` en ejecución, una prueba
 Las pruebas fijan `settings.DEBUG = True`.
 
 **Hecho cuando.** En la imagen de producción, `manage.py help` no lista los comandos de desarrollo, y ninguno acepta `--force`.
+
+**Hecho (2026-11-04).** `seed_demo`, `seed_textos_largos`, `datos_de_desarrollo` y `seed_material_generico`, con sus datos, viven en `apps.devtools`, que se instala con `DEBUG` o `DJANGO_DEV_TOOLS=1` y queda fuera de la imagen de producción; `DevelopmentMarker` se queda ahí (en producción su tabla no existe y nada depende de ella). Heredan `DevelopmentCommand`, con una sola guarda (DEBUG, y que `DJANGO_ENVIRONMENT` no sea `production`, fijado en el compose de producción) y sin abreviaturas de opciones: Django aceptaba `--force` como abreviatura de `--force-color`. El job build-prod comprueba que la imagen de producción no ofrezca ninguno de los comandos, también con `DJANGO_DEBUG=1` y `DJANGO_DEV_TOOLS=1`.
 
 #### B64 · Un solo camino para poblar desarrollo
 

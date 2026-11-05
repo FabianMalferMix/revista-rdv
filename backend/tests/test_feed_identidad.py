@@ -43,6 +43,7 @@ def test_no_queda_rastro_de_la_identidad_antigua():
     perfil.save()
 
     titulo, descripcion = _canal()
+    assert titulo.startswith("Casa Tomada")  # control: el canal lleva el nombre del perfil
     assert "Revista literaria" not in titulo + descripcion
 
 

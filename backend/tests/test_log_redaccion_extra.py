@@ -62,7 +62,9 @@ def test_el_objeto_request_no_filtra_el_token():
 
 
 def test_un_extra_de_texto_tampoco():
-    assert VALOR_INVENTADO not in json.dumps(_formatea(ruta_original=RUTA))
+    salida = _formatea(ruta_original=RUTA)
+    assert "<redactado>" in salida["ruta_original"]  # control: el dato sale, tapado
+    assert VALOR_INVENTADO not in json.dumps(salida)
 
 
 def test_la_traza_tampoco():
@@ -75,7 +77,9 @@ def test_la_traza_tampoco():
             "django.request", logging.ERROR, __file__, 1, "boom", (), sys.exc_info()
         )
         salida = json.loads(JsonFormatter().format(registro))
-    assert VALOR_INVENTADO not in json.dumps(salida)
+    dumped = json.dumps(salida)
+    assert "ValueError" in dumped and "<redactado>" in dumped  # control: la traza sale, tapada
+    assert VALOR_INVENTADO not in dumped
 
 
 def test_no_se_redacta_lo_que_no_es_un_token():

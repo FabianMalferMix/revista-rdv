@@ -18,8 +18,10 @@ registros de acceso y del panel, los suscriptores, los envíos ni el historial e
 referencias a algo que no viaja quedan vacías. Las copias de las imágenes a otros tamaños
 tampoco: `cargar` las rehace.
 
-`exportar` solo corre en una base marcada como de desarrollo (con `cargar`, `marcar` o
-`seed_demo`): una copia de producción restaurada en local no lo está.
+Como todo comando de desarrollo, las tres acciones solo corren con DEBUG y fuera de producción
+(DevelopmentCommand). Y `exportar`, además, solo en una base marcada como de desarrollo (con
+`cargar`, `marcar` o `seed_demo`): una copia de producción restaurada en local no lo está,
+aunque corra con DEBUG.
 """
 
 import json
@@ -32,10 +34,11 @@ from django.core import serializers
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.db import models
 from django.db.models.functions import Now
 
+from apps.devtools.management.base import DevelopmentCommand
 from apps.devtools.models import DevelopmentMarker
 
 CARPETA = Path(settings.BASE_DIR) / "datos_de_desarrollo"
@@ -273,7 +276,7 @@ def exported_pks():
     return included
 
 
-class Command(BaseCommand):
+class Command(DevelopmentCommand):
     help = "Exporta, carga o marca los datos de desarrollo (solo el contenido público)."
 
     def add_arguments(self, parser):
@@ -351,8 +354,6 @@ class Command(BaseCommand):
         self.stdout.write(f"{len(datos)} filas y {len(archivos)} archivos en {CARPETA}")
 
     def cargar(self):
-        if not settings.DEBUG:
-            raise CommandError("Solo en desarrollo (DEBUG): son datos de prueba.")
         if not (CARPETA / "datos.json").exists():
             raise CommandError(f"No está {CARPETA / 'datos.json'}.")
         llenos = [e for e in CON_CONTENIDO if apps.get_model(e).objects.exists()]
@@ -379,7 +380,5 @@ class Command(BaseCommand):
         )
 
     def marcar(self):
-        if not settings.DEBUG:
-            raise CommandError("Solo en desarrollo (DEBUG): marca una base de datos de prueba.")
         DevelopmentMarker.mark()
         self.stdout.write("Base marcada como de desarrollo: ya se puede exportar desde aquí.")

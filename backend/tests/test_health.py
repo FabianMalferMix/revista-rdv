@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus
 from config import health
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 
@@ -101,7 +102,7 @@ def test_publishing_scheduled_items_records_the_heartbeat(heartbeat_key):
     assert health.check_heartbeat() is None
 
 
-def test_overdue_scheduled_pieces_are_reported(make_article):
+def test_overdue_scheduled_pieces_are_reported():
     assert health.check_scheduled() is None
     make_article(
         status=EditorialStatus.SCHEDULED, published_at=timezone.now() - timedelta(minutes=6)

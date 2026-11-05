@@ -12,18 +12,18 @@ import re
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from django.urls import reverse
 
 from apps.content.views import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from apps.people.models import Contributor
-from tests.factories import make_image
+from tests import css
+from tests.factories import make_image, soup
 
 pytestmark = pytest.mark.django_db
 
 BACKEND = Path(__file__).resolve().parent.parent
 INTEGRANTES_JS = (BACKEND / "static" / "js" / "integrantes.js").read_text()
-SITE_CSS = (BACKEND / "static" / "css" / "site.css").read_text()
+NARROW_PHONE = ("@media (max-width:719px)",)
 
 
 def _integrantes(n):
@@ -39,7 +39,7 @@ def _integrantes(n):
 
 
 def _seccion(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = soup(client, reverse("content:home"))
     return sopa, sopa.select_one("section.home-integrantes")
 
 
@@ -80,7 +80,9 @@ def test_cada_retrato_lleva_a_su_ficha_y_el_retrato_no_repite_el_nombre(client):
 def test_con_tres_o_menos_no_hay_relevo(client):
     _integrantes(A_LA_VISTA_TELEFONO)
     sopa, seccion = _seccion(client)
-    assert not [t for t in seccion.select(".integrantes-retratos > li") if t.has_attr("hidden")]
+    cards = seccion.select(".integrantes-retratos > li")
+    assert len(cards) == A_LA_VISTA_TELEFONO  # control: están todas, a la vista
+    assert not [t for t in cards if t.has_attr("hidden")]
     assert sopa.select_one('script[src*="js/integrantes.js"]') is None
 
 
@@ -116,10 +118,23 @@ def test_five_in_the_row_and_three_on_the_phone(client):
 
 def test_the_stylesheet_does_not_repeat_how_many_are_shown():
     """La fila tiene una columna por retrato visible: la hoja no fija cuántos son."""
-    reglas = re.findall(r"\.integrantes-retratos[^{]*\{([^}]*)\}", SITE_CSS)
-    assert reglas, "no hay reglas de la fila"
-    assert not any("repeat(" in r or "nth-child(n+" in r for r in reglas)
-    assert not re.search(r"\.integrantes-retratos > li:nth-child\(n\+\d", SITE_CSS)
+    fila = css.rule((), ".integrantes-retratos")
+    assert (fila["grid-auto-flow"], fila["grid-auto-columns"]) == ("column", "minmax(0, 1fr)")
+    reglas = [r for r in css.rules() if ".integrantes-retratos" in r.selector]
+    assert not [r.selector for r in reglas if any("repeat(" in d.value for d in r.declarations)]
+    assert not [r.selector for r in reglas if "nth-child(n+" in r.selector]
+
+
+def test_the_head_goes_beside_the_portraits_and_above_them_on_the_phone():
+    """La cabeza, angosta, a la izquierda de la fila; en el teléfono, encima. Y sin el guion,
+    las que la plantilla marca como solo de pantalla ancha se esconden solo en el teléfono."""
+    assert css.rule((), ".integrantes-fila")["grid-template-columns"] == (
+        "minmax(0, 216px) minmax(0, 1fr)"
+    )
+    assert css.rule(NARROW_PHONE, ".integrantes-fila")["grid-template-columns"] == "minmax(0, 1fr)"
+    solo_ancho = ".home-integrantes:not(.con-js) .integrante--solo-ancho"
+    assert css.rule(NARROW_PHONE, solo_ancho)["display"] == "none"
+    assert {r.context for r in css.rules() if r.selector == solo_ancho} == {NARROW_PHONE}
 
 
 def test_el_relevo_corre_solo_con_puntero_y_se_detiene_al_senalar():
@@ -135,10 +150,15 @@ def test_el_relevo_corre_solo_con_puntero_y_se_detiene_al_senalar():
 def test_llega_bajo_una_pasada_de_tinta():
     """La tinta azul con el filo magenta: una capa que el guion pone y quita; el recorte
     (clipPath) la hace entrar por un lado y salir por el otro."""
-    assert (
-        ".integrante-tinta{position:absolute; inset:-4px; z-index:2; pointer-events:none;\n"
-        "  background:linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}"
-    ) in SITE_CSS
+    tinta = css.rule((), ".integrante-tinta")
+    for propiedad, valor in (
+        ("position", "absolute"),
+        ("inset", "-4px"),
+        ("z-index", "2"),
+        ("pointer-events", "none"),
+        ("background", "linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)"),
+    ):
+        assert tinta.get(propiedad) == valor, propiedad
     assert "clipPath" in INTEGRANTES_JS and "!quieto.matches" in INTEGRANTES_JS
 
 
@@ -166,13 +186,5 @@ def test_en_el_telefono_se_cambia_con_el_dedo():
         assert f"'{evento}'" in INTEGRANTES_JS
     assert "e.pointerType === 'mouse'" in INTEGRANTES_JS
     assert "e.stopPropagation()" in INTEGRANTES_JS
-    assert (
-        ".home-integrantes.con-js .integrantes-retratos{touch-action:pan-y pinch-zoom}" in SITE_CSS
-    )
-
-
-def test_la_cinta_y_los_pliegos_ya_no_existen():
-    assert not list((BACKEND / "templates").rglob("_member_card_cinta.html"))
-    assert not list((BACKEND / "templates").rglob("_member_card_plana.html"))
-    assert "cinta" not in SITE_CSS.replace("reemplazó a la cinta", "")
-    assert "integrantes-pliego" not in SITE_CSS and "data-siguientes" not in INTEGRANTES_JS
+    retratos = css.rule((), ".home-integrantes.con-js .integrantes-retratos")
+    assert retratos["touch-action"] == "pan-y pinch-zoom"

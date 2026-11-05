@@ -161,7 +161,8 @@ vigente más cercano y no se agrava la deuda.
 9. **Tareas y migraciones.**
    - Cada tarea declara sus límites de tiempo, su política de reintento y si es idempotente, y se
      encola con `delay_on_commit`.
-   - Toda migración de datos usa `apps.get_model` y lleva su prueba.
+   - Toda migración de datos usa `apps.get_model` y lleva su prueba, con el fixture `migrate`
+     (`conftest.py`): la ida con los modelos de la migración anterior y, si existe, la vuelta.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
      anterior siga funcionando mientras se despliega. Hasta el lanzamiento pueden ir en uno (C30).
    - Los permisos de un modelo nuevo se reparten a los roles de forma explícita, en la matriz de
@@ -170,7 +171,9 @@ vigente más cercano y no se agrava la deuda.
    Bien: `publish_due_items` (`apps/content/tasks.py`) es idempotente ante un doble beat o un
    reintento.
 10. **Pruebas.** Comprueban lo que ve o hace una persona.
-    - Un `.css` o un `.js` solo se lee para afirmar una invariante.
+    - Un `.css` o un `.js` solo se lee para afirmar una invariante. La hoja se lee con
+      `tests/css.py`, que da cada regla con su contexto (`@media`, `@supports`, `@container`):
+      se busca por contexto y selector, nunca cortando el texto.
     - Toda prueba de «no aparece» lleva un control positivo en la misma respuesta.
     - Los permisos se prueban por HTTP, con los grupos reales.
 
@@ -179,8 +182,12 @@ vigente más cercano y no se agrava la deuda.
     regresión real la pasa. Si una prueba falla tras un cambio de diseño, no se copia el valor
     nuevo sin preguntarse qué vigilaba.
 11. **Herramientas de desarrollo.** No viven en las apps de producción ni se protegen con
-    `--force`, y hay un solo camino para poblar desarrollo. Mal: `seed_demo` está en
-    `apps/content`, y con `--force` corre también con `DEBUG=0`.
+    `--force`, y hay un solo camino para poblar desarrollo. Bien: los comandos de desarrollo
+    viven en `apps/devtools`, que solo se instala con `DEBUG` o `DJANGO_DEV_TOOLS=1` y no entra en
+    la imagen de producción, y heredan de `DevelopmentCommand` (`apps/devtools/management/base.py`),
+    cuya guarda exige DEBUG y un entorno que no se declare de producción, sin opción que la salte.
+    Mal: hay cuatro caminos para poblar desarrollo (`seed_demo`, `datos_de_desarrollo cargar`,
+    `tools/ux/preparar-entorno.sh` y `seed_textos_largos`), y cada uno deja una base distinta.
 
 ## Documentación relacionada
 

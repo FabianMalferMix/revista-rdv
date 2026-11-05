@@ -10,7 +10,6 @@ import logging
 from io import BytesIO
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -22,7 +21,7 @@ from PIL.TiffImagePlugin import IFDRational
 from apps.media.models import MediaAsset
 from apps.media.services import process_image
 from apps.showcase.models import SiteProfile
-from tests.factories import make_publication
+from tests.factories import make_publication, soup
 
 pytestmark = pytest.mark.django_db
 BLUE = (31, 115, 199)
@@ -134,12 +133,10 @@ def test_the_home_opens_no_image_even_with_the_cache_down(client, opened):
     with TestCase.captureOnCommitCallbacks(execute=True):
         profile.save()
     opened.clear()
-    response = client.get(reverse("content:home"))
-    assert response.status_code == 200
-    soup = BeautifulSoup(response.content, "html.parser")
-    spines = [rect["fill"] for rect in soup.select(".ejemplar-lomo-fondo rect")]
+    page = soup(client, reverse("content:home"))
+    spines = [rect["fill"] for rect in page.select(".ejemplar-lomo-fondo rect")]
     assert len(spines) == 3 and all(_near(fill, BLUE) for fill in spines)
-    assert soup.select_one("picture.portada-imagen source[type='image/avif']")
+    assert page.select_one("picture.portada-imagen source[type='image/avif']")
     assert opened == []
 
 

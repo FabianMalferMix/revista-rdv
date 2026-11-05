@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from apps.community.forms import SubscribeForm
 from apps.community.models import NewsletterSubscriber
+from apps.community.views import ALTA_NEUTRA
 
 pytestmark = pytest.mark.django_db
 S = NewsletterSubscriber.Status
@@ -111,14 +112,20 @@ def test_confirm_bad_token_404(client):
 def test_already_confirmed_not_reconfirmed(client, django_capture_on_commit_callbacks):
     NewsletterSubscriber.objects.create(email="z@example.com", status=S.CONFIRMED, token="t")
     with django_capture_on_commit_callbacks(execute=True):
-        client.post(reverse("community:subscribe"), {"email": "z@example.com", "apodo": ""})
+        resp = client.post(
+            reverse("community:subscribe"), {"email": "z@example.com", "apodo": ""}, follow=True
+        )
+    assert ALTA_NEUTRA in resp.content.decode()  # control: la respuesta es la de siempre
     assert len(mail.outbox) == 0  # no reenvía a quien ya confirmó
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_subscribe_honeypot_sends_no_mail(client, django_capture_on_commit_callbacks):
     with django_capture_on_commit_callbacks(execute=True):
-        client.post(reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"})
+        resp = client.post(
+            reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"}, follow=True
+        )
+    assert ALTA_NEUTRA in resp.content.decode()  # control: el bot recibe la respuesta de siempre
     assert not NewsletterSubscriber.objects.filter(email="bot@spam.com").exists()
     assert len(mail.outbox) == 0
 

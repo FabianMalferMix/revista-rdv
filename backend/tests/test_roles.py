@@ -26,6 +26,7 @@ PROJECT_MODELS = {
 
 
 def test_every_project_model_is_in_the_matrix():
+    assert "content.Article" in PROJECT_MODELS, "control: se leyeron los modelos del proyecto"
     classified = set(roles.EDITOR_PERMISSIONS) | roles.ADMIN_ONLY
     assert PROJECT_MODELS - classified == set(), "modelos sin clasificar en roles.py"
     assert classified - PROJECT_MODELS == set(), "roles.py nombra modelos que no existen"

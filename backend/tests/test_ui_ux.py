@@ -2,10 +2,10 @@
 
 import pytest
 from bs4 import BeautifulSoup
-from django.conf import settings
 from django.urls import reverse
 
-from tests.factories import make_event, make_photo
+from tests import css
+from tests.factories import make_article, make_event, make_photo
 
 pytestmark = pytest.mark.django_db
 
@@ -37,11 +37,17 @@ def test_the_search_panel_announces_a_count_and_not_the_whole_list(client):
 
 
 def test_css_has_focus_visible_overlay_and_lightbox():
-    css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
-    assert ":focus-visible" in css
-    assert ".skip" in css
-    assert "#search-results{position:absolute" in css
-    assert ".lightbox:target" in css
+    """El foco se ve en todo lo que se enfoca; el salto al contenido espera fuera de la vista
+    hasta recibir el foco; los resultados flotan sobre la página, y la vista ampliada sin
+    JavaScript se abre con su ancla."""
+    (foco,) = css.rules_with((), "a:focus-visible")
+    assert foco["outline"] == "2px solid var(--accent)"
+    salto = css.rule((), ".skip")
+    assert salto["position"] == "absolute" and salto["top"].startswith("-")
+    assert not css.rule((), ".skip:focus")["top"].startswith("-")
+    assert css.rule((), "#search-results")["position"] == "absolute"
+    assert css.rule((), ".lightbox")["display"] == "none"
+    assert css.rule((), ".lightbox:target")["display"] == "grid"
 
 
 def test_event_gallery_renders_lightbox(client):
@@ -63,7 +69,7 @@ def test_home_has_an_h1(client):
     assert b"<h1" in resp.content
 
 
-def test_article_card_title_is_h3(client, make_article):
+def test_article_card_title_is_h3(client):
     """El título de tarjeta es <h3>: cuelga de secciones <h2>, así la jerarquía de
     encabezados no queda aplanada (hallazgo #13). Aserción estructural con bs4."""
     from bs4 import BeautifulSoup

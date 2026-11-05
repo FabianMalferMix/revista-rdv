@@ -24,17 +24,21 @@ def test_axes_locks_out_repeated_failed_admin_logins(client):
     reset()
 
 
-def test_subscribe_is_rate_limited_by_ip(client):
+def test_subscribe_is_rate_limited_by_ip(client, frozen_rate_limit_window):
     url = reverse("community:subscribe")
     for i in range(5):  # rate 5/m: cinco pasan
         client.post(url, {"email": f"ok{i}@example.com", "next": "/"})
     # El sexto queda limitado: sin alta y con aviso.
     resp = client.post(url, {"email": "extra@example.com", "next": "/"}, follow=True)
-    assert not NewsletterSubscriber.objects.filter(email="extra@example.com").exists()
     assert b"Demasiados intentos" in resp.content
+    # Control: las cinco altas dentro del cupo sí quedaron.
+    assert NewsletterSubscriber.objects.filter(email__startswith="ok").count() == 5
+    assert not NewsletterSubscriber.objects.filter(email="extra@example.com").exists()
 
 
-def test_the_rate_limit_notice_waits_by_the_field_with_what_was_typed(client):
+def test_the_rate_limit_notice_waits_by_the_field_with_what_was_typed(
+    client, frozen_rate_limit_window
+):
     """El aviso del límite va en la página del boletín, junto al campo y con el correo escrito,
     para volver a intentarlo sin reescribirlo."""
     url = reverse("community:subscribe")
@@ -54,7 +58,7 @@ def test_subscribe_under_limit_still_works(client):
     assert NewsletterSubscriber.objects.filter(email="primera@example.com").exists()
 
 
-def test_submit_is_rate_limited_by_ip(client):
+def test_submit_is_rate_limited_by_ip(client, frozen_rate_limit_window):
     url = reverse("submissions:submit")
     for _ in range(10):  # rate 10/h
         client.post(url, {})
@@ -96,7 +100,7 @@ def test_axes_and_ratelimit_share_the_same_ip_resolver():
     assert settings.AXES_CLIENT_IP_CALLABLE == "config.clientip.client_ip"
 
 
-def test_rate_limit_buckets_are_isolated_per_client_ip(client):
+def test_rate_limit_buckets_are_isolated_per_client_ip(client, frozen_rate_limit_window):
     """Dos clientes reales distintos (distinta IP a la derecha de X-Forwarded-For) NO
     comparten el cupo: agotar el de uno no limita al otro (evita el DoS del cubo global)."""
     url = reverse("community:subscribe")

@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus, Poem
 from apps.media.models import Recording
+from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 
@@ -66,7 +67,9 @@ def test_despublicar_retira_la_grabacion_de_la_ficha():
 
     recording.published = False
     recording.save(update_fields=["published"])
-    assert recording.get_absolute_url().encode() not in Client().get(url).content
+    page = soup(Client(), url)
+    assert page.select_one("h1").get_text(strip=True) == "Umbral"  # control: la ficha sigue
+    assert recording.get_absolute_url() not in str(page)
 
 
 def test_la_tarjeta_del_listado_no_anuncia_registros_ineditos(client):

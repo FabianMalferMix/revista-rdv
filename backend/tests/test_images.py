@@ -80,6 +80,7 @@ def test_responsive_img_con_alt_vacio_cae_al_del_recurso():
 def test_responsive_img_hero_is_not_lazy():
     a = _asset()
     html = Template("{% load images %}{% responsive_img a lazy=False %}").render(Context({"a": a}))
+    assert f'src="{a.file.url}"' in html  # control: la imagen se dibuja
     assert "loading=" not in html  # imagen destacada (LCP): sin lazy
 
 

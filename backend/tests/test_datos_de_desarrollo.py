@@ -17,8 +17,8 @@ from django.core.management.base import CommandError
 from django.db import models
 from django.utils import timezone
 
-from apps.content.management.commands import datos_de_desarrollo as comando
 from apps.content.models import Article, EditorialStatus
+from apps.devtools.management.commands import datos_de_desarrollo as comando
 from apps.devtools.models import DevelopmentMarker
 from apps.media.models import MediaAsset
 from apps.showcase.models import Publication
@@ -70,6 +70,8 @@ def test_solo_viaja_lo_publicado_y_las_piezas_de_demostracion():
 
 
 def test_sin_campos_privados():
+    # Control: viajan filas de modelos que tienen campos privados, así que hay algo que mirar.
+    assert any(comando.PRIVATE_FIELDS.get(etiqueta(fila)) for fila in DATOS)
     for fila in DATOS:
         privados = comando.PRIVATE_FIELDS.get(etiqueta(fila), set())
         assert not privados & set(fila["fields"]), fila["model"]
@@ -92,10 +94,13 @@ def test_sin_contrasenas_ni_cuentas_ni_correos_privados():
     # Las referencias a cuentas, leídas de los modelos: `author` de una mención en prensa es el
     # nombre del periodista, no una cuenta.
     usuario = apps.get_model(settings.AUTH_USER_MODEL)
+    checked = 0
     for fila in DATOS:
         for campo in apps.get_model(fila["model"])._meta.get_fields():
             if isinstance(campo, models.ForeignKey) and campo.related_model is usuario:
+                checked += 1
                 assert fila["fields"].get(campo.name) is None, (fila["model"], campo.name)
+    assert checked, "control: viajan filas de modelos que apuntan a una cuenta"
 
 
 def test_cada_archivo_que_nombra_viaja_con_el():
@@ -115,14 +120,15 @@ def test_la_copia_entra_en_una_base_recien_migrada():
 
 @pytest.fixture
 def carpeta(settings, tmp_path, monkeypatch):
+    # Los comandos de desarrollo solo corren con DEBUG.
+    settings.DEBUG = True
     settings.MEDIA_ROOT = tmp_path / "media"
     monkeypatch.setattr(comando, "CARPETA", tmp_path / "datos")
     return tmp_path / "datos"
 
 
 @pytest.mark.django_db
-def test_de_ida_y_vuelta_sin_la_cuenta(settings, carpeta, django_user_model):
-    settings.DEBUG = True
+def test_de_ida_y_vuelta_sin_la_cuenta(carpeta, django_user_model):
     DevelopmentMarker.mark()
     tapa = make_image("tapa-ida-y-vuelta")
     tapa.uploaded_by = django_user_model.objects.create_user("alguien", "alguien@ejemplo.cl")
@@ -153,10 +159,13 @@ def test_lo_no_publicado_y_lo_que_nadie_usa_no_viajan(carpeta):
     Article.objects.create(slug="borrador-secreto", title="Borrador", status=EditorialStatus.DRAFT)
     make_publication(slug="sin-publicar", published=False)
     make_image("suelta", alt="Imagen que nada usa")
+    make_publication(slug="con-tapa", cover=make_image("tapa-usada", alt="Tapa que se usa"))
     call_command("datos_de_desarrollo", "exportar", verbosity=0)
     exportado = (carpeta / "datos.json").read_text("utf-8")
     assert '"a-la-vista"' in exportado
     assert "borrador-secreto" not in exportado and "sin-publicar" not in exportado
+    # Control: la tapa de lo publicado viaja, con su archivo.
+    assert "Tapa que se usa" in exportado and list((carpeta / "media").rglob("tapa-usada*"))
     assert "Imagen que nada usa" not in exportado
     assert not list((carpeta / "media").rglob("suelta*"))
 
@@ -195,10 +204,3 @@ def test_cargar_no_pisa_una_base_con_contenido(settings):
     make_publication(slug="ya-estaba")
     with pytest.raises(CommandError, match="ya tiene contenido"):
         call_command("datos_de_desarrollo", "cargar")
-
-
-@pytest.mark.parametrize("accion", ["cargar", "marcar"])
-def test_cargar_y_marcar_solo_en_desarrollo(settings, accion):
-    settings.DEBUG = False
-    with pytest.raises(CommandError, match="Solo en desarrollo"):
-        call_command("datos_de_desarrollo", accion)

@@ -15,6 +15,7 @@ from django.urls import resolve
 
 from apps.content.models import EditorialStatus
 from apps.media.models import Recording
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 SITE = "https://revista.example.org"
@@ -22,7 +23,7 @@ HOSTS = ["uno.example.com", "dos.example.com"]
 
 
 @pytest.fixture
-def feeds_with_items(settings, make_article):
+def feeds_with_items(settings):
     settings.SITE_URL = SITE
     settings.ALLOWED_HOSTS = HOSTS
     make_article(status=EditorialStatus.PUBLISHED, slug="un-texto")

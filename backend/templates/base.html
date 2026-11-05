@@ -167,7 +167,7 @@
          Se repiten aquí los cinco de la barra: quien llega al final de una página larga no
          debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
       {% endcomment %}
-      {% include "partials/_mapa.html" with sin_contacto=True %}
+      {% include "partials/_mapa.html" with en_menu=False sin_contacto=True %}
       {# La página del boletín lo pinta en su contenido, con el error junto al campo: ahí no se repite. #}
       {% block boletin %}{% newsletter_form %}{% endblock %}
       <p class="foot-legal">

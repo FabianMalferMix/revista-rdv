@@ -133,6 +133,29 @@ jobs:
       - name: Construir imagen de producción
         run: docker build --target prod -t resenas-prod ./backend
 
+      - name: La imagen de producción no trae las herramientas de desarrollo
+        run: |
+          # Los comandos de apps/devtools, leídos del árbol: uno nuevo queda vigilado sin tocar esto.
+          DESARROLLO=$(find backend/apps/devtools/management/commands -maxdepth 1 -name '[!_]*.py' -exec basename {} .py \; | sort)
+          [ -n "$DESARROLLO" ] || { echo "FALLO: no se encontraron los comandos de desarrollo"; exit 1; }
+          echo "comandos de desarrollo:" $DESARROLLO
+          # Con el entorno de producción del CI (DEBUG=0) y también pidiéndolas con DEBUG=1 y
+          # DJANGO_DEV_TOOLS=1: su código no entra en la imagen (backend/.dockerignore).
+          for pedido in "" "-e DJANGO_DEBUG=1 -e DJANGO_DEV_TOOLS=1"; do
+            # $pedido va sin comillas: son opciones de docker run, una por palabra.
+            COMANDOS=$(docker run --rm --env-file ci/prod.env $pedido --entrypoint python resenas-prod manage.py help --commands)
+            echo "$COMANDOS" | grep -qx setup_groups \
+              || { echo "FALLO: manage.py help no listó los comandos (${pedido:-DEBUG=0})"; exit 1; }
+            for comando in $DESARROLLO; do
+              if echo "$COMANDOS" | grep -qx "$comando"; then
+                echo "FALLO: la imagen de producción ofrece $comando (${pedido:-DEBUG=0})"; exit 1
+              fi
+            done
+          done
+          docker run --rm --entrypoint sh resenas-prod -c '! test -e apps/devtools' \
+            || { echo "FALLO: apps/devtools está en la imagen de producción"; exit 1; }
+          echo "OK: la imagen de producción no trae ni lista los comandos de desarrollo"
+
       - name: Smoke de arranque (gunicorn + /healthz/)
         run: |
           # El comando de la imagen, con las opciones de gunicorn.conf.py. DEBUG=1 evita el

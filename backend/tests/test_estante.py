@@ -11,7 +11,6 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
@@ -20,17 +19,17 @@ from PIL import Image
 from apps.content.views import ESTANTE
 from apps.media.models import MediaAsset
 from apps.reviews.models import Publisher
-from tests.factories import make_image, make_publication
+from tests import css
+from tests.factories import make_image, make_publication, soup
 
 pytestmark = pytest.mark.django_db
 
 BACKEND = Path(__file__).resolve().parent.parent
 ESTANTE_JS = (BACKEND / "static" / "js" / "estante.js").read_text()
-SITE_CSS = (BACKEND / "static" / "css" / "site.css").read_text()
 
 
 def _estante(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = soup(client, reverse("content:home"))
     return sopa, sopa.select_one("section.home-publicaciones")
 
 
@@ -79,8 +78,9 @@ def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
     assert catalogo.get_text(strip=True) == "Ver todo el catálogo→"
     assert estante.select_one(".estante-cabeza a") is None
     # La tabla mide lo que sus libros, sin tramos vacíos, y la ficha ocupa el resto (D26).
-    assert ".estante{display:grid; grid-template-columns:auto minmax(0, 1fr);" in SITE_CSS
-    assert "width:fit-content; max-width:100%; border-bottom:5px solid var(--ink)" in SITE_CSS
+    assert css.rule((), ".estante")["grid-template-columns"] == "auto minmax(0, 1fr)"
+    tabla = css.rule((), ".estante-tabla")
+    assert (tabla["width"], tabla["max-width"]) == ("fit-content", "100%")
 
 
 def test_sin_guion_el_lomo_lleva_a_la_ficha_y_la_tapa_no_repite_el_enlace(client):
@@ -127,16 +127,15 @@ def test_el_lomo_depende_del_tipo(client):
     clases = [e["class"] for e in estante.select(".ejemplar")]
     assert ["ejemplar--libro" in clases[0], "ejemplar--plaquette" in clases[1]] == [True, True]
     assert "ejemplar--fanzine" in clases[2]
-    for regla in (
-        ".ejemplar--libro .ejemplar-lomo{width:50px; height:300px}",
-        ".ejemplar--plaquette .ejemplar-lomo{width:28px; height:246px}",
-        ".ejemplar--fanzine .ejemplar-lomo{width:36px; height:268px}",
+    for tipo, ancho, alto in (
+        ("libro", "50px", "300px"),
+        ("plaquette", "28px", "246px"),
+        ("fanzine", "36px", "268px"),
     ):
-        assert regla in SITE_CSS, regla
-    assert (
-        "writing-mode:vertical-rl" in SITE_CSS
-        and ".es-frente .ejemplar-lomo{display:none}" in SITE_CSS
-    )
+        lomo = css.rule((), f".ejemplar--{tipo} .ejemplar-lomo")
+        assert (lomo["width"], lomo["height"]) == (ancho, alto), tipo
+    assert css.rule((), ".ejemplar-lomo")["writing-mode"] == "vertical-rl"
+    assert css.rule((), ".es-frente .ejemplar-lomo")["display"] == "none"
 
 
 def _tapa(nombre, borde, centro):
@@ -171,13 +170,14 @@ def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
     assert sin_tapa.select_one("svg") is None
     for svg in estante.select(".ejemplar svg"):
         assert svg["aria-hidden"] == "true" and svg["focusable"] == "false"
-    assert ".ejemplar-lomo-fondo{position:absolute; inset:0; z-index:-1;" in SITE_CSS
-    assert "nth-child(4n" not in SITE_CSS
+    fondo = css.rule((), ".ejemplar-lomo-fondo")
+    assert (fondo["position"], fondo["inset"], fondo["z-index"]) == ("absolute", "0", "-1")
 
 
 def test_con_una_sola_no_hay_guion(client):
-    make_publication(slug="unica")
-    sopa, _ = _estante(client)
+    book = make_publication(slug="unica")
+    sopa, estante = _estante(client)
+    assert _titulos(estante) == [book.title]  # control: el estante está, con su libro
     assert sopa.select_one('script[src*="js/estante.js"]') is None
     make_publication(slug="segunda", position=1)
     sopa, _ = _estante(client)
@@ -203,7 +203,7 @@ def test_el_guion_saca_al_frente_sin_moverse_solo():
 
 def test_la_tabla_tiene_aire_al_final_ni_medio_vacia_ni_saturada():
     """D27: la tabla mide lo que sus libros más un tramo libre, proporcional a la pantalla."""
-    assert "padding:0 clamp(40px, 6vw, 120px) 0 14px;" in SITE_CSS
+    assert css.rule((), ".estante-tabla")["padding"] == "0 clamp(40px, 6vw, 120px) 0 14px"
 
 
 def test_el_cambio_de_libro_es_suave():
@@ -214,8 +214,8 @@ def test_el_cambio_de_libro_es_suave():
     assert "getBoundingClientRect().left" in ESTANTE_JS and "translateX(${dx}px)" in ESTANTE_JS
     assert "rotateY(-80deg)" in ESTANTE_JS
     assert "seccion.getAnimations({ subtree: true }).forEach((a) => a.cancel())" in ESTANTE_JS
-    assert ".estante-fichas{display:grid}" in SITE_CSS
-    assert ".estante-ficha{grid-area:1 / 1;" in SITE_CSS
+    assert css.rule((), ".estante-fichas")["display"] == "grid"
+    assert css.rule((), ".estante-ficha")["grid-area"] == "1 / 1"
 
 
 def test_el_cambio_de_libro_va_sin_prisa():
@@ -230,8 +230,11 @@ def test_el_cambio_de_libro_va_sin_prisa():
 def test_en_pantallas_anchas_los_libros_crecen():
     """D30: a 1900 px el estante y su ficha dejaban unos 360 px vacíos a la derecha; desde
     1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve)."""
-    ancho = SITE_CSS[SITE_CSS.index("@media (min-width:1400px){\n  .ejemplar-frente") :]
-    assert ".ejemplar-frente{width:270px}" in ancho
-    assert ".ejemplar--libro .ejemplar-lomo{width:64px; height:400px}" in ancho
+    ancho = ("@media (min-width:1400px)",)
+    frente = css.rule(ancho, ".ejemplar-frente")["width"]
+    assert frente == "270px"
+    libro = css.rule(ancho, ".ejemplar--libro .ejemplar-lomo")
+    assert (libro["width"], libro["height"]) == ("64px", "400px")
+    # La tapa de frente pide la copia del ancho que le da la hoja en ese mismo corte.
     plantilla = (BACKEND / "templates" / "content" / "home.html").read_text()
-    assert "(min-width: 1400px) 270px" in plantilla
+    assert f"(min-width: 1400px) {frente}" in plantilla

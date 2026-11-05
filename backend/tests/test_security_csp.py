@@ -13,6 +13,8 @@ from django.utils import timezone
 from apps.content.models import EditorialStatus
 from config.csp import ContentSecurityPolicyMiddleware
 from config.staticfiles import TINYMCE_DIR
+from tests import css
+from tests.factories import make_article
 
 CSP = "Content-Security-Policy"
 CSP_RO = "Content-Security-Policy-Report-Only"
@@ -55,6 +57,7 @@ def test_no_hay_documentos_navegables_entre_los_estaticos():
     from pathlib import Path
 
     static = Path(__file__).resolve().parent.parent / "static"
+    assert (static / "css" / "site.css").is_file(), "control: se recorren los estáticos"
     navegables = [
         p.relative_to(static)
         for p in static.rglob("*")
@@ -87,7 +90,9 @@ def test_style_src_se_relaja_solo_en_el_panel():
 
 def test_no_nonce_when_template_does_not_use_it():
     # Sin acceder a request.csp_nonce, la directiva no incluye nonce alguno.
-    assert "'nonce-" not in _mw()(RequestFactory().get("/"))[CSP]
+    policy = _mw()(RequestFactory().get("/"))[CSP]
+    assert "script-src 'self'" in policy  # control: la directiva está
+    assert "'nonce-" not in policy
 
 
 def test_nonce_appears_in_header_when_used_and_matches():
@@ -124,9 +129,8 @@ def test_does_not_override_upstream_policy():
 
 # ── Integración: self-host y cabecera en páginas reales ───────
 
-pytestmark = pytest.mark.django_db
 
-
+@pytest.mark.django_db
 def test_home_carries_csp_and_selfhosts_htmx(client):
     resp = client.get(reverse("content:home"))
     assert resp.status_code == 200
@@ -136,6 +140,7 @@ def test_home_carries_csp_and_selfhosts_htmx(client):
     assert b"vendor/htmx/htmx.min.js" in resp.content
 
 
+@pytest.mark.django_db
 def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     """Por defecto htmx mete sus estilos de indicador en un <style> en línea: la CSP lo bloquea
     y la consola avisa en cada página. Con `includeIndicatorStyles: false` no lo intenta, y sus
@@ -145,8 +150,8 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)
     assert meta and json.loads(meta.group(1)) == {"includeIndicatorStyles": False}
     assert contenido.index('name="htmx-config"') < contenido.index("vendor/htmx/htmx.min.js")
-    css = (Path(__file__).resolve().parent.parent / "static" / "css" / "site.css").read_text()
-    assert ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}" in css
+    indicador = css.rule((), ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator")
+    assert indicador["opacity"] == "1"
 
 
 def test_los_comentarios_de_una_linea_no_ocupan_dos():
@@ -155,16 +160,23 @@ def test_los_comentarios_de_una_linea_no_ocupan_dos():
     en medio de la página, la CSP lo bloqueó y se tragó el buscador. Los de varias líneas van
     con {% comment %}."""
     plantillas = Path(__file__).resolve().parent.parent / "templates"
-    partidos = [
-        f"{ruta.relative_to(plantillas)}:{n}"
+    lines = [
+        (ruta, n, linea)
         for ruta in plantillas.rglob("*.html")
         for n, linea in enumerate(ruta.read_text("utf-8").splitlines(), 1)
-        if "{#" in linea and "#}" not in linea.split("{#", 1)[1]
+        if "{#" in linea
+    ]
+    assert len(lines) >= 10, "control: la búsqueda dejó de encontrar los comentarios"
+    partidos = [
+        f"{ruta.relative_to(plantillas)}:{n}"
+        for ruta, n, linea in lines
+        if "#}" not in linea.split("{#", 1)[1]
     ]
     assert not partidos, partidos
 
 
-def test_article_detail_jsonld_carries_matching_nonce(client, make_article):
+@pytest.mark.django_db
+def test_article_detail_jsonld_carries_matching_nonce(client):
     article = make_article(slug="csp-art", title="Artículo CSP")
     article.status = EditorialStatus.PUBLISHED
     article.published_at = timezone.now()
@@ -186,6 +198,7 @@ def test_admin_article_add_selfhosts_tinymce(admin_client):
     assert CSP in resp  # el panel editorial también va protegido
 
 
+@pytest.mark.django_db
 def test_permissions_policy_header_is_restrictive(client):
     """Se emite una Permissions-Policy restrictiva en las respuestas (hallazgo #16)."""
     resp = client.get(reverse("content:home"))

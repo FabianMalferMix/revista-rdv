@@ -4,21 +4,22 @@ from django.db import IntegrityError
 
 from apps.content.models import Article, EditorialStatus
 from apps.people.models import Contributor, SocialLink
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 
 
-def test_reading_time_is_derived(make_article):
+def test_reading_time_is_derived():
     article = make_article(body="palabra " * 400)
     assert article.reading_time == 2  # 400 palabras / 200
 
 
-def test_reading_time_minimum_one(make_article):
+def test_reading_time_minimum_one():
     article = make_article(body="una sola línea corta")
     assert article.reading_time >= 1
 
 
-def test_search_vector_populated(make_article):
+def test_search_vector_populated():
     # El vector se construye con unaccent() (migración 0011): el título acentuado se
     # encuentra con un término sin acento, que es como consulta la vista.
     article = make_article(title="Reseña de poesía chilena", status=EditorialStatus.PUBLISHED)
@@ -26,14 +27,14 @@ def test_search_vector_populated(make_article):
     assert article in match
 
 
-def test_body_is_sanitized_on_save(make_article):
+def test_body_is_sanitized_on_save():
     article = make_article(body='<p>Texto legítimo</p><script>alert("xss")</script>')
     assert "<script" not in article.body
     assert "alert" not in article.body  # el contenido del script también se elimina
     assert "<p>Texto legítimo</p>" in article.body
 
 
-def test_sanitizer_keeps_allowed_formatting(make_article):
+def test_sanitizer_keeps_allowed_formatting():
     article = make_article(
         body='<p><strong>Negrita</strong> y <a href="https://x.cl">enlace</a>.</p>'
     )

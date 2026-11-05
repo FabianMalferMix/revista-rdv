@@ -10,6 +10,8 @@ pytest-cov>=5,<8
 pytest-randomly>=5.0.0,<6
 pytest-xdist>=3.6,<4
 beautifulsoup4>=4.12,<5
+# Las pruebas leen site.css con un analizador de CSS real (tests/css.py).
+tinycss2>=1.4,<2
 ruff>=0.17.3,<1
 # Compila los lockfiles (CONTRIBUTING.md, «Dependencias»).
 pip-tools>=7.6.2,<8

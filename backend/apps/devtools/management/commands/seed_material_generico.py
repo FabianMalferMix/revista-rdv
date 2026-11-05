@@ -16,11 +16,11 @@ from io import BytesIO
 
 from django.conf import settings
 from django.core.files.base import ContentFile
-from django.core.management.base import BaseCommand, CommandError
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from apps.agenda.models import Event, EventPhoto
 from apps.content.models import Article
+from apps.devtools.management.base import DevelopmentCommand
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.reviews.models import Work
@@ -326,11 +326,10 @@ def _foto_grupo(nombres):
 # ── Comando ───────────────────────────────────────────────────────────────
 
 
-class Command(BaseCommand):
+class Command(DevelopmentCommand):
     help = "Genera material visual genérico (marcadores con proporciones reales). Idempotente."
 
     def add_arguments(self, parser):
-        parser.add_argument("--force", action="store_true", help="Permite correrlo con DEBUG=0.")
         parser.add_argument(
             "--fotos-por-evento", type=int, default=6, help="Fotos de lectura por evento (6)."
         )
@@ -341,11 +340,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if not settings.DEBUG and not options["force"]:
-            raise CommandError(
-                "seed_material_generico crea contenido ficticio: no debe correr en producción. "
-                "Con DEBUG=0 exige --force explícito."
-            )
         self.creados = 0
         self.regenerar = options["regenerar"]
         fotos_por_evento = max(0, options["fotos_por_evento"])

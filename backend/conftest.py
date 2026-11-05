@@ -65,6 +65,33 @@ def _isolated_media(settings, tmp_path):
 
 
 @pytest.fixture
+def frozen_rate_limit_window(monkeypatch):
+    """Una sola ventana de django-ratelimit durante toda la prueba. La biblioteca cuenta por
+    ventanas fijas, del periodo de cada límite, y el fin de la ventana entra en la clave del
+    contador: si las peticiones de una prueba cruzan un corte, la cuenta vuelve a cero y el
+    límite no llega. Lo piden las pruebas que agotan un límite."""
+    import time
+
+    from django_ratelimit import core
+
+    window = int(time.time()) + 3600
+    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
+    return window
+
+
+@pytest.fixture
+def task_failures_stay_in_the_task():
+    """Para las pruebas que hacen fallar una tarea a propósito: su excepción no llega a la
+    prueba (la suite la propaga, config/settings_test.py), y el reintento corre como en el
+    worker. Celery lee los ajustes una vez, con su prefijo: override_settings no le llega."""
+    from config.celery import app
+
+    app.conf.update(CELERY_TASK_EAGER_PROPAGATES=False)
+    yield
+    app.conf.update(CELERY_TASK_EAGER_PROPAGATES=True)
+
+
+@pytest.fixture
 def groups(db):
     """Los tres grupos CON sus permisos, como en producción.
 
@@ -95,77 +122,39 @@ def autor(db, groups):
 
 @pytest.fixture
 def legal_pages(db):
-    """Re-crea las páginas legales que siembran las migraciones de datos (0007 y la
-    actualización a Ley 21.719 de 0010), reutilizando sus funciones RunPython. Lo
-    necesitan los tests que consultan esas páginas directamente, porque un test
-    transaccional previo (transaction=True) pudo vaciar la tabla."""
-    import importlib
+    """Las páginas legales, publicadas y con el texto que les dan las migraciones: las crea, si
+    faltan, la misma función de `apps/content/legal.py` que usa la migración. Lo necesitan las
+    pruebas que consultan esas páginas, porque una prueba transaccional previa (transaction=True)
+    vacía la tabla, y con ella lo que sembraron las migraciones."""
+    from apps.content import legal
+    from apps.content.models import Page
 
-    from django.apps import apps as django_apps
-
-    for module, func in (
-        ("apps.content.migrations.0007_legal_pages", "create_pages"),
-        ("apps.content.migrations.0010_privacy_ley_21719", "update_privacy"),
-    ):
-        getattr(importlib.import_module(module), func)(django_apps, None)
-
-
-def _dated(fields):
-    """Lo publicado, programado o archivado necesita fecha (la restricción de EditorialItem): si
-    la prueba no da una, la pieza se publicó ahora o sale mañana."""
-    from datetime import timedelta
-
-    from django.utils import timezone
-
-    from apps.content.models import EditorialStatus as S
-
-    if "published_at" not in fields and fields.get("status") in {
-        S.PUBLISHED,
-        S.ARCHIVED,
-        S.SCHEDULED,
-    }:
-        tomorrow = fields["status"] == S.SCHEDULED
-        fields["published_at"] = timezone.now() + timedelta(days=1 if tomorrow else 0)
+    legal.create_pages(Page)
 
 
 @pytest.fixture
-def make_article(db):
-    """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
-    from apps.content.models import Article, EditorialStatus
+def migrate(transactional_db):
+    """Lleva una app a una de sus migraciones y devuelve los modelos históricos de ese momento:
+    `old = migrate("content", "0013_permisos_de_revisar_y_publicar")` y después
+    `old.get_model("content", "Article")`. Al terminar, la base vuelve a las últimas migraciones.
 
-    def _make(**kwargs):
-        n = Article.objects.count()
-        defaults = {
-            "slug": f"articulo-{n}",
-            "title": "Título de prueba",
-            "body": "palabra " * 250,
-            "status": EditorialStatus.DRAFT,
-        }
-        defaults.update(kwargs)
-        _dated(defaults)
-        return Article.objects.create(**defaults)
+    Una migración de datos se prueba así: se va a la migración anterior, se crean con sus modelos
+    las filas que la migración transforma, se migra y se comprueba qué quedó; si tiene vuelta, se
+    vuelve a la anterior y se comprueba otra vez. La base es transaccional: cada migración se
+    confirma por separado, como en un despliegue, y PostgreSQL no deja alterar una tabla que
+    tiene comprobaciones de clave foránea pendientes en la misma transacción.
+    """
+    from django.db import connection
+    from django.db.migrations.executor import MigrationExecutor
 
-    return _make
+    def migrate_to(app, name):
+        executor = MigrationExecutor(connection)
+        executor.migrate([(app, name)])
+        return executor.loader.project_state([(app, name)]).apps
 
-
-@pytest.fixture
-def make_poem(db):
-    """Fábrica de poemas. Uso: make_poem(owner=autor, status=..., title=...)."""
-    from apps.content.models import EditorialStatus, Poem
-
-    def _make(**kwargs):
-        n = Poem.objects.count()
-        defaults = {
-            "slug": f"poema-{n}",
-            "title": "Poema de prueba",
-            "body": "Verso uno\n    verso con sangría\n\nVerso final",
-            "status": EditorialStatus.DRAFT,
-        }
-        defaults.update(kwargs)
-        _dated(defaults)
-        return Poem.objects.create(**defaults)
-
-    return _make
+    yield migrate_to
+    executor = MigrationExecutor(connection)
+    executor.migrate(executor.loader.graph.leaf_nodes())
 
 
 class _KeepSentryEvents:

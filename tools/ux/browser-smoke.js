@@ -9,17 +9,10 @@
 // Usa playwright-core con el Chrome del sistema (variable CHROME para otra ruta) y las páginas
 // de pages.txt, las mismas que mide capture.js. Sale con 1 si falla alguna comprobación.
 const { chromium } = require('playwright-core');
-const fs = require('fs');
-const path = require('path');
+const { CHROME, readPages, siteBase } = require('./common');
 
-const args = process.argv.slice(2);
-const option = (name, fallback) => {
-  const i = args.indexOf(name);
-  return i >= 0 ? args[i + 1] : fallback;
-};
-const BASE = option('--base', process.env.UX_BASE || 'http://localhost:8000');
+const BASE = siteBase(process.argv.slice(2));
 const ORIGIN = new URL(BASE).origin;
-const CHROME = process.env.CHROME || '/usr/bin/google-chrome';
 // Objetivo pulsable de WCAG 2.5.5; el margen absorbe el redondeo de los subpíxeles.
 const MIN_TARGET = 44 - 0.01;
 // Lo que se espera tras cada comprobación, para que salgan los errores de las animaciones (la
@@ -31,12 +24,7 @@ const WINDOWS = {
   375: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
 };
 
-const PAGES = fs
-  .readFileSync(path.join(__dirname, 'pages.txt'), 'utf8')
-  .split('\n')
-  .map((line) => line.trim())
-  .filter((line) => line && !line.startsWith('#'))
-  .map((line) => line.split(/\s+/)[1]);
+const PAGES = readPages().map((page) => page.route);
 
 const routeOf = (url) => (url.startsWith(ORIGIN) ? url.slice(ORIGIN.length) : url);
 

@@ -8,8 +8,8 @@
 # estado con el que se diseñó y se midió cada paso:
 #   1. contenido de demostración (`seed_demo`), solo si la base está vacía;
 #   2. la identidad real del colectivo (docs/tarea-identidad-del-sitio.md §3);
-#   3. integrantes de relleno hasta 12, que es el umbral desde el que la portada monta
-#      la cinta (UMBRAL_CINTA en apps/content/views.py);
+#   3. integrantes de relleno hasta 12, más de las que la portada muestra a la vez, para
+#      que el relevo de retratos tenga a quién traer;
 #   4. el material visual genérico (`seed_material_generico`);
 #   5. las dependencias de tools/ux y una pasada de humo.
 #
@@ -101,7 +101,7 @@ else:
     )
     print(f"identidad: aplicada ({perfil.name} — {perfil.tagline})")
 
-# 3. Integrantes de relleno hasta el umbral de la cinta.
+# 3. Integrantes de relleno hasta 12.
 RELLENO = [
     ("Camila Reyes", "Poeta"),
     ("Tomás Figueroa", "Poeta · taller"),

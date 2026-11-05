@@ -12,7 +12,7 @@ from django.utils import timezone
 from apps.content.models import ArticleContributor, EditorialStatus, PoemContributor, ReviewedWork
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
-from tests.factories import make_publication
+from tests.factories import make_article, make_poem, make_publication
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -47,7 +47,7 @@ def _urls(work, publisher, author):
     ]
 
 
-def test_the_catalogue_appears_when_its_review_is_published(client, catalogue, make_article):
+def test_the_catalogue_appears_when_its_review_is_published(client, catalogue):
     work, publisher, author = catalogue
     urls = _urls(work, publisher, author)
     assert [_public(client, url) for url in urls] == [(False, False)] * 3
@@ -87,9 +87,7 @@ def test_a_publisher_page_shows_the_collective_publications(client):
 
 
 @pytest.mark.parametrize("model", ["article", "poem"])
-def test_a_signature_has_a_page_only_with_something_published(
-    client, make_article, make_poem, model
-):
+def test_a_signature_has_a_page_only_with_something_published(client, model):
     guest = Contributor.objects.create(slug="firma-x", display_name="Firma Equis")
     url = reverse("content:contributor_detail", args=[guest.slug])
     search = reverse("content:search") + "?q=equis"
@@ -98,7 +96,9 @@ def test_a_signature_has_a_page_only_with_something_published(
     link = ArticleContributor if model == "article" else PoemContributor
     link.objects.create(**{model: piece, "contributor": guest})
     assert client.get(url).status_code == 404
-    assert url not in client.get(search).content.decode()
+    found = client.get(search).content.decode()
+    assert "Sin resultados para “equis”." in found  # control: la búsqueda corrió
+    assert url not in found
     _publish(piece)
     response = client.get(url)
     assert response.status_code == 200

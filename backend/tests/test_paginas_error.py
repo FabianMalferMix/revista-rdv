@@ -69,6 +69,7 @@ def test_el_500_se_dibuja_sin_contexto_ni_base_de_datos(django_assert_num_querie
 def test_el_500_no_lleva_estilos_ni_scripts_en_linea():
     """La CSP de producción es `style-src 'self'`: un style= inline no se aplicaría."""
     html = loader.get_template("500.html").render()
+    assert 'rel="stylesheet"' in html  # control: el estilo llega, desde la hoja
     assert "style=" not in html
     assert "<script" not in html
 

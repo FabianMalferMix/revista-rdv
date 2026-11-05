@@ -1,4 +1,8 @@
-"""Lo que solo existe en las bases de desarrollo."""
+"""Lo que solo existe en las bases de desarrollo.
+
+La app solo se instala en desarrollo (config/settings.py): en producción esta tabla no se crea, y
+ninguna migración de otra app depende de las de aquí.
+"""
 
 from django.db import DatabaseError, models
 
@@ -6,9 +10,10 @@ from django.db import DatabaseError, models
 class DevelopmentMarker(models.Model):
     """La marca de que esta base es de desarrollo.
 
-    La crean `datos_de_desarrollo cargar`, `datos_de_desarrollo marcar` y `seed_demo` (solo con
-    DEBUG), y `datos_de_desarrollo exportar` se niega a correr sin ella: una copia de producción
-    restaurada en local no la tiene, y su contenido no debe acabar en el repositorio público.
+    La crean `datos_de_desarrollo cargar`, `datos_de_desarrollo marcar` y `seed_demo`, que solo
+    corren en desarrollo, y `datos_de_desarrollo exportar` se niega a correr sin ella: una copia
+    de producción restaurada en local no la tiene, y su contenido no debe acabar en el
+    repositorio público.
     """
 
     created_at = models.DateTimeField(auto_now_add=True)

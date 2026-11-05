@@ -16,7 +16,6 @@ from apps.content.models import (
     ArticleContributor,
     Collection,
     CollectionPoem,
-    EditorialStatus,
     PoemContributor,
     PublishStatus,
     Section,
@@ -24,17 +23,19 @@ from apps.content.models import (
 from apps.content.templatetags.versos import adelanto, primer_verso, primeros_versos
 from apps.people.models import Contributor
 from apps.showcase.models import PressMention
-from tests.factories import make_event, make_publication
+from tests.factories import (
+    make_event,
+    make_publication,
+    make_published_article,
+    make_published_poem,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 
 
-def _publicado(fabrica, **kw):
-    return fabrica(status=EditorialStatus.PUBLISHED, published_at=timezone.now(), **kw)
-
-
 def _sopa(client, nombre, *args):
-    return BeautifulSoup(client.get(reverse(nombre, args=args)).content, "html.parser")
+    return soup(client, reverse(nombre, args=args))
 
 
 # ── El primer verso ───────────────────────────────────────────────────────
@@ -69,26 +70,26 @@ def test_primer_verso():
     assert primer_verso(None) == ""
 
 
-def test_la_fila_del_poema_cita_su_primer_verso(client, make_poem):
+def test_la_fila_del_poema_cita_su_primer_verso(client):
     """Es lo que permite reconocer un poema sin abrirlo, como en el índice de primeros
     versos de una antología. Antes la tarjeta enseñaba solo título, autoría y fecha."""
-    _publicado(make_poem, slug="patio", body="\n   Llueve sobre el patio\nsegundo verso\n")
+    make_published_poem(slug="patio", body="\n   Llueve sobre el patio\nsegundo verso\n")
     fila = _sopa(client, "content:poem_index").select_one("li.fila--poema")
     assert fila.select_one("p.fila-verso").get_text() == "Llueve sobre el patio"
     assert "segundo verso" not in fila.get_text()
 
 
-def test_el_primer_verso_va_escapado(client, make_poem):
+def test_el_primer_verso_va_escapado(client):
     """El cuerpo lo escribe una persona: en el índice va escapado como en la ficha."""
-    _publicado(make_poem, slug="xss", body="<script>alert(1)</script>\notro")
+    make_published_poem(slug="xss", body="<script>alert(1)</script>\notro")
     contenido = client.get(reverse("content:poem_index")).content
     assert b"<script>alert(1)</script>" not in contenido
     assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in contenido
 
 
-def test_un_primer_verso_muy_largo_se_corta(client, make_poem):
+def test_un_primer_verso_muy_largo_se_corta(client):
     """Un poema en prosa abre con un párrafo: la fila cita su arranque, no el párrafo."""
-    _publicado(make_poem, slug="prosa", body="palabra " * 60)
+    make_published_poem(slug="prosa", body="palabra " * 60)
     verso = _sopa(client, "content:poem_index").select_one("p.fila-verso").get_text()
     assert len(verso) <= 90 and verso.endswith("…")
 
@@ -117,23 +118,27 @@ def test_el_adelanto_no_cita_un_resto_diminuto():
     assert adelanto(cuerpo) == ["a" * 70, "b" * 60]
 
 
-def test_la_portada_no_se_llena_con_un_poema_en_prosa(client, make_poem):
-    _publicado(make_poem, slug="prosa", body=("Un párrafo de prosa muy largo. " * 30 + "\n") * 3)
+def test_la_portada_no_se_llena_con_un_poema_en_prosa(client):
+    make_published_poem(slug="prosa", body=("Un párrafo de prosa muy largo. " * 30 + "\n") * 3)
     sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
     citado = sopa.select_one("li.fila--poema .fila-versos").get_text()
     assert len(citado) <= 162 and citado.endswith("…")
 
 
-def test_un_poema_sin_texto_no_deja_un_parrafo_vacio(client, make_poem):
-    _publicado(make_poem, slug="vacio", body="   \n\n")
-    assert _sopa(client, "content:poem_index").select_one("p.fila-verso") is None
+def test_un_poema_sin_texto_no_deja_un_parrafo_vacio(client):
+    poem = make_published_poem(slug="vacio", body="   \n\n")
+    row = _sopa(client, "content:poem_index").select_one("li.fila--poema")
+    assert row.select_one(".fila-titulo a")["href"] == poem.get_absolute_url()  # control
+    assert row.select_one("p.fila-verso") is None
 
 
-def test_en_un_listado_de_poemas_la_cejilla_poema_no_se_repite(client, make_poem):
+def test_en_un_listado_de_poemas_la_cejilla_poema_no_se_repite(client):
     """«Poema» en cada fila de /poemas/ no dice nada. En una colección, donde se mezclan
     con textos, sí distingue."""
-    poema = _publicado(make_poem, slug="uno", title="Poema Uno")
-    assert _sopa(client, "content:poem_index").select_one("li.fila .kicker") is None
+    poema = make_published_poem(slug="uno", title="Poema Uno")
+    row = _sopa(client, "content:poem_index").select_one("li.fila")
+    assert row.select_one(".fila-titulo").get_text(strip=True) == "Poema Uno"  # control
+    assert row.select_one(".kicker") is None
 
     coleccion = Collection.objects.create(
         slug="mezcla", title="Mezcla", status=PublishStatus.PUBLISHED
@@ -152,10 +157,10 @@ def test_en_un_listado_de_poemas_la_cejilla_poema_no_se_repite(client, make_poem
 # ── Anatomía de la fila ───────────────────────────────────────────────────
 
 
-def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client, make_article):
+def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client):
     seccion = Section.objects.create(slug="cronica", name="Crónica")
-    articulo = _publicado(
-        make_article, slug="a1", title="Texto en fila", subtitle="Su bajada", section=seccion
+    articulo = make_published_article(
+        slug="a1", title="Texto en fila", subtitle="Su bajada", section=seccion
     )
     firma = Contributor.objects.create(slug="firma", display_name="Quien Firma")
     ArticleContributor.objects.create(article=articulo, contributor=firma)
@@ -168,7 +173,7 @@ def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client, make_article):
 
     fecha, cuerpo, pie = hijos
     assert "fila-fecha" in fecha["class"]
-    assert fecha["datetime"] == articulo.published_at.strftime("%Y-%m-%d"), (
+    assert fecha["datetime"] == timezone.localtime(articulo.published_at).strftime("%Y-%m-%d"), (
         "la fecha debe poder leerla una máquina"
     )
     assert "fila-cuerpo" in cuerpo["class"]
@@ -179,11 +184,11 @@ def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client, make_article):
     assert f"{articulo.reading_time} min" in pie.get_text()
 
 
-def test_la_fila_tiene_un_solo_enlace_al_texto(client, make_article):
+def test_la_fila_tiene_un_solo_enlace_al_texto(client):
     """Toda la fila se pulsa, pero con UN enlace: el del título, extendido por CSS. Envolver
     la fila en <a> —o repetir el enlace en la fecha— daría al lector de pantalla dos
     paradas por texto, o un enlace con el nombre de toda la fila."""
-    articulo = _publicado(make_article, slug="unico", title="Un solo enlace")
+    articulo = make_published_article(slug="unico", title="Un solo enlace")
     fila = _sopa(client, "content:text_archive").select_one("li.fila")
     hacia_el_texto = [a for a in fila.find_all("a") if a["href"] == articulo.get_absolute_url()]
     assert len(hacia_el_texto) == 1
@@ -214,7 +219,8 @@ def test_la_trayectoria_son_filas_y_un_hito_no_enlaza(client):
 
     evento = filas["Recital hecho"]
     assert evento.select_one(".fila-titulo a")["href"] == hecho.get_absolute_url()
-    assert evento.select_one("time.fila-fecha")["datetime"] == hecho.starts_at.strftime("%Y-%m-%d")
+    cuando = timezone.localtime(hecho.starts_at).strftime("%Y-%m-%d")
+    assert evento.select_one("time.fila-fecha")["datetime"] == cuando
     assert "Valparaíso" in evento.select_one(".fila-pie").get_text()
 
     hito = filas["Fundación"]

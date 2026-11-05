@@ -1,9 +1,10 @@
-"""Fábricas de datos compartidas por los tests.
+"""Fábricas de datos y ayudantes compartidos por las pruebas.
 
-Centralizadas aquí para eliminar el acoplamiento entre módulos de test (antes un
-test importaba fábricas de otro) y la duplicación de helpers (hallazgo #20).
+Son funciones: cada prueba importa las que usa. Las que crean filas escriben en la base, así que
+la prueba que las llama lleva su marca `django_db`.
 """
 
+import itertools
 from datetime import timedelta
 from io import BytesIO
 
@@ -13,13 +14,17 @@ from django.utils import timezone
 from PIL import Image
 
 from apps.agenda.models import Event, EventPhoto
-from apps.content.models import EditorialStatus
+from apps.content.models import Article, EditorialStatus, Poem
 from apps.media.models import MediaAsset, Recording
 from apps.showcase.models import Publication
 
+# El número de cada slug: no se repite en todo el proceso, aunque una prueba borre filas (el
+# recuento de la tabla sí se repetiría).
+_sequence = itertools.count()
+
 
 def make_event(**kwargs):
-    n = Event.objects.count()
+    n = next(_sequence)
     defaults = {
         "slug": f"evento-{n}",
         "title": f"Evento {n}",
@@ -48,7 +53,7 @@ def make_image(nombre, alt="Imagen"):
 
 
 def make_recording(**kwargs):
-    n = Recording.objects.count()
+    n = next(_sequence)
     defaults = {
         "slug": f"registro-{n}",
         "title": f"Registro {n}",
@@ -61,10 +66,61 @@ def make_recording(**kwargs):
 
 
 def make_publication(**kwargs):
-    n = Publication.objects.count()
+    n = next(_sequence)
     defaults = {"slug": f"pub-{n}", "title": f"Publicación {n}", "published": True, "year": 2023}
     defaults.update(kwargs)
     return Publication.objects.create(**defaults)
+
+
+def _dated(fields):
+    """Lo publicado, programado o archivado lleva fecha (la restricción de EditorialItem): si la
+    prueba no da una, la pieza se publicó ahora o sale mañana."""
+    S = EditorialStatus
+    if "published_at" not in fields and fields.get("status") in {
+        S.PUBLISHED,
+        S.ARCHIVED,
+        S.SCHEDULED,
+    }:
+        tomorrow = fields["status"] == S.SCHEDULED
+        fields["published_at"] = timezone.now() + timedelta(days=1 if tomorrow else 0)
+
+
+def make_article(**kwargs):
+    """Un artículo, en borrador si la prueba no dice otra cosa: make_article(owner=autor, …)."""
+    defaults = {
+        "slug": f"articulo-{next(_sequence)}",
+        "title": "Título de prueba",
+        "body": "palabra " * 250,
+        "status": EditorialStatus.DRAFT,
+    }
+    defaults.update(kwargs)
+    _dated(defaults)
+    return Article.objects.create(**defaults)
+
+
+def make_poem(**kwargs):
+    """Un poema, en borrador si la prueba no dice otra cosa: make_poem(owner=autor, …)."""
+    defaults = {
+        "slug": f"poema-{next(_sequence)}",
+        "title": "Poema de prueba",
+        "body": "Verso uno\n    verso con sangría\n\nVerso final",
+        "status": EditorialStatus.DRAFT,
+    }
+    defaults.update(kwargs)
+    _dated(defaults)
+    return Poem.objects.create(**defaults)
+
+
+def make_published_article(**kwargs):
+    """Un artículo publicado, con su fecha de publicación: ahora, si la prueba no da otra."""
+    kwargs.setdefault("published_at", timezone.now())
+    return make_article(status=EditorialStatus.PUBLISHED, **kwargs)
+
+
+def make_published_poem(**kwargs):
+    """Un poema publicado, con su fecha de publicación: ahora, si la prueba no da otra."""
+    kwargs.setdefault("published_at", timezone.now())
+    return make_poem(status=EditorialStatus.PUBLISHED, **kwargs)
 
 
 def publish(article):
@@ -73,6 +129,14 @@ def publish(article):
     article.published_at = timezone.now()
     article.save()
     return article
+
+
+def soup(client, url, **kwargs):
+    """La página analizada, como la recibe el navegador. Exige el 200: una página de error no
+    es la página que la prueba mira. Los demás argumentos van a `client.get`."""
+    response = client.get(url, **kwargs)
+    assert response.status_code == 200, f"GET {url}: {response.status_code}"
+    return BeautifulSoup(response.content, "html.parser")
 
 
 def admin_form_fields(html, form_id):

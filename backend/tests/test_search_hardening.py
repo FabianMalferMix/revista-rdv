@@ -6,13 +6,13 @@ que casaban, con el cuerpo entero de cada pieza), sin rate limit y con un 500 p�
 alcanzable con `?q=%00`.
 """
 
-import time
-
 import pytest
 from django.db import connection
 from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 BUSCAR = reverse("content:search")
@@ -25,29 +25,41 @@ def test_byte_nul_no_provoca_un_500(client):
     assert resp.status_code == 200
 
 
-def test_byte_nul_intercalado_tampoco_rompe(client, make_article):
+def test_byte_nul_intercalado_tampoco_rompe(client):
     make_article(title="Umbral", status="published")
     resp = client.get(BUSCAR, {"q": "umb\x00ral"})
     assert resp.status_code == 200
 
 
 def test_consulta_desmesurada_se_trunca(client):
-    resp = client.get(BUSCAR, {"q": "a" * 5000})
-    assert resp.status_code == 200
-
-
-def test_la_consulta_se_recorta_a_la_longitud_maxima(client, make_article):
-    """El truncado no debe romper una búsqueda legítima larga."""
+    """A la base llegan solo los primeros SEARCH_MAX_QUERY caracteres de la consulta."""
     from apps.content.views import SEARCH_MAX_QUERY
 
-    make_article(title="Umbral", status="published")
-    larga = "umbral" + " x" * 200
-    assert len(larga) > SEARCH_MAX_QUERY
-    resp = client.get(BUSCAR, {"q": larga})
+    with CaptureQueriesContext(connection) as queries:
+        resp = client.get(BUSCAR, {"q": "a" * 5000})
     assert resp.status_code == 200
+    sql = "\n".join(q["sql"] for q in queries)
+    assert "a" * SEARCH_MAX_QUERY in sql  # control: la consulta llegó a la base
+    assert "a" * (SEARCH_MAX_QUERY + 1) not in sql
 
 
-def test_el_limit_viaja_al_sql(client, make_article):
+def test_la_consulta_se_recorta_a_la_longitud_maxima(client):
+    """Una búsqueda larga sigue buscando con lo que cabe en el tope. La cola que pasa del tope
+    nombra una palabra que el texto no tiene, y aun así lo encuentra: no cuenta."""
+    from apps.content.views import SEARCH_MAX_QUERY
+
+    article = make_article(title="Umbral", body="Un verso y otro verso.", status="published")
+    head = "umbral"
+    while len(head) + len(" verso") <= SEARCH_MAX_QUERY:
+        head += " verso"
+    long_query = head.ljust(SEARCH_MAX_QUERY) + " inexistente" * 20
+    assert len(long_query) > SEARCH_MAX_QUERY
+    resp = client.get(BUSCAR, {"q": long_query})
+    assert resp.status_code == 200
+    assert f'href="{article.get_absolute_url()}"'.encode() in resp.content
+
+
+def test_el_limit_viaja_al_sql(client):
     """El recorte a 10 se hacía en Python DESPUÉS de materializar todas las filas: el
     SQL salía sin LIMIT. Se comprueba en el SQL emitido, que es donde importa."""
     from django.db import connection
@@ -73,7 +85,7 @@ def test_el_limit_viaja_al_sql(client, make_article):
     assert lista.group(0).count(b"<li>") <= 10
 
 
-def test_el_coste_no_crece_con_el_tamano_del_archivo(client, make_article):
+def test_el_coste_no_crece_con_el_tamano_del_archivo(client):
     """Invariante que cierra el vector de amplificación: la misma consulta debe costar
     lo mismo con 5 piezas que con 30."""
     from django.db import connection
@@ -98,17 +110,9 @@ def test_el_coste_no_crece_con_el_tamano_del_archivo(client, make_article):
 
 
 @override_settings(RATELIMIT_ENABLE=True)
-def test_el_buscador_limita_por_ip(client, make_article, monkeypatch):
+def test_el_buscador_limita_por_ip(client, frozen_rate_limit_window):
     """Supera el cupo (60/m) y comprueba que degrada con un aviso, no con un 500 ni
-    sirviendo consultas ilimitadas.
-
-    django-ratelimit cuenta por ventanas fijas de un minuto, y el fin de la ventana entra en
-    la clave: si las 65 búsquedas cruzan un corte, la cuenta vuelve a cero y la última no se
-    limita. La ventana queda fija durante la prueba para que no dependa del reloj."""
-    from django_ratelimit import core
-
-    window = int(time.time()) + 3600
-    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
+    sirviendo consultas ilimitadas."""
     make_article(title="Umbral", status="published")
     ultima = None
     for i in range(65):
@@ -118,14 +122,11 @@ def test_el_buscador_limita_por_ip(client, make_article, monkeypatch):
 
 
 @override_settings(RATELIMIT_ENABLE=True)
-def test_the_panel_announces_the_limit_as_well(client, make_article, monkeypatch):
+def test_the_panel_announces_the_limit_as_well(client, frozen_rate_limit_window):
     """En el panel de la lupa, el aviso llega también a la región que se anuncia: los
     resultados ya no son una región viva."""
     from bs4 import BeautifulSoup
-    from django_ratelimit import core
 
-    window = int(time.time()) + 3600
-    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
     make_article(title="Umbral", status="published")
     for i in range(65):
         ultima = client.get(BUSCAR, {"q": f"umbral {i}"}, headers={"HX-Request": "true"})
@@ -136,13 +137,15 @@ def test_the_panel_announces_the_limit_as_well(client, make_article, monkeypatch
 
 
 @override_settings(RATELIMIT_ENABLE=True)
-def test_el_limite_no_estorba_al_uso_normal(client, make_article):
+def test_el_limite_no_estorba_al_uso_normal(client, frozen_rate_limit_window):
     """El buscador en vivo dispara una petición por pulsación (con 300 ms de rebote):
     una ráfaga humana razonable no puede quedar bloqueada."""
-    make_article(title="Umbral", status="published")
+    article = make_article(title="Umbral", status="published")
     for _ in range(20):
         resp = client.get(BUSCAR, {"q": "umbral"})
     assert "Demasiadas búsquedas".encode() not in resp.content
+    # Control: la vigésima búsqueda encuentra el texto.
+    assert f'href="{article.get_absolute_url()}"'.encode() in resp.content
 
 
 def _search_queries(client, method):
@@ -152,14 +155,10 @@ def _search_queries(client, method):
     return [c["sql"] for c in consultas.captured_queries if "plainto_tsquery" in c["sql"]]
 
 
-def test_head_counts_towards_the_search_limit(client, make_article, monkeypatch):
+def test_head_counts_towards_the_search_limit(client, frozen_rate_limit_window):
     """Tras 61 GET, un HEAD no ejecuta ninguna búsqueda: Django corre la vista entera también
     en HEAD, y antes el límite solo contaba los GET. Control: antes del límite, el mismo
     HEAD sí busca."""
-    from django_ratelimit import core
-
-    window = int(time.time()) + 3600
-    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
     make_article(title="Umbral", status="published")
     assert _search_queries(client, "head")
     for i in range(61):

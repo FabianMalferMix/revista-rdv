@@ -98,7 +98,7 @@ def test_rejects_binary_disguised_as_txt():
     assert "file" in form.errors
 
 
-def test_submit_rate_limited_rehydrates_form(client):
+def test_submit_rate_limited_rehydrates_form(client, frozen_rate_limit_window):
     """Al superar el rate-limit, el formulario conserva lo escrito por el usuario
     (título y cuerpo) en vez de descartarlo — hallazgo #28."""
     from django.urls import reverse
