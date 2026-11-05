@@ -14,6 +14,10 @@ npm ci --prefix tools/ux             # playwright-core, axe-core y ESLint, del l
 
 Requiere Node 20.19 o superior (el CI usa el 24) y Chrome en `/usr/bin/google-chrome` (otra ruta: variable
 `CHROME`). El sitio debe estar arriba en `http://localhost:8000` (otra base: `--base` o `UX_BASE`).
+Los guiones de Node toman esa base, el Chrome y la lista de `pages.txt` de `common.js`, que también
+lee la fuente de titulares del sitio (la primera familia de `--display`) en la página cargada: ninguna
+herramienta nombra la fuente. `--base` lo aceptan `capture.js`, `browser-smoke.js` y `contraste.js`;
+los demás leen `UX_BASE`.
 
 ## Uso
 
@@ -37,6 +41,15 @@ Cada página deja `<nombre>-<viewport>-view.png` (primer viewport), `-full.png` 
 entera) y `-metrics.json`. `tools/ux/out/` no se versiona. Lo que hay que conservar entre máquinas
 está en `linea-base/` (ver más abajo).
 
+`capture.js` solo mide una página que responde 200. Otra respuesta es un `FALLO` que nombra la ruta
+y el código, no deja métricas ni capturas de esa página (borra las de una corrida anterior en el
+mismo directorio) y la orden sale con 1; un nombre de `--only` que no está en `pages.txt` la para
+con 2. Cada `-metrics.json` guarda con qué se midió, en `provenance`: el commit (y si había cambios
+sin confirmar), la versión de Chrome y el sha256 de `backend/datos_de_desarrollo/datos.json`.
+`metrics.py` lo muestra encima de la tabla, avisa al comparar si el navegador o los datos no son
+los mismos, y no muestra ni compara una fila que no sea de un 200: la nombra con su ruta y su
+código, y sale con 1.
+
 ## Qué mide
 
 | Columna | Qué es | Referencia |
@@ -51,7 +64,8 @@ está en `linea-base/` (ver más abajo).
 | `desb` | scroll horizontal (en móvil se prueba además a 320 px) | WCAG 1.4.10 |
 
 Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`). La prueba de humo también
-la recorre.
+la recorre. La ficha que nombra tiene que estar en los datos de desarrollo:
+`backend/tests/test_measured_pages.py` lo comprueba.
 
 ## Prueba de humo en navegador
 
@@ -122,12 +136,12 @@ cualquier máquina.
 | `hoja.js` | Hoja de contactos: varias capturas en una sola imagen. | `node tools/ux/hoja.js tools/ux/out/prueba tools/ux/out/prueba/hoja.png -d1440-full.png 620 3 home poemas` |
 | `superficies.js` | Bandas de tinta, planos de amarillo por pantalla, cajas blancas con borde y textos bajo AA contra el fondo que tienen debajo, página a página (pasos 13 y siguientes). Sale con 1 si una página no cumple. | `node tools/ux/superficies.js 951 900` (todas) o `… 390 800 home dossier` |
 | `variantes.js` | Alternativas de una pieza sobre la página real: CSS (y JS) inyectado en el navegador de captura, una imagen por variante, recortada a la pieza. Para que el dueño elija viendo. | `node tools/ux/variantes.js tools/ux/out/cifras 951 900 / .hero hoy=- marcador=marcador.css` |
-| `iconos.js` | El icono de la pestaña (32 px y `.ico`), el del teléfono (180 px) y la tarjeta para compartir (1200 × 630), dibujados con la Syne del sitio. Necesita el sitio arriba y Pillow en python3. | `node tools/ux/iconos.js` |
-| `mutar.sh` | Comprueba que una prueba nueva **falla** cuando se rompe lo que vigila. | `bash tools/ux/mutar.sh static/css/site.css '<actual>' '<roto>' 'tests/…::test_…'` |
+| `iconos.js` | El icono de la pestaña (32 px y `.ico`), el del teléfono (180 px) y la tarjeta para compartir (1200 × 630), dibujados con la fuente de titulares del sitio (la de `--display`); se detiene si no carga. Necesita el sitio arriba y Pillow en python3. | `node tools/ux/iconos.js` |
+| `mutar.sh` | Comprueba que una prueba nueva pasa y que **falla** cuando se rompe lo que vigila. Trabaja en un worktree temporal con los cambios sin confirmar (no toca el árbol de trabajo) y recrea su propia base de pruebas, así que también vale para mutar una migración. Necesita la imagen `resenas-app:dev` y la base del stack arriba; no usa el contenedor `web`. Sale con 0 si detecta, 1 si no y 2 si no llegó a correr o ya fallaba sin mutar. | `bash tools/ux/mutar.sh static/css/site.css '<actual>' '<roto>' 'tests/…::test_…'` |
 | `fusionar.sh` | Fusiona el PR de un paso solo si su CI está verde, con el asunto del proyecto. | `bash tools/ux/fusionar.sh 105 <rama> "<efecto visible>"` |
 
-Cada uno explica sus argumentos en su cabecera. `ver.js` y `hoja.js` usan el mismo Chrome que
-`capture.js` (variable `CHROME`) y la misma base (`UX_BASE`).
+Cada uno explica sus argumentos en su cabecera. Los de Node usan el mismo Chrome (variable `CHROME`)
+y la misma base (`UX_BASE`), de `common.js`.
 
 ## Línea base versionada
 

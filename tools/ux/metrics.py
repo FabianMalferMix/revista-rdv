@@ -4,7 +4,11 @@
     python3 tools/ux/metrics.py tabla <dir>
     python3 tools/ux/metrics.py comparar <dirAntes> <dirDespues>
 
-Solo biblioteca estándar. Columnas:
+Solo biblioteca estándar. Solo se muestran y se comparan las páginas que respondieron 200: una
+fila con otro código, o sin él, se nombra al final con su ruta y su código, y la orden sale con 1.
+Encima de la tabla va con qué se midió cada directorio (el commit, el navegador y la huella de
+los datos de desarrollo, si capture.js los guardó); al comparar, avisa si el navegador o los datos
+no son los mismos, porque entonces una diferencia puede no venir del diseño. Columnas:
   razon   ancho del texto / ancho del viewport (cuánto del ancho se usa)
   h1      tamaño del primer h1 visible, en px
   cuerpo  tamaño de fuente de <body>, en px
@@ -24,6 +28,8 @@ import sys
 from pathlib import Path
 
 COLUMNAS = ["razon", "h1", "cuerpo", "cpl", "img1", "desv", "mono%", "MAY", "<12", "<24", "desb", "alto"]
+# Los campos de `provenance` que se muestran, con su nombre en la cabecera.
+PROVENANCE = (("commit", "commit"), ("browser", "navegador"), ("devDataSha256", "datos"))
 
 
 def cargar(directorio):
@@ -34,6 +40,62 @@ def cargar(directorio):
     if not datos:
         sys.exit(f"sin archivos *-metrics.json en {directorio}")
     return datos
+
+
+def split_by_status(datos):
+    """Las filas de las páginas que respondieron 200 y, aparte, las demás, con su ruta y su código."""
+    measured, refused = {}, []
+    for clave, m in datos.items():
+        if m.get("estado") == 200:
+            measured[clave] = m
+        else:
+            refused.append((clave, m.get("ruta") or "sin ruta", m.get("estado") or "sin código"))
+    return measured, refused
+
+
+def report_refused(refused, directorio):
+    for clave, ruta, estado in refused:
+        print(f"sin medir en {directorio}: {clave} ({ruta}) respondió {estado}", file=sys.stderr)
+
+
+def provenance(datos):
+    """Los valores de cada campo de procedencia que hay en un directorio, y si alguna medición se
+    hizo con cambios sin confirmar."""
+    found = {campo: set() for campo, _ in PROVENANCE}
+    uncommitted = False
+    for m in datos.values():
+        origen = m.get("provenance") or {}
+        for campo in found:
+            if origen.get(campo):
+                found[campo].add(origen[campo])
+        uncommitted = uncommitted or bool(origen.get("uncommittedChanges"))
+    return found, uncommitted
+
+
+def describe(datos):
+    found, uncommitted = provenance(datos)
+    if not any(found.values()):
+        return "sin procedencia (medido antes de que capture.js la guardara)"
+    partes = []
+    for campo, nombre in PROVENANCE:
+        valores = sorted(v if campo == "browser" else v[:12] for v in found[campo])
+        partes.append(f"{nombre} {', '.join(valores) or '?'}")
+    return " · ".join(partes) + (" (con cambios sin confirmar)" if uncommitted else "")
+
+
+def warn_if_provenance_differs(a, d):
+    (pa, _), (pd, _) = provenance(a), provenance(d)
+    avisos = (
+        ("browser", "el navegador no es el mismo"),
+        ("devDataSha256", "los datos de desarrollo no son los mismos"),
+    )
+    for campo, aviso in avisos:
+        if pa[campo] and pd[campo] and pa[campo] != pd[campo]:
+            print(
+                f"aviso: {aviso} en las dos mediciones: una diferencia puede venir de ahí y no "
+                "del diseño",
+                file=sys.stderr,
+            )
 
 
 def fila(m):
@@ -65,15 +127,21 @@ def celda(valor):
 
 
 def tabla(directorio):
-    datos = cargar(directorio)
+    datos, refused = split_by_status(cargar(directorio))
+    print(f"medido con: {describe(datos)}\n")
     print(f"{'página-viewport':26}" + "".join(f"{c:>8}" for c in COLUMNAS))
     for clave, m in datos.items():
         f = fila(m)
         print(f"{clave:26}" + "".join(f"{celda(f[c]):>8}" for c in COLUMNAS))
+    report_refused(refused, directorio)
+    return 1 if refused else 0
 
 
 def comparar(antes, despues):
-    a, d = cargar(antes), cargar(despues)
+    a, refused_a = split_by_status(cargar(antes))
+    d, refused_d = split_by_status(cargar(despues))
+    print(f"antes:   {describe(a)}\ndespués: {describe(d)}\n")
+    warn_if_provenance_differs(a, d)
     print(f"{'página-viewport':26}" + "".join(f"{c:>14}" for c in COLUMNAS))
     for clave in sorted(set(a) & set(d)):
         fa, fd = fila(a[clave]), fila(d[clave])
@@ -82,16 +150,21 @@ def comparar(antes, despues):
             va, vd = celda(fa[c]), celda(fd[c])
             celdas.append(f"{va if va == vd else va + '→' + vd:>14}")
         print(f"{clave:26}" + "".join(celdas))
-    solo = sorted(set(a) ^ set(d))
+    # Las que no respondieron 200 en un lado tampoco se comparan con el otro.
+    sin_medir = {clave for clave, _, _ in refused_a + refused_d}
+    solo = sorted((set(a) ^ set(d)) - sin_medir)
     if solo:
         print("\nsolo en uno de los dos directorios:", ", ".join(solo))
+    report_refused(refused_a, antes)
+    report_refused(refused_d, despues)
+    return 1 if refused_a or refused_d else 0
 
 
 def main(argv):
     if len(argv) == 3 and argv[1] == "tabla":
-        tabla(argv[2])
+        sys.exit(tabla(argv[2]))
     elif len(argv) == 4 and argv[1] == "comparar":
-        comparar(argv[2], argv[3])
+        sys.exit(comparar(argv[2], argv[3]))
     else:
         sys.exit(__doc__)
 
