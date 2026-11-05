@@ -542,7 +542,7 @@ def _with_search_results(page, panel):
 
 
 @pytest.fixture
-def site_pages(client, groups, editor, legal_pages):
+def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
     """Una página de cada tipo, y algunas más en otro estado: la portada y la agenda vuelven a
     pedirse después de cambiar los datos que las deciden."""
     members, guest = _people()
@@ -603,11 +603,17 @@ def site_pages(client, groups, editor, legal_pages):
     pages.append(BeautifulSoup(loader.render_to_string("500.html"), "html.parser"))
 
     # Lo que responde un envío: el formulario con errores, la confirmación y la baja del
-    # boletín, y el aviso de un correo que no sirve, en la portada a la que se vuelve.
+    # boletín, la página del boletín con el error junto al campo de un correo que no sirve, y
+    # los avisos arriba de la página: el del alta, en la portada a la que se vuelve, y el de
+    # quien pasó el límite de propuestas (diez por hora), en el formulario.
     keep(client.post(reverse("submissions:submit"), {"author_email": "no-es-un-correo"}))
     keep(client.post(reverse("community:confirm", args=[subscriber.confirm_token])))
     keep(client.post(reverse("community:unsubscribe", args=[subscriber.token])))
-    keep(client.post(reverse("community:subscribe"), {"email": "ana@correo"}, follow=True))
+    keep(client.post(reverse("community:subscribe"), {"email": "ana@correo"}))
+    keep(client.post(reverse("community:subscribe"), {"email": "bea@example.org"}, follow=True))
+    for _ in range(10):
+        client.post(reverse("submissions:submit"), {})
+    keep(client.post(reverse("submissions:submit"), {}))
 
     # La lupa con los resultados que pide htmx.
     panel = client.get(reverse("content:search") + "?q=voz", HTTP_HX_REQUEST="true")
