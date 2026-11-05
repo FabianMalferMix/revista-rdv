@@ -102,7 +102,7 @@ def test_an_error_while_submitting_a_text_reaches_sentry_without_personal_data(
     text = {
         "author_name": NAME,
         "author_email": EMAIL,
-        "type": "poesía",
+        "type": "poesia",
         "title": "Título del inédito",
         "body": "Versos del inédito que nadie más ha leído",
     }

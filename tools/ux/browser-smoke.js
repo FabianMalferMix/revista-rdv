@@ -270,6 +270,51 @@ const CHECKS = [
     },
   },
   {
+    name: 'Un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado y el foco',
+    widths: [951, 375],
+    async run({ page }) {
+      await visit(page, '/textos/');
+      const field = page.locator('footer input[name="email"]');
+      // «ana@correo» lo acepta el navegador (no pide punto en el dominio) y Django no.
+      await field.fill('ana@correo');
+      await Promise.all([page.waitForURL('**/novedades/'), field.press('Enter')]);
+      const state = await page.evaluate(() => {
+        const input = document.activeElement;
+        const error = document.getElementById(`${input.id}_error`);
+        const [a, b] = [input, error].map((e) => e && e.getBoundingClientRect());
+        const hit = a && document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2);
+        return {
+          focused: input.name,
+          value: input.value,
+          fields: document.querySelectorAll('input[name="email"]').length,
+          error: error ? error.textContent.trim() : null,
+          near: !!(a && b) && b.top >= a.top && b.top - a.bottom < 80,
+          covered: !input.contains(hit),
+        };
+      });
+      expect(state.focused === 'email', `el foco está en «${state.focused}», no en el correo`);
+      expect(state.value === 'ana@correo', `el campo trae «${state.value}»`);
+      expect(state.fields === 1, `la página tiene ${state.fields} campos de correo`);
+      expect(state.error === 'Revisa el correo ingresado.', `el error dice «${state.error}»`);
+      expect(state.near, 'el error no está junto al campo');
+      expect(!state.covered, 'el campo con el foco queda tapado');
+    },
+  },
+  {
+    name: 'Los campos trampa de los formularios no se ven',
+    widths: [951, 375],
+    async run({ page }) {
+      for (const route of ['/textos/', '/enviar/']) {
+        await visit(page, route);
+        const traps = await page.locator('input[name="apodo"]').evaluateAll((inputs) =>
+          inputs.map((input) => input.checkVisibility({ opacityProperty: true }))
+        );
+        expect(traps.length > 0, `${route}: no hay campo trampa que medir`);
+        expect(!traps.some(Boolean), `${route}: el campo trampa se ve`);
+      }
+    },
+  },
+  {
     name: 'Al bajar, la cabecera pasa a la cápsula, y al volver arriba se recupera',
     widths: [951],
     async run({ page }) {

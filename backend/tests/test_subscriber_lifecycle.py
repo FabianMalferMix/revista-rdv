@@ -54,10 +54,10 @@ def test_resubscribing_restarts_the_purge_clock():
 def test_a_late_rejection_waits_its_full_term():
     """Resolución tardía: llegó hace 200 días y se rechazó hoy; se guarda 180 desde hoy."""
     late = Submission.objects.create(
-        author_name="A", author_email="a@example.com", title="Tarde", body="x"
+        author_name="A", author_email="a@example.com", type="otro", title="Tarde", body="x"
     )
     old = Submission.objects.create(
-        author_name="B", author_email="b@example.com", title="Vieja", body="x"
+        author_name="B", author_email="b@example.com", type="otro", title="Vieja", body="x"
     )
     for submission in (late, old):
         submission.status = Submission.Status.REJECTED
@@ -71,7 +71,7 @@ def test_a_late_rejection_waits_its_full_term():
 
 def test_the_resolution_date_follows_the_status():
     submission = Submission.objects.create(
-        author_name="A", author_email="a@example.com", title="T", body="x"
+        author_name="A", author_email="a@example.com", type="otro", title="T", body="x"
     )
     assert submission.resolved_at is None
     submission.status = Submission.Status.WITHDRAWN

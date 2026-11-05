@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 67 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 68 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -150,7 +150,7 @@
 | B53 | Mejora progresiva que falla bien | B11 | S | no | hecho (#241) |
 | B54 | Anuncios y foco en los componentes con JS | B11 | M | no | hecho (#242) |
 | B55 | Contraste de los sellos y axe en el CI | B11 | M | no | hecho (#243) |
-| B56 | Formularios públicos de un solo origen y accesibles | — | M | no | pendiente |
+| B56 | Formularios públicos de un solo origen y accesibles | — | M | no | hecho (#244) |
 | B57 | Configuración de pruebas explícita | — | M | no | hecho (#245) |
 | B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
 | B59 | Selectores muertos | B58 | M | no | hecho (#247) |
@@ -1119,6 +1119,8 @@ Si no se prueba con un lector de pantalla real, se dice en el ticket.
 - el formulario del pie, pintado desde `SubscribeForm` con una inclusion tag.
 
 **Hecho cuando.** El pie y la página del boletín pintan el mismo formulario desde `SubscribeForm`; un correo inválido vuelve al campo con el mensaje junto a él; ya no quedan valores con tilde en `Submission.type`.
+
+**Hecho (2026-11-04).** No había página del boletín: `/novedades/` solo recibía el alta y, ante un error, redirigía con un aviso arriba. Reponer el correo tras la redirección pedía una sesión para visitantes anónimos, que la política de cookies no declara, así que el alta, con un correo que no sirve o con el límite superado, responde la página del boletín (`community/newsletter.html`): el mismo formulario, con lo escrito, el error junto al campo, `aria-invalid` y el foco en él; tras corregirlo vuelve a la página de origen. El pie y esa página lo pintan con `{% newsletter_form %}`. Además, una restricción en la base (`submission_type_is_offered`) impide que vuelva a guardarse un tipo fuera de los que se ofrecen, y el campo trampa es un `HoneypotMixin` en `config/forms.py`.
 
 #### B57 · Configuración de pruebas explícita
 

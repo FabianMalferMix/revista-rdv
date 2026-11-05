@@ -1665,13 +1665,20 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .site-foot .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
 .foot-presentacion{margin:var(--s1) 0 0; font-size:var(--t-1)}
 .foot-contacto{margin:0; display:flex; flex-direction:column; gap:4px; font-size:var(--t-1)}
+/* El alta del boletín: en el pie de todas las páginas y, con el error junto al campo, en la
+   página del boletín (community/newsletter.html), sobre el papel. */
 .newsletter{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0}
-.newsletter label{font-size:var(--t0); color:var(--paper)}
+.newsletter label{font-size:var(--t0)}
+.site-foot .newsletter label{color:var(--paper)}
 .newsletter input[type=email]{font-family:var(--serif); font-size:var(--t1); padding:0 12px; min-height:44px;
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink); min-width:200px;
   flex:1 1 200px}
-.newsletter .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
-.news-consent{flex-basis:100%; font-size:var(--t-1); color:var(--muted)}
+/* El campo trampa de los formularios públicos (config/forms.py): fuera de la vista. */
+.hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
+.news-error, .news-consent{flex-basis:100%}
+.news-error .error{margin:0; color:#b0322b; font-size:var(--t0)}
+.newsletter [aria-invalid="true"]{border-color:#b0322b; border-width:2px}
+.news-consent{font-size:var(--t-1); color:var(--muted)}
 /* Mapa del sitio en columnas. `auto-fit` + `minmax` reparte los cuatro grupos sin
    consultas de medios: cuando no caben, bajan solos a dos columnas. Con 150 px de mínimo,
    a 320 de pantalla caían a una y el pie medía más de mil píxeles. */
@@ -1685,7 +1692,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    la derecha, el boletín con la línea legal debajo. */
 .site-foot > .wrap-wide{display:grid; grid-template-columns:minmax(0,1fr);
   grid-template-areas:"identidad" "mapa" "news" "legal"; gap:var(--s3); align-items:start}
-.newsletter{grid-area:news}
+.site-foot .newsletter{grid-area:news}
 .foot-groups{grid-area:mapa}
 .foot-legal{grid-area:legal}
 @media (min-width:720px){
