@@ -168,7 +168,7 @@ def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client, make_article):
 
     fecha, cuerpo, pie = hijos
     assert "fila-fecha" in fecha["class"]
-    assert fecha["datetime"] == articulo.published_at.strftime("%Y-%m-%d"), (
+    assert fecha["datetime"] == timezone.localtime(articulo.published_at).strftime("%Y-%m-%d"), (
         "la fecha debe poder leerla una máquina"
     )
     assert "fila-cuerpo" in cuerpo["class"]
@@ -214,7 +214,8 @@ def test_la_trayectoria_son_filas_y_un_hito_no_enlaza(client):
 
     evento = filas["Recital hecho"]
     assert evento.select_one(".fila-titulo a")["href"] == hecho.get_absolute_url()
-    assert evento.select_one("time.fila-fecha")["datetime"] == hecho.starts_at.strftime("%Y-%m-%d")
+    cuando = timezone.localtime(hecho.starts_at).strftime("%Y-%m-%d")
+    assert evento.select_one("time.fila-fecha")["datetime"] == cuando
     assert "Valparaíso" in evento.select_one(".fila-pie").get_text()
 
     hito = filas["Fundación"]
