@@ -1,6 +1,7 @@
 """Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit) — F2-5."""
 
 import pytest
+from bs4 import BeautifulSoup
 from django.test import Client, override_settings
 from django.urls import reverse
 
@@ -33,6 +34,22 @@ def test_subscribe_is_rate_limited_by_ip(client, frozen_rate_limit_window):
     # Control: las cinco altas dentro del cupo sí quedaron.
     assert NewsletterSubscriber.objects.filter(email__startswith="ok").count() == 5
     assert not NewsletterSubscriber.objects.filter(email="extra@example.com").exists()
+
+
+def test_the_rate_limit_notice_waits_by_the_field_with_what_was_typed(
+    client, frozen_rate_limit_window
+):
+    """El aviso del límite va en la página del boletín, junto al campo y con el correo escrito,
+    para volver a intentarlo sin reescribirlo."""
+    url = reverse("community:subscribe")
+    for i in range(5):
+        client.post(url, {"email": f"ok{i}@example.com", "next": "/"})
+    resp = client.post(url, {"email": "extra@example.com", "next": "/"})
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    correo = sopa.select_one("main #news-email")
+    assert correo["value"] == "extra@example.com"
+    aviso = sopa.select_one(f"#{correo['aria-describedby'].split()[0]}")
+    assert "Demasiados intentos" in aviso.get_text()
 
 
 def test_subscribe_under_limit_still_works(client):

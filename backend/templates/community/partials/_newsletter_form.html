@@ -1,0 +1,20 @@
+{% comment %}
+   El alta del boletín ({% newsletter_form %}, desde SubscribeForm). El correo lo describen el
+   error, si lo hay, y el texto de consentimiento; el campo trampa, `apodo`, va fuera de la vista.
+{% endcomment %}
+<form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {{ form.apodo }}
+  <label for="{{ form.email.id_for_label }}">{{ form.email.label }}:</label>
+  {{ form.email }}
+  <button class="btn" type="submit">Suscribirme</button>
+  {% if form.errors %}
+    <div class="news-error" id="{{ form.email.auto_id }}_error">
+      {% for error in form.non_field_errors %}<p class="error">{{ error }}</p>{% endfor %}
+      {% for error in form.email.errors %}<p class="error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  <span class="news-consent" id="{{ form.email.auto_id }}_consent">Confirmamos por correo (doble opt-in). Al suscribirte aceptas la
+    <a href="{% url 'content:page_detail' 'privacidad' %}">política de privacidad</a>.</span>
+</form>

@@ -38,7 +38,7 @@ def test_submission_post_creates(client):
         data={
             "author_name": "Ana",
             "author_email": "ana@example.com",
-            "type": "reseña",
+            "type": "resena",
             "title": "Mi propuesta",
             "body": "cuerpo",
             "apodo": "",
@@ -95,7 +95,7 @@ def test_submission_file_only_for_editors(client, editor, autor):
     submission = Submission.objects.create(
         author_name="A",
         author_email="a@a.com",
-        type="reseña",
+        type="resena",
         title="Privado",
         body="cuerpo",
         file=SimpleUploadedFile("m.txt", b"contenido-secreto"),

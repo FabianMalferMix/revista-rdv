@@ -31,7 +31,7 @@ def _submission(**kw):
     defaults = {
         "author_name": "A",
         "author_email": "a@x.cl",
-        "type": "reseña",
+        "type": "resena",
         "title": "t",
         "body": "b",
     }

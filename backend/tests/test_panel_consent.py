@@ -73,7 +73,7 @@ def _submission():
     return Submission.objects.create(
         author_name="Ana",
         author_email="ana@example.com",
-        type="poesía",
+        type="poesia",
         title="Umbral",
         body="Versos",
     )

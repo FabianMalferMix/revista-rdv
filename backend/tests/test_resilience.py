@@ -85,7 +85,7 @@ def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
     data = {
         "author_name": "Ana",
         "author_email": "ana@example.com",
-        "type": "poesía",
+        "type": "poesia",
         "title": "Un título",
         "body": "Unos versos",
     }

@@ -59,20 +59,21 @@ def subscribe(request):
     correo con enlace de confirmación. Solo tras confirmar se le puede escribir. El
     honeypot descarta bots en silencio.
 
-    Todas las ramas responden lo mismo y hacen el mismo trabajo observable, para no
-    filtrar si una dirección ya estaba en la lista (S-17)."""
+    Todas las ramas que aceptan el correo responden lo mismo y hacen el mismo trabajo
+    observable, para no filtrar si una dirección ya estaba en la lista (S-17). Si el correo
+    no sirve, o se superó el límite de intentos, responde la página del boletín."""
     nxt = _safe_next(request)
-    if getattr(request, "limited", False):  # rate-limit por IP superado, o la caché caída
-        if counters_available():
-            messages.error(request, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
-        else:
-            messages.error(request, SERVICE_UNAVAILABLE)
-        return HttpResponseRedirect(nxt)
     form = SubscribeForm(request.POST)
+    if getattr(request, "limited", False):  # rate-limit por IP superado, o la caché caída
+        form.is_valid()
+        if counters_available():
+            form.add_error(None, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+        else:
+            form.add_error(None, SERVICE_UNAVAILABLE)
+        return _newsletter_page(request, form, nxt)
     if not form.is_valid():
-        messages.error(request, "Revisa el correo ingresado.")
-        return HttpResponseRedirect(nxt)
-    if form.cleaned_data["apodo"]:  # honeypot
+        return _newsletter_page(request, form, nxt)
+    if form.is_spam:
         messages.success(request, ALTA_NEUTRA)
         return HttpResponseRedirect(nxt)
 
@@ -83,6 +84,14 @@ def subscribe(request):
         _send_confirmation(sub)
     messages.success(request, ALTA_NEUTRA)
     return HttpResponseRedirect(nxt)
+
+
+def _newsletter_page(request, form, nxt):
+    """La página del boletín, con el formulario tal como llegó: lo escrito, el error junto al
+    campo y el foco en él, porque el aviso arriba de la página de vuelta quedaba lejos del campo
+    y «Saltar al contenido» se lo saltaba. Tras corregirlo, el alta vuelve a `nxt`."""
+    form.fields["email"].widget.attrs["autofocus"] = True
+    return render(request, "community/newsletter.html", {"form": form, "next": nxt})
 
 
 def _send_confirmation(sub):
