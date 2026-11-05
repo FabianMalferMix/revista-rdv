@@ -128,7 +128,7 @@
           <div class="home-obra-columna">
             {% include "content/partials/_cabeza_de_seccion.html" with titulo="Poemas" territorio="obra" only %}
             <ul class="filas">
-              {% for p in poemas %}{% include "content/partials/_poem_card.html" with sin_cejilla=True versos=3 %}{% endfor %}
+              {% for p in poemas %}{% include "partials/_poem_card.html" with sin_cejilla=True versos=3 %}{% endfor %}
             </ul>
             <p class="home-mas"><a href="{% url 'content:poem_index' %}">Todos los poemas →</a></p>
           </div>
@@ -136,7 +136,7 @@
         {% if articles %}
           <div class="home-obra-columna">
             {% include "content/partials/_cabeza_de_seccion.html" with titulo="Textos" territorio="obra" only %}
-            {% include "content/partials/_article_list.html" %}
+            {% include "partials/_article_list.html" %}
             <p class="home-mas"><a href="{% url 'content:text_archive' %}">Todos los textos →</a></p>
           </div>
         {% endif %}
@@ -160,8 +160,8 @@
           <p class="integrantes-cta"><a class="btn" href="{% url 'people:member_index' %}">Conoce al colectivo <span aria-hidden="true">→</span></a></p>
         </div>
         <ul class="integrantes-retratos">
-          {% for m in integrantes_vista %}{% if forloop.counter > a_la_vista_telefono %}{% include "people/partials/_member_card_portada.html" with solo_ancho=True %}{% else %}{% include "people/partials/_member_card_portada.html" %}{% endif %}{% endfor %}
-          {% for m in integrantes_resto %}{% include "people/partials/_member_card_portada.html" with escondida=True %}{% endfor %}
+          {% for m in integrantes_vista %}{% if forloop.counter > a_la_vista_telefono %}{% include "content/partials/_member_card_portada.html" with solo_ancho=True %}{% else %}{% include "content/partials/_member_card_portada.html" %}{% endif %}{% endfor %}
+          {% for m in integrantes_resto %}{% include "content/partials/_member_card_portada.html" with escondida=True %}{% endfor %}
         </ul>
       </div>
     </section>
@@ -226,7 +226,7 @@
   {% endcomment %}
   <section class="home-block home-cierre">
     {% include "content/partials/_cabeza_de_seccion.html" with cejilla="Prensa y gestión" titulo="Para programadores y jurados" territorio="prensa" only %}
-    {% include "content/partials/_pie_de_entidad.html" with pie=puertas etiqueta="Para programadores y jurados" %}
+    {% include "partials/_pie_de_entidad.html" with pie=puertas etiqueta="Para programadores y jurados" %}
     {% if ultima_actividad or ultima_publicacion %}
       <p class="meta home-cierre-datos">{% if ultima_actividad %}Última actividad: <a href="{{ ultima_actividad.get_absolute_url }}">{{ ultima_actividad.title }}</a>, {{ ultima_actividad.starts_at|date:"j M Y" }}{% endif %}{% if ultima_actividad and ultima_publicacion %} · {% endif %}{% if ultima_publicacion %}Actualizado el {{ ultima_publicacion|date:"j \d\e F \d\e Y" }}{% endif %}</p>
     {% endif %}

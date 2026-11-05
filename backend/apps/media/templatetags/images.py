@@ -26,7 +26,7 @@ def lamina_path(forma, width, ext):
     return f"img/portada/lamina-{forma}-{width}.{ext}"
 
 
-@register.inclusion_tag("media/partials/_responsive_img.html")
+@register.inclusion_tag("partials/_responsive_img.html")
 def responsive_img(asset, sizes="100vw", css_class="", lazy=True, alt=None, decorativa=False):
     """Renderiza un <img> con srcset (si hay derivados), width/height (anti-CLS) y
     decoding async. `lazy=False` para imágenes destacadas sobre el pliegue (LCP).
@@ -110,7 +110,7 @@ def _lamina():
     }
 
 
-@register.inclusion_tag("media/partials/_portada_img.html")
+@register.inclusion_tag("partials/_portada_img.html")
 def portada_img(imagen=None, telefono=None):
     """La obra de la portada (D18): un <picture> con AVIF y WebP, el recorte vertical para el
     teléfono si lo hay, y prioridad alta, porque es lo primero que se pinta. Nunca sirve el

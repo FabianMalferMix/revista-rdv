@@ -18,7 +18,7 @@
     <h2 class="subhead">Publicaciones del colectivo</h2>
     <ul class="pub-grid">
       {% for pub in publications %}
-        {% include "showcase/partials/_publication_card.html" %}
+        {% include "partials/_publication_card.html" %}
       {% endfor %}
     </ul>
   {% endif %}
@@ -30,6 +30,6 @@
 
   {% if articles %}
     <h2 class="subhead">Reseñas de esta editorial</h2>
-    {% include "content/partials/_article_list.html" %}
+    {% include "partials/_article_list.html" %}
   {% endif %}
 {% endblock %}

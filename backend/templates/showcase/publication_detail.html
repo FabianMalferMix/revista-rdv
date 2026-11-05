@@ -58,10 +58,10 @@
       <section class="publicacion-resenas">
         <h2 class="subhead">Reseñas</h2>
         <ul class="filas">
-          {% for a in resenas %}{% include "content/partials/_article_card.html" %}{% endfor %}
+          {% for a in resenas %}{% include "partials/_article_card.html" %}{% endfor %}
         </ul>
       </section>
     {% endif %}
-    {% include "content/partials/_pie_de_entidad.html" %}
+    {% include "partials/_pie_de_entidad.html" %}
   </article>
 {% endblock %}

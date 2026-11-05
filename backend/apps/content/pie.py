@@ -3,7 +3,7 @@
 Cada ficha terminaba en seco: leído el poema, la única salida era la navegación de
 arriba. El pie ofrece adónde ir después —el índice, quien lo firma, lo que viene antes y
 después— como una lista de puertas que la vista arma y la parcial
-`content/partials/_pie_de_entidad.html` dibuja.
+`partials/_pie_de_entidad.html` dibuja.
 """
 
 

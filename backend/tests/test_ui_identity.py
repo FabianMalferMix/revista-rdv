@@ -126,8 +126,8 @@ def test_no_hay_fuentes_huerfanas():
 # Las dos parciales que producen una tarjeta de listado. El titular de la tarjeta
 # es la superficie donde más se repite la tipografía de titular en todo el sitio.
 TARJETAS = [
-    "content/partials/_article_card.html",
-    "content/partials/_poem_card.html",
+    "partials/_article_card.html",
+    "partials/_poem_card.html",
 ]
 
 
