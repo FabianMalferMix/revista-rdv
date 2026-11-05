@@ -19,6 +19,7 @@ from apps.media.models import Recording
 from apps.people.models import Contributor
 from config.feeds import FEED_GUID_AUTHORITY
 from config.publishing import FrozenSlugAdminMixin
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 
@@ -67,7 +68,7 @@ def test_feed_guid_survives_a_new_slug_and_another_host(path, make, kind, settin
     assert _guids(path, host="otro.example.com") == before
 
 
-def test_published_text_shows_its_slug_read_only_in_the_panel(client, editor, make_article):
+def test_published_text_shows_its_slug_read_only_in_the_panel(client, editor):
     published = make_article(status=EditorialStatus.PUBLISHED, slug="ya-publicado")
     draft = make_article(slug="todavia-borrador")
     client.force_login(editor)
@@ -115,7 +116,7 @@ def test_every_admin_with_a_public_slug_freezes_it():
             assert isinstance(model_admin, FrozenSlugAdminMixin), model._meta.label_lower
 
 
-def test_former_member_page_redirects_to_the_collaborator_page(client, make_article):
+def test_former_member_page_redirects_to_the_collaborator_page(client):
     person = Contributor.objects.create(slug="ex-integrante", display_name="Ex Integrante")
     article = make_article(status=EditorialStatus.PUBLISHED)
     article.authors.add(person)

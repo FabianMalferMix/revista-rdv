@@ -50,14 +50,17 @@ def test_ningun_modelo_propio_se_muestra_con_su_nombre_en_ingles():
     from django.contrib.admin.sites import site
 
     sospechosos = []
+    checked = 0
     for modelo in site._registry:
         if modelo._meta.app_label not in APPS_PROPIAS:
             continue
+        checked += 1
         nombre = str(modelo._meta.verbose_name)
         # El nombre por defecto es el CamelCase separado y en minúsculas.
         defecto = re.sub(r"(?<!^)(?=[A-Z])", " ", modelo.__name__).lower()
         if nombre == defecto:
             sospechosos.append(f"{modelo._meta.label} -> «{nombre}»")
+    assert checked >= 10, "control: el panel dejó de registrar los modelos propios"
     assert not sospechosos, "modelos sin rótulo propio: " + ", ".join(sospechosos)
 
 

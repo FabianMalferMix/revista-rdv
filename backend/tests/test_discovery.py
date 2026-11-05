@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus
 from apps.content.sitemaps import SITEMAPS
+from tests.factories import make_article, make_poem
 
 pytestmark = pytest.mark.django_db
 
@@ -24,7 +25,7 @@ pytestmark = pytest.mark.django_db
 # ── sitemap.xml ──────────────────────────────────────────────
 
 
-def test_sitemap_ok_and_valid_xml(client, make_article):
+def test_sitemap_ok_and_valid_xml(client):
     make_article(status=EditorialStatus.PUBLISHED, slug="pub-x", title="Publicado X")
     resp = client.get(reverse("sitemap"))
     assert resp.status_code == 200
@@ -33,7 +34,7 @@ def test_sitemap_ok_and_valid_xml(client, make_article):
     assert dom.getElementsByTagName("url"), "el sitemap no tiene ninguna <url>"
 
 
-def test_sitemap_lists_published_article_hides_draft(client, make_article):
+def test_sitemap_lists_published_article_hides_draft(client):
     pub = make_article(status=EditorialStatus.PUBLISHED, slug="art-pub")
     draft = make_article(status=EditorialStatus.DRAFT, slug="art-draft")
     content = client.get(reverse("sitemap")).content.decode()
@@ -55,7 +56,7 @@ def test_sitemap_includes_static_landing_pages(client):
         assert reverse(name) in content, f"falta {name} en el sitemap"
 
 
-def test_every_sitemap_section_builds_urls_without_error(make_article, make_poem):
+def test_every_sitemap_section_builds_urls_without_error():
     """Con datos sembrados, cada sección construye sus <url> (items + location +
     lastmod) sin lanzar: evita romper el sitemap entero por un filtro/campo/reverse
     mal escrito en cualquiera de las 13 secciones."""
@@ -72,7 +73,7 @@ def test_every_sitemap_section_builds_urls_without_error(make_article, make_poem
 # ── RSS de artículos (/feed/) ────────────────────────────────
 
 
-def test_articles_feed_ok_and_valid_xml(client, make_article):
+def test_articles_feed_ok_and_valid_xml(client):
     make_article(
         status=EditorialStatus.PUBLISHED,
         published_at=timezone.now(),
@@ -87,7 +88,7 @@ def test_articles_feed_ok_and_valid_xml(client, make_article):
     assert "Artículo En Feed" in resp.content.decode()
 
 
-def test_articles_feed_lists_published_hides_draft(client, make_article):
+def test_articles_feed_lists_published_hides_draft(client):
     pub = make_article(
         status=EditorialStatus.PUBLISHED, published_at=timezone.now(), slug="feed-pub"
     )
@@ -100,7 +101,7 @@ def test_articles_feed_lists_published_hides_draft(client, make_article):
 # ── Escala: cap de ítems del feed y sitemap sin truncado silencioso ──────────
 
 
-def test_articles_feed_caps_at_twenty_items(client, make_article):
+def test_articles_feed_caps_at_twenty_items(client):
     """El RSS de artículos limita a 20 ítems (items()[:20]), aunque haya más."""
     import xml.dom.minidom as minidom
 
@@ -110,7 +111,7 @@ def test_articles_feed_caps_at_twenty_items(client, make_article):
     assert len(dom.getElementsByTagName("item")) == 20
 
 
-def test_sitemap_lists_all_items_without_truncation(client, make_article):
+def test_sitemap_lists_all_items_without_truncation(client):
     """El sitemap emite todas las piezas publicadas (sin truncado silencioso) cuando
     su número supera el de una página típica pero no el límite de 50k de Django."""
     slugs = []

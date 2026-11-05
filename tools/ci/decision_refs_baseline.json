@@ -40,7 +40,6 @@
   "backend/templates/partials/_sello.html": 2,
   "backend/templates/people/partials/_member_card_portada.html": 1,
   "backend/templates/showcase/dossier.html": 1,
-  "backend/tests/factories.py": 1,
   "backend/tests/test_admin_hardening.py": 5,
   "backend/tests/test_agenda.py": 2,
   "backend/tests/test_antiabuse.py": 1,

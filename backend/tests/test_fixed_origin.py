@@ -13,7 +13,7 @@ from django.test import Client
 from apps.content.models import EditorialStatus
 from apps.media.models import Recording
 from apps.showcase.models import SiteProfile
-from tests.factories import make_event, make_image
+from tests.factories import make_article, make_event, make_image
 
 pytestmark = pytest.mark.django_db
 SITE = "https://revista.example.org"
@@ -21,7 +21,7 @@ OTHER_HOST = "otro.example.com"
 
 
 @pytest.fixture
-def site(settings, make_article):
+def site(settings):
     settings.SITE_URL = SITE
     settings.ALLOWED_HOSTS = ["testserver", OTHER_HOST]
     perfil = SiteProfile.load()

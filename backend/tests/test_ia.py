@@ -6,6 +6,7 @@ import pytest
 from django.urls import reverse
 
 from apps.community.models import NewsletterSubscriber
+from apps.community.views import ALTA_NEUTRA
 from apps.showcase.models import SiteProfile
 
 pytestmark = pytest.mark.django_db
@@ -89,7 +90,10 @@ def test_subscribe_creates_pending_subscriber(client):
 
 
 def test_subscribe_honeypot_drops_bots(client):
-    client.post(reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"})
+    resp = client.post(
+        reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"}, follow=True
+    )
+    assert ALTA_NEUTRA in resp.content.decode()  # control: el bot recibe la respuesta de siempre
     assert not NewsletterSubscriber.objects.filter(email="bot@spam.com").exists()
 
 

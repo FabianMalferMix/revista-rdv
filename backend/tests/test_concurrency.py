@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.content.models import Article, EditorialStatus, EditorialTransition
 from apps.content.tasks import publish_due_items
 from apps.content.workflow import perform_transition
+from tests.factories import make_article
 
 
 def _run_concurrently(fn, n):
@@ -46,7 +47,7 @@ def _run_concurrently(fn, n):
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_publish_due_items_is_idempotent_under_concurrency(make_article):
+def test_publish_due_items_is_idempotent_under_concurrency():
     """Cuatro corridas simultáneas de publish_due_items sobre la misma pieza vencida
     publican exactamente una vez y registran una sola transición (sin doble beat)."""
     art = make_article(
@@ -65,7 +66,7 @@ def test_publish_due_items_is_idempotent_under_concurrency(make_article):
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_perform_transition_serializes_concurrent_publish(make_article, editor):
+def test_perform_transition_serializes_concurrent_publish(editor):
     """Dos editores publicando la misma pieza a la vez: uno gana, el otro ve el estado
     ya cambiado bajo lock y falla con ValueError. Una sola transición registrada."""
     art = make_article(slug="aprobada", status=EditorialStatus.APPROVED)
@@ -86,16 +87,26 @@ def test_perform_transition_serializes_concurrent_publish(make_article, editor):
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
 def test_subscribe_same_email_stays_unique_under_concurrency():
-    """Cinco altas simultáneas del mismo email dejan exactamente una fila: el UNIQUE
-    + get_or_create absorben la IntegrityError de la carrera (una sola creación)."""
+    """Cinco altas simultáneas del mismo correo por el formulario: cada una recibe la respuesta
+    de siempre y queda una sola fila, porque el UNIQUE y el get_or_create absorben la carrera.
+    Dos altas a la vez pueden mandar dos correos de confirmación: no se afirma cuántos."""
+    from django.core import mail
+    from django.test import Client
+    from django.urls import reverse
+
     from apps.community.models import NewsletterSubscriber
+    from apps.community.views import ALTA_NEUTRA
 
     def do():
-        _, created = NewsletterSubscriber.objects.get_or_create(email="carrera@example.com")
-        return created
+        return Client().post(
+            reverse("community:subscribe"),
+            {"email": "carrera@example.com", "apodo": "", "next": "/"},
+            follow=True,
+        )
 
     results, errors = _run_concurrently(do, 5)
 
-    assert errors == [None] * 5, errors  # get_or_create no propaga la IntegrityError
+    assert errors == [None] * 5, errors  # ninguna alta revienta con la IntegrityError
+    assert all(ALTA_NEUTRA in r.content.decode() for r in results)
     assert NewsletterSubscriber.objects.filter(email="carrera@example.com").count() == 1
-    assert sum(1 for r in results if r) == 1  # exactamente un hilo creó la fila
+    assert mail.outbox, "control: la confirmación salió"

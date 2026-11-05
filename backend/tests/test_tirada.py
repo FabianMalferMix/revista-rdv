@@ -22,7 +22,7 @@ from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
 from tests import css
-from tests.factories import make_event, make_image, make_photo
+from tests.factories import make_event, make_image, make_photo, make_poem
 
 pytestmark = pytest.mark.django_db
 
@@ -103,7 +103,7 @@ def test_la_imagen_es_el_poster_o_la_primera_foto_del_evento(client):
     )
 
 
-def test_el_pliego_cita_el_primer_verso_del_poema_que_se_lee(client, make_poem):
+def test_el_pliego_cita_el_primer_verso_del_poema_que_se_lee(client):
     autora = Contributor.objects.create(slug="fs", display_name="Fernanda Soto")
     registro = _registro("recital")
     poema = make_poem(

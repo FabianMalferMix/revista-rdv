@@ -5,6 +5,7 @@ from django.utils import timezone
 from apps.content.models import ArticleContributor, EditorialStatus
 from apps.media.models import Recording
 from apps.people.models import Contributor
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 
@@ -34,7 +35,7 @@ def test_member_index_lists_only_active_members(client, member):
     assert b"Integrante Hist\xc3\xb3rico" not in resp.content
 
 
-def test_member_detail_shows_profile_and_published_articles(client, member, make_article):
+def test_member_detail_shows_profile_and_published_articles(client, member):
     art = make_article(
         slug="texto-pub",
         title="Texto Publicado",

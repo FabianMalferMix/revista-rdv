@@ -8,13 +8,14 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import Article, EditorialStatus, Poem
+from tests.factories import make_article, make_poem
 from tests.factories import publish as _publish
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
 
 
-def test_search_finds_published_match(client, make_article):
+def test_search_finds_published_match(client):
     _publish(make_article(slug="fts-1", title="Reseña de poesía chilena"))
     resp = client.get(reverse("content:search"), {"q": "poesía"})
     assert resp.status_code == 200
@@ -22,14 +23,14 @@ def test_search_finds_published_match(client, make_article):
     assert b"search-list" in resp.content
 
 
-def test_search_excludes_drafts(client, make_article):
+def test_search_excludes_drafts(client):
     make_article(slug="fts-draft", title="Borrador secreto de poesía", status=EditorialStatus.DRAFT)
     resp = client.get(reverse("content:search"), {"q": "secreto"})
     assert b"Borrador secreto" not in resp.content
     assert b"Sin resultados" in resp.content
 
 
-def test_search_empty_query_renders_nothing(client, make_article):
+def test_search_empty_query_renders_nothing(client):
     _publish(make_article(slug="fts-2", title="Algo publicado"))
     resp = client.get(reverse("content:search"), {"q": ""})
     assert resp.status_code == 200
@@ -37,14 +38,14 @@ def test_search_empty_query_renders_nothing(client, make_article):
     assert b"search-list" not in resp.content  # ni lista ni estado vacío
 
 
-def test_search_no_match_shows_empty_state(client, make_article):
+def test_search_no_match_shows_empty_state(client):
     _publish(make_article(slug="fts-3", title="Reseña de narrativa urbana"))
     resp = client.get(reverse("content:search"), {"q": "zxqwvk"})
     assert b"Sin resultados" in resp.content
     assert b"search-list" not in resp.content
 
 
-def test_search_finds_published_poem(client, make_poem):
+def test_search_finds_published_poem(client):
     _publish(make_poem(slug="poema-fts", title="Elegía del faro", body="luz que gira en la niebla"))
     resp = client.get(reverse("content:search"), {"q": "faro"})
     assert resp.status_code == 200
@@ -53,14 +54,14 @@ def test_search_finds_published_poem(client, make_poem):
     assert reverse("content:poem_detail", args=["poema-fts"]).encode() in resp.content
 
 
-def test_search_excludes_draft_poems(client, make_poem):
+def test_search_excludes_draft_poems(client):
     make_poem(slug="poema-draft", title="Poema oculto del abismo", body="secretos", status=S.DRAFT)
     resp = client.get(reverse("content:search"), {"q": "abismo"})
     assert b"Poema oculto" not in resp.content
     assert b"Sin resultados" in resp.content
 
 
-def test_poem_search_vector_tracks_bulk_update(client, make_poem):
+def test_poem_search_vector_tracks_bulk_update(client):
     # QuerySet.update NO pasa por save(): con el trigger, el vector igual se refresca
     # (el enfoque previo, que recalculaba solo en save(), dejaba el vector obsoleto).
     poem = _publish(make_poem(slug="poema-bulk", title="Título inicial", body="palabra vieja"))
@@ -69,7 +70,7 @@ def test_poem_search_vector_tracks_bulk_update(client, make_poem):
     assert "Título inicial".encode() in resp.content
 
 
-def test_article_search_vector_tracks_bulk_update(client, make_article):
+def test_article_search_vector_tracks_bulk_update(client):
     art = _publish(make_article(slug="art-bulk", title="Reseña bulk", body="palabra vieja"))
     Article.objects.filter(pk=art.pk).update(body="quetzalcoatl emplumado")
     resp = client.get(reverse("content:search"), {"q": "quetzalcoatl"})
@@ -79,14 +80,14 @@ def test_article_search_vector_tracks_bulk_update(client, make_article):
 # ── Búsqueda insensible a acentos (unaccent) ────────────────────────────────
 
 
-def test_search_unaccented_query_finds_accented_title(client, make_article):
+def test_search_unaccented_query_finds_accented_title(client):
     """Buscar 'resena' (sin acento) encuentra 'reseña' (con acento)."""
     _publish(make_article(slug="acentuado", title="La reseña de una novela chilena"))
     resp = client.get(reverse("content:search"), {"q": "resena"})
     assert "La reseña de una novela chilena".encode() in resp.content
 
 
-def test_search_accented_query_finds_unaccented_title(client, make_article):
+def test_search_accented_query_finds_unaccented_title(client):
     """Buscar 'crónica' (con acento) encuentra 'cronica' (sin acento en la BD)."""
     _publish(make_article(slug="sin-acento", title="Cronica urbana del invierno"))
     resp = client.get(reverse("content:search"), {"q": "crónica"})
@@ -96,7 +97,7 @@ def test_search_accented_query_finds_unaccented_title(client, make_article):
 # ── Degradación sin JavaScript (hallazgo #09) ───────────────────────────────
 
 
-def test_search_without_js_returns_full_page(client, make_article):
+def test_search_without_js_returns_full_page(client):
     """Una navegación normal (sin htmx) recibe la página completa con layout, no un
     fragmento suelto: la búsqueda funciona sin JavaScript."""
     _publish(make_article(slug="fts-page", title="Reseña navegable"))
@@ -106,7 +107,7 @@ def test_search_without_js_returns_full_page(client, make_article):
     assert "Reseña navegable" in html  # el resultado aparece
 
 
-def test_search_with_htmx_returns_fragment_only(client, make_article):
+def test_search_with_htmx_returns_fragment_only(client):
     """Con htmx (HX-Request) se devuelve solo el fragmento, sin el layout."""
     _publish(make_article(slug="fts-frag", title="Reseña fragmento"))
     resp = client.get(reverse("content:search"), {"q": "fragmento"}, headers={"HX-Request": "true"})
@@ -119,7 +120,7 @@ def test_search_with_htmx_returns_fragment_only(client, make_article):
 # ── Panel en vivo y página de búsqueda (backlog UX, ticket 1.5) ─────────────
 
 
-def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client, make_article):
+def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client):
     """El panel flotante es efímero; el enlace lleva a una página con URL estable.
 
     Va FUERA de la lista: otra prueba cuenta los <li> de `.search-list` para acotar el
@@ -134,9 +135,10 @@ def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client, make_article):
     assert "search-all" not in lista
 
 
-def test_la_pagina_de_busqueda_no_repite_el_enlace_a_si_misma(client, make_article):
-    _publish(make_article(slug="fts-misma", title="Reseña en página"))
+def test_la_pagina_de_busqueda_no_repite_el_enlace_a_si_misma(client):
+    article = _publish(make_article(slug="fts-misma", title="Reseña en página"))
     html = client.get(reverse("content:search"), {"q": "página"}).content.decode()
+    assert f'href="{article.get_absolute_url()}"' in html  # control: el resultado está
     assert "search-all" not in html
 
 
@@ -210,7 +212,7 @@ def test_los_nombres_se_buscan_sin_acentos_ni_mayusculas(client):
         assert _grupos(client, q) == {"Personas": [("Javiera Núñez", "Integrante")]}, q
 
 
-def test_una_firma_aparece_solo_si_tiene_algo_publicado(client, make_article):
+def test_una_firma_aparece_solo_si_tiene_algo_publicado(client):
     """Una firma sin nada publicado no tiene qué enseñar en su página."""
     from apps.content.models import EditorialStatus
     from apps.people.models import Contributor
@@ -230,10 +232,12 @@ def test_lo_que_no_esta_publicado_no_aparece(client):
     make_recording(slug="r-oculto", title="Faro oculto", published=False)
     make_publication(slug="p-oculta", title="Faro oculto", published=False)
     make_event(slug="e-oculto", title="Faro oculto", published=False)
-    assert _grupos(client, "faro oculto") == {}
+    make_recording(slug="r-visible", title="Faro oculto, en vivo")  # control: el publicado sí
+    groups = _grupos(client, "faro oculto")
+    assert [title for rows in groups.values() for title, _ in rows] == ["Faro oculto, en vivo"]
 
 
-def test_los_grupos_van_en_su_orden_y_con_su_dato(client, make_poem):
+def test_los_grupos_van_en_su_orden_y_con_su_dato(client):
     from tests.factories import make_publication
 
     make_publication(slug="umbral-libro", title="Umbral", kind="plaquette", year=2022)
@@ -255,12 +259,14 @@ def test_el_panel_adelanta_cinco_por_grupo_y_la_pagina_diez(client):
 def test_una_letra_sola_no_busca_por_nombre(client):
     """Casaría con casi todos los nombres: no dice nada."""
     _integrante("Ana Pérez", "ana")
+    assert "Personas" in _grupos(client, "an")  # control: con dos letras, la encuentra
     assert "Personas" not in _grupos(client, "a")
 
 
 def test_los_comodines_no_se_cuelan_en_la_busqueda_por_nombre(client):
     """`%` y `_` se buscan como letras: no casan con todo."""
     _integrante("Ana Pérez", "ana")
+    assert "Personas" in _grupos(client, "ana")  # control: por su nombre, la encuentra
     for q in ("%%", "__", "%a%"):
         assert "Personas" not in _grupos(client, q), q
 
@@ -308,7 +314,7 @@ def _result_titles(resp):
     return [a.get_text() for a in sopa.select(".search-list li > a")]
 
 
-def test_search_puts_the_most_relevant_text_first(client, make_article):
+def test_search_puts_the_most_relevant_text_first(client):
     """El que nombra el término en el título y lo repite sale antes que el que lo menciona
     una vez, aunque este se publicara antes y la base lo devuelva primero."""
     _publish(
@@ -349,7 +355,7 @@ def _announced(client, q):
     return estado.get_text(), sopa
 
 
-def test_the_panel_announces_how_many_results_it_brings(client, make_article):
+def test_the_panel_announces_how_many_results_it_brings(client):
     for n in range(2):
         _publish(make_article(slug=f"fts-cuenta-{n}", title=f"Reseña contable {n}"))
     dicho, sopa = _announced(client, "contable")
@@ -357,7 +363,7 @@ def test_the_panel_announces_how_many_results_it_brings(client, make_article):
     assert len(sopa.select(".search-list li")) == 2
 
 
-def test_one_result_is_announced_in_the_singular(client, make_article):
+def test_one_result_is_announced_in_the_singular(client):
     _publish(make_article(slug="fts-sola", title="Reseña solitaria"))
     assert _announced(client, "solitaria")[0] == "1 resultado para “solitaria”"
 
@@ -370,7 +376,7 @@ def test_an_empty_query_leaves_nothing_to_announce(client):
     assert _announced(client, "")[0] == ""
 
 
-def test_the_search_page_sends_nothing_to_announce(client, make_article):
+def test_the_search_page_sends_nothing_to_announce(client):
     """La página de búsqueda tiene su resumen a la vista y no tiene la lupa."""
     _publish(make_article(slug="fts-pagina", title="Reseña paginada"))
     html = client.get(BUSCAR, {"q": "paginada"}).content.decode()

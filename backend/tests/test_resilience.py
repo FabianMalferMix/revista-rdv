@@ -76,6 +76,12 @@ def test_the_search_panel_announces_that_the_service_is_down(client):
 @pytest.mark.django_db
 @override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
 def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
+    """El límite falla cerrado: la propuesta no se guarda, el aviso dice la verdad y lo escrito
+    vuelve al formulario para enviarlo más tarde."""
+    from bs4 import BeautifulSoup
+
+    from apps.submissions.models import Submission
+
     data = {
         "author_name": "Ana",
         "author_email": "ana@example.com",
@@ -86,11 +92,14 @@ def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
     resp = client.post(reverse("submissions:submit"), data)
     assert resp.status_code == 200
     assert SERVICE_UNAVAILABLE in resp.content.decode()
+    form = BeautifulSoup(resp.content, "html.parser")
+    assert form.select_one('input[name="title"]').get("value") == "Un título"  # control
+    assert not Submission.objects.exists()
 
 
 @pytest.mark.django_db
 @override_settings(RATELIMIT_ENABLE=True)
-def test_a_real_rate_limit_still_says_too_many_attempts(client):
+def test_a_real_rate_limit_still_says_too_many_attempts(client, frozen_rate_limit_window):
     """Control positivo: con la caché en pie, pasarse del límite es «demasiados intentos»."""
     for i in range(6):
         resp = client.post(

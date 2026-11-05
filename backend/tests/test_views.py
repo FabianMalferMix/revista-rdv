@@ -4,12 +4,13 @@ from django.urls import reverse
 from apps.content.models import EditorialStatus, ReviewedWork
 from apps.reviews.models import Publisher, Work
 from apps.submissions.models import Submission
+from tests.factories import make_article
 from tests.factories import publish as _publish
 
 pytestmark = pytest.mark.django_db
 
 
-def test_home_shows_published_hides_drafts(client, make_article):
+def test_home_shows_published_hides_drafts(client):
     _publish(make_article(slug="pub", title="Artículo Publicado"))
     make_article(slug="draft", title="Artículo Borrador", status=EditorialStatus.DRAFT)
     resp = client.get(reverse("content:home"))
@@ -18,13 +19,13 @@ def test_home_shows_published_hides_drafts(client, make_article):
     assert b"Art\xc3\xadculo Borrador" not in resp.content
 
 
-def test_article_detail_404_for_draft(client, make_article):
+def test_article_detail_404_for_draft(client):
     draft = make_article(slug="oculto", status=EditorialStatus.DRAFT)
     resp = client.get(reverse("content:article_detail", args=[draft.slug]))
     assert resp.status_code == 404
 
 
-def test_article_detail_ok_for_published(client, make_article):
+def test_article_detail_ok_for_published(client):
     article = _publish(make_article(slug="visible", title="Reseña Visible"))
     resp = client.get(reverse("content:article_detail", args=[article.slug]))
     assert resp.status_code == 200
@@ -59,11 +60,12 @@ def test_submission_honeypot_is_dropped(client):
             "apodo": "bot",
         },
     )
-    assert resp.status_code == 302
+    # Control: el bot recibe el mismo agradecimiento que un envío de verdad.
+    assert resp.status_code == 302 and resp["Location"] == reverse("submissions:submit_thanks")
     assert not Submission.objects.filter(title="spam").exists()
 
 
-def test_publisher_page_aggregates_reviews(client, make_article):
+def test_publisher_page_aggregates_reviews(client):
     publisher = Publisher.objects.create(slug="editorial-x", name="Editorial X")
     work = Work.objects.create(slug="obra-x", title="Obra X", publisher=publisher)
     article = _publish(make_article(slug="resena-x", title="Reseña Agregada"))
@@ -73,7 +75,7 @@ def test_publisher_page_aggregates_reviews(client, make_article):
     assert b"Rese\xc3\xb1a Agregada" in resp.content
 
 
-def test_section_pagination(client, make_article):
+def test_section_pagination(client):
     from apps.content.models import Section
 
     section = Section.objects.create(slug="sec", name="Sec")
@@ -117,7 +119,7 @@ def test_healthz(client):
     assert resp.content == b"ok"
 
 
-def test_collection_index_and_detail(client, make_article):
+def test_collection_index_and_detail(client):
     from apps.content.models import Collection, CollectionArticle, PublishStatus
 
     article = _publish(make_article(slug="en-coleccion", title="Pieza en Colección"))

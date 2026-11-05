@@ -19,7 +19,7 @@ from apps.content import workflow
 from apps.content.models import Collection, EditorialStatus, PublishStatus, editorial_models
 from apps.content.tasks import publish_due_items
 from apps.submissions.models import Call
-from tests.factories import make_recording
+from tests.factories import make_article, make_recording
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -81,7 +81,7 @@ def test_unscheduling_keeps_the_date_and_reopening_returns_to_draft(model, edito
     assert rejected.status == S.DRAFT
 
 
-def test_scheduling_from_the_panel_asks_for_the_date(client, editor, make_article):
+def test_scheduling_from_the_panel_asks_for_the_date(client, editor):
     article = make_article(status=S.APPROVED)
     url = reverse("admin:content_article_changelist")
     client.force_login(editor)
@@ -127,7 +127,7 @@ def _form_data(page, form_id):
     return data
 
 
-def test_the_panel_will_not_save_a_scheduled_piece_without_a_date(client, editor, make_article):
+def test_the_panel_will_not_save_a_scheduled_piece_without_a_date(client, editor):
     when = timezone.now() + timedelta(days=2)
     article = make_article(status=S.SCHEDULED, published_at=when)
     url = reverse("admin:content_article_change", args=[article.pk])

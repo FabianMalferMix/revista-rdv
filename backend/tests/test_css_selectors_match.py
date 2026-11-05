@@ -51,7 +51,15 @@ from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Partner, PressMention, SiteProfile, SiteSocialLink, WhereToBuy
 from apps.submissions.models import Call
 from tests import css
-from tests.factories import make_event, make_image, make_photo, make_publication, make_recording
+from tests.factories import (
+    make_article,
+    make_event,
+    make_image,
+    make_photo,
+    make_poem,
+    make_publication,
+    make_recording,
+)
 
 STATIC = css.SITE_CSS.parent.parent
 # Cada hoja, por cómo la nombran las páginas que la cargan.
@@ -298,7 +306,7 @@ def _profile(featured_poem):
     )
 
 
-def _work(members, guest, make_article, make_poem):
+def _work(members, guest):
     """Catorce textos y catorce poemas, para que los índices tengan dos páginas. Todos los textos
     llevan sección, etiqueta y un cuerpo con cita, código y figura. El primero de cada uno, con
     todo lo demás que puede llevar: título largo y colección; el texto, imagen con pie y obras
@@ -534,11 +542,11 @@ def _with_search_results(page, panel):
 
 
 @pytest.fixture
-def site_pages(client, groups, editor, make_article, make_poem, legal_pages):
+def site_pages(client, groups, editor, legal_pages):
     """Una página de cada tipo, y algunas más en otro estado: la portada y la agenda vuelven a
     pedirse después de cambiar los datos que las deciden."""
     members, guest = _people()
-    work = _work(members, guest, make_article, make_poem)
+    work = _work(members, guest)
     _profile(featured_poem=work["poems"][3])
     next_event, past = _agenda(members)
     _recordings(members, work["poems"], event=past[1])

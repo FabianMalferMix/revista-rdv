@@ -26,7 +26,13 @@ from django.urls import reverse
 
 from apps.content.models import Collection, EditorialStatus
 from apps.people.models import Contributor
-from tests.factories import make_event, make_publication, make_recording, publish
+from tests.factories import (
+    make_event,
+    make_publication,
+    make_published_article,
+    make_published_poem,
+    make_recording,
+)
 
 STATIC_TAG = re.compile(r"""{%\s*static\s+(['"])(?P<path>[^'"]+)\1""")
 PROJECT_APPS = [c for c in apps.get_app_configs() if c.name.startswith("apps.")]
@@ -104,7 +110,7 @@ def production_statics(tmp_path):
 
 
 @pytest.fixture
-def one_of_each(make_article, make_poem):
+def one_of_each(db):
     """Una pieza de cada tipo, y lo que hace que la portada pida sus guiones: dos registros
     destacados (la tirada), más integrantes de las que caben en el teléfono (el relevo) y dos
     publicaciones (el estante)."""
@@ -112,15 +118,14 @@ def one_of_each(make_article, make_poem):
         Contributor.objects.create(
             slug=f"voz-{n}", display_name=f"Voz {n}", is_member=True, active=True, position=n
         )
-    for n in range(2):
-        make_recording(featured=True, position=n)
-        make_publication()
+    recordings = [make_recording(featured=True, position=n) for n in range(2)]
+    publications = [make_publication() for _ in range(2)]
     return {
-        "texto": publish(make_article(slug="texto-estatico")).get_absolute_url(),
-        "poema": publish(make_poem(slug="poema-estatico")).get_absolute_url(),
-        "actividad": reverse("agenda:event_detail", args=[make_event().slug]),
-        "registro": reverse("media:recording_detail", args=["registro-0"]),
-        "publicacion": reverse("showcase:publication_detail", args=["pub-0"]),
+        "texto": make_published_article(slug="texto-estatico").get_absolute_url(),
+        "poema": make_published_poem(slug="poema-estatico").get_absolute_url(),
+        "actividad": make_event().get_absolute_url(),
+        "registro": recordings[0].get_absolute_url(),
+        "publicacion": publications[0].get_absolute_url(),
         "integrante": reverse("people:member_detail", args=["voz-0"]),
         "coleccion": Collection.objects.create(
             slug="coleccion-estatica", title="Colección", status=EditorialStatus.PUBLISHED

@@ -117,6 +117,7 @@ def test_example_com_no_se_considera_placeholder():
     """Regresión: `example.com` es el dominio reservado por la RFC 2606 y es el uso
     CORRECTO en entornos de prueba — el propio CI usa `ci.example.com`. Una versión
     anterior de este guard lo marcaba como placeholder y habría dejado el CI en rojo."""
+    assert is_placeholder("https://cambia-esto.example.com")  # control: el marcador sí cuenta
     assert not is_placeholder("ci.example.com")
     assert (
         _check(

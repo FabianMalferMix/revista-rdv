@@ -222,6 +222,7 @@ def test_the_home_features_a_poem_only_if_it_is_published(client, status):
     profile.featured_poem = w.hidden
     profile.save()
     content = client.get("/").content.decode()
+    assert _shows(content, w.shown), "control: la portada enseña el poema publicado en su lista"
     assert 'class="home-block featured"' not in content
     assert not _shows(content, w.hidden)
 

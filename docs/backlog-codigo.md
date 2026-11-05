@@ -1185,6 +1185,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 
 **Hecho cuando.** Después de correr la suite, `git status` no muestra cambios, y las fábricas viven en un solo módulo.
 
+**Hecho (2026-11-04).** Las fábricas son solo funciones de `tests/factories.py` (fuera los fixtures `make_article` y `make_poem`), con `make_published_article`, `make_published_poem`, slugs de un contador común y `soup(client, url)`, que exige el 200: así salieron dos pruebas que pasaban mirando un 404. 66 pruebas de «no aparece» ganaron su control positivo, más los cuatro casos de PRU-8 (la portada, ahora con una prueba de consultas con una pieza de cada cosa o con cuatro). La prueba de la versión de los estáticos trabaja sobre una copia. El fixture `frozen_rate_limit_window` fija la ventana de django-ratelimit en las nueve pruebas que agotan o cuentan un límite: fallaban si sus peticiones cruzaban el cambio de minuto. Las dos pruebas de filas que comparaban la fecha local con una en UTC se arreglaron en B60, porque bloqueaban el CI de 21:00 a 24:00 en Santiago.
+
 #### B62 · Herramientas de medición que no dan por bueno un error
 
 **Hallazgos:** HER-6, HER-7 (fuentes) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C3

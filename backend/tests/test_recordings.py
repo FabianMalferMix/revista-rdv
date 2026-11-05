@@ -215,7 +215,9 @@ def test_home_shows_featured_recording_when_published(client):
 
     rec.published = False
     rec.save(update_fields=["published"])
-    assert b"Registro En Portada" not in client.get(reverse("content:home")).content
+    content = client.get(reverse("content:home")).content.decode()
+    assert "Ver el dossier" in content  # control: la portada se dibuja entera
+    assert "Registro En Portada" not in content
 
 
 # ── Integridad: fuente obligatoria (archivo O embed) a nivel de BD ──────────

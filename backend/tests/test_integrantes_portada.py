@@ -12,13 +12,12 @@ import re
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from django.urls import reverse
 
 from apps.content.views import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from apps.people.models import Contributor
 from tests import css
-from tests.factories import make_image
+from tests.factories import make_image, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -40,7 +39,7 @@ def _integrantes(n):
 
 
 def _seccion(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = soup(client, reverse("content:home"))
     return sopa, sopa.select_one("section.home-integrantes")
 
 
@@ -81,7 +80,9 @@ def test_cada_retrato_lleva_a_su_ficha_y_el_retrato_no_repite_el_nombre(client):
 def test_con_tres_o_menos_no_hay_relevo(client):
     _integrantes(A_LA_VISTA_TELEFONO)
     sopa, seccion = _seccion(client)
-    assert not [t for t in seccion.select(".integrantes-retratos > li") if t.has_attr("hidden")]
+    cards = seccion.select(".integrantes-retratos > li")
+    assert len(cards) == A_LA_VISTA_TELEFONO  # control: están todas, a la vista
+    assert not [t for t in cards if t.has_attr("hidden")]
     assert sopa.select_one('script[src*="js/integrantes.js"]') is None
 
 

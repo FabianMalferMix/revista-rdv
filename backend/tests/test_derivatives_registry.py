@@ -9,7 +9,6 @@ from io import BytesIO
 from pathlib import PurePosixPath
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -18,7 +17,7 @@ from PIL import Image
 
 from apps.agenda.models import EventPhoto
 from apps.media.models import MediaAsset
-from tests.factories import make_event
+from tests.factories import make_event, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -51,10 +50,8 @@ def test_a_page_with_twenty_images_does_not_ask_the_storage(client, monkeypatch)
         return original(self, name)
 
     monkeypatch.setattr(FileSystemStorage, "exists", counting)
-    response = client.get(reverse("agenda:event_detail", args=["recital"]))
-    assert response.status_code == 200
-    soup = BeautifulSoup(response.content, "html.parser")
-    srcsets = [img["srcset"] for img in soup.select("img[srcset]") if "foto-" in img["srcset"]]
+    page = soup(client, reverse("agenda:event_detail", args=["recital"]))
+    srcsets = [img["srcset"] for img in page.select("img[srcset]") if "foto-" in img["srcset"]]
     assert all(any(f"/foto-{n}__240w.jpg 240w" in s for s in srcsets) for n in range(20))
     assert asked == []
 

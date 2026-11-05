@@ -5,6 +5,7 @@ from django.test import RequestFactory
 from apps.content import workflow
 from apps.content.admin import ArticleAdmin
 from apps.content.models import Article, EditorialStatus
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -31,25 +32,25 @@ def test_save_model_sets_owner_on_create(autor):
     assert article.owner == autor
 
 
-def test_save_model_keeps_owner_on_edit(editor, autor, make_article):
+def test_save_model_keeps_owner_on_edit(editor, autor):
     article = make_article(owner=autor, status=S.DRAFT)
     _admin().save_model(_request(editor), article, form=None, change=True)
     article.refresh_from_db()
     assert article.owner == autor  # editar no reasigna el dueño
 
 
-def test_queryset_scoped_for_author(editor, autor, make_article):
+def test_queryset_scoped_for_author(editor, autor):
     make_article(owner=editor, status=S.PUBLISHED)
     own = make_article(owner=autor, status=S.DRAFT)
     assert list(_admin().get_queryset(_request(autor))) == [own]
 
 
-def test_queryset_full_for_editor(editor, autor, make_article):
+def test_queryset_full_for_editor(editor, autor):
     make_article(owner=autor, status=S.DRAFT)
     assert _admin().get_queryset(_request(editor)).count() == 1
 
 
-def test_change_permission_state_scoped_for_author(autor, make_article):
+def test_change_permission_state_scoped_for_author(autor):
     ma = _admin()
     draft = make_article(owner=autor, status=S.DRAFT)
     published = make_article(owner=autor, status=S.PUBLISHED)
@@ -57,7 +58,7 @@ def test_change_permission_state_scoped_for_author(autor, make_article):
     assert not ma.has_change_permission(_request(autor), published)
 
 
-def test_editor_can_change_any(editor, autor, make_article):
+def test_editor_can_change_any(editor, autor):
     published = make_article(owner=autor, status=S.PUBLISHED)
     assert _admin().has_change_permission(_request(editor), published)
 
@@ -79,7 +80,7 @@ def test_all_transition_actions_registered():
         assert name in ma.actions and callable(getattr(ma, name, None)), name
 
 
-def test_publish_action_transitions_and_logs(editor, autor, make_article):
+def test_publish_action_transitions_and_logs(editor, autor):
     article = make_article(owner=autor, status=S.APPROVED)
     ma = _admin()
     ma.do_publish(_request(editor, with_messages=True), Article.objects.filter(pk=article.pk))
@@ -89,7 +90,7 @@ def test_publish_action_transitions_and_logs(editor, autor, make_article):
     assert article.transitions.filter(to_status=S.PUBLISHED).exists()
 
 
-def test_publish_action_denied_for_author(autor, make_article):
+def test_publish_action_denied_for_author(autor):
     # El autor no es editor: la acción no debe publicar (guarda de perform_transition).
     article = make_article(owner=autor, status=S.APPROVED)
     ma = _admin()
@@ -98,7 +99,7 @@ def test_publish_action_denied_for_author(autor, make_article):
     assert article.status == S.APPROVED  # sin cambios
 
 
-def test_author_cannot_delete(autor, editor, make_article):
+def test_author_cannot_delete(autor, editor):
     ma = _admin()
     article = make_article(owner=autor, status=S.DRAFT)
     assert not ma.has_delete_permission(_request(autor), article)

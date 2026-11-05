@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from apps.content.models import Collection, EditorialStatus, Page, PublishStatus
 from apps.people import roles
-from tests.factories import make_event, make_publication, make_recording
+from tests.factories import make_article, make_event, make_poem, make_publication, make_recording
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -42,7 +42,7 @@ def other_author(groups):
 
 @pytest.mark.parametrize("model", ["article", "poem"])
 def test_the_editor_and_the_owner_preview_a_draft_and_nobody_else(
-    client, editor, autor, other_author, make_article, make_poem, model
+    client, editor, autor, other_author, model
 ):
     make = make_article if model == "article" else make_poem
     draft = make(owner=autor, status=S.IN_REVIEW)
@@ -84,7 +84,7 @@ def test_the_editor_previews_what_is_not_published_yet(client, editor, kind):
     assert _is_preview(client.get(url))
 
 
-def test_view_on_site_works_for_a_draft(client, editor, make_article):
+def test_view_on_site_works_for_a_draft(client, editor):
     draft = make_article(status=S.DRAFT, published_at=None)
     client.force_login(editor)
     change = client.get(reverse("admin:content_article_change", args=[draft.pk]))
@@ -94,13 +94,13 @@ def test_view_on_site_works_for_a_draft(client, editor, make_article):
     assert _is_preview(response)
 
 
-def test_a_scheduled_piece_is_previewed_until_it_is_published(client, editor, make_article):
+def test_a_scheduled_piece_is_previewed_until_it_is_published(client, editor):
     scheduled = make_article(status=S.SCHEDULED, published_at=timezone.now() + timedelta(days=1))
     client.force_login(editor)
     assert _is_preview(client.get(scheduled.get_absolute_url()))
 
 
-def test_without_access_to_the_panel_there_is_no_preview(client, groups, make_article):
+def test_without_access_to_the_panel_there_is_no_preview(client, groups):
     """Alguien que conserva los permisos de su grupo pero ya no entra al panel no ve borradores."""
     former = get_user_model().objects.create_user("ya-no-entra", password="pw", is_staff=False)
     former.groups.add(groups[roles.EDITOR])

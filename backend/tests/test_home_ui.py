@@ -11,17 +11,14 @@ from apps.content.models import EditorialStatus
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
+from tests.factories import make_poem, make_published_article, soup
 
 pytestmark = pytest.mark.django_db
 
 
-def _pub(make_article, **kw):
-    return make_article(status=EditorialStatus.PUBLISHED, published_at=timezone.now(), **kw)
-
-
-def test_home_caps_articles_and_links_to_archive(client, make_article):
+def test_home_caps_articles_and_links_to_archive(client):
     for i in range(8):
-        _pub(make_article, slug=f"t{i}", title=f"Texto {i}")
+        make_published_article(slug=f"t{i}", title=f"Texto {i}")
     resp = client.get(reverse("content:home"))
     assert resp.status_code == 200
     # Portada curada: los tres últimos textos (ticket 4.3; eran cinco). El resto vive en el
@@ -31,9 +28,9 @@ def test_home_caps_articles_and_links_to_archive(client, make_article):
     assert sopa.select_one(f'.home-obra a[href="{reverse("content:text_archive")}"]') is not None
 
 
-def test_text_archive_paginates_full_list(client, make_article):
+def test_text_archive_paginates_full_list(client):
     for i in range(15):
-        _pub(make_article, slug=f"a{i}")
+        make_published_article(slug=f"a{i}")
     resp = client.get(reverse("content:text_archive"))
     assert resp.status_code == 200
     page = resp.context["articles"]
@@ -43,7 +40,7 @@ def test_text_archive_paginates_full_list(client, make_article):
     assert len(page2.object_list) == 3
 
 
-def test_con_un_registro_destacado_no_sale_el_poema_destacado(client, make_poem):
+def test_con_un_registro_destacado_no_sale_el_poema_destacado(client):
     profile = SiteProfile.load()
     profile.featured_poem = make_poem(
         slug="p-dest",
@@ -67,7 +64,7 @@ def test_con_un_registro_destacado_no_sale_el_poema_destacado(client, make_poem)
     assert "Poema Destacado" not in sopa.select_one(".tirada").get_text()
 
 
-def test_sin_registros_destacados_vuelve_el_poema_destacado(client, make_poem):
+def test_sin_registros_destacados_vuelve_el_poema_destacado(client):
     profile = SiteProfile.load()
     profile.featured_poem = make_poem(
         slug="p-dest",
@@ -81,7 +78,7 @@ def test_sin_registros_destacados_vuelve_el_poema_destacado(client, make_poem):
     assert sopa.select_one(".featured h2").get_text() == "Poema Destacado"
 
 
-def _featured_excerpt(client, make_poem, body):
+def _featured_excerpt(client, body):
     profile = SiteProfile.load()
     profile.featured_poem = make_poem(
         slug="p-dest",
@@ -96,11 +93,11 @@ def _featured_excerpt(client, make_poem, body):
     return sopa.select_one(".featured .poem-excerpt")
 
 
-def test_featured_poem_excerpt_keeps_its_verses_and_stanzas(client, make_poem):
+def test_featured_poem_excerpt_keeps_its_verses_and_stanzas(client):
     """Sin registros destacados, la portada cita el poema verso a verso, con su sangría y
     sus estrofas enteras: la tercera no cabe en los seis versos y no se parte."""
     extracto = _featured_excerpt(
-        client, make_poem, "Uno\ndos\n\n    tres\n    cuatro\n    cinco\n\nseis\nsiete"
+        client, "Uno\ndos\n\n    tres\n    cuatro\n    cinco\n\nseis\nsiete"
     )
     versos = [v.get_text() for v in extracto.select(".estrofa > .verso")]
     assert versos == ["Uno", "dos", "    tres", "    cuatro", "    cinco"]
@@ -108,25 +105,25 @@ def test_featured_poem_excerpt_keeps_its_verses_and_stanzas(client, make_poem):
     assert "seis" not in extracto.get_text()
 
 
-def test_featured_prose_poem_is_cut_at_a_word(client, make_poem):
-    extracto = _featured_excerpt(client, make_poem, "palabra " * 100)
+def test_featured_prose_poem_is_cut_at_a_word(client):
+    extracto = _featured_excerpt(client, "palabra " * 100)
     (verso,) = extracto.select(".verso")
     assert verso.get_text().endswith("palabra…")
     assert len(verso.get_text()) <= 281
 
 
-def test_featured_poem_long_first_stanza_stops_at_six_verses(client, make_poem):
+def test_featured_poem_long_first_stanza_stops_at_six_verses(client):
     cuerpo = "\n".join(f"verso {n}" for n in range(1, 10))
-    extracto = _featured_excerpt(client, make_poem, cuerpo)
+    extracto = _featured_excerpt(client, cuerpo)
     assert [v.get_text() for v in extracto.select(".verso")] == [f"verso {n}" for n in range(1, 7)]
 
 
-def test_home_texts_appear_before_members(client, make_article):
+def test_home_texts_appear_before_members(client):
     """La obra (poemas y textos) va antes que las integrantes. Desde julio iba al revés,
     porque las integrantes son lo primero que buscan los programadores; el 2026-10-14 el
     dueño del sitio, al ver la portada completa, pidió la obra primero (paso 20)."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
-    _pub(make_article, slug="tx", title="Texto Portada")
+    make_published_article(slug="tx", title="Texto Portada")
     content = client.get(reverse("content:home")).content
     assert content.index(b"Texto Portada") < content.index(b"Integrante Uno")
 
@@ -181,4 +178,6 @@ def test_sin_convocatoria_abierta_no_hay_sello(client):
 
     _convocatoria(timedelta(days=-40), timedelta(days=-5), slug="cerrada")
     _convocatoria(timedelta(days=5), timedelta(days=40), slug="futura")
-    assert b"sello-convocatoria" not in client.get(reverse("content:home")).content
+    page = soup(client, reverse("content:home"))
+    assert page.select_one("section.hero .hero-dossier")  # control: la hoja está, con su botón
+    assert page.select_one(".sello-convocatoria") is None
