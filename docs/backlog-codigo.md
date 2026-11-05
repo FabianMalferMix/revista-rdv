@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 71 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
+> **Avance:** 72 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -166,7 +166,7 @@
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
 | B66 | Contratos de entidad completos | — | M | no | hecho (#256) |
-| B67 | La app del sitio, por etapas | B15 | L | no | en curso (etapa 1: #258) |
+| B67 | La app del sitio, por etapas | B15 | L | no | hecho (#258, #259) |
 | B68 | Una política de contenido y una tabla de proveedores | — | S | no | pendiente |
 | B69 | La composición visual sale de las vistas | B26 | M | no | pendiente |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | pendiente |
