@@ -408,6 +408,22 @@ def _resultado_por_nombre(fila):
     return formatter(fila)
 
 
+def _trim_search_query(text):
+    """La consulta que se busca: sin espacios en los bordes y con SEARCH_MAX_QUERY caracteres
+    como mucho. Si el tope parte una palabra, esa palabra queda fuera entera: la búsqueda exige
+    todas las palabras, y un pedazo es una palabra que el texto no tiene. La palabra va de
+    espacio a espacio, con su puntuación: PostgreSQL lee «Wisława-Szymborska» o «3.14» como una
+    sola, y un pedazo de ellas tampoco casa. Sin ningún espacio dentro del tope no hay palabra
+    entera que dejar, y la consulta se corta en el tope."""
+    query = text.strip()
+    if len(query) <= SEARCH_MAX_QUERY:
+        return query
+    head = query[:SEARCH_MAX_QUERY]
+    if not head[-1].isspace() and not query[SEARCH_MAX_QUERY].isspace():
+        head = head.rsplit(maxsplit=1)[0]
+    return head.rstrip()
+
+
 # HEAD ejecuta la vista entera (Django solo descarta el cuerpo): cuenta para el límite como
 # un GET. Los demás métodos no tienen nada que hacer aquí.
 @require_safe
@@ -431,7 +447,7 @@ def search(request):
     """
     # El byte NUL no lo admite un campo de texto de PostgreSQL: llegaba hasta el driver
     # y producía un DataError no capturado, es decir un 500 público con `?q=%00`.
-    q = request.GET.get("q", "").replace("\x00", "")[:SEARCH_MAX_QUERY].strip()
+    q = _trim_search_query(request.GET.get("q", "").replace("\x00", ""))
     # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
     # recibe la página completa con layout, para que la búsqueda degrade con gracia.
     panel = bool(request.headers.get("HX-Request"))
