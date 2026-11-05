@@ -10,8 +10,7 @@ import pytest
 from bs4 import BeautifulSoup
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.db import DatabaseError, connection, transaction
-from django.db.migrations.executor import MigrationExecutor
+from django.db import DatabaseError, transaction
 from django.urls import reverse
 from django.utils import timezone
 
@@ -164,22 +163,8 @@ def test_another_persons_note_looks_locked_and_says_who_can_change_it(client, ed
     assert soup.get_text().count("Solo la puede cambiar quien la escribió") == 1
 
 
-@pytest.fixture
-def _back_to_the_latest_migrations():
-    yield
-    executor = MigrationExecutor(connection)
-    executor.migrate(executor.loader.graph.leaf_nodes())
-
-
-@pytest.mark.django_db(transaction=True)
-def test_the_migration_copies_title_and_actor_into_existing_entries(_back_to_the_latest_migrations):
-    before, after = (
-        ("content", "0016_search_config_and_generated_vector"),
-        ("content", "0017_editorial_log_survives"),
-    )
-    executor = MigrationExecutor(connection)
-    executor.migrate([before])
-    old = executor.loader.project_state([before]).apps
+def test_the_migration_copies_title_and_actor_into_existing_entries(migrate):
+    old = migrate("content", "0016_search_config_and_generated_vector")
     user = old.get_model("auth", "User").objects.create(username="editora")
     article = old.get_model("content", "Article").objects.create(
         slug="pieza", title="Pieza vieja", body="Texto", reading_time=1
@@ -197,9 +182,7 @@ def test_the_migration_copies_title_and_actor_into_existing_entries(_back_to_the
             actor=actor,
         )
 
-    executor = MigrationExecutor(connection)
-    executor.migrate([after])
-    new = executor.loader.project_state([after]).apps
+    new = migrate("content", "0017_editorial_log_survives")
     entries = new.get_model("content", "EditorialTransition").objects.order_by("pk")
     assert list(entries.values_list("item_title", "actor_name")) == [
         ("Pieza vieja", "editora"),

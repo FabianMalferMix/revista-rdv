@@ -14,6 +14,7 @@ from django.utils import timezone
 from config import publishing
 from config.text import strip_accents
 
+from . import legal
 from .sanitize import clean_html
 
 
@@ -506,8 +507,8 @@ class CollectionPoem(models.Model):
 
 # Las páginas de sistema: el pie de todas las páginas y el consentimiento del boletín y de
 # los envíos enlazan a ellas por su slug. Su texto se edita en el panel; su dirección y su
-# estado, no.
-LEGAL_PAGES = ("privacidad", "cookies", "terminos")
+# estado, no. Son las que siembran las migraciones desde legal.py.
+LEGAL_PAGES = tuple(legal.pages())
 
 
 class Page(models.Model):

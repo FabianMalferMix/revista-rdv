@@ -1169,6 +1169,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 
 **Hecho cuando.** 0007 y 0010 tienen prueba de ida (y de vuelta, si existe), y la migración y el fixture leen el texto legal de la misma función.
 
+**Hecho (2026-11-04).** El fixture `migrate` (`conftest.py`, con `MigrationExecutor`) sustituye a los ayudantes locales. Cada `RunPython` tiene prueba: siete nuevas en `tests/test_data_migrations.py` (community 0003 y content 0004, también de vuelta; content 0007 y 0010, showcase 0004) y las que ya había. `apps/content/legal.py` da el texto vigente y crea las páginas que falten; lo usan 0007, 0010 y el fixture `legal_pages`.
+
 #### B61 · Higiene de la suite
 
 **Hallazgos:** PRU-8, PRU-9, PRU-10, AGE-4 (punto 6) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3

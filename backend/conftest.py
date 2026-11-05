@@ -107,19 +107,39 @@ def autor(db, groups):
 
 @pytest.fixture
 def legal_pages(db):
-    """Re-crea las páginas legales que siembran las migraciones de datos (0007 y la
-    actualización a Ley 21.719 de 0010), reutilizando sus funciones RunPython. Lo
-    necesitan los tests que consultan esas páginas directamente, porque un test
-    transaccional previo (transaction=True) pudo vaciar la tabla."""
-    import importlib
+    """Las páginas legales, publicadas y con el texto que les dan las migraciones: las crea, si
+    faltan, la misma función de `apps/content/legal.py` que usa la migración. Lo necesitan las
+    pruebas que consultan esas páginas, porque una prueba transaccional previa (transaction=True)
+    vacía la tabla, y con ella lo que sembraron las migraciones."""
+    from apps.content import legal
+    from apps.content.models import Page
 
-    from django.apps import apps as django_apps
+    legal.create_pages(Page)
 
-    for module, func in (
-        ("apps.content.migrations.0007_legal_pages", "create_pages"),
-        ("apps.content.migrations.0010_privacy_ley_21719", "update_privacy"),
-    ):
-        getattr(importlib.import_module(module), func)(django_apps, None)
+
+@pytest.fixture
+def migrate(transactional_db):
+    """Lleva una app a una de sus migraciones y devuelve los modelos históricos de ese momento:
+    `old = migrate("content", "0013_permisos_de_revisar_y_publicar")` y después
+    `old.get_model("content", "Article")`. Al terminar, la base vuelve a las últimas migraciones.
+
+    Una migración de datos se prueba así: se va a la migración anterior, se crean con sus modelos
+    las filas que la migración transforma, se migra y se comprueba qué quedó; si tiene vuelta, se
+    vuelve a la anterior y se comprueba otra vez. La base es transaccional: cada migración se
+    confirma por separado, como en un despliegue, y PostgreSQL no deja alterar una tabla que
+    tiene comprobaciones de clave foránea pendientes en la misma transacción.
+    """
+    from django.db import connection
+    from django.db.migrations.executor import MigrationExecutor
+
+    def migrate_to(app, name):
+        executor = MigrationExecutor(connection)
+        executor.migrate([(app, name)])
+        return executor.loader.project_state([(app, name)]).apps
+
+    yield migrate_to
+    executor = MigrationExecutor(connection)
+    executor.migrate(executor.loader.graph.leaf_nodes())
 
 
 def _dated(fields):
