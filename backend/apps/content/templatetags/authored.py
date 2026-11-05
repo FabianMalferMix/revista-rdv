@@ -8,6 +8,7 @@ plantillas, de modo que este filtro es el único camino del HTML de autor a la p
 from functools import lru_cache
 
 from django import template
+from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from apps.content.sanitize import clean_html
@@ -15,8 +16,9 @@ from apps.content.sanitize import clean_html
 register = template.Library()
 
 
+# La depuración depende también de SITE_URL (qué imágenes son del propio sitio): va en la clave.
 @lru_cache(maxsize=256)
-def _cleaned(html):
+def _cleaned(html, site_url):
     return clean_html(html)
 
 
@@ -25,4 +27,4 @@ def authored_html(html):
     """El HTML de autor, depurado con la lista blanca de nh3: cada cuerpo se depura una vez por
     proceso."""
     # Se marca como seguro exactamente lo que devolvió nh3 con la lista blanca del sitio.
-    return mark_safe(_cleaned(html or ""))  # nosec B308, B703
+    return mark_safe(_cleaned(html or "", settings.SITE_URL))  # nosec B308, B703

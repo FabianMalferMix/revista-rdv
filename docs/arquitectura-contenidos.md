@@ -86,7 +86,7 @@ Leyenda: **REUSE** (sin cambios) · **EXT** (extender) · **RENAME** · **NEW** 
 
 **`media.Recording` — NEW** (registro de audio/video de lecturas)
 - `title`, `slug`, `kind` (AUDIO/VIDEO).
-- Fuente: `file` (FileField subido) **o** `embed_url` (YouTube/Vimeo/SoundCloud/Bandcamp) — uno u otro.
+- Fuente: `file` (FileField subido) **o** `embed_url` (los proveedores de `config/content_policy.py`: YouTube y Vimeo) — uno u otro.
 - `poster` (FK `MediaAsset`), `recorded_on`, `event` (FK `agenda.Event`), `participants` (M2M `Contributor`),
   `description`, `featured` (para portada), `published` + `published_at`, `position`.
 - Alimenta la página de registros y el **feed podcast RSS** (§8).

@@ -5,8 +5,8 @@ aplicada a todas las respuestas dinámicas. Los scripts en línea propios son tr
 bloques JSON-LD (el de `base.html`, en todas las páginas, y los de las fichas de
 artículo y de evento), y llevan el nonce; el resto del JS (htmx, TinyMCE, admin) va
 auto-hospedado y entra por 'self'. Los estilos son 'self' en el sitio público; solo
-bajo /admin/, donde el admin de Django y TinyMCE inyectan estilos en línea, admiten
-además 'unsafe-inline' (`_STYLE_ADMIN`).
+en el panel (bajo `reverse("admin:index")`), donde el admin de Django y TinyMCE
+inyectan estilos en línea, admiten además 'unsafe-inline' (`_STYLE_ADMIN`).
 
 La política siempre bloquea: no hay modo Report-Only. Un cambio que la viole lo detecta
 antes la prueba de humo del CI, que abre el sitio en un navegador y falla con cualquier
@@ -16,7 +16,10 @@ error de consola.
 import base64
 import os
 
+from django.urls import reverse
 from django.utils.functional import SimpleLazyObject
+
+from config.content_policy import EMBED_PROVIDERS
 
 # Marcador interno para la directiva que depende de la ruta.
 _STYLE_MARKER = object()
@@ -25,7 +28,7 @@ _STYLE_MARKER = object()
 # nonce. El SITIO PÚBLICO, en cambio, no tiene ni un solo atributo `style=` ni un bloque
 # <style> —el CSS propio va en un fichero estático, y el saneo nh3 descarta el atributo
 # `style` del HTML autoral—, así que ahí no hace falta relajar nada. Emitir
-# 'unsafe-inline' solo bajo /admin/ reduce lo que un XSS podría hacer en las páginas que
+# 'unsafe-inline' solo en el panel reduce lo que un XSS podría hacer en las páginas que
 # ve el público (superposiciones de secuestro de clic, exfiltración por selectores CSS).
 _STYLE_PUBLICO = "'self'"
 _STYLE_ADMIN = "'self' 'unsafe-inline'"
@@ -34,13 +37,13 @@ _STYLE_ADMIN = "'self' 'unsafe-inline'"
 _DIRECTIVES = (
     ("default-src", "'self'"),
     ("script-src", None),  # marcador: se rellena con 'self' [+ nonce]
-    ("style-src", _STYLE_MARKER),  # marcador: 'unsafe-inline' solo bajo /admin/
+    ("style-src", _STYLE_MARKER),  # marcador: 'unsafe-inline' solo en el panel
     ("img-src", "'self' data:"),
     ("font-src", "'self' data:"),
     ("connect-src", "'self'"),
-    # 'self' es necesario para el iframe de edición de TinyMCE (admin); los otros
-    # dos, para los reproductores embebidos de registros.
-    ("frame-src", "'self' https://www.youtube-nocookie.com https://player.vimeo.com"),
+    # 'self' es necesario para el iframe de edición de TinyMCE (admin); los demás son
+    # los reproductores de los proveedores de video (config/content_policy.py).
+    ("frame-src", " ".join(["'self'", *(provider.origin for provider in EMBED_PROVIDERS)])),
     ("media-src", "'self'"),
     ("object-src", "'none'"),
     ("base-uri", "'self'"),
@@ -102,7 +105,8 @@ class ContentSecurityPolicyMiddleware:
             script_src += f" 'nonce-{state['nonce']}'"
 
         # El panel necesita estilos en línea; el sitio público no (ver arriba).
-        style_src = _STYLE_ADMIN if request.path.startswith("/admin/") else _STYLE_PUBLICO
+        in_panel = request.path.startswith(reverse("admin:index"))
+        style_src = _STYLE_ADMIN if in_panel else _STYLE_PUBLICO
 
         parts = []
         for name, value in _DIRECTIVES:

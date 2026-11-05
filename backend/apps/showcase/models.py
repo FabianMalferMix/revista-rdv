@@ -190,6 +190,29 @@ def url_for_publication(slug):
     return reverse("showcase:publication_detail", args=[slug])
 
 
+# Los dos colores que puede llevar el texto de un lomo: la tinta y el blanco de la hoja (`--ink` y
+# `--surface` en site.css, que tests/test_estante.py compara con estos).
+INK = "#121823"
+SURFACE = "#ffffff"
+
+
+def _luminance(color):
+    """La luminancia relativa (WCAG) de un color «#rrggbb»."""
+
+    def lineal(c):
+        c /= 255
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    rgb = [int(color[i : i + 2], 16) for i in (1, 3, 5)]
+    return sum(peso * lineal(c) for peso, c in zip((0.2126, 0.7152, 0.0722), rgb, strict=True))
+
+
+def _contrast(one, other):
+    """El contraste (WCAG) entre dos colores «#rrggbb»: de 1 a 21."""
+    light, dark = sorted((_luminance(one), _luminance(other)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)
+
+
 class Publication(TimestampedModel):
     """Publicación del catálogo vitrina (libro, plaquette, fanzine…). Sin pagos:
     la compra se deriva a enlaces externos (WhereToBuy) o a un PDF de descarga.
@@ -270,15 +293,9 @@ class Publication(TimestampedModel):
         if not color:
             return {}
         rgb = [int(color[i : i + 2], 16) for i in (1, 3, 5)]
-
-        def lineal(c):
-            c /= 255
-            return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-
-        luz = sum(peso * lineal(c) for peso, c in zip((0.2126, 0.7152, 0.0722), rgb, strict=True))
-        # El texto, en tinta (#121823, luminancia 0,009) o en blanco: el que más contraste dé.
-        sobre_tinta = (luz + 0.05) / (0.009 + 0.05)
-        sobre_blanco = 1.05 / (luz + 0.05)
+        # El texto, en tinta o en blanco: el que más contraste dé.
+        sobre_tinta = _contrast(color, INK)
+        sobre_blanco = _contrast(color, SURFACE)
         canto = "#{:02x}{:02x}{:02x}".format(*(round(c * 0.82) for c in rgb))
         return {"fondo": color, "canto": canto, "oscuro": sobre_blanco > sobre_tinta}
 

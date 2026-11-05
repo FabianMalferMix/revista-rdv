@@ -41,7 +41,7 @@ def robots(request):
     lines = [
         "User-agent: *",
         "Allow: /",
-        "Disallow: /admin/",
+        f"Disallow: {reverse('admin:index')}",
         f"Sitemap: {absolute_url(reverse('sitemap'))}",
     ]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

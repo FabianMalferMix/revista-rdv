@@ -12,6 +12,7 @@ from django.utils import timezone
 from PIL import Image, ImageOps
 
 from config import publishing
+from config.content_policy import embed_provider_names
 from config.models import TimestampedModel
 from config.protected_media import file_name, random_upload_path
 
@@ -285,9 +286,9 @@ def url_for_recording(slug):
 class Recording(TimestampedModel):
     """Registro de audio o video de una lectura/recital.
 
-    La fuente es un archivo subido (`file`) **o** un enlace de YouTube o Vimeo
-    (`embed_url`); se exige al menos uno. Si es de audio, alimenta el feed de podcast
-    (`feed/registros/`).
+    La fuente es un archivo subido (`file`) **o** un enlace de uno de los proveedores de
+    `config/content_policy.py` (`embed_url`); se exige al menos uno. Si es de audio,
+    alimenta el feed de podcast (`feed/registros/`).
 
     Destacado: los registros publicados con `featured` forman la tirada de la portada, en
     el orden de `position` y como mucho TIRADA_SIZE (`clean()` no deja marcar más). Sin
@@ -317,14 +318,14 @@ class Recording(TimestampedModel):
         validators=[validate_audio_extension, validate_audio_size],
         verbose_name="archivo",
         help_text=(
-            f"Audio de hasta {MAX_AUDIO_MB} MB. Un vídeo se publica con su enlace de YouTube o "
-            "Vimeo, en «Enlace para incrustar»."
+            f"Audio de hasta {MAX_AUDIO_MB} MB. Un vídeo se publica con su enlace de "
+            f"{embed_provider_names()}, en «Enlace para incrustar»."
         ),
     )
     embed_url = models.URLField(
         blank=True,
         verbose_name="enlace para incrustar",
-        help_text="Un enlace de YouTube o Vimeo (alternativa al archivo).",
+        help_text=f"Un enlace de {embed_provider_names()} (alternativa al archivo).",
     )
     poster = models.ForeignKey(
         MediaAsset,
