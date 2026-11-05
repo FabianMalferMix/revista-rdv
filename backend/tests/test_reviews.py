@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus, ReviewedWork
 from apps.reviews.models import BookAuthor, Work
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 
@@ -29,7 +30,7 @@ def test_duplicate_real_isbn_rejected():
 # ── Vistas públicas de reviews (hallazgo #10: sin prueba) ───────────────────
 
 
-def test_work_detail_renders_and_lists_published_review_only(client, make_article):
+def test_work_detail_renders_and_lists_published_review_only(client):
     work = Work.objects.create(slug="poemario-x", title="Poemario X")
     pub = make_article(
         status=EditorialStatus.PUBLISHED, slug="resena-pub", title="Reseña Publicada"
@@ -49,7 +50,7 @@ def test_work_detail_404_for_unknown_slug(client):
     assert client.get(reverse("reviews:work_detail", args=["no-existe"])).status_code == 404
 
 
-def test_bookauthor_detail_renders_with_its_works(client, make_article):
+def test_bookauthor_detail_renders_with_its_works(client):
     # La ficha existe porque una reseña publicada respalda la obra.
     author = BookAuthor.objects.create(slug="autora-x", name="Autora X")
     work = Work.objects.create(slug="obra-de-autora", title="Obra De Autora")

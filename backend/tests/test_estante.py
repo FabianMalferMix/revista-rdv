@@ -11,7 +11,6 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
@@ -21,7 +20,7 @@ from apps.content.views import ESTANTE
 from apps.media.models import MediaAsset
 from apps.reviews.models import Publisher
 from tests import css
-from tests.factories import make_image, make_publication
+from tests.factories import make_image, make_publication, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -30,7 +29,7 @@ ESTANTE_JS = (BACKEND / "static" / "js" / "estante.js").read_text()
 
 
 def _estante(client):
-    sopa = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    sopa = soup(client, reverse("content:home"))
     return sopa, sopa.select_one("section.home-publicaciones")
 
 
@@ -176,8 +175,9 @@ def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
 
 
 def test_con_una_sola_no_hay_guion(client):
-    make_publication(slug="unica")
-    sopa, _ = _estante(client)
+    book = make_publication(slug="unica")
+    sopa, estante = _estante(client)
+    assert _titulos(estante) == [book.title]  # control: el estante está, con su libro
     assert sopa.select_one('script[src*="js/estante.js"]') is None
     make_publication(slug="segunda", position=1)
     sopa, _ = _estante(client)

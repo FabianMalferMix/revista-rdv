@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
@@ -16,7 +15,7 @@ from apps.content.models import EditorialStatus
 from apps.people.models import Contributor
 from apps.reviews.models import Publisher
 from apps.showcase.models import Partner, PressMention, Publication, SiteProfile, SiteSocialLink
-from tests.factories import make_event, make_image, make_publication
+from tests.factories import make_article, make_event, make_image, make_publication, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -69,7 +68,9 @@ def test_dossier_aggregates_everything(client, profile):
 
 def test_dossier_excludes_unpublished_publication(client, profile):
     Publication.objects.create(slug="oculta-d", title="Oculta Dossier", published=False)
+    Publication.objects.create(slug="visible-d", title="Visible Dossier", published=True)
     resp = client.get(reverse("showcase:dossier"))
+    assert b"Visible Dossier" in resp.content  # control: el dossier lista las publicaciones
     assert b"Oculta Dossier" not in resp.content
 
 
@@ -105,7 +106,7 @@ def test_dossier_page_offers_pdf_download_when_uploaded(client, profile):
 
 
 def _sopa(client):
-    return BeautifulSoup(client.get(reverse("showcase:dossier")).content, "html.parser")
+    return soup(client, reverse("showcase:dossier"))
 
 
 def test_el_titulo_dice_que_es_el_dossier(client, profile):
@@ -173,7 +174,7 @@ def test_el_anio_de_un_evento_es_el_de_su_hora_local(client):
     assert "#anio-2025" in client.get(evento.get_absolute_url()).content.decode()
 
 
-def test_la_ficha_reune_los_datos_del_colectivo(client, profile, make_article, settings):
+def test_la_ficha_reune_los_datos_del_colectivo(client, profile, settings):
     settings.SITE_URL = "https://revista.example.org"
     """Fundado, lugar, contacto, Instagram, sitio y la fecha de la última publicación: lo
     que un programador copia en su ficha. El correo es el mismo del pie y de la portada."""

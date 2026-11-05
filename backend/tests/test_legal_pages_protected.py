@@ -99,6 +99,7 @@ def test_editor_cannot_delete_a_legal_page(panel, slug):
     assert panel.post(url, {"post": "yes"}).status_code == 403
     assert Page.objects.filter(slug=slug).exists()
     formulario = _formulario(panel, pagina)
+    assert formulario.select_one('[name="_save"]') is not None  # control: los botones están
     assert formulario.select_one("a.deletelink") is None
 
 

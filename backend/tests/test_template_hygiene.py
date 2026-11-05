@@ -70,7 +70,9 @@ def test_ningun_comentario_de_una_linea_abarca_varias(plantilla):
     ],
 )
 def test_las_vistas_publicas_no_emiten_restos_de_plantilla(client, ruta):
-    contenido = client.get(reverse(ruta)).content.decode("utf-8", "replace")
+    response = client.get(reverse(ruta))
+    assert response.status_code == 200  # control: es la página, no una de error
+    contenido = response.content.decode("utf-8", "replace")
     for resto in RESTOS:
         assert resto not in contenido, f"{ruta} deja escapar {resto!r} al HTML"
 
@@ -92,6 +94,8 @@ def test_las_paginas_del_boletin_tampoco(client):
         reverse("community:confirm", args=[sub.confirm_token]),
         reverse("community:unsubscribe", args=[sub.token]),
     ):
-        contenido = client.get(url).content.decode("utf-8", "replace")
+        response = client.get(url)
+        assert response.status_code == 200, url  # control: es la página, no una de error
+        contenido = response.content.decode("utf-8", "replace")
         for resto in RESTOS:
             assert resto not in contenido, f"{url} deja escapar {resto!r}"

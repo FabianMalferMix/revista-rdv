@@ -15,6 +15,7 @@ from apps.agenda.models import Event
 from apps.content.models import EditorialStatus
 from apps.media.models import MediaAsset, Recording
 from apps.showcase.models import SiteProfile
+from tests.factories import make_article, make_poem
 
 pytestmark = pytest.mark.django_db
 
@@ -61,14 +62,16 @@ def test_event_detail_has_valid_event_jsonld(client):
 def test_default_og_image_falls_back_to_siteprofile(client):
     url = reverse("content:home")
     # Sin og_image no hay imagen social de página.
-    assert b'property="og:image"' not in client.get(url).content
+    content = client.get(url).content
+    assert b'property="og:title"' in content  # control: la página lleva sus etiquetas sociales
+    assert b'property="og:image"' not in content
     profile = SiteProfile.load()
     profile.og_image = _asset()
     profile.save()
     assert b'property="og:image"' in client.get(url).content
 
 
-def test_poem_detail_falls_back_to_site_og_image(client, make_poem):
+def test_poem_detail_falls_back_to_site_og_image(client):
     poem = make_poem(slug="poema-og", status=EditorialStatus.PUBLISHED)
     poem.published_at = timezone.now()
     poem.save()
@@ -120,7 +123,7 @@ def test_canonical_preserves_pagination(client, settings):
 # ── image en JSON-LD, fallback de meta description, endDate de Event ─────────
 
 
-def test_article_jsonld_includes_image_when_og_available(client, make_article):
+def test_article_jsonld_includes_image_when_og_available(client):
     """El JSON-LD de Article incluye "image" cuando hay portada o og_image del sitio (#15)."""
     profile = SiteProfile.load()
     profile.og_image = _asset()
@@ -131,7 +134,7 @@ def test_article_jsonld_includes_image_when_og_available(client, make_article):
     assert article_ld.get("image", "").startswith("http")
 
 
-def test_article_meta_description_falls_back_to_title(client, make_article):
+def test_article_meta_description_falls_back_to_title(client):
     """Sin seo_description ni subtitle, la meta description cae al título (no vacía, #30)."""
     art = make_article(status=EditorialStatus.PUBLISHED, slug="sin-desc", title="Solo Título")
     html = client.get(reverse("content:article_detail", args=[art.slug])).content.decode()
@@ -162,4 +165,5 @@ def test_event_jsonld_omits_enddate_when_absent(client):
     )
     data = _jsonld(client.get(reverse("agenda:event_detail", args=[ev.slug])).content)
     event_ld = next(d for d in data if d.get("@type") == "Event")
+    assert event_ld["name"] == "Sin Fin" and event_ld["startDate"]  # control
     assert "endDate" not in event_ld

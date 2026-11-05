@@ -15,6 +15,7 @@ from apps.content.models import (
 from apps.content.tasks import publish_due_items
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
+from tests.factories import make_article, make_poem, make_published_poem
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -23,7 +24,7 @@ S = EditorialStatus
 # ── Flujo editorial compartido ───────────────────────────────
 
 
-def test_poem_uses_editorial_workflow(editor, autor, make_poem):
+def test_poem_uses_editorial_workflow(editor, autor):
     poem = make_poem(owner=autor, status=S.DRAFT)
     workflow.perform_transition(poem, "submit", autor)
     workflow.perform_transition(poem, "accept", editor)
@@ -32,7 +33,7 @@ def test_poem_uses_editorial_workflow(editor, autor, make_poem):
     assert poem.published_at is not None
 
 
-def test_poem_transitions_have_generic_audit_trail(editor, autor, make_poem, make_article):
+def test_poem_transitions_have_generic_audit_trail(editor, autor):
     poem = make_poem(owner=autor, status=S.IN_REVIEW)
     article = make_article(owner=autor, status=S.IN_REVIEW)
     workflow.perform_transition(poem, "accept", editor, note="ok poema")
@@ -46,7 +47,7 @@ def test_poem_transitions_have_generic_audit_trail(editor, autor, make_poem, mak
     assert EditorialTransition.objects.for_item(article).count() == 1
 
 
-def test_author_cannot_publish_poem(autor, make_poem):
+def test_author_cannot_publish_poem(autor):
     from django.core.exceptions import PermissionDenied
 
     poem = make_poem(owner=autor, status=S.APPROVED)
@@ -54,7 +55,7 @@ def test_author_cannot_publish_poem(autor, make_poem):
         workflow.perform_transition(poem, "publish", autor)
 
 
-def test_publish_due_items_covers_poems(make_poem):
+def test_publish_due_items_covers_poems():
     from datetime import timedelta
 
     poem = make_poem(status=S.SCHEDULED)
@@ -68,12 +69,8 @@ def test_publish_due_items_covers_poems(make_poem):
 # ── Vistas públicas ──────────────────────────────────────────
 
 
-def _published_poem(make_poem, **kwargs):
-    return make_poem(status=S.PUBLISHED, published_at=timezone.now(), **kwargs)
-
-
-def test_poem_index_shows_published_hides_drafts(client, make_poem):
-    _published_poem(make_poem, slug="pub", title="Poema Público")
+def test_poem_index_shows_published_hides_drafts(client):
+    make_published_poem(slug="pub", title="Poema Público")
     make_poem(slug="draft", title="Poema Borrador")
     resp = client.get(reverse("content:poem_index"))
     assert resp.status_code == 200
@@ -81,9 +78,8 @@ def test_poem_index_shows_published_hides_drafts(client, make_poem):
     assert b"Poema Borrador" not in resp.content
 
 
-def test_poem_detail_renders_prewrap_body(client, make_poem):
-    poem = _published_poem(
-        make_poem,
+def test_poem_detail_renders_prewrap_body(client):
+    poem = make_published_poem(
         slug="tipografia",
         title="Tipografía",
         epigraph="a quien lee",
@@ -102,26 +98,26 @@ def test_poem_detail_renders_prewrap_body(client, make_poem):
     assert b"a quien lee" in resp.content
 
 
-def test_poem_detail_404_for_draft(client, make_poem):
+def test_poem_detail_404_for_draft(client):
     poem = make_poem(slug="oculto")
     assert client.get(reverse("content:poem_detail", args=[poem.slug])).status_code == 404
 
 
-def test_poem_body_is_escaped(client, make_poem):
-    poem = _published_poem(make_poem, slug="xss", body="<script>alert(1)</script>")
+def test_poem_body_is_escaped(client):
+    poem = make_published_poem(slug="xss", body="<script>alert(1)</script>")
     resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
     assert b"<script>alert(1)</script>" not in resp.content
     assert b"&lt;script&gt;" in resp.content
 
 
-def test_collection_merges_articles_and_poems_by_position(client, make_article, make_poem):
+def test_collection_merges_articles_and_poems_by_position(client):
     from tests.factories import publish as _publish
 
     collection = Collection.objects.create(
         slug="mixta", title="Colección Mixta", status=PublishStatus.PUBLISHED
     )
     article = _publish(make_article(slug="pieza-a", title="Artículo En Mixta"))
-    poem = _published_poem(make_poem, slug="pieza-p", title="Poema En Mixta")
+    poem = make_published_poem(slug="pieza-p", title="Poema En Mixta")
     CollectionArticle.objects.create(collection=collection, article=article, position=1)
     CollectionPoem.objects.create(collection=collection, poem=poem, position=0)
 
@@ -131,21 +127,23 @@ def test_collection_merges_articles_and_poems_by_position(client, make_article, 
     assert resp.content.index(b"Poema En Mixta") < resp.content.index(b"Art\xc3\xadculo En Mixta")
 
 
-def test_member_profile_lists_poems(client, make_poem):
+def test_member_profile_lists_poems(client):
     member = Contributor.objects.create(slug="poeta-p", display_name="Poeta Perfil", is_member=True)
-    poem = _published_poem(make_poem, slug="suyo", title="Poema Del Perfil")
+    poem = make_published_poem(slug="suyo", title="Poema Del Perfil")
     PoemContributor.objects.create(poem=poem, contributor=member)
     resp = client.get(reverse("people:member_detail", args=[member.slug]))
     assert b"Poema Del Perfil" in resp.content
 
 
-def test_home_shows_featured_poem_only_if_published(client, make_poem):
+def test_home_shows_featured_poem_only_if_published(client):
     profile = SiteProfile.load()
     draft = make_poem(slug="dest-borrador", title="Destacado Borrador")
     profile.featured_poem = draft
     profile.save()
-    assert b"Destacado Borrador" not in client.get(reverse("content:home")).content
+    content = client.get(reverse("content:home")).content.decode()
+    assert "Ver el dossier" in content  # control: la portada se dibuja entera
+    assert "Destacado Borrador" not in content
 
-    profile.featured_poem = _published_poem(make_poem, slug="dest-pub", title="Destacado Público")
+    profile.featured_poem = make_published_poem(slug="dest-pub", title="Destacado Público")
     profile.save()
     assert b"Destacado P\xc3\xbablico" in client.get(reverse("content:home")).content

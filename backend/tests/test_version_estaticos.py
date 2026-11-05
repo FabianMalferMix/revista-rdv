@@ -12,6 +12,7 @@ el navegador siguió con el `registros.js` viejo, que fallaba al arrancar, y la 
 
 import os
 import re
+import shutil
 from pathlib import Path
 
 import pytest
@@ -45,20 +46,28 @@ def test_en_desarrollo_cada_guion_propio_lleva_version(settings):
     assert all(re.fullmatch(r"\?v=\d+", s) for s in sufijos), sufijos
 
 
-def test_la_version_cambia_al_editar_la_hoja(settings):
+def _copy_own_statics(settings, tmp_path):
+    """Copia la hoja y los guiones propios a `tmp_path`, con sus fechas, y apunta BASE_DIR a la
+    copia: la prueba cambia fechas sin tocar los archivos del repositorio."""
+    for original in _propios(settings):
+        target = tmp_path / original.relative_to(settings.BASE_DIR)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(original, target)
+    settings.BASE_DIR = tmp_path
+
+
+def test_la_version_cambia_al_editar_la_hoja(settings, tmp_path):
     """Es lo que de verdad importa: que el sufijo siga al archivo, no que exista. La hoja pasa
     a ser el más reciente de todos, como al guardarla en el editor."""
     settings.DEBUG = True
-    hoja = Path(settings.BASE_DIR) / "static" / "css" / "site.css"
+    _copy_own_statics(settings, tmp_path)
+    hoja = tmp_path / "static" / "css" / "site.css"
     antes = _enlace(Client().get("/").content.decode())
-    original = hoja.stat().st_mtime
     nuevo = max(p.stat().st_mtime for p in _propios(settings)) + 120
-    try:
-        os.utime(hoja, (nuevo, nuevo))
-        despues = _enlace(Client().get("/").content.decode())
-    finally:
-        os.utime(hoja, (original, original))
+    os.utime(hoja, (nuevo, nuevo))
+    despues = _enlace(Client().get("/").content.decode())
     assert antes != despues, f"el sufijo no cambió: {antes}"
+    assert despues.endswith(f"?v={int(nuevo)}"), despues
 
 
 def test_manda_el_mas_reciente_aunque_sea_un_guion(settings, tmp_path):
@@ -84,4 +93,6 @@ def test_fuera_de_desarrollo_no_se_ensucia_la_url(settings):
     enlace = _enlace(html)
     assert enlace is not None
     assert "?v=" not in enlace, f"sufijo innecesario en producción: {enlace}"
-    assert "?v=" not in "".join(re.findall(r'<script src="([^"]*)"', html))
+    scripts = re.findall(r'<script src="([^"]*)"', html)
+    assert scripts, "control: la portada pide sus guiones"
+    assert "?v=" not in "".join(scripts)

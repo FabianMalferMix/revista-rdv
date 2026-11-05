@@ -7,30 +7,31 @@ from django.utils import timezone
 from apps.content import workflow
 from apps.content.models import EditorialStatus, EditorialTransition
 from apps.content.tasks import publish_due_items
+from tests.factories import make_article
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
 
 
-def test_author_can_submit_own(autor, make_article):
+def test_author_can_submit_own(autor):
     article = make_article(owner=autor, status=S.DRAFT)
     workflow.perform_transition(article, "submit", autor)
     assert article.status == S.IN_REVIEW
 
 
-def test_author_cannot_publish(autor, make_article):
+def test_author_cannot_publish(autor):
     article = make_article(owner=autor, status=S.APPROVED)
     with pytest.raises(PermissionDenied):
         workflow.perform_transition(article, "publish", autor)
 
 
-def test_author_cannot_accept_own(autor, make_article):
+def test_author_cannot_accept_own(autor):
     article = make_article(owner=autor, status=S.IN_REVIEW)
     with pytest.raises(PermissionDenied):
         workflow.perform_transition(article, "accept", autor)
 
 
-def test_editor_publish_sets_published_at(editor, autor, make_article):
+def test_editor_publish_sets_published_at(editor, autor):
     article = make_article(owner=autor, status=S.APPROVED)
     assert article.published_at is None
     workflow.perform_transition(article, "publish", editor)
@@ -38,19 +39,19 @@ def test_editor_publish_sets_published_at(editor, autor, make_article):
     assert article.published_at is not None
 
 
-def test_invalid_transition_from_state(editor, make_article):
+def test_invalid_transition_from_state(editor):
     article = make_article(status=S.DRAFT)
     with pytest.raises(ValueError):
         workflow.perform_transition(article, "publish", editor)  # no se publica desde borrador
 
 
-def test_unknown_transition(editor, make_article):
+def test_unknown_transition(editor):
     article = make_article(status=S.DRAFT)
     with pytest.raises(ValueError):
         workflow.perform_transition(article, "teleport", editor)
 
 
-def test_transition_writes_audit_trail(editor, autor, make_article):
+def test_transition_writes_audit_trail(editor, autor):
     article = make_article(owner=autor, status=S.IN_REVIEW)
     workflow.perform_transition(article, "accept", editor, note="ok")
     entry = EditorialTransition.objects.for_item(article).latest("created_at")
@@ -59,18 +60,18 @@ def test_transition_writes_audit_trail(editor, autor, make_article):
     assert entry.note == "ok"
 
 
-def test_available_transitions_for_editor_in_review(editor, autor, make_article):
+def test_available_transitions_for_editor_in_review(editor, autor):
     article = make_article(owner=autor, status=S.IN_REVIEW)
     available = set(workflow.available_transitions(editor, article))
     assert {"accept", "reject", "request_changes"} <= available
 
 
-def test_available_transitions_for_author_draft(autor, make_article):
+def test_available_transitions_for_author_draft(autor):
     article = make_article(owner=autor, status=S.DRAFT)
     assert workflow.available_transitions(autor, article) == ["submit"]
 
 
-def test_publish_due_items_task(make_article):
+def test_publish_due_items_task():
     article = make_article(status=S.SCHEDULED)
     article.published_at = timezone.now() - timedelta(minutes=1)
     article.save(update_fields=["published_at"])
@@ -80,7 +81,7 @@ def test_publish_due_items_task(make_article):
     assert article.status == S.PUBLISHED
 
 
-def test_publish_due_items_is_idempotent(make_article):
+def test_publish_due_items_is_idempotent():
     # Una pieza vencida se publica una vez; una segunda corrida no la re-publica
     # ni duplica la bitácora (idempotencia contra un doble beat, un reintento o una reentrega).
     article = make_article(status=S.SCHEDULED)
@@ -92,7 +93,7 @@ def test_publish_due_items_is_idempotent(make_article):
     assert EditorialTransition.objects.for_item(article).filter(to_status=S.PUBLISHED).count() == 1
 
 
-def test_schedule_requires_future_published_at(editor, make_article):
+def test_schedule_requires_future_published_at(editor):
     # Sin fecha: rechazado (si no, quedaría SCHEDULED para siempre sin publicarse).
     article = make_article(status=S.APPROVED)
     assert article.published_at is None
@@ -114,7 +115,7 @@ def test_schedule_requires_future_published_at(editor, make_article):
     assert article.status == S.SCHEDULED
 
 
-def test_perform_transition_rechecks_state_under_lock(editor, make_article):
+def test_perform_transition_rechecks_state_under_lock(editor):
     # Dos instancias de la misma pieza; una queda obsoleta en memoria. Tras publicar
     # por una vía, el re-chequeo autoritativo bajo lock frena la segunda transición
     # y no duplica la bitácora (cierre del TOCTOU de perform_transition).

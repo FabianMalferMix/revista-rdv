@@ -16,6 +16,7 @@ from apps.content import workflow
 from apps.content.models import EditorialStatus
 from apps.people import roles
 from apps.submissions.models import Submission
+from tests.factories import make_article, make_poem
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -41,7 +42,7 @@ def _offers(client, url, action):
     ],
 )
 def test_withdrawing_a_permission_takes_its_action_away(
-    client, groups, editor, make_article, make_poem, dotted, model, status, transition
+    client, groups, editor, dotted, model, status, transition
 ):
     piece = (make_article if model == "article" else make_poem)(status=status)
     url = reverse(f"admin:content_{model}_changelist")

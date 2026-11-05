@@ -10,19 +10,14 @@ ficha de una integrante enseña ahora las actividades en que participó.
 from datetime import timedelta
 
 import pytest
-from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile, SiteSocialLink
-from tests.factories import make_event
+from tests.factories import make_event, soup
 
 pytestmark = pytest.mark.django_db
-
-
-def _sopa(client, url):
-    return BeautifulSoup(client.get(url).content, "html.parser")
 
 
 @pytest.fixture
@@ -41,7 +36,7 @@ def perfil(db):
 
 
 def test_el_pie_empieza_por_la_identidad_del_colectivo(client, perfil):
-    pie = _sopa(client, reverse("content:poem_index")).select_one("footer.site-foot")
+    pie = soup(client, reverse("content:poem_index")).select_one("footer.site-foot")
     identidad = pie.select_one(".foot-identidad")
     assert identidad.select_one("a.brand")["href"] == reverse("content:home")
     assert identidad.select_one(".foot-presentacion").get_text() == (
@@ -61,7 +56,7 @@ def test_el_pie_empieza_por_la_identidad_del_colectivo(client, perfil):
 
 def test_el_mapa_del_pie_no_repite_el_correo_ni_el_instagram(client, perfil):
     """Ya van en la identidad. El menú del teléfono, que no la tiene, los conserva."""
-    sopa = _sopa(client, reverse("content:poem_index"))
+    sopa = soup(client, reverse("content:poem_index"))
     pie = sopa.select_one("footer.site-foot .foot-groups")
     menu = sopa.select_one("header .menu-mapa .foot-groups")
     for mapa, los_lleva in ((pie, False), (menu, True)):
@@ -73,7 +68,7 @@ def test_el_mapa_del_pie_no_repite_el_correo_ni_el_instagram(client, perfil):
 def test_aliados_se_titula_como_el_enlace_que_lleva_a_ella(client):
     """El pie, la barra del colectivo y el cierre de la portada la llaman «Aliados»; su
     título decía «Aliados y financiamiento» (la bajada ya habla de los fondos)."""
-    assert _sopa(client, reverse("showcase:partner_index")).h1.get_text(strip=True) == "Aliados"
+    assert soup(client, reverse("showcase:partner_index")).h1.get_text(strip=True) == "Aliados"
 
 
 def test_la_ficha_de_una_integrante_lleva_sus_actividades(client):
@@ -89,6 +84,6 @@ def test_la_ficha_de_una_integrante_lleva_sus_actividades(client):
     for evento in (vieja, reciente, oculta):
         evento.participants.add(fernanda)
     assert otra.participants.count() == 0
-    sopa = _sopa(client, fernanda.get_absolute_url())
+    sopa = soup(client, fernanda.get_absolute_url())
     seccion = next(s for s in sopa.select("article section") if s.h2.get_text() == "Actividades")
     assert [a.get_text() for a in seccion.select("li > a")] == ["Recital reciente", "Lectura vieja"]

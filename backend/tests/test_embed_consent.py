@@ -72,7 +72,7 @@ def test_sin_javascript_queda_un_enlace_al_proveedor():
     assert YOUTUBE in html
 
 
-def test_la_portada_no_contacta_con_terceros(client, make_article):
+def test_la_portada_no_contacta_con_terceros(client):
     """La portada es la página más visitada: era la peor exposición. Desde la tirada (D19) no
     reproduce: presenta el registro y lleva a su ficha, donde está el click-to-play."""
     from apps.showcase.models import SiteProfile

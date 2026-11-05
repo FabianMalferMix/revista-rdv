@@ -60,6 +60,7 @@ def _gone(*rows):
 def test_the_purge_deletes_the_manuscript_with_its_submission():
     sub, pending, attempt = _stale()
     storage, name = sub.file.storage, sub.file.name
+    assert storage.exists(name)  # control: el manuscrito estaba guardado
     call_command("purge_stale_data", days=180, verbosity=0)
     assert _gone(sub, pending, attempt)
     assert not storage.exists(name)

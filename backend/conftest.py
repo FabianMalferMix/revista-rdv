@@ -65,6 +65,21 @@ def _isolated_media(settings, tmp_path):
 
 
 @pytest.fixture
+def frozen_rate_limit_window(monkeypatch):
+    """Una sola ventana de django-ratelimit durante toda la prueba. La biblioteca cuenta por
+    ventanas fijas, del periodo de cada límite, y el fin de la ventana entra en la clave del
+    contador: si las peticiones de una prueba cruzan un corte, la cuenta vuelve a cero y el
+    límite no llega. Lo piden las pruebas que agotan un límite."""
+    import time
+
+    from django_ratelimit import core
+
+    window = int(time.time()) + 3600
+    monkeypatch.setattr(core, "_get_window", lambda value, period: window)
+    return window
+
+
+@pytest.fixture
 def task_failures_stay_in_the_task():
     """Para las pruebas que hacen fallar una tarea a propósito: su excepción no llega a la
     prueba (la suite la propaga, config/settings_test.py), y el reintento corre como en el
@@ -140,64 +155,6 @@ def migrate(transactional_db):
     yield migrate_to
     executor = MigrationExecutor(connection)
     executor.migrate(executor.loader.graph.leaf_nodes())
-
-
-def _dated(fields):
-    """Lo publicado, programado o archivado necesita fecha (la restricción de EditorialItem): si
-    la prueba no da una, la pieza se publicó ahora o sale mañana."""
-    from datetime import timedelta
-
-    from django.utils import timezone
-
-    from apps.content.models import EditorialStatus as S
-
-    if "published_at" not in fields and fields.get("status") in {
-        S.PUBLISHED,
-        S.ARCHIVED,
-        S.SCHEDULED,
-    }:
-        tomorrow = fields["status"] == S.SCHEDULED
-        fields["published_at"] = timezone.now() + timedelta(days=1 if tomorrow else 0)
-
-
-@pytest.fixture
-def make_article(db):
-    """Fábrica de artículos. Uso: make_article(owner=autor, status=..., title=...)."""
-    from apps.content.models import Article, EditorialStatus
-
-    def _make(**kwargs):
-        n = Article.objects.count()
-        defaults = {
-            "slug": f"articulo-{n}",
-            "title": "Título de prueba",
-            "body": "palabra " * 250,
-            "status": EditorialStatus.DRAFT,
-        }
-        defaults.update(kwargs)
-        _dated(defaults)
-        return Article.objects.create(**defaults)
-
-    return _make
-
-
-@pytest.fixture
-def make_poem(db):
-    """Fábrica de poemas. Uso: make_poem(owner=autor, status=..., title=...)."""
-    from apps.content.models import EditorialStatus, Poem
-
-    def _make(**kwargs):
-        n = Poem.objects.count()
-        defaults = {
-            "slug": f"poema-{n}",
-            "title": "Poema de prueba",
-            "body": "Verso uno\n    verso con sangría\n\nVerso final",
-            "status": EditorialStatus.DRAFT,
-        }
-        defaults.update(kwargs)
-        _dated(defaults)
-        return Poem.objects.create(**defaults)
-
-    return _make
 
 
 class _KeepSentryEvents:

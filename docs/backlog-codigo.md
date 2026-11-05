@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 63 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 64 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -155,7 +155,7 @@
 | B58 | Un analizador de CSS para las pruebas | — | M | no | hecho (#246) |
 | B59 | Selectores muertos | B58 | M | no | hecho (#247) |
 | B60 | Migraciones de datos con prueba | — | M | no | hecho (#248) |
-| B61 | Higiene de la suite | — | M | no | pendiente |
+| B61 | Higiene de la suite | — | M | no | hecho (#249) |
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | pendiente |
 | B63 | Herramientas de desarrollo en su propia app | B07 | M | no | pendiente |
 | B64 | Un solo camino para poblar desarrollo | B63 | M | no | pendiente |
@@ -1184,6 +1184,8 @@ Al terminar, se actualiza la entrada «`serialized_rollback` descartado» del re
 - De PRU-10: `BASE_DIR` apunta a una copia en `tmp_path`; las marcas de base de datos, solo donde se usa; fuera el `cache.clear()` redundante.
 
 **Hecho cuando.** Después de correr la suite, `git status` no muestra cambios, y las fábricas viven en un solo módulo.
+
+**Hecho (2026-11-04).** Las fábricas son solo funciones de `tests/factories.py` (fuera los fixtures `make_article` y `make_poem`), con `make_published_article`, `make_published_poem`, slugs de un contador común y `soup(client, url)`, que exige el 200: así salieron dos pruebas que pasaban mirando un 404. 66 pruebas de «no aparece» ganaron su control positivo, más los cuatro casos de PRU-8 (la portada, ahora con una prueba de consultas con una pieza de cada cosa o con cuatro). La prueba de la versión de los estáticos trabaja sobre una copia. El fixture `frozen_rate_limit_window` fija la ventana de django-ratelimit en las nueve pruebas que agotan o cuentan un límite: fallaban si sus peticiones cruzaban el cambio de minuto. Las dos pruebas de filas que comparaban la fecha local con una en UTC se arreglaron en B60, porque bloqueaban el CI de 21:00 a 24:00 en Santiago.
 
 #### B62 · Herramientas de medición que no dan por bueno un error
 

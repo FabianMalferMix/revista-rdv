@@ -9,7 +9,6 @@ una ficha de poema tenía un solo enlace interno.
 from datetime import timedelta
 
 import pytest
-from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import SafeString
@@ -26,15 +25,9 @@ from apps.content.models import (
 from apps.content.pie import vecinos, vecinos_en_lista
 from apps.content.templatetags.versos import versos
 from apps.people.models import Contributor
-from tests.factories import make_event, make_publication, make_recording
+from tests.factories import make_article, make_event, make_publication, make_recording, soup
 
 pytestmark = pytest.mark.django_db
-
-
-def _sopa(client, url):
-    respuesta = client.get(url)
-    assert respuesta.status_code == 200
-    return BeautifulSoup(respuesta.content, "html.parser")
 
 
 def _poema(slug, dias=0, **kw):
@@ -118,7 +111,7 @@ def test_el_poema_se_lee_verso_a_verso_en_su_sala(client):
     )
     PoemContributor.objects.create(poem=poema, contributor=autora)
 
-    sopa = _sopa(client, poema.get_absolute_url())
+    sopa = soup(client, poema.get_absolute_url())
     sala = sopa.select_one("article.lectura")
     ancla, cuerpo = sala.select_one(".lectura-ancla"), sala.select_one(".lectura-cuerpo")
     assert ancla.h1.get_text() == "Sala"
@@ -138,14 +131,14 @@ def test_el_registro_del_poema_lleva_a_su_ficha_y_no_al_tercero(client):
     registro. Ahora lleva a la ficha; un archivo propio se escucha ahí mismo."""
     registro = make_recording(slug="lectura", title="Lectura", embed_url="https://vimeo.com/123")
     poema = _poema("con-registro", recording=registro)
-    sopa = _sopa(client, poema.get_absolute_url())
+    sopa = soup(client, poema.get_absolute_url())
     bloque = sopa.select_one(".lectura-ancla .lectura-registro")
     assert bloque.select_one("a")["href"] == registro.get_absolute_url()
     assert "vimeo.com" not in str(sopa)
     assert bloque.select_one("audio") is None, "un video no se reproduce en la ficha del poema"
 
 
-def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client, make_article):
+def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client):
     from io import BytesIO
 
     from django.core.files.base import ContentFile
@@ -164,7 +157,7 @@ def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client, make
         published_at=timezone.now(),
         cover_image=imagen,
     )
-    sopa = _sopa(client, articulo.get_absolute_url())
+    sopa = soup(client, articulo.get_absolute_url())
     figura = sopa.select_one(".lectura-cuerpo figure.lectura-imagen")
     assert figura.img["alt"] == "Imagen del texto"
     assert figura.figcaption.get_text(strip=True) == "Foto: Alguien"
@@ -173,7 +166,7 @@ def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client, make
 
 
 @pytest.mark.parametrize("tipo", ["poema", "articulo"])
-def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, make_article, tipo):
+def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, tipo):
     """La ancla es `position:sticky`, y un elemento fijo se desplaza por todo su
     contenedor. Con el pie dentro de la misma rejilla, al llegar al final la ancla bajaba y
     se montaba sobre las salidas: 255 px en un artículo a 951 de ancho (lo vio el dueño del
@@ -184,7 +177,7 @@ def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, make_article, t
         objeto = make_article(
             slug="fijo", status=EditorialStatus.PUBLISHED, published_at=timezone.now()
         )
-    sopa = _sopa(client, objeto.get_absolute_url())
+    sopa = soup(client, objeto.get_absolute_url())
     ancla = sopa.select_one(".lectura-ancla")
     sala = ancla.parent
     assert "lectura-sala" in sala["class"], "la ancla debe vivir en la sala, no en el artículo"
@@ -201,14 +194,14 @@ def test_la_ficha_de_integrante_pone_el_retrato_al_lado(client):
     sin_retrato = Contributor.objects.create(
         slug="sin-retrato", display_name="Rocío Carrasco", is_member=True, active=True
     )
-    sopa = _sopa(client, sin_retrato.get_absolute_url())
+    sopa = soup(client, sin_retrato.get_absolute_url())
     cabecera = sopa.select_one(".ficha .ficha-cabecera")
     monograma = cabecera.select_one(".ficha-medio .ficha-retrato.ficha-monograma")
     assert monograma.get_text() == "RC" and monograma["aria-hidden"] == "true"
     assert cabecera.select_one(".ficha-texto h1").get_text() == "Rocío Carrasco"
 
 
-def test_en_su_ficha_cada_fila_omite_su_propia_firma(client, make_article):
+def test_en_su_ficha_cada_fila_omite_su_propia_firma(client):
     """Cada fila de sus textos repetía su nombre. Un texto a cuatro manos sigue nombrando
     a la otra persona."""
     ella = Contributor.objects.create(slug="ella", display_name="Ella Misma", is_member=True)
@@ -225,26 +218,26 @@ def test_en_su_ficha_cada_fila_omite_su_propia_firma(client, make_article):
 
     pies = {
         f.select_one(".fila-titulo a")["href"]: f.select_one(".fila-pie").get_text(" ", strip=True)
-        for f in _sopa(client, ella.get_absolute_url()).select("li.fila")
+        for f in soup(client, ella.get_absolute_url()).select("li.fila")
     }
     assert "Ella Misma" not in pies[sola.get_absolute_url()]
     assert "La Otra" in pies[juntas.get_absolute_url()]
     assert "Ella Misma" not in pies[juntas.get_absolute_url()]
     assert "Ella Misma" not in pies[suyo.get_absolute_url()]
     # En el archivo general la firma sigue ahí.
-    archivo = _sopa(client, reverse("content:text_archive")).get_text()
+    archivo = soup(client, reverse("content:text_archive")).get_text()
     assert "Ella Misma" in archivo
 
 
 def test_la_ficha_de_publicacion_pone_la_cubierta_al_lado(client):
     publicacion = make_publication(slug="sin-tapa", title="Sin tapa")
-    medio = _sopa(client, publicacion.get_absolute_url()).select_one(".ficha-cabecera .ficha-medio")
+    medio = soup(client, publicacion.get_absolute_url()).select_one(".ficha-cabecera .ficha-medio")
     assert medio.select_one(".ficha-cubierta.pub-cover-fallback").get_text(strip=True) == "Sin tapa"
 
 
 def test_un_evento_sin_afiche_no_deja_una_columna_vacia(client):
     evento = make_event(slug="sin-afiche", title="Sin afiche")
-    cabecera = _sopa(client, evento.get_absolute_url()).select_one(".ficha-cabecera")
+    cabecera = soup(client, evento.get_absolute_url()).select_one(".ficha-cabecera")
     assert "ficha-cabecera--sin-medio" in cabecera["class"]
     assert cabecera.select_one(".ficha-medio") is None
 
@@ -261,7 +254,7 @@ def test_el_pie_del_poema_lleva_al_indice_a_quien_firma_a_su_coleccion_y_a_sus_v
     )
     CollectionPoem.objects.create(collection=coleccion, poem=medio)
 
-    salidas = _salidas(_sopa(client, medio.get_absolute_url()))
+    salidas = _salidas(soup(client, medio.get_absolute_url()))
     assert salidas["Índice"] == ("Todos los poemas", reverse("content:poem_index"))
     assert salidas["Más de"] == ("La Autora", autora.get_absolute_url())
     assert salidas["En la colección"] == ("La colección", coleccion.get_absolute_url())
@@ -269,7 +262,7 @@ def test_el_pie_del_poema_lleva_al_indice_a_quien_firma_a_su_coleccion_y_a_sus_v
     assert salidas["Poema anterior"] == ("Nuevo", nuevo.get_absolute_url())
     assert salidas["Poema siguiente"] == ("Viejo", viejo.get_absolute_url())
 
-    extremos = _salidas(_sopa(client, nuevo.get_absolute_url()))
+    extremos = _salidas(soup(client, nuevo.get_absolute_url()))
     assert "Poema anterior" not in extremos and extremos["Poema siguiente"][0] == "Medio"
 
 
@@ -277,7 +270,9 @@ def test_una_coleccion_sin_publicar_no_sale_en_el_pie(client):
     poema = _poema("solo")
     borrador = Collection.objects.create(slug="b", title="Borrador", status=PublishStatus.DRAFT)
     CollectionPoem.objects.create(collection=borrador, poem=poema)
-    assert "En la colección" not in _salidas(_sopa(client, poema.get_absolute_url()))
+    exits = _salidas(soup(client, poema.get_absolute_url()))
+    assert exits["Índice"] == ("Todos los poemas", reverse("content:poem_index"))  # control
+    assert "En la colección" not in exits
 
 
 @pytest.mark.parametrize(
@@ -299,7 +294,7 @@ def test_una_coleccion_sin_publicar_no_sale_en_el_pie(client):
 )
 def test_cada_ficha_termina_en_salidas(client, fabricar, esperadas):
     objeto = fabricar()
-    salidas = _salidas(_sopa(client, objeto.get_absolute_url()))
+    salidas = _salidas(soup(client, objeto.get_absolute_url()))
     assert esperadas <= set(salidas), f"faltan salidas: {esperadas - set(salidas)}"
     for _, url in salidas.values():
         assert url.startswith("/"), "las salidas del pie son internas"
@@ -308,7 +303,7 @@ def test_cada_ficha_termina_en_salidas(client, fabricar, esperadas):
 def test_el_registro_lleva_al_poema_que_registra(client):
     registro = make_recording(slug="reg", title="Reg")
     poema = _poema("registrado", recording=registro)
-    salidas = _salidas(_sopa(client, registro.get_absolute_url()))
+    salidas = _salidas(soup(client, registro.get_absolute_url()))
     assert salidas["Poema registrado"] == (poema.title, poema.get_absolute_url())
 
 
@@ -366,9 +361,7 @@ def test_la_ficha_del_poema_no_crece_en_consultas_con_sus_autoras(
         assert client.get(poema.get_absolute_url()).status_code == 200
 
 
-def test_la_ficha_de_integrante_no_crece_con_su_obra(
-    client, django_assert_max_num_queries, make_article
-):
+def test_la_ficha_de_integrante_no_crece_con_su_obra(client, django_assert_max_num_queries):
     ella = Contributor.objects.create(
         slug="obra", display_name="Con Obra", is_member=True, active=True
     )

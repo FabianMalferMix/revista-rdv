@@ -8,22 +8,16 @@ import json
 from xml.etree import ElementTree
 
 import pytest
-from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import ArticleContributor, EditorialStatus, Poem, PoemContributor
 from apps.people.models import Contributor
+from tests.factories import make_article, soup
 
 pytestmark = pytest.mark.django_db
 
 ORDEN = ["Zoe Zamora", "Ana Abarca"]
-
-
-def _sopa(client, url):
-    respuesta = client.get(url)
-    assert respuesta.status_code == 200
-    return BeautifulSoup(respuesta.content, "html.parser")
 
 
 def _firmantes():
@@ -34,7 +28,7 @@ def _firmantes():
 
 
 @pytest.fixture
-def texto(make_article):
+def texto():
     zoe, ana = _firmantes()
     articulo = make_article(
         slug="a-cuatro-manos",
@@ -72,24 +66,24 @@ def _mas_de(sopa):
 
 
 def test_article_page_signs_in_coauthorship_order(client, texto):
-    sopa = _sopa(client, texto.get_absolute_url())
+    sopa = soup(client, texto.get_absolute_url())
     assert [a.get_text() for a in sopa.select(".lectura-firmas a")] == ORDEN
     assert [m["content"] for m in sopa.select('meta[property="article:author"]')] == ORDEN
 
 
 def test_article_footer_offers_more_from_each_author_in_order(client, texto):
-    assert _mas_de(_sopa(client, texto.get_absolute_url())) == ORDEN
+    assert _mas_de(soup(client, texto.get_absolute_url())) == ORDEN
 
 
 def test_article_json_ld_lists_authors_in_order(client, texto):
-    sopa = _sopa(client, texto.get_absolute_url())
+    sopa = soup(client, texto.get_absolute_url())
     datos = [json.loads(s.string) for s in sopa.select('script[type="application/ld+json"]')]
     articulo = next(d for d in datos if d.get("@type") != "Organization" and "author" in d)
     assert [a["name"] for a in articulo["author"]] == ORDEN
 
 
 def test_article_card_signs_in_order(client, texto):
-    sopa = _sopa(client, reverse("content:text_archive"))
+    sopa = soup(client, reverse("content:text_archive"))
     fila = next(f for f in sopa.select("li.fila") if "A cuatro manos" in f.get_text())
     assert [a.get_text() for a in fila.select(".fila-pie a")] == ORDEN
 
@@ -103,15 +97,15 @@ def test_rss_names_authors_in_order(client, texto):
 
 
 def test_poem_page_and_card_sign_in_order(client, poema):
-    sopa = _sopa(client, poema.get_absolute_url())
+    sopa = soup(client, poema.get_absolute_url())
     assert [a.get_text() for a in sopa.select(".lectura-firmas a")] == ORDEN
     assert _mas_de(sopa) == ORDEN
-    indice = _sopa(client, reverse("content:poem_index"))
+    indice = soup(client, reverse("content:poem_index"))
     fila = next(f for f in indice.select("li.fila") if "A dos voces" in f.get_text())
     assert [a.get_text() for a in fila.select(".fila-pie a")] == ORDEN
 
 
-def test_same_position_keeps_the_order_they_were_added(client, make_article):
+def test_same_position_keeps_the_order_they_were_added(client):
     """El inline del panel crea todas las filas en la posición 0: desempata el alta."""
     zoe, ana = _firmantes()
     articulo = make_article(
@@ -119,5 +113,5 @@ def test_same_position_keeps_the_order_they_were_added(client, make_article):
     )
     ArticleContributor.objects.create(article=articulo, contributor=zoe)
     ArticleContributor.objects.create(article=articulo, contributor=ana)
-    sopa = _sopa(client, articulo.get_absolute_url())
+    sopa = soup(client, articulo.get_absolute_url())
     assert [a.get_text() for a in sopa.select(".lectura-firmas a")] == ORDEN

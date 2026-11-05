@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from django.urls import reverse
 
 from tests import css
-from tests.factories import make_event, make_photo
+from tests.factories import make_article, make_event, make_photo
 
 pytestmark = pytest.mark.django_db
 
@@ -69,7 +69,7 @@ def test_home_has_an_h1(client):
     assert b"<h1" in resp.content
 
 
-def test_article_card_title_is_h3(client, make_article):
+def test_article_card_title_is_h3(client):
     """El título de tarjeta es <h3>: cuelga de secciones <h2>, así la jerarquía de
     encabezados no queda aplanada (hallazgo #13). Aserción estructural con bs4."""
     from bs4 import BeautifulSoup

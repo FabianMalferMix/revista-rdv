@@ -9,14 +9,13 @@ registros; las fotos, en un mosaico de seis, y las demás en «Ver las N fotos»
 from datetime import timedelta
 
 import pytest
-from bs4 import BeautifulSoup
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from apps.agenda.models import EventPhoto
 from apps.people.models import Contributor
-from tests.factories import make_event, make_image, make_recording
+from tests.factories import make_event, make_image, make_recording, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -35,7 +34,7 @@ def _fotos(evento, cuantas, desde=0):
 
 
 def _sopa(client, evento):
-    return BeautifulSoup(client.get(evento.get_absolute_url()).content, "html.parser")
+    return soup(client, evento.get_absolute_url())
 
 
 # ── El afiche y lo que va a su lado ───────────────────────────────────────

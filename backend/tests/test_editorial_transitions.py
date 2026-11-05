@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus
 from apps.content.workflow import TRANSITIONS
+from tests.factories import make_article, make_poem
 
 pytestmark = pytest.mark.django_db
 
@@ -21,7 +22,7 @@ MODELS = ["article", "poem"]
 
 
 @pytest.fixture
-def make_piece(make_article, make_poem):
+def make_piece():
     def _make(model, owner, status, transition):
         make = make_article if model == "article" else make_poem
         # Sin fecha propia: la de la fábrica, si su estado la pide.

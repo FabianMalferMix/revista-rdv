@@ -11,7 +11,6 @@ from datetime import date, timedelta
 from io import BytesIO
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.urls import reverse
 from django.utils import timezone
@@ -22,7 +21,7 @@ from apps.media.models import MediaAsset
 from apps.people.models import Contributor
 from apps.showcase.models import Partner, PressMention, SiteProfile, SiteSocialLink
 from apps.submissions.models import Call
-from tests.factories import make_event, make_publication
+from tests.factories import make_event, make_publication, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -36,7 +35,7 @@ def _imagen(nombre, tamano=(50, 70)):
 
 
 def _portada(client):
-    return BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    return soup(client, reverse("content:home"))
 
 
 def _texto(nodo):
@@ -126,6 +125,7 @@ def test_la_portada_no_lleva_cifras(client):
     )
     make_publication(slug="p", title="P")
     titular = _portada(client).select_one("section.hero")
+    assert titular.select_one(".hero-ctas .hero-dossier")  # control: la hoja está, con su botón
     assert titular.select_one(".stats-strip, .hero-stats") is None
 
 
@@ -154,6 +154,7 @@ def test_la_portada_no_lleva_cita_de_prensa_ni_aliados(client):
     )
     Partner.objects.create(name="Casa del Libro")
     sopa = _portada(client)
+    assert sopa.select_one("section.hero .hero-dossier")  # control: la hoja está, con su botón
     assert sopa.select_one(".hero-respaldo, .hero-cita") is None
     assert "Destacada." not in sopa.get_text()
     assert "Casa del Libro" not in sopa.get_text()

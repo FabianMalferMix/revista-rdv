@@ -53,6 +53,7 @@ def test_los_esquemas_permitidos_son_explicitos():
 @pytest.mark.parametrize("esquema", ["ssh://host/x", "magnet:?xt=urn:btih:abc", "sms:+56900000"])
 def test_los_esquemas_exoticos_se_descartan(esquema):
     salida = clean_html(f'<a href="{esquema}">x</a>')
+    assert "x</a>" in salida  # control: el enlace queda, sin su destino
     assert "href=" not in salida
 
 
@@ -89,7 +90,8 @@ def test_el_formulario_del_panel_tambien_sanea():
         }
     )
     form.is_valid()  # dispara clean_body aunque otros campos falten
-    assert "<script" not in form.cleaned_data.get("body", "")
+    assert "<p>ok</p>" in form.cleaned_data["body"]  # control: el texto permitido queda
+    assert "<script" not in form.cleaned_data["body"]
 
 
 @pytest.mark.django_db
@@ -101,4 +103,5 @@ def test_el_saneo_se_aplica_al_guardar_el_modelo():
         slug="directo", title="Directo", body="<p>a</p><script>alert(1)</script>"
     )
     art.refresh_from_db()
+    assert "<p>a</p>" in art.body  # control: el texto permitido queda
     assert "<script" not in art.body

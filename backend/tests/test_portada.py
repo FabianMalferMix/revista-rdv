@@ -10,7 +10,6 @@ from datetime import timedelta
 from io import BytesIO
 
 import pytest
-from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.urls import reverse
 from django.utils import timezone
@@ -23,7 +22,7 @@ from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
 from tests import css
-from tests.factories import make_event, make_publication
+from tests.factories import make_article, make_event, make_poem, make_publication, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -31,7 +30,7 @@ PUBLICADO = EditorialStatus.PUBLISHED
 
 
 def _portada(client):
-    return BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    return soup(client, reverse("content:home"))
 
 
 def _cubierta(nombre):
@@ -42,7 +41,7 @@ def _cubierta(nombre):
     return recurso
 
 
-def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client, make_poem):
+def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client):
     """Los tres últimos, cada uno con sus tres primeros versos: sin las líneas en blanco y
     sin la sangría, que en una cita no se compone."""
     ahora = timezone.now()
@@ -62,7 +61,7 @@ def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client, make_poem):
     ]
 
 
-def test_el_orden_de_los_bloques(client, make_poem, make_article):
+def test_el_orden_de_los_bloques(client):
     """La obra, las integrantes, las publicaciones y el cierre. La obra va primero porque
     lo pidió el dueño del sitio al ver la portada; el cierre, al final."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
@@ -79,7 +78,7 @@ def test_el_orden_de_los_bloques(client, make_poem, make_article):
     assert secciones == ["home-obra", "home-integrantes", "home-publicaciones", "home-cierre"]
 
 
-def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client, make_poem, make_article):
+def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client):
     for i in range(3):
         Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
     make_poem(status=PUBLICADO, published_at=timezone.now())
@@ -120,7 +119,7 @@ def test_con_un_solo_libro_hay_bloque_de_publicaciones(client):
     assert _portada(client).select_one(".home-publicaciones") is not None
 
 
-def test_el_cierre_lleva_sus_puertas_la_ultima_actividad_y_la_fecha(client, make_article):
+def test_el_cierre_lleva_sus_puertas_la_ultima_actividad_y_la_fecha(client):
     perfil = SiteProfile.load()
     perfil.general_email = "hola@example.com"
     perfil.save()
@@ -155,7 +154,7 @@ def test_sin_correo_el_cierre_lleva_tres_puertas(client):
     assert puertas == ["Dossier", "Prensa", "Aliados"]
 
 
-def test_la_ultima_publicacion_solo_cuenta_lo_publicado(make_poem, make_article):
+def test_la_ultima_publicacion_solo_cuenta_lo_publicado():
     """Un borrador o un registro sin publicar no hacen más reciente la portada."""
     assert ultima_publicacion() is None
     ahora = timezone.now()
@@ -226,7 +225,7 @@ def test_el_manifiesto_termina_en_su_primera_pausa(client):
         "salas de clases, ferias y plazas. Lo demás vuelve al taller."
     )
     perfil.save()
-    manifiesto = BeautifulSoup(client.get(reverse("content:home")).content, "html.parser")
+    manifiesto = soup(client, reverse("content:home"))
     texto = " ".join(manifiesto.select_one(".hero-manifesto").get_text().split())
     assert texto == (
         "Somos un colectivo que lee en voz alta y lleva los poemas a donde no suelen llegar. "

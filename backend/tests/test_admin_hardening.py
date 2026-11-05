@@ -66,11 +66,14 @@ def test_revocar_el_permiso_de_modelo_surte_efecto(groups, editor):
     """Antes, `has_change_permission` decidía solo por pertenencia al grupo: quitarle
     `content.change_article` a alguien del grupo editor no cambiaba nada."""
     admin_obj = ArticleAdmin(Article, AdminSite())
+    art = Article.objects.create(slug="a", title="A", owner=editor)
+    # Control: con los permisos del grupo, el editor cambia y borra.
+    assert admin_obj.has_change_permission(_peticion(editor), art) is True
+    assert admin_obj.has_delete_permission(_peticion(editor), art) is True
     groups["editor"].permissions.remove(
         _permission("content.change_article"), _permission("content.delete_article")
     )
     editor = _reloaded(editor)
-    art = Article.objects.create(slug="a", title="A", owner=editor)
     assert admin_obj.has_change_permission(_peticion(editor), art) is False
     assert admin_obj.has_delete_permission(_peticion(editor), art) is False
 
@@ -88,6 +91,7 @@ def test_un_autor_con_permiso_no_puede_borrar(autor):
     admin_obj = ArticleAdmin(Article, AdminSite())
     autor.user_permissions.add(_permission("content.delete_article"))
     autor = _reloaded(autor)
+    assert autor.has_perm("content.delete_article")  # control: el permiso de modelo lo tiene
     art = Article.objects.create(slug="c", title="C", owner=autor)
     assert admin_obj.has_delete_permission(_peticion(autor), art) is False
 
@@ -107,6 +111,8 @@ def test_setup_groups_no_restaura_un_permiso_retirado_a_mano():
 
     call_command("setup_groups", verbosity=0)  # simula el siguiente despliegue
 
+    # Control: el resto de lo que da la matriz sigue en el grupo.
+    assert editor.permissions.filter(codename="view_submission").exists()
     assert perm not in editor.permissions.all(), "el despliegue restauró el permiso retirado"
 
 
@@ -125,4 +131,6 @@ def test_reset_explicito_si_reemplaza():
 
     call_command("setup_groups", "--reset", verbosity=0)
 
+    # Control: el reinicio deja en el grupo lo que da la matriz.
+    assert editor.permissions.filter(codename="change_article").exists()
     assert ajeno not in editor.permissions.all()
