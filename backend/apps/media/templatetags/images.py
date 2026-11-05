@@ -3,16 +3,27 @@
 from django import template
 from django.templatetags.static import static
 
+from apps.media.models import MediaAsset
+
 register = template.Library()
 
 # La portada pasa al recorte vertical en el mismo ancho en que el logo pasa a dos líneas.
 PORTADA_TELEFONO = "(max-width: 719px)"
 # La lámina del estreno (D18): la obra de la portada mientras el colectivo no elija la suya.
-# Ancho × alto de cada copia en static/img/portada/.
+# Ancho × alto de cada copia en static/img/portada/, en los formatos de las copias de portada
+# (`MediaAsset.PORTADA_FORMATS`). Las rehace desde sus maestras el comando de desarrollo
+# `generate_lamina_variants`.
 LAMINA = {
     "ancha": ((960, 600), (1440, 900), (1920, 1200), (2400, 1500)),
     "alta": ((640, 1280), (960, 1920), (1080, 2160)),
 }
+# La reserva del <img>, para el navegador que no conoce AVIF ni WebP: la ancha de 1440 en JPEG.
+LAMINA_FALLBACK = ("ancha", 1440, "jpg")
+
+
+def lamina_path(forma, width, ext):
+    """La ruta de una copia de la lámina, relativa a los estáticos."""
+    return f"img/portada/lamina-{forma}-{width}.{ext}"
 
 
 @register.inclusion_tag("media/partials/_responsive_img.html")
@@ -80,18 +91,17 @@ def _fuentes_del_recurso(recurso, media):
 
 def _lamina():
     def srcset(forma, ext):
-        return ", ".join(
-            f"{static(f'img/portada/lamina-{forma}-{w}.{ext}')} {w}w" for w, _ in LAMINA[forma]
-        )
+        return ", ".join(f"{static(lamina_path(forma, w, ext))} {w}w" for w, _ in LAMINA[forma])
 
+    formats = [ext for ext, _, _ in MediaAsset.PORTADA_FORMATS]
     (ancho_alta, alto_alta), (ancho, alto) = LAMINA["alta"][-1], LAMINA["ancha"][-1]
     fuentes = [
         _fuente(PORTADA_TELEFONO, ext, srcset("alta", ext), ancho_alta, alto_alta)
-        for ext in ("avif", "webp")
-    ] + [_fuente("", ext, srcset("ancha", ext), ancho, alto) for ext in ("avif", "webp")]
+        for ext in formats
+    ] + [_fuente("", ext, srcset("ancha", ext), ancho, alto) for ext in formats]
     return {
         "fuentes": fuentes,
-        "src": static("img/portada/lamina-ancha-1440.jpg"),
+        "src": static(lamina_path(*LAMINA_FALLBACK)),
         "srcset": "",
         "sizes": "",
         "width": ancho,

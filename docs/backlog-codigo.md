@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 68 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
+> **Avance:** 69 de 84 tickets cerrados (36 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, y B81 a B84 al cerrar la tanda 5, por hallazgos que la auditoría no tenía.
 
 ## Cómo se usa
 
@@ -159,7 +159,7 @@
 | B62 | Herramientas de medición que no dan por bueno un error | — | S | no | hecho (#250) |
 | B63 | Herramientas de desarrollo en su propia app | B07 | M | no | hecho (#251) |
 | B64 | Un solo camino para poblar desarrollo | B63 | M | no | hecho (#252) |
-| B65 | Higiene del repositorio | — | S | no | pendiente |
+| B65 | Higiene del repositorio | — | S | no | hecho (#253) |
 
 **Tanda 7 — Orden interno**
 
@@ -1252,6 +1252,8 @@ De HER-5:
 **Alcance.** Lo que queda de HER-8: la imagen maestra de la lámina, versionada junto al guion de sus variantes (si el dueño la tiene fuera del repositorio, se le pide), y el ruido de las siembras, determinista por pieza. Git LFS queda diferido.
 
 **Hecho cuando.** Regenerar las variantes de la lámina desde el repositorio da los mismos bytes, y `--regenerar` con un elemento nuevo no cambia los bytes de los demás.
+
+**Hecho (2026-11-05).** Las maestras de la lámina se reconstruyeron desde las variantes más grandes (como decidió el dueño) y viven en `apps/devtools/management/commands/lamina/`, en PNG partidas en franjas para no pasar de 2 MB por archivo; `generate_lamina_variants` rehace las 15 copias con parámetros fijos (AVIF con un solo hilo: con los hilos por defecto, los bytes cambiaban de una máquina a otra) y una prueba exige bytes idénticos. Las copias se sustituyeron una vez: no se distinguen de las anteriores (37 dB) y pesan un 12 % menos; visto bueno dado por Claude en nombre del dueño, con capturas en `tools/ux/out/higiene-del-repositorio/`. El grano de las siembras sale de una semilla por pieza, y `--regenerar` ya rehace la copia sin metadatos de cada archivo.
 
 ### Tanda 7 — Orden interno
 

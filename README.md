@@ -119,7 +119,9 @@ docker compose exec web python manage.py seed_material_generico
 ```
 
 Idempotente y seguro: nunca reemplaza una imagen cuyo crédito no sea de marcador. Qué pedir y
-cómo reemplazar cada pieza: [docs/contenido-visual.md](docs/contenido-visual.md).
+cómo reemplazar cada pieza: [docs/contenido-visual.md](docs/contenido-visual.md). Cada pieza
+siembra su azar (la composición y el grano) con su propia clave: dibujarla otra vez, también con
+`--regenerar`, da los mismos bytes, y una pieza nueva no cambia los de las demás.
 
 Los textos y poemas largos de prueba (una reseña de once minutos, un ensayo de quince, una crítica
 con todos los casos límite, una letanía de más de cien versos, un poema en prosa…) los escribe y
@@ -128,6 +130,16 @@ los quita una orden:
 ```bash
 docker compose exec web python manage.py seed_textos_largos            # siembra o pone al día
 docker compose exec web python manage.py seed_textos_largos --borrar   # los quita
+```
+
+La lámina de la portada (la obra de la primera vista mientras el colectivo no elige la suya, en
+`backend/static/img/portada/`) sale de sus maestras sin pérdida, que están en
+`backend/apps/devtools/management/commands/lamina/`, cortadas en franjas para que ningún archivo
+pase de 2 MB. Una orden rehace sus quince copias con parámetros fijos, y rehacerlas da los mismos
+bytes (`backend/tests/test_lamina.py` lo comprueba); con `--check`, solo las compara:
+
+```bash
+docker compose exec --user "$(id -u):$(id -g)" web python manage.py generate_lamina_variants
 ```
 
 ### Migraciones

@@ -12,11 +12,16 @@ campo correspondiente; ver docs/contenido-visual.md.
 Los datos de desarrollo ya traen este material: el comando sirve para lo que se añada después
 (una integrante, una actividad, una publicación), y lo nuevo viaja con `datos_de_desarrollo
 exportar`.
+
+Cada pieza saca su azar (la composición y el grano) de generadores que siembra con una clave
+propia, hecha de su slug, su número o su nombre: dibujarla otra vez da los mismos bytes, y
+`--regenerar` con una pieza nueva no cambia los de las demás.
 """
 
 import random
-from functools import partial
+from functools import cache, partial
 from io import BytesIO
+from statistics import NormalDist
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -96,8 +101,28 @@ def _tinta(img, dibujar, color, desregistro=(0, 0)):
     return ImageChops.multiply(img, capa)
 
 
-def _grano(img, sigma=26):
-    ruido = Image.effect_noise(img.size, sigma).convert("RGB")
+@cache
+def _gaussian_levels(sigma):
+    """El gris que toca a cada entero de 16 bits en una campana de media 128 y desviación
+    `sigma`, recortado a 0–255: el cuantil del centro de su tramo. Sobre enteros uniformes da el
+    ruido de `Image.effect_noise`, que trunca igual."""
+    bell = NormalDist(128, sigma)
+    return [max(0, min(255, int(bell.inv_cdf((k + 0.5) / 65536)))) for k in range(65536)]
+
+
+def _noise(size, sigma, key):
+    """Ruido gaussiano en gris, como el de `Image.effect_noise`, de un generador que siembra
+    `key`. `effect_noise` lo saca de la secuencia al azar del proceso, que no se siembra por
+    pieza: el ruido de una dependería de lo que se dibujó antes."""
+    rng = random.Random(f"grano:{key}")
+    width, height = size
+    uniform = Image.frombytes("I", size, rng.randbytes(2 * width * height), "raw", "I;16")
+    return uniform.point(_gaussian_levels(sigma), "L")
+
+
+def _grano(img, key, sigma=26):
+    """El grano del papel, con el ruido de la pieza que nombra `key`."""
+    ruido = _noise(img.size, sigma, key).convert("RGB")
     claro = ImageChops.lighter(ruido, Image.new("RGB", img.size, (205, 205, 205)))
     return ImageChops.multiply(img, claro)
 
@@ -165,7 +190,7 @@ def _retrato(nombre, semilla):
         img, lambda d, c: d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=c), segunda, (14, -10)
     )
     img = _tinta(img, lambda d, c: _silueta(d, c, 600, 560, 1.0), tinta)
-    img = _grano(img)
+    img = _grano(img, f"retrato:{semilla}")
     _escribir(img, (60, 1290), nombre, 56, TINTA, ancho_max=1080, peso=700)
     _etiqueta(img, "retrato provisional · reemplazar")
     return img, "JPEG"
@@ -190,7 +215,7 @@ def _foto_lectura(titulo, n, semilla):
 
     img = _tinta(img, luces, tinta, (10, 8))
     img = _tinta(img, sala, TINTA)
-    img = _grano(img, sigma=34)
+    img = _grano(img, f"foto:{semilla}:{n}", sigma=34)
     _etiqueta(img, f"foto provisional {n} · {titulo}", posicion=(60, 60))
     return img, "JPEG"
 
@@ -281,7 +306,7 @@ def _imagen_texto(titulo, cejilla, semilla):
         d.rectangle((rng.randint(120, 400), 700, rng.randint(900, 1200), 780), fill=c)
 
     img = _tinta(img, formas, tinta, (10, -8))
-    img = _grano(img)
+    img = _grano(img, f"texto:{semilla}")
     _escribir(img, (90, 110), _may(cejilla), 36, TINTA)
     _escribir(img, (90, 190), titulo, 80, TINTA, ancho_max=1000, interlinea=1.0, peso=700)
     _etiqueta(img, "imagen provisional · reemplazar")
@@ -301,7 +326,7 @@ def _foto_grupo(nombres):
 
     img = _tinta(img, lambda d, c: siluetas(d, c, 0), MAGENTA, (10, 6))
     img = _tinta(img, lambda d, c: siluetas(d, c, 1), AZUL)
-    img = _grano(img)
+    img = _grano(img, "foto-grupo")
     profile = identity.PROFILE
     _escribir(
         img,
@@ -464,6 +489,11 @@ class Command(DevelopmentCommand):
             for derivado in asset.derivative_names():
                 almacen.delete(derivado)
             almacen.delete(asset.file.name)
+            # La fila deja de nombrar el archivo borrado (con `update`, sin las señales que
+            # borrarían el nuevo, que se llama igual). Así el guardado ve un archivo nuevo, como
+            # la primera vez: lo reescribe sin metadatos, en los mismos bytes que entonces, y
+            # rehace sus copias.
+            MediaAsset.objects.filter(pk=asset.pk).update(file="")
         img, formato = generar()
         buf = BytesIO()
         if formato == "JPEG":
