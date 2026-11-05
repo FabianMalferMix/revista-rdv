@@ -85,7 +85,7 @@ def test_cada_indice_firma_su_territorio(client, nombre):
 def test_la_firma_de_cada_pagina_es_la_del_grupo_del_pie_que_la_enlaza(client):
     """El reparto no se escribe dos veces: el pie agrupa las páginas por territorio, y la
     firma de cada página tiene que decir lo mismo que el rótulo de su grupo."""
-    html = client.get(reverse("content:home")).content.decode()
+    html = client.get(reverse("site:home")).content.decode()
     pie = html.split('<footer class="site-foot">')[1]
     grupos = re.findall(r'<div class="foot-group">\s*<h2>([^<]+)</h2>(.*?)</div>', pie, re.S)
     assert {rotulo for rotulo, _ in grupos} >= set(GRUPOS_DEL_PIE), "el pie cambió sus grupos"
@@ -186,7 +186,7 @@ def test_el_titulo_de_un_articulo_termina_en_el_nombre_del_sitio(client):
 
 # ── Qué páginas usan el carril ancho (backlog UX, ticket 2.1) ──────────────
 
-LISTADOS_ANCHOS = INDICES + ["content:home", "content:search"]
+LISTADOS_ANCHOS = INDICES + ["site:home", "site:search"]
 
 
 @pytest.mark.parametrize("nombre", LISTADOS_ANCHOS)
@@ -224,7 +224,7 @@ def test_el_contenido_de_las_bandas_de_la_portada_vuelve_al_carril_ancho(client)
     from tests.factories import make_publication
 
     make_publication(slug="en-banda", title="Libro en banda", featured=True)
-    html = client.get(reverse("content:home")).content.decode()
+    html = client.get(reverse("site:home")).content.decode()
     # Con otros atributos después de la clase: el estante lleva data-estante.
     bandas = re.findall(r'<section class="home-block band[^"]*"[^>]*>(.*?)</section>', html, re.S)
     assert bandas, "la portada ya no tiene bandas"

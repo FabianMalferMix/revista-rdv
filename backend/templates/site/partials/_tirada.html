@@ -15,7 +15,7 @@
   </div>
   <div class="tirada-carril">
     <ol class="tirada-pista" id="tirada-pista">
-      {% for r in registros %}
+      {% for r in tirada.registros %}
         <li class="pliego{% if r.largo %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
           <h3 class="pliego-titulo"><a href="{{ r.url }}">{{ r.titulo }}</a></h3>
           <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}{% if r.duracion %} · {{ r.duracion }}{% endif %}</span></p>
@@ -44,19 +44,19 @@
           <p class="rotulo pliego-folio">Nº {{ forloop.counter|stringformat:"02d" }}</p>
         </li>
       {% endfor %}
-      {% if registros|length > 1 %}
+      {% if tirada.registros|length > 1 %}
         <li class="tirada-colofon" role="none">
           <p class="rotulo">Colofón</p>
-          <p class="tirada-colofon-texto">Aquí termina la tirada: {{ registros_cuantos }} registros elegidos por el colectivo.</p>
+          <p class="tirada-colofon-texto">Aquí termina la tirada: {{ tirada.registros_cuantos }} registros elegidos por el colectivo.</p>
           <p class="meta">Los demás esperan en el archivo.</p>
         </li>
       {% endif %}
     </ol>
   </div>
-  {% if registros|length > 1 %}
+  {% if tirada.registros|length > 1 %}
     <div class="tirada-pie">
       <ul class="tirada-contactos" aria-label="Ir a un registro" hidden>
-        {% for r in registros %}
+        {% for r in tirada.registros %}
           <li><button type="button" class="tirada-contacto" data-marcador="{{ forloop.counter0 }}" aria-controls="tirada-pista">{% if r.imagen %}<span class="riso-duo">{% responsive_img r.imagen sizes="96px" decorativa=True %}</span>{% else %}<span class="tirada-contacto-vacia" aria-hidden="true"></span>{% endif %}<span class="meta tirada-contacto-titulo">{{ r.titulo }}</span></button></li>
         {% endfor %}
       </ul>

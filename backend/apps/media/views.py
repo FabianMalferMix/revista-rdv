@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from apps.content.models import Poem
-from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
+from apps.site.pie import puerta, puertas_vecinas, vecinos_en_lista
 from config import protected_media, publishing
 
 from .models import Recording

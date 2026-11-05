@@ -151,7 +151,7 @@ def test_subscribe_next_open_redirect_is_blocked(client):
     )
     assert resp.status_code == 302
     assert "evil.example" not in resp["Location"]
-    assert resp["Location"] == reverse("content:home")
+    assert resp["Location"] == reverse("site:home")
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
@@ -175,7 +175,7 @@ def test_subscribe_with_a_bogus_next_returns_home(client, nxt):
         reverse("community:subscribe"), {"email": "valido@example.com", "apodo": "", "next": nxt}
     )
     assert resp.status_code == 302
-    assert resp["Location"] == reverse("content:home")
+    assert resp["Location"] == reverse("site:home")
 
 
 @pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
@@ -187,7 +187,7 @@ def test_the_newsletter_page_also_sends_a_bogus_next_home(client, nxt):
     )
     assert resp.status_code == 200
     volver = BeautifulSoup(resp.content, "html.parser").select_one('main input[name="next"]')
-    assert volver["value"] == reverse("content:home")
+    assert volver["value"] == reverse("site:home")
 
 
 def test_subscribe_degrades_gracefully_when_broker_is_down(client):
@@ -249,7 +249,7 @@ def test_legal_pages_published(legal_pages):
 
 
 def test_footer_has_legal_links_and_consent(client):
-    content = client.get(reverse("content:home")).content
+    content = client.get(reverse("site:home")).content
     assert reverse("content:page_detail", args=["privacidad"]).encode() in content
     assert reverse("content:page_detail", args=["cookies"]).encode() in content
     assert b"pol\xc3\xadtica de privacidad" in content  # nota de consentimiento del form

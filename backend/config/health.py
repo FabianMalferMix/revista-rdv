@@ -22,6 +22,9 @@ from django.db import DatabaseError, connections
 from django.db.migrations.executor import MigrationExecutor
 from django.utils import timezone
 
+from apps.content.models import EditorialStatus, editorial_models
+from config.cache import cache_ping
+
 logger = logging.getLogger(__name__)
 
 HEARTBEAT_KEY = "resenas:latido:publicar-programadas"
@@ -78,15 +81,11 @@ def check_heartbeat():
 
 
 def check_cache():
-    from config.cache import cache_ping
-
     reason = cache_ping()
     return f"la caché (Redis) no responde: {reason}" if reason else None
 
 
 def check_scheduled():
-    from apps.content.models import EditorialStatus, editorial_models
-
     limit = timezone.now() - OVERDUE_GRACE
     try:
         overdue = sum(

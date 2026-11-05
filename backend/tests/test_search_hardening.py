@@ -15,11 +15,11 @@ from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from apps.content.views import SEARCH_MAX_QUERY
+from apps.site.views import SEARCH_MAX_QUERY
 from tests.factories import make_article, make_published_article, make_published_poem, soup
 
 pytestmark = pytest.mark.django_db
-BUSCAR = reverse("content:search")
+BUSCAR = reverse("site:search")
 
 
 def test_byte_nul_no_provoca_un_500(client):

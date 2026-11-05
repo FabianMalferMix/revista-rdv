@@ -35,7 +35,7 @@ def _imagen(nombre, tamano=(50, 70)):
 
 
 def _portada(client):
-    return soup(client, reverse("content:home"))
+    return soup(client, reverse("site:home"))
 
 
 def _texto(nodo):

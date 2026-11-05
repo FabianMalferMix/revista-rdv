@@ -16,11 +16,11 @@ from django.utils import timezone
 from PIL import Image
 
 from apps.content.models import EditorialStatus
-from apps.content.services import ultima_publicacion
 from apps.content.templatetags.versos import primera_pausa
 from apps.media.models import MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
+from apps.site.services import ultima_publicacion
 from tests import css
 from tests.factories import make_article, make_event, make_poem, make_publication, soup
 
@@ -30,7 +30,7 @@ PUBLICADO = EditorialStatus.PUBLISHED
 
 
 def _portada(client):
-    return soup(client, reverse("content:home"))
+    return soup(client, reverse("site:home"))
 
 
 def _cubierta(nombre):
@@ -225,7 +225,7 @@ def test_el_manifiesto_termina_en_su_primera_pausa(client):
         "salas de clases, ferias y plazas. Lo demás vuelve al taller."
     )
     perfil.save()
-    manifiesto = soup(client, reverse("content:home"))
+    manifiesto = soup(client, reverse("site:home"))
     texto = " ".join(manifiesto.select_one(".hero-manifesto").get_text().split())
     assert texto == (
         "Somos un colectivo que lee en voz alta y lleva los poemas a donde no suelen llegar. "

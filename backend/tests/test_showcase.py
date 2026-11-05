@@ -48,6 +48,6 @@ def test_footer_shows_booking_email(client):
     profile = SiteProfile.load()
     profile.booking_email = "gestion@resenas.cl"
     profile.save()
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     assert b"gestion@resenas.cl" in resp.content

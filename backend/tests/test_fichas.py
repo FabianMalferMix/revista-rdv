@@ -22,9 +22,9 @@ from apps.content.models import (
     PoemContributor,
     PublishStatus,
 )
-from apps.content.pie import vecinos, vecinos_en_lista
 from apps.content.templatetags.versos import versos
 from apps.people.models import Contributor
+from apps.site.pie import vecinos, vecinos_en_lista
 from tests.factories import make_article, make_event, make_publication, make_recording, soup
 
 pytestmark = pytest.mark.django_db

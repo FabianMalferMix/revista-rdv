@@ -35,7 +35,7 @@ def _asset():
 
 
 def test_home_has_valid_organization_jsonld(client):
-    blocks = _jsonld(client.get(reverse("content:home")).content)
+    blocks = _jsonld(client.get(reverse("site:home")).content)
     org = [d for d in blocks if d["@type"] == "Organization"]
     assert org, "la portada debe emitir JSON-LD de Organization"
     assert org[0]["name"]
@@ -60,7 +60,7 @@ def test_event_detail_has_valid_event_jsonld(client):
 
 
 def test_default_og_image_falls_back_to_siteprofile(client):
-    url = reverse("content:home")
+    url = reverse("site:home")
     # Sin og_image no hay imagen social de página.
     content = client.get(url).content
     assert b'property="og:title"' in content  # control: la página lleva sus etiquetas sociales

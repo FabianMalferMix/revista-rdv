@@ -13,12 +13,12 @@
 
 {% block content %}
   {% include "partials/_index_head.html" with titulo="Búsqueda" dek="Textos, poemas, personas, registros, publicaciones y actividades del colectivo." %}
-  <form class="search-page" role="search" action="{% url 'content:search' %}" method="get">
+  <form class="search-page" role="search" action="{% url 'site:search' %}" method="get">
     <label for="q-page" class="sr-only">Buscar en el sitio</label>
     <input id="q-page" type="search" name="q" value="{{ q }}" placeholder="Buscar en el sitio…" autocomplete="off">
     <button type="submit" class="btn btn--primary">Buscar</button>
   </form>
 
   {% if q %}<p class="search-summary meta">Resultados para «{{ q }}»</p>{% endif %}
-  {% include "content/partials/_search_results.html" %}
+  {% include "site/partials/_search_results.html" %}
 {% endblock %}

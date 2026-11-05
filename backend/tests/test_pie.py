@@ -38,7 +38,7 @@ def perfil(db):
 def test_el_pie_empieza_por_la_identidad_del_colectivo(client, perfil):
     pie = soup(client, reverse("content:poem_index")).select_one("footer.site-foot")
     identidad = pie.select_one(".foot-identidad")
-    assert identidad.select_one("a.brand")["href"] == reverse("content:home")
+    assert identidad.select_one("a.brand")["href"] == reverse("site:home")
     assert identidad.select_one(".foot-presentacion").get_text() == (
         "Colectivo de poesía · Chile · desde 2023"
     )

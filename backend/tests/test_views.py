@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 def test_home_shows_published_hides_drafts(client):
     _publish(make_article(slug="pub", title="Artículo Publicado"))
     make_article(slug="draft", title="Artículo Borrador", status=EditorialStatus.DRAFT)
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
     assert b"Art\xc3\xadculo Publicado" in resp.content
     assert b"Art\xc3\xadculo Borrador" not in resp.content

@@ -17,7 +17,7 @@ S = EditorialStatus
 
 def test_search_finds_published_match(client):
     _publish(make_article(slug="fts-1", title="Reseña de poesía chilena"))
-    resp = client.get(reverse("content:search"), {"q": "poesía"})
+    resp = client.get(reverse("site:search"), {"q": "poesía"})
     assert resp.status_code == 200
     assert "Reseña de poesía chilena".encode() in resp.content
     assert b"search-list" in resp.content
@@ -25,14 +25,14 @@ def test_search_finds_published_match(client):
 
 def test_search_excludes_drafts(client):
     make_article(slug="fts-draft", title="Borrador secreto de poesía", status=EditorialStatus.DRAFT)
-    resp = client.get(reverse("content:search"), {"q": "secreto"})
+    resp = client.get(reverse("site:search"), {"q": "secreto"})
     assert b"Borrador secreto" not in resp.content
     assert b"Sin resultados" in resp.content
 
 
 def test_search_empty_query_renders_nothing(client):
     _publish(make_article(slug="fts-2", title="Algo publicado"))
-    resp = client.get(reverse("content:search"), {"q": ""})
+    resp = client.get(reverse("site:search"), {"q": ""})
     assert resp.status_code == 200
     assert b"Algo publicado" not in resp.content
     assert b"search-list" not in resp.content  # ni lista ni estado vacío
@@ -40,14 +40,14 @@ def test_search_empty_query_renders_nothing(client):
 
 def test_search_no_match_shows_empty_state(client):
     _publish(make_article(slug="fts-3", title="Reseña de narrativa urbana"))
-    resp = client.get(reverse("content:search"), {"q": "zxqwvk"})
+    resp = client.get(reverse("site:search"), {"q": "zxqwvk"})
     assert b"Sin resultados" in resp.content
     assert b"search-list" not in resp.content
 
 
 def test_search_finds_published_poem(client):
     _publish(make_poem(slug="poema-fts", title="Elegía del faro", body="luz que gira en la niebla"))
-    resp = client.get(reverse("content:search"), {"q": "faro"})
+    resp = client.get(reverse("site:search"), {"q": "faro"})
     assert resp.status_code == 200
     assert "Elegía del faro".encode() in resp.content
     assert b"Poema" in resp.content  # kicker de tipo
@@ -56,7 +56,7 @@ def test_search_finds_published_poem(client):
 
 def test_search_excludes_draft_poems(client):
     make_poem(slug="poema-draft", title="Poema oculto del abismo", body="secretos", status=S.DRAFT)
-    resp = client.get(reverse("content:search"), {"q": "abismo"})
+    resp = client.get(reverse("site:search"), {"q": "abismo"})
     assert b"Poema oculto" not in resp.content
     assert b"Sin resultados" in resp.content
 
@@ -66,14 +66,14 @@ def test_poem_search_vector_tracks_bulk_update(client):
     # (el enfoque previo, que recalculaba solo en save(), dejaba el vector obsoleto).
     poem = _publish(make_poem(slug="poema-bulk", title="Título inicial", body="palabra vieja"))
     Poem.objects.filter(pk=poem.pk).update(body="hipogrifo violento")
-    resp = client.get(reverse("content:search"), {"q": "hipogrifo"})
+    resp = client.get(reverse("site:search"), {"q": "hipogrifo"})
     assert "Título inicial".encode() in resp.content
 
 
 def test_article_search_vector_tracks_bulk_update(client):
     art = _publish(make_article(slug="art-bulk", title="Reseña bulk", body="palabra vieja"))
     Article.objects.filter(pk=art.pk).update(body="quetzalcoatl emplumado")
-    resp = client.get(reverse("content:search"), {"q": "quetzalcoatl"})
+    resp = client.get(reverse("site:search"), {"q": "quetzalcoatl"})
     assert b"Rese\xc3\xb1a bulk" in resp.content
 
 
@@ -83,14 +83,14 @@ def test_article_search_vector_tracks_bulk_update(client):
 def test_search_unaccented_query_finds_accented_title(client):
     """Buscar 'resena' (sin acento) encuentra 'reseña' (con acento)."""
     _publish(make_article(slug="acentuado", title="La reseña de una novela chilena"))
-    resp = client.get(reverse("content:search"), {"q": "resena"})
+    resp = client.get(reverse("site:search"), {"q": "resena"})
     assert "La reseña de una novela chilena".encode() in resp.content
 
 
 def test_search_accented_query_finds_unaccented_title(client):
     """Buscar 'crónica' (con acento) encuentra 'cronica' (sin acento en la BD)."""
     _publish(make_article(slug="sin-acento", title="Cronica urbana del invierno"))
-    resp = client.get(reverse("content:search"), {"q": "crónica"})
+    resp = client.get(reverse("site:search"), {"q": "crónica"})
     assert b"Cronica urbana del invierno" in resp.content
 
 
@@ -101,7 +101,7 @@ def test_search_without_js_returns_full_page(client):
     """Una navegación normal (sin htmx) recibe la página completa con layout, no un
     fragmento suelto: la búsqueda funciona sin JavaScript."""
     _publish(make_article(slug="fts-page", title="Reseña navegable"))
-    html = client.get(reverse("content:search"), {"q": "navegable"}).content.decode()
+    html = client.get(reverse("site:search"), {"q": "navegable"}).content.decode()
     assert "<h1>Búsqueda</h1>" in html  # cabecera de la página completa
     assert "</html>" in html  # layout de base presente
     assert "Reseña navegable" in html  # el resultado aparece
@@ -110,7 +110,7 @@ def test_search_without_js_returns_full_page(client):
 def test_search_with_htmx_returns_fragment_only(client):
     """Con htmx (HX-Request) se devuelve solo el fragmento, sin el layout."""
     _publish(make_article(slug="fts-frag", title="Reseña fragmento"))
-    resp = client.get(reverse("content:search"), {"q": "fragmento"}, headers={"HX-Request": "true"})
+    resp = client.get(reverse("site:search"), {"q": "fragmento"}, headers={"HX-Request": "true"})
     html = resp.content.decode()
     assert "Reseña fragmento" in html
     assert "<h1>Búsqueda</h1>" not in html  # sin cabecera de página
@@ -127,7 +127,7 @@ def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client):
     número de resultados, y un enlace dentro lo falsearía.
     """
     _publish(make_article(slug="fts-salida", title="Reseña con salida"))
-    url = reverse("content:search")
+    url = reverse("site:search")
     html = client.get(url, {"q": "salida"}, headers={"HX-Request": "true"}).content.decode()
     assert 'class="search-all"' in html
     assert f'href="{url}?q=salida"' in html
@@ -137,21 +137,21 @@ def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client):
 
 def test_la_pagina_de_busqueda_no_repite_el_enlace_a_si_misma(client):
     article = _publish(make_article(slug="fts-misma", title="Reseña en página"))
-    html = client.get(reverse("content:search"), {"q": "página"}).content.decode()
+    html = client.get(reverse("site:search"), {"q": "página"}).content.decode()
     assert f'href="{article.get_absolute_url()}"' in html  # control: el resultado está
     assert "search-all" not in html
 
 
 def test_la_pagina_de_busqueda_tiene_un_solo_campo(client):
     """Tenía dos a la vista: el de la cabecera con su panel y el de la página."""
-    html = client.get(reverse("content:search")).content.decode()
+    html = client.get(reverse("site:search")).content.decode()
     assert len(re.findall(r'<input[^>]*name="q"', html)) == 1
     assert 'id="search-results"' not in html
 
 
 # ── Cobertura completa y grupos por tipo (backlog UX, ticket 5.4) ───────────
 
-BUSCAR = reverse("content:search")
+BUSCAR = reverse("site:search")
 
 
 def _grupos(client, q, panel=False):
@@ -327,7 +327,7 @@ def test_search_puts_the_most_relevant_text_first(client):
             slug="tema", title="La ballena", body="La ballena canta. La ballena vuelve. " * 5
         )
     )
-    titles = _result_titles(client.get(reverse("content:search"), {"q": "ballena"}))
+    titles = _result_titles(client.get(reverse("site:search"), {"q": "ballena"}))
     assert titles == ["La ballena", "Diario de costa"]
 
 
@@ -339,7 +339,7 @@ def test_search_puts_the_most_relevant_poem_first(client):
         Poem.objects.create(
             slug=slug, title=title, body=body, status=S.PUBLISHED, published_at=timezone.now()
         )
-    titles = _result_titles(client.get(reverse("content:search"), {"q": "ballena"}))
+    titles = _result_titles(client.get(reverse("site:search"), {"q": "ballena"}))
     assert titles == ["Ballena", "Orilla"]
 
 

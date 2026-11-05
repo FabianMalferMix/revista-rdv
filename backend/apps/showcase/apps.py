@@ -1,4 +1,6 @@
 from django.apps import AppConfig
+from django.db.models import Q
+from django.db.models.signals import post_save
 
 
 class ShowcaseConfig(AppConfig):
@@ -7,9 +9,8 @@ class ShowcaseConfig(AppConfig):
     verbose_name = "Colectivo"
 
     def ready(self):
-        from django.db.models import Q
-        from django.db.models.signals import post_save
-
+        # Dentro de ready() y no arriba: estos módulos importan modelos, y apps.py se importa
+        # antes de que estén cargados.
         from apps.media.services import register_portada_use
 
         from .models import SiteProfile

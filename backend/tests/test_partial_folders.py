@@ -58,10 +58,10 @@ def test_no_template_includes_a_partial_from_another_apps_folder():
     # Control positivo: la lectura reconoce las carpetas de las apps y ve una parcial de la
     # propia app (dentro de un bloque y de un bucle), una común desde base.html y la de una
     # etiqueta de inclusión.
-    assert {"agenda", "content", "media", "people"} <= app_folders
+    assert {"agenda", "content", "media", "people", "site"} <= app_folders
     assert ("agenda/agenda.html", "agenda/partials/_event_card.html") in found
     assert ("base.html", "partials/_sello.html") in found
-    assert ("content/home.html", "partials/_portada_img.html") in found
+    assert ("site/home.html", "site/partials/_portada_img.html") in found
     assert not variable, f"inclusiones con nombre variable, que no se pueden seguir: {variable}"
     foreign = sorted(
         f"{template} pinta {partial}"

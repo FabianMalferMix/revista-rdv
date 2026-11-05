@@ -38,7 +38,7 @@ pytestmark = pytest.mark.django_db
 # El dossier del paso 22 (ticket 5.1) hace dos menos aunque enseña retratos, cubiertas, logos y
 # la fecha de actualización: dejó de precargar participantes que no enseñaba.
 BUDGETS = {
-    "content:home": 24,  # medido 16 (el sello de convocatoria pregunta si hay una abierta)
+    "site:home": 24,  # medido 16 (el sello de convocatoria pregunta si hay una abierta)
     "content:text_archive": 10,  # 8
     "content:poem_index": 10,  # 8
     "people:member_index": 8,  # 6
@@ -76,7 +76,7 @@ def test_search_query_budget(_seed_volume, django_assert_max_num_queries):
     # Medido 8 tras el ticket 5.4: textos y poemas sin precargar sus autores (-2) y los
     # cuatro tipos por nombre en una sola consulta (+1). Eran 9 con solo textos y poemas.
     with django_assert_max_num_queries(10):  # medido 8
-        assert Client().get(reverse("content:search") + "?q=Perf").status_code == 200
+        assert Client().get(reverse("site:search") + "?q=Perf").status_code == 200
 
 
 def test_the_home_costs_the_same_with_one_piece_of_each_or_four(client):
@@ -110,7 +110,7 @@ def test_the_home_costs_the_same_with_one_piece_of_each_or_four(client):
         )
         recording.participants.add(voice)
 
-    url = reverse("content:home")
+    url = reverse("site:home")
     seed(0)
     client.get(url)  # en caliente: el perfil ya existe
     with CaptureQueriesContext(connection) as one:

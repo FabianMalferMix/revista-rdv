@@ -34,11 +34,11 @@ from apps.content.models import (
     Section,
     Tag,
 )
-from apps.content.services import ultima_publicacion
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Partner, PressMention, SiteProfile
+from apps.site.services import ultima_publicacion
 from tests.factories import make_event, make_photo, make_publication, make_recording
 
 pytestmark = pytest.mark.django_db
@@ -146,12 +146,12 @@ def _editorial_world(model, hidden_status):
 
 
 ARTICLE_SURFACES = {
-    "portada": lambda w: [(reverse("content:home"), [w.other])],
+    "portada": lambda w: [(reverse("site:home"), [w.other])],
     "archivo de textos": lambda w: [(reverse("content:text_archive"), [w.other])],
     "sección": lambda w: [(reverse("content:section_detail", args=[w.section.slug]), [w.other])],
     "etiqueta": lambda w: [(reverse("content:tag_detail", args=[w.tag.slug]), [w.other])],
-    "búsqueda": lambda w: [(reverse("content:search") + "?q=zarzamora", [w.other])],
-    "búsqueda por firma": lambda w: [(reverse("content:search") + "?q=firma", [w.guest])],
+    "búsqueda": lambda w: [(reverse("site:search") + "?q=zarzamora", [w.other])],
+    "búsqueda por firma": lambda w: [(reverse("site:search") + "?q=firma", [w.guest])],
     "RSS": lambda w: [(reverse("feed"), [w.other])],
     "sitemap": lambda w: [(reverse("sitemap"), [w.other])],
     "ficha de integrante": lambda w: [
@@ -173,10 +173,10 @@ ARTICLE_SURFACES = {
 }
 
 POEM_SURFACES = {
-    "portada": lambda w: [(reverse("content:home"), [w.other])],
+    "portada": lambda w: [(reverse("site:home"), [w.other])],
     "índice de poemas": lambda w: [(reverse("content:poem_index"), [w.other])],
-    "búsqueda": lambda w: [(reverse("content:search") + "?q=zarzamora", [w.other])],
-    "búsqueda por firma": lambda w: [(reverse("content:search") + "?q=firma", [w.guest])],
+    "búsqueda": lambda w: [(reverse("site:search") + "?q=zarzamora", [w.other])],
+    "búsqueda por firma": lambda w: [(reverse("site:search") + "?q=firma", [w.guest])],
     "sitemap": lambda w: [(reverse("sitemap"), [w.other])],
     "ficha de integrante": lambda w: [
         (reverse("people:member_detail", args=[w.member.slug]), [w.other])
@@ -400,7 +400,7 @@ def _partner_world():
 
 EVENT_SURFACES = {
     "agenda": lambda w: [(reverse("agenda:agenda"), [w.other_future])],
-    "búsqueda": lambda w: [(reverse("content:search") + "?q=actividad", [w.other_future])],
+    "búsqueda": lambda w: [(reverse("site:search") + "?q=actividad", [w.other_future])],
     "portada": lambda w: [("/", [w.shown_future, w.shown_past])],
     "trayectoria": lambda w: [(reverse("agenda:trayectoria"), [w.other_past])],
     "galería": lambda w: [(reverse("agenda:gallery"), [w.other_past])],
@@ -414,7 +414,7 @@ EVENT_SURFACES = {
 
 RECORDING_SURFACES = {
     "índice de registros": lambda w: [(reverse("media:recording_index"), [w.other])],
-    "búsqueda": lambda w: [(reverse("content:search") + "?q=registro", [w.other])],
+    "búsqueda": lambda w: [(reverse("site:search") + "?q=registro", [w.other])],
     "portada": lambda w: [("/", [w.other])],
     "pódcast": lambda w: [(reverse("recordings_feed"), [w.other])],
     "sitemap": lambda w: [(reverse("sitemap"), [w.other])],
@@ -431,7 +431,7 @@ RECORDING_SURFACES = {
 
 PUBLICATION_SURFACES = {
     "catálogo": lambda w: [(reverse("showcase:publication_index"), [w.other])],
-    "búsqueda": lambda w: [(reverse("content:search") + "?q=publicacion", [w.other])],
+    "búsqueda": lambda w: [(reverse("site:search") + "?q=publicacion", [w.other])],
     "portada": lambda w: [("/", [w.other])],
     "dossier": lambda w: [(reverse("showcase:dossier"), [w.other])],
     "trayectoria": lambda w: [(reverse("agenda:trayectoria"), [w.other])],

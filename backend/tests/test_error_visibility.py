@@ -21,9 +21,9 @@ def _search(client, monkeypatch, error):
     def broken(*args, **kwargs):
         raise error
 
-    monkeypatch.setattr("apps.content.views.coincidencias_por_nombre", broken)
+    monkeypatch.setattr("apps.site.views.coincidencias_por_nombre", broken)
     client.raise_request_exception = False
-    return client.get(reverse("content:search"), {"q": "umbral"})
+    return client.get(reverse("site:search"), {"q": "umbral"})
 
 
 def test_a_programming_error_in_search_reaches_sentry_as_an_error(

@@ -564,7 +564,7 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
         pages.append(BeautifulSoup(response.content.decode(), "html.parser"))
 
     for url in (
-        reverse("content:home"),
+        reverse("site:home"),
         reverse("content:text_archive"),
         reverse("content:text_archive") + "?page=2",
         reverse("content:poem_index"),
@@ -575,8 +575,8 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
         reverse("content:collection_index"),
         work["collection"].get_absolute_url(),
         reverse("content:page_detail", args=["privacidad"]),
-        reverse("content:search") + "?q=voz",
-        reverse("content:search") + "?q=nadaquecoincida",
+        reverse("site:search") + "?q=voz",
+        reverse("site:search") + "?q=nadaquecoincida",
         reverse("people:member_index"),
         *(reverse("people:member_detail", args=[slug]) for slug in ("voz-0", "voz-1", "historica")),
         reverse("media:recording_index"),
@@ -616,8 +616,8 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
     keep(client.post(reverse("submissions:submit"), {}))
 
     # La lupa con los resultados que pide htmx.
-    panel = client.get(reverse("content:search") + "?q=voz", HTTP_HX_REQUEST="true")
-    home = client.get(reverse("content:home")).content.decode()
+    panel = client.get(reverse("site:search") + "?q=voz", HTTP_HX_REQUEST="true")
+    home = client.get(reverse("site:home")).content.decode()
     pages.append(_with_search_results(home, panel.content.decode()))
 
     # Lo que ve el equipo: la vista previa de un borrador y, en el panel, un texto con la nota
@@ -641,7 +641,7 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
     Recording.objects.update(featured=False)
     Contributor.objects.update(active=False)
     Event.objects.filter(starts_at__gte=timezone.now()).update(published=False)
-    keep(client.get(reverse("content:home")))
+    keep(client.get(reverse("site:home")))
     keep(client.get(reverse("agenda:agenda")))
     return pages
 

@@ -49,7 +49,7 @@ def _safe_next(request):
         nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()
     ):
         return nxt
-    return reverse("content:home")
+    return reverse("site:home")
 
 
 @require_POST

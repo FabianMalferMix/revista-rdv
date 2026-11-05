@@ -70,7 +70,7 @@ def test_home_shows_catalog_but_not_press_or_partners(client):
     PressMention.objects.create(title="n", outlet="Radio Cita", quote="Imprescindibles.")
     Partner.objects.create(name="Aliado En Portada")
     Partner.objects.create(name="Aliado Retirado", active=False)
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert b"Plaquette En Portada" in resp.content
     assert b"Imprescindibles." not in resp.content
     assert b"Radio Cita" not in resp.content

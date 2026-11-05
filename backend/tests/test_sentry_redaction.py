@@ -138,4 +138,4 @@ def test_token_pages_send_no_referrer(client, name):
     token = sub.confirm_token if name == "community:confirm" else sub.token
     assert client.get(reverse(name, args=[token]))["Referrer-Policy"] == "no-referrer"
     # Control positivo: el resto del sitio mantiene su política.
-    assert client.get(reverse("content:home"))["Referrer-Policy"] == "same-origin"
+    assert client.get(reverse("site:home"))["Referrer-Policy"] == "same-origin"

@@ -93,6 +93,13 @@ AUTHOR_PERMISSIONS = {
 MATRIX = {EDITOR: EDITOR_PERMISSIONS, AUTHOR: AUTHOR_PERMISSIONS}
 
 
+def is_editor(user):
+    """Editor o superior (grupos editor/admin, o superusuario)."""
+    return user.is_authenticated and (
+        user.is_superuser or user.groups.filter(name__in=[ADMIN, EDITOR]).exists()
+    )
+
+
 def permissions_for(role):
     """Los permisos de Django que la matriz da a un rol. El admin los tiene todos."""
     if role == ADMIN:

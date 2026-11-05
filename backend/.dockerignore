@@ -5,6 +5,7 @@ __pycache__
 *.pyc
 .pytest_cache
 .ruff_cache
+.import_linter_cache
 staticfiles
 mediafiles
 media

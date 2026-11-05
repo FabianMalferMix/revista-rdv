@@ -90,7 +90,7 @@ def test_a_publisher_page_shows_the_collective_publications(client):
 def test_a_signature_has_a_page_only_with_something_published(client, model):
     guest = Contributor.objects.create(slug="firma-x", display_name="Firma Equis")
     url = reverse("content:contributor_detail", args=[guest.slug])
-    search = reverse("content:search") + "?q=equis"
+    search = reverse("site:search") + "?q=equis"
     make = make_article if model == "article" else make_poem
     piece = make(title="La pieza firmada", status=S.DRAFT)
     link = ArticleContributor if model == "article" else PoemContributor

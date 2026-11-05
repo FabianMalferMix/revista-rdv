@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from apps.content.models import Article, Poem
-from apps.content.pie import puerta, puertas_vecinas, vecinos_en_lista
+from apps.site.pie import puerta, puertas_vecinas, vecinos_en_lista
 
 from .models import Contributor, url_for_person
 

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.agenda",
     "apps.community",
     "apps.submissions",
+    "apps.site",
     # Anti-fuerza-bruta en el login del admin.
     "axes",
 ]
@@ -94,8 +95,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "apps.content.context_processors.nav",
-                "apps.content.context_processors.canonical",
+                "apps.site.context_processors.nav",
+                "apps.site.context_processors.canonical",
                 "apps.showcase.context_processors.site_profile",
                 "config.context_processors.version_estaticos",
                 "config.context_processors.origin",

@@ -1,10 +1,11 @@
 """Pie de entidad: las salidas al final de cada ficha.
 
-Cada ficha terminaba en seco: leído el poema, la única salida era la navegación de
-arriba. El pie ofrece adónde ir después —el índice, quien lo firma, lo que viene antes y
-después— como una lista de puertas que la vista arma y la parcial
-`partials/_pie_de_entidad.html` dibuja.
+Adónde ir después de leer una pieza —el índice, quien la firma, lo que viene antes y
+después—, como una lista de puertas que arma la vista de la ficha y dibuja la parcial
+`partials/_pie_de_entidad.html`. Lo usan las fichas de varias apps y el cierre de la portada.
 """
+
+from django.db.models import Q
 
 
 def puerta(rotulo, texto, url):
@@ -49,8 +50,6 @@ def vecinos(queryset, objeto, campo="published_at"):
     «Siguiente» es el que viene después en la lista, es decir, el anterior en el tiempo.
     El desempate por clave primaria evita saltarse dos piezas con la misma fecha.
     """
-    from django.db.models import Q
-
     valor = getattr(objeto, campo)
     if valor is None:
         return None, None

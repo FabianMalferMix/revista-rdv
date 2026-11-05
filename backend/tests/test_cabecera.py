@@ -30,7 +30,7 @@ def test_la_barra_marca_la_pagina_actual_y_su_territorio(client):
     assert _barra(soup(client, poema.get_absolute_url()))["Poemas"] == "true"
     # La agenda está en el territorio del colectivo, que en la barra se llama «Colectivo».
     assert _barra(soup(client, reverse("agenda:agenda")))["Colectivo"] == "true"
-    portada = _barra(soup(client, reverse("content:home")))
+    portada = _barra(soup(client, reverse("site:home")))
     assert list(portada) == ["Poemas", "Textos", "Registros", "Publicaciones", "Colectivo"]
     assert not any(portada.values()), "la portada no está en ninguna sección de la barra"
 
@@ -67,17 +67,17 @@ def test_el_dossier_esta_a_un_clic_desde_cualquier_pagina(client):
 
 def test_la_lupa_abre_un_buscador_que_funciona_sin_javascript(client):
     """Un <details> nativo: abre sin JavaScript, y el formulario lleva a /buscar/."""
-    busqueda = soup(client, reverse("content:home")).select_one("header.masthead details.busqueda")
+    busqueda = soup(client, reverse("site:home")).select_one("header.masthead details.busqueda")
     assert busqueda.summary["aria-label"] == "Buscar"
     formulario = busqueda.select_one("form.search")
-    assert formulario["action"] == reverse("content:search")
+    assert formulario["action"] == reverse("site:search")
     assert formulario.select_one('input[name="q"]') is not None
 
 
 def test_el_menu_del_telefono_lleva_el_mapa_del_sitio_sin_encabezados(client):
     """En el menú los rótulos de grupo no son encabezados: irían antes del título de la
     página. En el pie sí lo son."""
-    sopa = soup(client, reverse("content:home"))
+    sopa = soup(client, reverse("site:home"))
     menu = sopa.select_one("header.masthead details.nav-disclosure .menu-mapa nav")
     assert menu["aria-label"] == "Menú del sitio"
     assert menu.select("h2") == [], "encabezados en la cabecera, antes del h1 de la página"

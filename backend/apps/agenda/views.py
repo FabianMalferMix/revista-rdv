@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.pie import puerta, puertas_vecinas, vecinos
 from apps.showcase.models import Publication
+from apps.site.pie import puerta, puertas_vecinas, vecinos
 from config import publishing
 
 from .models import Event, Milestone

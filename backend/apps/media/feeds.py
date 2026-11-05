@@ -13,6 +13,7 @@ from django.db.models import F
 from django.urls import reverse
 from django.utils.feedgenerator import Rss201rev2Feed
 
+from apps.showcase.models import SiteProfile
 from config.feeds import stable_guid
 from config.origin import absolute_url
 
@@ -56,8 +57,6 @@ class RecordingsFeed(Feed):
     description = "Registros en audio de lecturas y recitales."
 
     def _perfil(self):
-        from apps.showcase.models import SiteProfile
-
         return SiteProfile.load()
 
     def title(self):

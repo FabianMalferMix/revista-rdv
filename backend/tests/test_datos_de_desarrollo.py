@@ -413,7 +413,7 @@ def test_loading_puts_the_identity_of_the_collective(exported, client):
 
     call_command("datos_de_desarrollo", "cargar", verbosity=0)
 
-    home = client.get(reverse("content:home")).content.decode()
+    home = client.get(reverse("site:home")).content.decode()
     assert f"<title>{identity.PROFILE['name']}" in home
     assert all(f'"{url}"' in home for _, url in identity.SOCIAL_LINKS)
     assert identity.differences(SiteProfile.load()) == []

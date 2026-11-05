@@ -45,7 +45,7 @@ NAV_DEGRADADOS = [
 
 def test_nav_curated_for_managers(client):
     """La barra es EXACTAMENTE esos cinco enlaces, ni uno más."""
-    nav = _nav(client.get(reverse("content:home")).content)
+    nav = _nav(client.get(reverse("site:home")).content)
     for nombre in NAV_PRINCIPAL:
         assert reverse(nombre).encode() in nav, f"falta {nombre} en la barra"
     assert nav.count(b"<a ") == len(NAV_PRINCIPAL), (
@@ -58,13 +58,13 @@ def test_nav_curated_for_managers(client):
 
 def test_lo_que_sale_de_la_nav_sigue_alcanzable(client):
     """Degradar un enlace es moverlo, no esconderlo."""
-    footer = client.get(reverse("content:home")).content.split(b"site-foot")[1]
+    footer = client.get(reverse("site:home")).content.split(b"site-foot")[1]
     for nombre in NAV_DEGRADADOS:
         assert reverse(nombre).encode() in footer, f"{nombre} quedó huérfano"
 
 
 def test_footer_keeps_secondary_links(client):
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     footer = resp.content.split(b"site-foot")[1]
     assert reverse("submissions:submit").encode() in footer
     assert reverse("content:collection_index").encode() in footer
@@ -76,7 +76,7 @@ def test_seo_defaults_use_site_profile(client):
     profile.name = "Colectivo Norte"
     profile.tagline = "Poesía desde el desierto."
     profile.save()
-    resp = client.get(reverse("content:home"))
+    resp = client.get(reverse("site:home"))
     assert b"<title>Colectivo Norte" in resp.content
     assert b"Poes\xc3\xada desde el desierto." in resp.content
     assert b'property="og:site_name" content="Colectivo Norte"' in resp.content

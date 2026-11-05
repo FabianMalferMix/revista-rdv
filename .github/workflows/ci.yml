@@ -60,6 +60,12 @@ jobs:
           ruff check --output-format=github .
           ruff format --check .
 
+      - name: Las aristas entre apps (import-linter)
+        working-directory: backend
+        # El contrato está en pyproject.toml: falla ante un import nuevo entre dos apps que hoy no
+        # se importan, y ante una arista de la lista que ya no existe.
+        run: lint-imports --no-cache
+
       - name: Auditoría de dependencias (pip-audit, bloqueante)
         run: |
           pip install "pip-audit==2.10.1"  # versión fijada: resultado reproducible (S-33)
@@ -102,7 +108,7 @@ jobs:
         run: |
           coverage report --include="*/content/sanitize.py" --fail-under=100
           coverage report --include="*/content/feeds.py" --fail-under=100
-          coverage report --include="*/content/sitemaps.py" --fail-under=90
+          coverage report --include="*/site/sitemaps.py" --fail-under=90
 
       - name: Validar configuración de producción (check --deploy)
         working-directory: backend

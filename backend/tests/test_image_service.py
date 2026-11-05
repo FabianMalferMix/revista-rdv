@@ -133,7 +133,7 @@ def test_the_home_opens_no_image_even_with_the_cache_down(client, opened):
     with TestCase.captureOnCommitCallbacks(execute=True):
         profile.save()
     opened.clear()
-    page = soup(client, reverse("content:home"))
+    page = soup(client, reverse("site:home"))
     spines = [rect["fill"] for rect in page.select(".ejemplar-lomo-fondo rect")]
     assert len(spines) == 3 and all(_near(fill, BLUE) for fill in spines)
     assert page.select_one("picture.portada-imagen source[type='image/avif']")
