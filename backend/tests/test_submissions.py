@@ -137,7 +137,7 @@ def test_cada_campo_invalido_apunta_a_un_error_que_existe(client):
     from bs4 import BeautifulSoup
     from django.urls import reverse
 
-    datos = {"author_name": "", "author_email": "no-es-un-correo", "type": "reseña", "title": ""}
+    datos = {"author_name": "", "author_email": "no-es-un-correo", "type": "resena", "title": ""}
     soup = BeautifulSoup(client.post(reverse("submissions:submit"), datos).content, "html.parser")
 
     invalidos = soup.select('[aria-invalid="true"]')
