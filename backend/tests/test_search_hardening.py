@@ -6,13 +6,17 @@ que casaban, con el cuerpo entero de cada pieza), sin rate limit y con un 500 p�
 alcanzable con `?q=%00`.
 """
 
+import re
+
 import pytest
+from bs4 import BeautifulSoup
 from django.db import connection
 from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from tests.factories import make_article
+from apps.content.views import SEARCH_MAX_QUERY
+from tests.factories import make_article, make_published_article, make_published_poem, soup
 
 pytestmark = pytest.mark.django_db
 BUSCAR = reverse("content:search")
@@ -33,8 +37,6 @@ def test_byte_nul_intercalado_tampoco_rompe(client):
 
 def test_consulta_desmesurada_se_trunca(client):
     """A la base llegan solo los primeros SEARCH_MAX_QUERY caracteres de la consulta."""
-    from apps.content.views import SEARCH_MAX_QUERY
-
     with CaptureQueriesContext(connection) as queries:
         resp = client.get(BUSCAR, {"q": "a" * 5000})
     assert resp.status_code == 200
@@ -43,20 +45,86 @@ def test_consulta_desmesurada_se_trunca(client):
     assert "a" * (SEARCH_MAX_QUERY + 1) not in sql
 
 
-def test_la_consulta_se_recorta_a_la_longitud_maxima(client):
-    """Una búsqueda larga sigue buscando con lo que cabe en el tope. La cola que pasa del tope
-    nombra una palabra que el texto no tiene, y aun así lo encuentra: no cuenta."""
-    from apps.content.views import SEARCH_MAX_QUERY
+# Lo que la búsqueda le pide a la base, tal como llega en el SQL: el texto de cada
+# `plainto_tsquery` (textos y poemas) y el que se compara con los nombres (`UNACCENT`).
+SEARCHED_IN_SQL = re.compile(
+    r"(plainto_tsquery|UNACCENT)\((?:'[^']*'::regconfig,)?\s*E?'((?:[^']|'')*)'"
+)
 
-    article = make_article(title="Umbral", body="Un verso y otro verso.", status="published")
-    head = "umbral"
-    while len(head) + len(" verso") <= SEARCH_MAX_QUERY:
-        head += " verso"
-    long_query = head.ljust(SEARCH_MAX_QUERY) + " inexistente" * 20
-    assert len(long_query) > SEARCH_MAX_QUERY
-    resp = client.get(BUSCAR, {"q": long_query})
-    assert resp.status_code == 200
-    assert f'href="{article.get_absolute_url()}"'.encode() in resp.content
+# Un verso largo, como se pega desde el poema. El tope cae dentro de «muelle», y lo que cabe de
+# esa palabra, «mu», no está en el poema ni en el texto que lo cita.
+VERSE = (
+    "El faro gira su luz sobre el mar dormido y nombra uno por uno los barcos que no volverán, "
+    "mientras la niebla borra el muelle y las gaviotas callan."
+)
+WHOLE_WORDS = VERSE[: VERSE.index(" muelle")]
+
+
+@pytest.mark.parametrize("panel", [False, True], ids=["page", "panel"])
+def test_a_long_verse_finds_its_poem_although_the_cap_splits_a_word(client, panel):
+    """Pegar un verso de más de SEARCH_MAX_QUERY caracteres encuentra el poema que lo contiene y
+    el texto que lo cita, aunque el tope caiga dentro de una palabra: esa palabra queda fuera
+    entera, y a la base llegan solo las palabras enteras que caben, por los dos caminos (el
+    texto completo y los nombres). La página y el panel dicen eso que se buscó."""
+    assert VERSE[:SEARCH_MAX_QUERY] == f"{WHOLE_WORDS} mu"  # el tope parte «muelle»
+    poem = make_published_poem(title="Faro", body=f"{VERSE}\nY vuelve la luz.")
+    article = make_published_article(
+        title="Notas de lectura", body=f"<p>Leímos «{VERSE}» en voz alta.</p>"
+    )
+    headers = {"HX-Request": "true"} if panel else {}
+    with CaptureQueriesContext(connection) as queries:
+        response = client.get(BUSCAR, {"q": VERSE}, headers=headers)
+    assert response.status_code == 200
+    html = BeautifulSoup(response.content, "html.parser")
+    found = [link["href"] for link in html.select(".search-list a")]
+    assert found == [poem.get_absolute_url(), article.get_absolute_url()]
+    if panel:
+        status = html.select_one("#search-status").get_text()
+        assert status == f"2 resultados para “{WHOLE_WORDS}”"
+    else:
+        assert html.select_one("#q-page")["value"] == WHOLE_WORDS
+        summary = html.select_one(".search-summary").get_text()
+        assert summary == f"Resultados para «{WHOLE_WORDS}»"
+    searched = [match for query in queries for match in SEARCHED_IN_SQL.findall(query["sql"])]
+    assert {path for path, _ in searched} == {"plainto_tsquery", "UNACCENT"}
+    assert {text for _, text in searched} == {WHOLE_WORDS}
+    assert max(len(text) for _, text in searched) <= SEARCH_MAX_QUERY
+
+
+# 29 «luz» y su espacio son 116 caracteres: la palabra de cuatro letras que siga acaba justo en
+# el tope. LUZ_WORDS es lo que queda si el tope la parte.
+LUZ = "luz " * 29
+LUZ_WORDS = LUZ.rstrip()
+FULL = f"{LUZ}faro"
+
+
+@pytest.mark.parametrize(
+    ("written", "searched"),
+    [
+        pytest.param(FULL, FULL, id="the_cap_exactly"),
+        pytest.param(f"{FULL} niebla", FULL, id="cut_on_a_space"),
+        pytest.param(f"{LUZ}luz faro", f"{LUZ}luz", id="cut_after_a_space"),
+        pytest.param(f"{FULL}s niebla", LUZ_WORDS, id="cut_inside_a_word"),
+        pytest.param(f"{FULL}, niebla", LUZ_WORDS, id="punctuation_goes_with_its_word"),
+        pytest.param(f"{LUZ}café niebla", f"{LUZ}café", id="an_accented_letter_counts_once"),
+        # «café» con la tilde aparte (U+0301), como llega de algunos PDF: son cinco caracteres,
+        # y el tope cae entre la «e» y su tilde.
+        pytest.param(f"{LUZ}cafe\u0301 niebla", LUZ_WORDS, id="a_combining_accent"),
+        pytest.param(f"{LUZ_WORDS}\u00a0faros niebla", LUZ_WORDS, id="a_non_breaking_space"),
+        pytest.param(f"{LUZ_WORDS}   faros niebla", LUZ_WORDS, id="repeated_spaces"),
+        pytest.param(f"   {FULL}   niebla   ", FULL, id="spaces_at_the_edges"),
+        pytest.param("luz" * 50, ("luz" * 50)[:SEARCH_MAX_QUERY], id="no_space_within_the_cap"),
+    ],
+)
+def test_the_search_field_shows_what_was_searched(client, written, searched):
+    """Sin aviso aparte: el campo de la página enseña la consulta tal como se buscó. El tope solo
+    se lleva la palabra que parte, con su puntuación y los espacios que la preceden; si cae en un
+    espacio, o justo después de uno, no se pierde nada. Los espacios de los bordes no cuentan
+    para el tope, la tilde es parte de la palabra y una consulta sin espacios se corta en el
+    tope."""
+    assert len(FULL) == SEARCH_MAX_QUERY
+    page = soup(client, BUSCAR, data={"q": written})
+    assert page.select_one("#q-page")["value"] == searched
 
 
 def test_el_limit_viaja_al_sql(client):
