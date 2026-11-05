@@ -166,7 +166,7 @@
 | Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
 | --- | --- | --- | --- | --- | --- |
 | B66 | Contratos de entidad completos | — | M | no | hecho (#256) |
-| B67 | La app del sitio, por etapas | B15 | L | no | pendiente |
+| B67 | La app del sitio, por etapas | B15 | L | no | en curso (etapa 1: #258) |
 | B68 | Una política de contenido y una tabla de proveedores | — | S | no | pendiente |
 | B69 | La composición visual sale de las vistas | B26 | M | no | pendiente |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | pendiente |
