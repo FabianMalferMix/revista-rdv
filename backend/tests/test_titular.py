@@ -56,8 +56,8 @@ def test_el_nombre_es_el_logo_y_el_lema_baja_a_la_cejilla(client):
         Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
     sopa = _portada(client)
     assert [_texto(h1) for h1 in sopa.select("h1")] == ["Repitentes del Verso"]
-    # De .hero-nombre cuelgan la cápsula de la cabecera y cabecera.js.
-    assert "hero-nombre" in sopa.h1["class"]
+    # De la marca de la página cuelgan la cápsula de la cabecera y cabecera.js.
+    assert sopa.body["data-pagina"] == "portada"
     # Se ve el logo, un dibujo; el nombre va en texto para lectores y buscadores.
     assert sopa.h1.select_one(".sr-only").get_text() == "Repitentes del Verso"
     logos = sopa.h1.select("svg")

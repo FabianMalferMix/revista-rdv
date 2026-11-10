@@ -64,7 +64,7 @@ def test_css_has_focus_visible_overlay_and_lightbox():
     salto = css.rule((), ".skip")
     assert salto["position"] == "absolute" and salto["top"].startswith("-")
     assert not css.rule((), ".skip:focus")["top"].startswith("-")
-    assert css.rule((), "#search-results")["position"] == "absolute"
+    assert css.rule((), ".busqueda-resultados")["position"] == "absolute"
     assert css.rule((), ".lightbox")["display"] == "none"
     assert css.rule((), ".lightbox:target")["display"] == "grid"
 

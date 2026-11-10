@@ -334,6 +334,36 @@ const CHECKS = [
     },
   },
   {
+    name: 'La portada se reconoce por su marca: arriba no tiene cabecera y la cápsula llega sin transición de vista',
+    widths: [951],
+    async run({ page }) {
+      // Las transiciones de vista que pide cabecera.js, contadas: solo las pide fuera de la portada,
+      // donde la cápsula llega con la hoja de estilos.
+      await page.addInitScript(() => {
+        window.viewTransitions = 0;
+        const start = Document.prototype.startViewTransition;
+        if (!start) return;
+        Document.prototype.startViewTransition = function (...args) {
+          window.viewTransitions += 1;
+          return start.apply(this, args);
+        };
+      });
+      for (const [route, home] of [['/', true], ['/registros/', false]]) {
+        await visit(page, route);
+        await page.waitForTimeout(SETTLE_MS);
+        const shown = await page.evaluate(() => getComputedStyle(document.querySelector('.masthead-fila')).opacity === '1');
+        expect(shown !== home, home ? 'arriba de la portada se ve la cabecera' : `arriba de ${route} no se ve la cabecera`);
+        await page.mouse.wheel(0, 800);
+        const down = await page
+          .waitForFunction(() => document.documentElement.getAttribute('data-barra') === 'pildora', null, { timeout: 3000 })
+          .then(() => true, () => false);
+        expect(down, `${route}: al bajar no aparece la cápsula`);
+        const animated = (await page.evaluate(() => window.viewTransitions)) > 0;
+        expect(animated !== home, home ? 'en la portada la cápsula llega con una transición de vista' : `en ${route} la cápsula llega sin transición de vista`);
+      }
+    },
+  },
+  {
     name: 'Sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue siendo usable',
     widths: [951, 375],
     async run({ context }, width) {

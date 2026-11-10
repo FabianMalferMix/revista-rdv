@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.urls import reverse
 
 from tests import css
 
@@ -20,7 +21,8 @@ CABECERA_JS = (RAIZ / "static" / "js" / "cabecera.js").read_text()
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 
 ARRIBA = 'html[data-barra="arriba"]'
-CAPSULA = f':is(html[data-barra="pildora"], {ARRIBA}:has(.hero-nombre))'
+PORTADA = '[data-pagina="portada"]'
+CAPSULA = f':is(html[data-barra="pildora"], {ARRIBA} > {PORTADA})'
 
 
 @pytest.mark.django_db
@@ -30,6 +32,30 @@ def test_the_header_script_runs_in_the_head_before_the_first_paint(client):
     guion = pagina.head.select_one('script[src*="js/cabecera.js"]')
     assert guion is not None
     assert not guion.has_attr("defer") and not guion.has_attr("async")
+
+
+@pytest.mark.django_db
+def test_the_portada_is_recognized_by_the_mark_on_its_body(client):
+    """La hoja y cabecera.js reconocen la portada por la marca de su <body> (`data-pagina`),
+    que decide su plantilla y que llega antes que la cabecera: la hoja la conoce desde la
+    primera pintura. La plantilla, la hoja y el guion la nombran igual, y ninguna otra página la
+    lleva: la que la llevara se quedaría sin cabecera arriba."""
+
+    def marca(ruta):
+        return BeautifulSoup(client.get(ruta).content, "html.parser").body.get("data-pagina")
+
+    portada = marca(reverse("site:home"))
+    assert portada
+    hoja = {
+        nombre
+        for regla in css.rules()
+        for selector in regla.selectors
+        for nombre in re.findall(r'\[data-pagina="([^"]*)"\]', selector)
+    }
+    guion = set(re.findall(r'dataset\.pagina === "([^"]*)"', CABECERA_JS))
+    assert hoja == guion == {portada}, (hoja, guion, portada)
+    for ruta in (reverse("site:search"), reverse("agenda:agenda"), "/no-existe/"):
+        assert marca(ruta) != portada, ruta
 
 
 def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
@@ -51,8 +77,8 @@ def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
 def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
     """La cápsula escondida y el dossier en el titular, solo con la marca del guion: sin ella,
     la cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
-    assert css.rule((), f"{ARRIBA}:has(.hero-nombre) .masthead-fila")["opacity"] == "0"
-    dossier = "html[data-barra]:has(.hero-nombre) .hero-dossier"
+    assert css.rule((), f"{ARRIBA} > {PORTADA} .masthead-fila")["opacity"] == "0"
+    dossier = f"html[data-barra] > {PORTADA} .hero-dossier"
     assert css.rule((), dossier)["display"] == "inline-flex"
     assert [
         r.selector
@@ -60,12 +86,12 @@ def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
         if "hero-dossier" in r.selector and r.get("display") == "inline-flex"
     ] == [dossier]
     # Escondida no es inalcanzable: aparece al recibir el foco.
-    assert css.rule((), f"{ARRIBA}:has(.hero-nombre) .masthead-fila:focus-within")["opacity"] == "1"
+    assert css.rule((), f"{ARRIBA} > {PORTADA} .masthead-fila:focus-within")["opacity"] == "1"
 
 
 def test_la_franja_mide_lo_mismo_y_lo_de_abajo_no_se_mueve():
     assert css.rule((), f"{CAPSULA} .masthead")["height"] == "var(--alto-cabecera)"
-    arriba = css.rule((), f"{ARRIBA}:not(:has(.hero-nombre)) .masthead")
+    arriba = css.rule((), f"{ARRIBA} > :not({PORTADA}) .masthead")
     assert arriba["border-bottom-style"] == "none"
     assert arriba["min-height"] == "var(--alto-cabecera)"
 
@@ -122,7 +148,7 @@ def test_enfocar_la_cabecera_no_desplaza_la_pagina():
 
 
 def test_los_resultados_caben_con_el_zoom_al_400():
-    assert css.rule((), "#search-results")["max-height"] == "min(64vh, 100dvh - 150px)"
+    assert css.rule((), ".busqueda-resultados")["max-height"] == "min(64vh, 100dvh - 150px)"
 
 
 def test_en_colores_forzados_se_ve_el_monograma():

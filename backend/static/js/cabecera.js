@@ -11,7 +11,8 @@
   raiz.setAttribute("data-barra", "arriba");
 
   function montar() {
-    var portada = !!document.querySelector(".hero-nombre");
+    // La portada la marca su <body>, como para la hoja de estilos.
+    var portada = document.body.dataset.pagina === "portada";
     var quieto = window.matchMedia("(prefers-reduced-motion: reduce)");
     var arriba = true;
     var primera = true;

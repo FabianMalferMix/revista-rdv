@@ -71,7 +71,11 @@
   <script src="{% static 'js/cabecera.js' %}{{ version_estaticos }}"></script>
   {% block head_extra %}{% endblock %}
 </head>
-<body>
+{% comment %}
+   La página, marcada en el <body> para la hoja de estilos y cabecera.js: la plantilla que lo
+   necesita rellena el bloque `pagina` (la portada, con «portada»). Llega antes que la
+   cabecera, así que la hoja la conoce desde la primera pintura.
+{% endcomment %}<body data-pagina="{% block pagina %}{% endblock %}">
   {# La portada lo lleva a la hoja, bajo la obra (bloque `salto` de site/home.html). #}
   <a class="skip" href="#{% block salto %}main{% endblock %}">Saltar al contenido</a>
   {% if preview %}
@@ -103,9 +107,10 @@
         <div class="menu-mapa">{% include "partials/_mapa.html" with etiqueta="Menú del sitio" en_menu=True site_profile=site_profile redes_del_colectivo=redes_del_colectivo only %}</div>
       </details>
       {% comment %}
-         La lupa abre el buscador en un panel. Sin JavaScript, el <details> abre igual y el
-         envío lleva a /buscar/; con htmx, el campo busca en vivo en el panel de resultados.
-         Con una sola letra no busca: `hx-validate` hace que htmx respete el `minlength`.
+         La lupa abre el campo en la fila, en el lugar de los enlaces. Sin JavaScript, el
+         <details> abre igual y el envío lleva a /buscar/; con htmx, el campo busca en vivo y
+         los resultados cuelgan debajo: htmx los pone por el id, y la hoja los estila por la
+         clase. Con una sola letra no busca: `hx-validate` hace que htmx respete el `minlength`.
          Los resultados no son una región viva, porque el lector los leería enteros en cada
          pausa: lo que se anuncia es el recuento, en `search-status`, que rellena la parcial.
       {% endcomment %}
@@ -123,7 +128,7 @@
           <span id="search-ind" class="htmx-indicator">…</span>
           <p id="search-status" class="sr-only" role="status"></p>
           {# Resultados como overlay anclado al buscador (no empujan el layout). #}
-          <div id="search-results" role="region" aria-label="Resultados de búsqueda"></div>
+          <div id="search-results" class="busqueda-resultados" role="region" aria-label="Resultados de búsqueda"></div>
         </form>
       </details>
       {% endblock %}
