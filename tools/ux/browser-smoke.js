@@ -546,12 +546,13 @@ const CHECKS = [
     widths: [951, 375],
     async run({ page, context }, width) {
       // Cuántas se ven lo deciden A_LA_VISTA y A_LA_VISTA_TELEFONO en Python, que llegan en los
-      // atributos data- de la sección: ni la hoja ni el guion repiten el número.
+      // atributos data- de la sección con el corte del teléfono: ni la hoja ni el guion repiten
+      // el número.
       const expectRow = async (tab, label) => {
         await visit(tab, '/');
         const row = await tab.evaluate(() => {
           const section = document.querySelector('[data-integrantes]');
-          const phone = window.matchMedia('(max-width: 719px)').matches;
+          const phone = window.matchMedia(section.dataset.telefono).matches;
           const shown = [...section.querySelectorAll('.integrante')]
             .filter((li) => getComputedStyle(li).display !== 'none')
             .map((li) => li.getBoundingClientRect())

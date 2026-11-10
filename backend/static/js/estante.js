@@ -11,9 +11,11 @@
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
   const DESLIZA = 800;
   const GIRO = 900;
-  const CURVA = 'cubic-bezier(.45,.05,.25,1)';
-  // Las fichas, con la curva de las transiciones del sitio (--ease en site.css).
-  const SUAVE = 'cubic-bezier(.22,.61,.36,1)';
+  // Las curvas son las de la hoja: los libros, con la de la tirada (--ease-tirada); las fichas,
+  // con la de las transiciones del sitio (--ease).
+  const rootStyle = getComputedStyle(document.documentElement);
+  const CURVA = rootStyle.getPropertyValue('--ease-tirada').trim();
+  const SUAVE = rootStyle.getPropertyValue('--ease').trim();
 
   function montar(seccion) {
     const ejemplares = [...seccion.querySelectorAll('.ejemplar')];

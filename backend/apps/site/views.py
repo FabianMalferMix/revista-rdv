@@ -4,8 +4,6 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db import OperationalError
 from django.db.models import F
 from django.shortcuts import render
-from django.utils import timezone
-from django.utils.formats import date_format
 from django.views.decorators.http import require_safe
 from django_ratelimit.decorators import ratelimit
 
@@ -49,7 +47,7 @@ def home(request):
             "obra": portada.build_obra(),
             "voces": voces,
             "publications": portada.build_estante(),
-            "cierre": portada.build_cierre(profile),
+            "cierre": portada.build_cierre(),
         },
     )
 
@@ -64,30 +62,44 @@ SEARCH_MAX_QUERY = 120
 TOO_MANY_SEARCHES = "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
 
 
-def _dato(*partes):
-    """«Video · 2026», «Recital · 28 Abr 2026 · Santiago»: lo que haya, con puntos medios."""
-    return " · ".join(str(parte) for parte in partes if parte)
+# Cada resultado lleva su dirección, su título y los datos que lo distinguen, que la plantilla
+# escribe al lado (`site/partials/_search_results.html`): de una persona, si es integrante y su
+# rol; de lo demás, su clase (`kind`, el rótulo del tipo en el modelo) y, si los tiene, la fecha
+# o el año y el lugar.
 
 
 def _person(fila):
-    dato = (fila["dato"] or "Integrante") if fila["integrante"] else "Colaborador"
-    return url_for_person(fila["slug"], fila["integrante"]), dato
+    return {
+        "url": url_for_person(fila["slug"], fila["integrante"]),
+        "person": True,
+        "member": fila["integrante"],
+        "role": fila["dato"],
+    }
 
 
 def _recording(fila):
-    clase = dict(Recording.Kind.choices).get(fila["dato"], fila["dato"])
-    return url_for_recording(fila["slug"]), _dato(clase, fila["anio"])
+    return {
+        "url": url_for_recording(fila["slug"]),
+        "kind": dict(Recording.Kind.choices).get(fila["dato"], fila["dato"]),
+        "year": fila["anio"],
+    }
 
 
 def _publication(fila):
-    clase = dict(Publication.Kind.choices).get(fila["dato"], fila["dato"])
-    return url_for_publication(fila["slug"]), _dato(clase, fila["anio"])
+    return {
+        "url": url_for_publication(fila["slug"]),
+        "kind": dict(Publication.Kind.choices).get(fila["dato"], fila["dato"]),
+        "year": fila["anio"],
+    }
 
 
 def _event(fila):
-    clase = dict(Event.Type.choices).get(fila["dato"], fila["dato"])
-    cuando = date_format(timezone.localtime(fila["fecha"]), "j M Y")
-    return url_for_event(fila["slug"]), _dato(clase, cuando, fila["lugar"])
+    return {
+        "url": url_for_event(fila["slug"]),
+        "kind": dict(Event.Type.choices).get(fila["dato"], fila["dato"]),
+        "date": fila["fecha"],
+        "place": fila["lugar"],
+    }
 
 
 # Adónde lleva cada tipo de coincidencia por nombre y qué la acompaña.
@@ -95,13 +107,13 @@ _NAME_RESULTS = {PERSON: _person, RECORDING: _recording, PUBLICATION: _publicati
 
 
 def _resultado_por_nombre(fila):
-    """Una fila de `coincidencias_por_nombre`: adónde lleva y qué la acompaña. Un tipo que no
-    está en la tabla es un error de programación, no una actividad."""
+    """Una fila de `coincidencias_por_nombre`, como resultado. Un tipo que no está en la tabla
+    es un error de programación, no una actividad."""
     try:
-        formatter = _NAME_RESULTS[fila["tipo"]]
+        describe = _NAME_RESULTS[fila["tipo"]]
     except KeyError:
         raise ValueError(f"Tipo de búsqueda desconocido: {fila['tipo']!r}") from None
-    return formatter(fila)
+    return {"title": fila["titulo"], **describe(fila)}
 
 
 def _trim_search_query(text):
@@ -172,19 +184,15 @@ def search(request):
         por_tipo = {tipo: [] for tipo, _ in SEARCH_TYPES}
         try:
             por_tipo[TEXT] = [
-                {"url": a.get_absolute_url(), "title": a.title, "dato": a.get_type_display()}
+                {"url": a.get_absolute_url(), "title": a.title, "kind": a.get_type_display()}
                 for a in articles
             ]
-            por_tipo[POEM] = [
-                {"url": p.get_absolute_url(), "title": p.title, "dato": ""} for p in poems
-            ]
+            por_tipo[POEM] = [{"url": p.get_absolute_url(), "title": p.title} for p in poems]
             # Una letra sola casa con casi todos los nombres: no dice nada.
             if len(q) >= 2:
                 for fila in coincidencias_por_nombre(q, tope):
-                    url, dato = _resultado_por_nombre(fila)
-                    por_tipo[fila["tipo"]].append(
-                        {"url": url, "title": fila["titulo"], "dato": dato}
-                    )
+                    resultado = _resultado_por_nombre(fila)
+                    por_tipo[fila["tipo"]].append(resultado)
         except OperationalError:
             # Una conexión caída o una consulta cancelada por su plazo: «sin resultados» en
             # vez de un 500, y un ERROR para que llegue a Sentry. Un error de programación no

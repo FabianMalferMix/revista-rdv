@@ -7,10 +7,12 @@
 // ni el historial.
 (() => {
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
-  // El reparto dura un poco más que el acomodo de los demás (0,66 s en site.css): el que pasa
-  // arriba sale de la pila por su lado y vuelve encima, como una carta que se reparte.
+  // El reparto dura un poco más que el acomodo de los demás (la transición de `translate` en
+  // site.css; tests/test_tirada.py compara las dos): el que pasa arriba sale de la pila por su
+  // lado y vuelve encima, como una carta que se reparte.
   const REPARTO = 700;
-  const CURVA = 'cubic-bezier(.45,.05,.25,1)';
+  // La curva es la de la hoja (--ease-tirada en site.css): la comparte el estante.
+  const CURVA = getComputedStyle(document.documentElement).getPropertyValue('--ease-tirada').trim();
 
   function montar(seccion) {
     const pliegos = [...seccion.querySelectorAll('.pliego')];
@@ -31,10 +33,12 @@
     // El reparto. Cada pliego conserva su altura en la pila hasta el final, así nadie salta por
     // encima de otro mientras se cruzan; el que pasa arriba sale por su lado (por la derecha si
     // viene de los que siguen, por la izquierda si viene de los ya vistos), sube cuando ya no
-    // pisa a nadie y vuelve encima. Los demás se acomodan con la transición de site.css.
+    // pisa a nadie y vuelve encima: un nivel sobre el más alto de la pila, el que le da la hoja
+    // al de arriba. Los demás se acomodan con la transición de site.css.
     function repartir(desde, hacia, antes) {
       const entra = pliegos[hacia];
       const lado = hacia > desde ? 1 : -1;
+      const onTop = Math.max(...antes.map((a) => Number(a.z) || 0)) + 1;
       pliegos.forEach((p, j) => {
         if (j !== hacia && getComputedStyle(p).zIndex !== antes[j].z) {
           p.animate([{ zIndex: antes[j].z }, { zIndex: antes[j].z }], { duration: REPARTO });
@@ -47,8 +51,8 @@
       const animacion = entra.animate([
         { translate: antes[hacia].translate, rotate: antes[hacia].rotate, zIndex: antes[hacia].z },
         { translate: afuera, rotate: giro, zIndex: antes[hacia].z, offset: 0.42 },
-        { translate: afuera, rotate: giro, zIndex: 30, offset: 0.43 },
-        { translate: fin.translate, rotate: fin.rotate, zIndex: 30 },
+        { translate: afuera, rotate: giro, zIndex: onTop, offset: 0.43 },
+        { translate: fin.translate, rotate: fin.rotate, zIndex: onTop },
       ], { duration: REPARTO, easing: CURVA });
       animacion.addEventListener('finish', () => entra.classList.remove('pliego--repartiendo'));
       animacion.addEventListener('cancel', () => entra.classList.remove('pliego--repartiendo'));

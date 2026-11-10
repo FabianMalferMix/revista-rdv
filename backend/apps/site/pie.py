@@ -1,21 +1,12 @@
-"""Pie de entidad: las salidas al final de cada ficha.
+"""Pie de entidad: las vecinas de cada ficha, lo que viene antes y después en su índice.
 
-Adónde ir después de leer una pieza —el índice, quien la firma, lo que viene antes y
-después—, como una lista de puertas que arma la vista de la ficha y dibuja la parcial
-`partials/_pie_de_entidad.html`. Lo usan las fichas de varias apps y el cierre de la portada.
+Las salidas al final de una ficha —el índice, quien la firma, lo que viene antes y después—
+salen de dos sitios: la vista busca aquí las vecinas, que son consultas, y se las pasa a la
+plantilla; las etiquetas de `templatetags/pie.py` arman las puertas con sus rótulos, y las
+dibuja la parcial `partials/_pie_de_entidad.html`.
 """
 
 from django.db.models import Q
-
-
-def puerta(rotulo, texto, url):
-    """Una salida: un rótulo que dice qué es («Más de», «Índice») y el destino."""
-    return {"rotulo": rotulo, "texto": texto, "url": url}
-
-
-def firmas(personas):
-    """Una puerta por cada persona que firma, hacia su página."""
-    return [puerta("Más de", p.display_name, p.get_absolute_url()) for p in personas]
 
 
 def vecinos_en_lista(queryset, objeto):
@@ -30,18 +21,6 @@ def vecinos_en_lista(queryset, objeto):
     siguiente = claves[i + 1] if i + 1 < len(claves) else None
     encontrados = queryset.model.objects.in_bulk([k for k in (anterior, siguiente) if k])
     return encontrados.get(anterior), encontrados.get(siguiente)
-
-
-def puertas_vecinas(anterior, siguiente, nombre, titulo=lambda o: str(o)):
-    """Las puertas «{nombre} anterior» y «{nombre} siguiente», las que haya."""
-    puertas = []
-    if anterior:
-        puertas.append(puerta(f"{nombre} anterior", titulo(anterior), anterior.get_absolute_url()))
-    if siguiente:
-        puertas.append(
-            puerta(f"{nombre} siguiente", titulo(siguiente), siguiente.get_absolute_url())
-        )
-    return puertas
 
 
 def vecinos(queryset, objeto, campo="published_at"):

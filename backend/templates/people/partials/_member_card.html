@@ -6,7 +6,7 @@
 <li class="member-card">
   <a href="{{ m.get_absolute_url }}">
     {% if m.photo %}
-      <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 720px) 45vw, 290px" %}</span>
+      <span class="riso-duo">{% sizes "retrato-colectivo" as sizes %}{% responsive_img m.photo css_class="retrato" sizes=sizes %}</span>
     {% else %}
       <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
     {% endif %}

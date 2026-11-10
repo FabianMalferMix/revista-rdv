@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load social versos %}
+{% load pie social titles versos %}
 
 {% block title %}{{ poem.seo_title|default:poem.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ poem.seo_description|default:poem.epigraph|default:poem.title }}{% endblock %}
@@ -29,7 +29,7 @@
     <div class="lectura-sala">
     <header class="lectura-ancla">
       <p class="kicker"><a href="{% url 'content:poem_index' %}">Poemas</a></p>
-      <h1{% if poem.title|length > 90 %} class="titulo-largo"{% endif %}>{{ poem.title }}</h1>
+      <h1{% if poem.title|long_for_ficha %} class="titulo-largo"{% endif %}>{{ poem.title }}</h1>
       {% if poem.epigraph %}<p class="dek poem-epigraph">{{ poem.epigraph }}</p>{% endif %}
       {% include "content/partials/_firmas_lectura.html" with personas=poem.bylines %}
       {% if poem.published_at %}<p class="meta"><time datetime="{{ poem.published_at|date:'Y-m-d' }}">{{ poem.published_at|date:"j M Y" }}</time></p>{% endif %}
@@ -54,6 +54,6 @@
       <div class="poem-body">{{ poem.body|versos }}</div>
     </div>
     </div>
-    {% include "partials/_pie_de_entidad.html" %}
+    {% poem_pie poem colecciones neighbors %}
   </article>
 {% endblock %}

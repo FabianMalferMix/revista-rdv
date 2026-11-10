@@ -13,7 +13,7 @@
     {% endcomment %}
     <div class="player-frame player-consent" data-embed-src="{{ src }}" data-embed-title="{{ r.title }}">
       {% if r.poster %}
-        <span class="riso-duo">{% responsive_img r.poster sizes="(max-width: 840px) 92vw, 780px" lazy=False decorativa=True %}</span>
+        <span class="riso-duo">{% sizes "poster-reproductor" as sizes %}{% responsive_img r.poster sizes=sizes lazy=False decorativa=True %}</span>
       {% else %}
         {% include "media/partials/_caratula.html" %}
       {% endif %}

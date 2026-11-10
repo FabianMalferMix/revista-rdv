@@ -16,6 +16,7 @@ from django.urls import reverse
 
 from apps.people.models import Contributor
 from apps.site.portada import A_LA_VISTA, A_LA_VISTA_TELEFONO
+from config.breakpoints import PHONE, below
 from tests import css
 from tests.factories import make_image, soup
 
@@ -114,6 +115,18 @@ def test_five_in_the_row_and_three_on_the_phone(client):
     visibles = [li for li in seccion.select(".integrante") if not li.has_attr("hidden")]
     solo_ancho = ["integrante--solo-ancho" in li["class"] for li in visibles]
     assert solo_ancho == [False] * A_LA_VISTA_TELEFONO + [True] * (A_LA_VISTA - A_LA_VISTA_TELEFONO)
+
+
+def test_the_script_takes_the_phone_cut_from_the_page(client):
+    """Desde qué ancho es el teléfono lo dice la hoja en su corte (`config/breakpoints.py`), y
+    la sección se lo pasa al guion: el guion no escribe el suyo."""
+    _integrantes(8)
+    _, seccion = _seccion(client)
+    assert seccion["data-telefono"] == below(PHONE)
+    assert css.rules_with((f"@media {below(PHONE)}",), ".integrantes-fila"), "la hoja no corta ahí"
+    consultas = re.findall(r"matchMedia\(([^)]*)\)", INTEGRANTES_JS)
+    assert any(not c.startswith("'") for c in consultas), "ninguna consulta viene de la página"
+    assert not [c for c in consultas if "width" in c], consultas
 
 
 def test_the_stylesheet_does_not_repeat_how_many_are_shown():

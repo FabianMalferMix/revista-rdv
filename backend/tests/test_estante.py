@@ -17,8 +17,10 @@ from django.urls import reverse
 from PIL import Image
 
 from apps.media.models import MediaAsset
+from apps.media.templatetags.images import SIZES, sizes
 from apps.reviews.models import Publisher
 from apps.site.portada import ESTANTE
+from config.breakpoints import ESTANTE_WIDE, from_cut
 from tests import css
 from tests.factories import make_image, make_publication, soup
 
@@ -220,21 +222,35 @@ def test_el_cambio_de_libro_es_suave():
 
 def test_el_cambio_de_libro_va_sin_prisa():
     """D32: el cambio se veía demasiado rápido: su curva hacía casi todo el recorrido en los
-    primeros 90 ms. Ahora los libros se mueven con la curva de la tirada, en casi un segundo."""
+    primeros 90 ms. Ahora los libros se mueven con la curva de la tirada, en casi un segundo:
+    los dos guiones la leen de la hoja, donde está una sola vez."""
     assert "const DESLIZA = 800;" in ESTANTE_JS and "const GIRO = 900;" in ESTANTE_JS
     registros_js = (BACKEND / "static" / "js" / "registros.js").read_text()
-    curva = "const CURVA = 'cubic-bezier(.45,.05,.25,1)';"
-    assert curva in ESTANTE_JS and curva in registros_js
+    curva = "const CURVA = "
+    for guion in (ESTANTE_JS, registros_js):
+        declaracion = next(line for line in guion.splitlines() if curva in line)
+        assert "getPropertyValue('--ease-tirada')" in declaracion
+    assert css.tokens()["--ease-tirada"] == "cubic-bezier(.45, .05, .25, 1)"
 
 
 def test_en_pantallas_anchas_los_libros_crecen():
     """D30: a 1900 px el estante y su ficha dejaban unos 360 px vacíos a la derecha; desde
     1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve)."""
-    ancho = ("@media (min-width:1400px)",)
+    assert ESTANTE_WIDE == 1400
+    ancho = (f"@media {from_cut(ESTANTE_WIDE)}",)
     frente = css.rule(ancho, ".ejemplar-frente")["width"]
     assert frente == "270px"
     libro = css.rule(ancho, ".ejemplar--libro .ejemplar-lomo")
     assert (libro["width"], libro["height"]) == ("64px", "400px")
     # La tapa de frente pide la copia del ancho que le da la hoja en ese mismo corte.
-    plantilla = (BACKEND / "templates" / "site" / "home.html").read_text()
-    assert f"(min-width: 1400px) {frente}" in plantilla
+    assert f"{from_cut(ESTANTE_WIDE)} {frente}" in sizes("tapa-estante")
+
+
+def test_the_cover_asks_for_the_width_the_sheet_gives_it_at_every_cut():
+    """En cada tramo de su `sizes`, la tapa de frente pide el ancho que le da la hoja en ese
+    corte, y fuera de ellos, el de siempre: la copia de la tapa es la que se ve."""
+    tramos, resto = SIZES["tapa-estante"]
+    assert tramos, "la tapa no cambia de ancho con la ventana"
+    for media, ancho in tramos:
+        assert css.rule((f"@media {media}",), ".ejemplar-frente")["width"] == ancho, media
+    assert css.rule((), ".ejemplar-frente")["width"] == resto

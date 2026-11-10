@@ -2,6 +2,8 @@
 
 from django import template
 
+from config.breakpoints import PHONE, below
+
 register = template.Library()
 
 # El mosaico (`.photo-grid` en site.css): seis columnas, como mucho el ancho del carril, y
@@ -18,7 +20,7 @@ def _columns(numero, total):
     if numero > MOSAIC_TILES:
         return 2
     if total == 1:
-        return 6
+        return MOSAIC_COLUMNS
     if total in (2, 4) or (total == 5 and numero <= 2):
         return 3
     if numero == 1 and (total == 3 or total >= MOSAIC_TILES):
@@ -30,4 +32,4 @@ def _columns(numero, total):
 def photo_sizes(numero, total):
     columnas = _columns(numero, total)
     vw = 100 * columnas // MOSAIC_COLUMNS
-    return f"(max-width: 720px) {vw}vw, {MOSAIC_WIDTH * columnas // MOSAIC_COLUMNS}px"
+    return f"{below(PHONE)} {vw}vw, {MOSAIC_WIDTH * columnas // MOSAIC_COLUMNS}px"

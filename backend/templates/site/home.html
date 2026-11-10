@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images portada static versos %}
+{% load images pie portada static versos %}
 
 {% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
@@ -43,8 +43,8 @@
      los quitó (2026-10-14), porque el colectivo aún es pequeño.
   {% endcomment %}
   <section class="hero" id="contenido">
-    {% if hoja.cejilla or instagram_del_colectivo.usuario %}
-      <p class="kicker hero-cejilla">{{ hoja.cejilla|join:" · " }}{% if instagram_del_colectivo.usuario %}{% if hoja.cejilla %} · {% endif %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}</p>
+    {% if hoja.presentacion or hoja.member_count or instagram_del_colectivo.usuario %}
+      <p class="kicker hero-cejilla">{{ hoja.presentacion|join:" · " }}{% if hoja.member_count %}{% if hoja.presentacion %} · {% endif %}{{ hoja.member_count }} integrante{{ hoja.member_count|pluralize }}{% endif %}{% if instagram_del_colectivo.usuario %}{% if hoja.presentacion or hoja.member_count %} · {% endif %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}</p>
     {% endif %}
     <div class="hero-texto">
       {% if site_profile.manifesto %}
@@ -149,10 +149,10 @@
        «Las voces» (D23): la opción 3 del tablero «Las voces en relevo», con la pasada de tinta
        de la 2. La cabeza a la izquierda, con el botón; a la derecha, una fila de retratos con el
        nombre debajo: tantos como dicen `a_la_vista` y `a_la_vista_telefono`, que el guion lee
-       de los atributos data-. Las demás vienen escondidas y el relevo las
+       de los atributos data-, con el corte del teléfono. Las demás vienen escondidas y el relevo las
        trae de a una (static/js/integrantes.js). Sin JavaScript, las primeras y el botón.
     {% endcomment %}
-    <section class="home-block sangre home-integrantes" data-integrantes data-a-la-vista="{{ voces.a_la_vista }}" data-a-la-vista-telefono="{{ voces.a_la_vista_telefono }}">
+    <section class="home-block sangre home-integrantes" data-integrantes data-a-la-vista="{{ voces.a_la_vista }}" data-a-la-vista-telefono="{{ voces.a_la_vista_telefono }}" data-telefono="{{ voces.phone_media }}">
       <div class="band-in integrantes-fila">
         <div class="integrantes-cabeza">
           {% include "site/partials/_cabeza_de_seccion.html" with cejilla="El colectivo" titulo="Las voces" territorio="colectivo" only %}
@@ -191,7 +191,7 @@
               <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}" data-ficha="ficha-{{ pub.slug }}">
                   {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
                   <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
-                    {% if pub.cover %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes="(max-width: 719px) 160px, (min-width: 1400px) 270px, 200px" decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
+                    {% if pub.cover %}{% sizes "tapa-estante" as sizes %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes=sizes decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
                     {% if pub.lomo %}<svg class="ejemplar-canto" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.canto }}"/></svg>{% endif %}
                   </a>
                   <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}">{% if pub.lomo %}<svg class="ejemplar-lomo-fondo" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.fondo }}"/></svg>{% endif %}<span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
@@ -226,7 +226,7 @@
   {% endcomment %}
   <section class="home-block home-cierre">
     {% include "site/partials/_cabeza_de_seccion.html" with cejilla="Prensa y gestión" titulo="Para programadores y jurados" territorio="prensa" only %}
-    {% include "partials/_pie_de_entidad.html" with pie=cierre.puertas etiqueta="Para programadores y jurados" %}
+    {% cierre_pie site_profile.correo_de_contacto etiqueta="Para programadores y jurados" %}
     {% if cierre.ultima_actividad or cierre.ultima_publicacion %}
       <p class="meta home-cierre-datos">{% if cierre.ultima_actividad %}Última actividad: <a href="{{ cierre.ultima_actividad.get_absolute_url }}">{{ cierre.ultima_actividad.title }}</a>, {{ cierre.ultima_actividad.starts_at|date:"j M Y" }}{% endif %}{% if cierre.ultima_actividad and cierre.ultima_publicacion %} · {% endif %}{% if cierre.ultima_publicacion %}Actualizado el {{ cierre.ultima_publicacion|date:"j \d\e F \d\e Y" }}{% endif %}</p>
     {% endif %}

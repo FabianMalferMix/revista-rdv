@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images social authored %}
+{% load images pie social authored titles %}
 
 {% block title %}{{ article.seo_title|default:article.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ article.seo_description|default:article.subtitle|default:article.title }}{% endblock %}
@@ -43,7 +43,7 @@
       <span class="kicker">
         {% if article.section and article.seccion_aporta %}<a href="{{ article.section.get_absolute_url }}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{{ article.section.get_absolute_url }}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
       </span>
-      <h1{% if article.title|length > 90 %} class="titulo-largo"{% endif %}>{{ article.title }}</h1>
+      <h1{% if article.title|long_for_ficha %} class="titulo-largo"{% endif %}>{{ article.title }}</h1>
       {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
       {% include "content/partials/_firmas_lectura.html" with personas=article.bylines %}
       <p class="meta">{{ article.reading_time }} min{% if article.published_at %} · <time datetime="{{ article.published_at|date:'Y-m-d' }}">{{ article.published_at|date:"j M Y" }}</time>{% endif %}</p>
@@ -77,7 +77,7 @@
     <div class="lectura-cuerpo">
       {% if article.cover_image %}
         <figure class="lectura-imagen">
-          {% responsive_img article.cover_image sizes="(max-width: 840px) 92vw, 760px" lazy=False %}
+          {% sizes "cubierta-texto" as sizes %}{% responsive_img article.cover_image sizes=sizes lazy=False %}
           {% if article.cover_image.caption or article.cover_image.credit %}
             <figcaption class="meta">{{ article.cover_image.caption }}{% if article.cover_image.caption and article.cover_image.credit %} · {% endif %}{{ article.cover_image.credit }}</figcaption>
           {% endif %}
@@ -87,6 +87,6 @@
       <div class="body" hx-disable>{{ article.body|authored_html }}</div>
     </div>
     </div>
-    {% include "partials/_pie_de_entidad.html" %}
+    {% article_pie article neighbors %}
   </article>
 {% endblock %}

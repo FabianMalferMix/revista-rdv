@@ -187,6 +187,31 @@ def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, tipo):
     assert sala.find_next_sibling("nav", class_="pie-entidad") is not None
 
 
+@pytest.mark.parametrize("tipo", ["poema", "articulo"])
+def test_a_ficha_title_drops_a_step_past_90_letters(client, tipo):
+    """En el ancla de la sala caben diez o doce letras por línea: un título de más de 90 baja
+    un paso, en todos los navegadores. El umbral es el de esta columna; el del pliego de la
+    tirada mide otra y no se unifican."""
+    for slug, letras in (("justo", 90), ("largo", 91)):
+        if tipo == "poema":
+            _poema(f"{slug}-{tipo}", title="x" * letras)
+        else:
+            make_article(
+                slug=f"{slug}-{tipo}",
+                title="x" * letras,
+                status=EditorialStatus.PUBLISHED,
+                published_at=timezone.now(),
+            )
+    rutas = {"poema": "content:poem_detail", "articulo": "content:article_detail"}
+    marcas = [
+        soup(client, reverse(rutas[tipo], args=[f"{slug}-{tipo}"]))
+        .select_one(".lectura-ancla h1")
+        .get("class", [])
+        for slug in ("justo", "largo")
+    ]
+    assert marcas == [[], ["titulo-largo"]]
+
+
 # ── Fichas ────────────────────────────────────────────────────────────────
 
 
@@ -298,6 +323,21 @@ def test_cada_ficha_termina_en_salidas(client, fabricar, esperadas):
     assert esperadas <= set(salidas), f"faltan salidas: {esperadas - set(salidas)}"
     for _, url in salidas.values():
         assert url.startswith("/"), "las salidas del pie son internas"
+
+
+def test_the_year_door_lands_on_its_year_in_the_trayectoria(client):
+    """Una actividad pasada y una publicación llevan a su año en la trayectoria: la dirección de
+    la salida termina en el ancla del bloque de ese año, que la trayectoria pinta con el año."""
+    evento = make_event(slug="e", title="E", starts_at=timezone.now() - timedelta(days=400))
+    publicacion = make_publication(slug="p", title="P", year=2021)
+    trayectoria = soup(client, reverse("agenda:trayectoria"))
+    for objeto in (evento, publicacion):
+        anio, url = _salidas(soup(client, objeto.get_absolute_url()))["Trayectoria"]
+        ruta, ancla = url.split("#")
+        assert ruta == reverse("agenda:trayectoria")
+        bloque = trayectoria.find(id=ancla)
+        assert bloque is not None, f"la trayectoria no tiene el ancla de {url}"
+        assert bloque.select_one(".year-mark").get_text() == anio
 
 
 def test_el_registro_lleva_al_poema_que_registra(client):

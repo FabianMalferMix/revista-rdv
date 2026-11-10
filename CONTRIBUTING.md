@@ -144,11 +144,16 @@ vigente más cercano y no se agrava la deuda.
    publicado. Mal: un `.filter(published=True)` en una vista.
 3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas, se decide en un lugar y
    viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la
-   relación entre la fuente y la copia. Mal: el número de integrantes que se ven en la portada está
-   en `A_LA_VISTA` (`apps/site/portada.py`), en `site.css`, en `integrantes.js` y en los `sizes`, y
-   una prueba fija cada copia por separado. Bien: las rutas se resuelven con `{% url %}` y
-   `reverse()` en todo el sitio, y la dirección de cada pieza sale de su `get_absolute_url`, que
-   `tests/test_get_absolute_url.py` exige a todo modelo con ficha.
+   relación entre la fuente y la copia. Mal: los `sizes` de las imágenes copian a mano el ancho que
+   les da la hoja, y solo los de la obra de la portada, la tapa del estante y el mosaico de fotos
+   tienen una prueba que los ate a ella: el retrato de «Las voces» pide 210 px y a 951 px se pinta a
+   114. Bien: cuántos retratos se ven en «Las voces» lo dice `A_LA_VISTA` (`apps/site/portada.py`),
+   que llega a `integrantes.js` en atributos `data-` con el corte del teléfono, y la hoja no lo
+   repite; los cortes tienen nombre en `config/breakpoints.py`, y como un `@media` no lee
+   variables, `tests/test_shared_values.py` exige que la hoja corte donde dice ese módulo. Y las
+   rutas se resuelven con `{% url %}` y `reverse()` en todo el sitio, y la dirección de cada pieza
+   sale de su `get_absolute_url`, que `tests/test_get_absolute_url.py` exige a todo modelo con
+   ficha.
 4. **Idioma.** Los identificadores nuevos de Python y de JavaScript van en inglés. En castellano
    van los textos visibles y el vocabulario del diseño: clases CSS y nombres de componentes
    (tirada, estante, pliego, cápsula), que se usan tal cual también dentro de nombres en inglés,

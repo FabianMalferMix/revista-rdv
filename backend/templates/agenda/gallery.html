@@ -24,7 +24,7 @@
                huecos de la hoja queden en papel.
             {% endcomment %}
             <span class="hoja">
-              {% for ph in photos|slice:":3" %}<span class="riso-duo">{% if forloop.first %}{% responsive_img ph.asset sizes="(max-width: 720px) 62vw, (max-width: 1400px) 31vw, 440px" %}{% else %}{% responsive_img ph.asset sizes="(max-width: 720px) 31vw, (max-width: 1400px) 16vw, 220px" decorativa=True %}{% endif %}</span>{% endfor %}
+              {% for ph in photos|slice:":3" %}<span class="riso-duo">{% if forloop.first %}{% sizes "galeria-primera" as sizes %}{% responsive_img ph.asset sizes=sizes %}{% else %}{% sizes "galeria-resto" as sizes %}{% responsive_img ph.asset sizes=sizes decorativa=True %}{% endif %}</span>{% endfor %}
             </span>
             <span class="album-title">{{ e.title }}</span>
             <span class="muted">{{ e.starts_at|date:"M Y" }} · {{ photos|length }} foto{{ photos|length|pluralize }}</span>

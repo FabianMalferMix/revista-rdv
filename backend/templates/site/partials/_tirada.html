@@ -1,4 +1,4 @@
-{% load images %}
+{% load images portada titles versos %}
 {% comment %}
    La tirada (D19, elegida por el dueño en el tablero de los registros destacados, 2026-10-21).
    Cada registro que el colectivo marca como destacado es un pliego de una tirada numerada,
@@ -16,28 +16,28 @@
   <div class="tirada-carril">
     <ol class="tirada-pista" id="tirada-pista">
       {% for r in tirada.registros %}
-        <li class="pliego{% if r.largo %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
+        <li class="pliego{% if r.titulo|long_for_pliego %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
           <h3 class="pliego-titulo"><a href="{{ r.url }}">{{ r.titulo }}</a></h3>
           <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}{% if r.duracion %} · {{ r.duracion }}{% endif %}</span></p>
           {% if r.fecha %}
-            <p class="pliego-fechador">{% if r.ciudad %}<span class="rotulo">{{ r.ciudad }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
+            <p class="pliego-fechador">{% if r.event.city %}<span class="rotulo">{{ r.event.city }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
           {% endif %}
           {% comment %}
              El póster a una tinta, también al señalarlo: en la portada no se enseña el original
              (decisión 3 del tablero; a color se ve en la ficha). Sin imagen, una plancha en trama.
           {% endcomment %}
           {% if r.imagen %}
-            <span class="pliego-placa riso-duo">{% responsive_img r.imagen sizes="(max-width: 719px) 92vw, 440px" decorativa=True %}</span>
+            <span class="pliego-placa riso-duo">{% sizes "placa-pliego" as sizes %}{% responsive_img r.imagen sizes=sizes decorativa=True %}</span>
           {% else %}
             <span class="pliego-placa pliego-placa--vacia" aria-hidden="true"></span>
           {% endif %}
           <div class="pliego-pie">
-            {% if r.verso %}
-              <p class="pliego-verso">«{{ r.verso }}»</p>
-              {% if r.firma %}<p class="meta pliego-firma">{{ r.firma }}</p>{% endif %}
+            {% if r.poem.body|primer_verso %}
+              <p class="pliego-verso">«{{ r.poem.body|primer_verso }}»</p>
+              <p class="meta pliego-firma">{% for c in r.poem.bylines %}{{ c.display_name }}, {% endfor %}«{{ r.poem.title }}»</p>
             {% endif %}
-            {% if r.voces or r.lugar %}
-              <p class="meta pliego-datos">{% if r.voces %}{% if r.voces|length == 1 %}Lee{% else %}Leen{% endif %} {{ r.voces|join:", " }}{% endif %}{% if r.lugar %}<span>{{ r.lugar }}</span>{% endif %}</p>
+            {% if r.voces or r.event.venue_name or r.event.city %}
+              <p class="meta pliego-datos">{% if r.voces %}{% if r.voces|length == 1 %}Lee{% else %}Leen{% endif %} {{ r.voces|join:", " }}{% endif %}{% if r.event.venue_name or r.event.city %}<span>{{ r.event.venue_name }}{% if r.event.venue_name and r.event.city %}, {% endif %}{{ r.event.city }}</span>{% endif %}</p>
             {% endif %}
             <p class="pliego-invita" aria-hidden="true"><span>{% if r.audio %}Escuchar en su ficha →{% else %}Ver el registro →{% endif %}</span></p>
           </div>
@@ -47,7 +47,7 @@
       {% if tirada.registros|length > 1 %}
         <li class="tirada-colofon" role="none">
           <p class="rotulo">Colofón</p>
-          <p class="tirada-colofon-texto">Aquí termina la tirada: {{ tirada.registros_cuantos }} registros elegidos por el colectivo.</p>
+          <p class="tirada-colofon-texto">Aquí termina la tirada: {{ tirada.registros|length|in_words }} registros elegidos por el colectivo.</p>
           <p class="meta">Los demás esperan en el archivo.</p>
         </li>
       {% endif %}

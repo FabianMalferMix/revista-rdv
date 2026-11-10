@@ -6,7 +6,7 @@ from apps.agenda.models import Event, Milestone
 from apps.agenda.services import cronologia, stats
 from apps.content.models import Article
 from apps.people.models import Contributor
-from apps.site.pie import firmas, puerta, puertas_vecinas, vecinos_en_lista
+from apps.site.pie import vecinos_en_lista
 from apps.site.services import ultima_publicacion
 from config import protected_media, publishing
 
@@ -33,25 +33,6 @@ def publication_detail(request, slug):
         ),
         slug=slug,
     )
-    pie = [puerta("Índice", "Todas las publicaciones", reverse("showcase:publication_index"))]
-    if publication.publisher:
-        pie.append(
-            puerta(
-                "Editorial", publication.publisher.name, publication.publisher.get_absolute_url()
-            )
-        )
-    if publication.year:
-        pie.append(
-            puerta(
-                "Trayectoria",
-                str(publication.year),
-                f"{reverse('agenda:trayectoria')}#anio-{publication.year}",
-            )
-        )
-    pie += firmas(publication.participants.all())
-    pie += puertas_vecinas(
-        *vecinos_en_lista(_published(), publication), "Publicación", lambda p: p.title
-    )
     # Las reseñas de la publicación: los textos que reseñan la obra que la representa
     # (`Work.publicacion`). Lo pidió el dueño del sitio después del paso 21 del plan.
     resenas = list(
@@ -65,7 +46,12 @@ def publication_detail(request, slug):
     response = render(
         request,
         "showcase/publication_detail.html",
-        {"publication": publication, "pie": pie, "resenas": resenas, "preview": preview},
+        {
+            "publication": publication,
+            "neighbors": vecinos_en_lista(_published(), publication),
+            "resenas": resenas,
+            "preview": preview,
+        },
     )
     return publishing.marked_as_preview(response, preview)
 

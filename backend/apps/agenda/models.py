@@ -12,6 +12,18 @@ def url_for_event(slug):
     return reverse("agenda:event_detail", args=[slug])
 
 
+def year_anchor(year):
+    """El ancla de un año en la trayectoria, `anio-2025`: el id de su bloque y el final de
+    `url_for_year`."""
+    return f"anio-{year}"
+
+
+def url_for_year(year):
+    """La dirección de un año en la trayectoria, `/trayectoria/#anio-2025`. Llevan a ella las
+    salidas al pie de una actividad pasada y de una publicación."""
+    return f"{reverse('agenda:trayectoria')}#{year_anchor(year)}"
+
+
 class EventQuerySet(publishing.PublishableQuerySet):
     def upcoming(self):
         """Eventos publicados futuros, del más próximo al más lejano (Agenda). Con su afiche
