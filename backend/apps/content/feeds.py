@@ -33,7 +33,7 @@ class LatestArticlesFeed(Feed):
     def title(self, obj=None):
         perfil = self._perfil()
         # «Nombre — lema»; sin lema, solo el nombre (nada de un guion suelto al final).
-        return f"{perfil.name} — {perfil.tagline}" if perfil.tagline else perfil.name
+        return f"{perfil.site_name} — {perfil.tagline}" if perfil.tagline else perfil.site_name
 
     def description(self, obj=None):
         return self._perfil().tagline or self.DESCRIPCION_POR_DEFECTO

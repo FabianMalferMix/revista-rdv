@@ -85,6 +85,8 @@ guiones ejecutándose de verdad. Comprueba que:
 - el estante y la tirada responden al teclado (la tirada, también al dedo, y solo anuncia lo que
   no mueve el foco);
 - el reproductor externo solo se carga al pulsar;
+- en las tarjetas, pulsar la fecha, la miniatura o la marca ▶ lleva a la pieza, y los enlaces
+  secundarios (la sección, la firma, el evento de un registro) llevan a lo suyo;
 - el dossier imprime;
 - «Las voces» van en una fila; el relevo no cambia el árbol de accesibilidad de la lista, trae a
   la que más esperaba al lugar de la que se va, y el tabulador recorre la fila en el orden en que

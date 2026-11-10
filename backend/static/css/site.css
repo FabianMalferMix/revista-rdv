@@ -651,9 +651,11 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding
 .fila-marca{white-space:nowrap}
 /* La imagen del texto (o el afiche del evento), en miniatura 3:4 a la derecha. Es un área
    más de la rejilla, no un flotante: en una lista estrecha va junto al título y la fecha
-   queda debajo; con sitio, es la última columna. Se alinea arriba, no por la línea base. */
+   queda debajo; con sitio, es la última columna. Se alinea arriba, no por la línea base.
+   `.riso-duo` la posiciona y va después del título, por encima de la capa del enlace total:
+   deja pasar el pulsado, y pulsar la imagen lleva adonde lleva el título. */
 .fila--con-miniatura{grid-template-areas:"cuerpo mini" "pie fecha"}
-.fila-miniatura{grid-area:mini; align-self:start; justify-self:end; width:56px}
+.fila-miniatura{grid-area:mini; align-self:start; justify-self:end; width:56px; pointer-events:none}
 .fila-miniatura img{display:block; width:100%; height:auto; aspect-ratio:3/4; object-fit:cover}
 .filas + .pagination{border-top:0; padding-top:0}
 /* Cuando la lista sigue a la cabecera del índice, el filete de la cabecera ES el de la
@@ -973,11 +975,12 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .rec-caratula-titulo{font-weight:700; font-size:var(--t4); line-height:1.1}
 /* La marca de reproducción es un dibujo, no un botón: aquí no se reproduce nada, se va
    a la ficha. Un bloque blanco en la esquina con su triángulo, que pasa a magenta al
-   señalar la tarjeta. */
+   señalar la tarjeta. Va por encima de la capa del enlace total y deja pasar el pulsado:
+   pulsar la marca lleva al registro. */
 .rec-miniatura::before{content:""; position:absolute; z-index:1; left:0; bottom:0; width:52px; height:52px;
-  background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
+  pointer-events:none; background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
 .rec-miniatura::after{content:""; position:absolute; z-index:1; left:20px; bottom:17px; width:14px; height:18px;
-  background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
+  pointer-events:none; background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
   transition:background-color var(--dur-base) var(--ease)}
 .recording-card:hover .rec-miniatura::before,
 .recording-card:focus-within .rec-miniatura::before{background-color:var(--accent)}

@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
 from .models import SiteProfile
@@ -11,8 +10,9 @@ def site_profile(request):
     levantada, .first() devolvía None y dejaba cabecera/pie/identidad en blanco.
 
     `site_name` es el nombre con que firma cada página (el título, el sello, Open Graph y los
-    datos estructurados): el del perfil o, si está en blanco, el fijo del sitio. Se resuelve
-    aquí una vez, y ninguna plantilla escribe su propio respaldo.
+    datos estructurados): `SiteProfile.site_name`, el del perfil o, si está en blanco, el fijo
+    del sitio, el mismo de los feeds y los correos. Se resuelve aquí una vez, y ninguna
+    plantilla escribe su propio respaldo.
 
     Las redes del colectivo van en una lista que se consulta una sola vez por página, y
     solo si alguien la usa: las piden los datos estructurados, el pie, el menú del
@@ -23,7 +23,7 @@ def site_profile(request):
     redes = SimpleLazyObject(lambda: list(perfil.social_links.all()))
     return {
         "site_profile": perfil,
-        "site_name": perfil.name or settings.SITE_NAME,
+        "site_name": perfil.site_name,
         "redes_del_colectivo": redes,
         # La cejilla de la portada lo nombra: sale de la misma lista, sin otra consulta.
         "instagram_del_colectivo": SimpleLazyObject(

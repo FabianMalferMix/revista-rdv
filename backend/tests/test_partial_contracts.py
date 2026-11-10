@@ -262,7 +262,9 @@ SAMPLES = {
         x["member"].photo, sizes="96px", css_class="retrato"
     ),
     "partials/_sello.html": lambda x: {"site_name": x["profile"].name},
-    "partials/_participan.html": lambda x: {"personas": [x["member"]]},
+    "partials/_participan.html": lambda x: {
+        "personas": Contributor.objects.with_page().filter(pk=x["member"].pk)
+    },
     "partials/_cejilla_de_texto.html": lambda x: {"a": x["article"]},
     "partials/_tapa.html": lambda x: cover(x["publication"], "240px", css_class="ficha-cubierta"),
     "partials/_retrato.html": lambda x: portrait(x["member"], "96px", duotone=True),

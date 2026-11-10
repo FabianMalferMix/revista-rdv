@@ -60,7 +60,7 @@ class RecordingsFeed(Feed):
         return SiteProfile.load()
 
     def title(self):
-        return f"{self._perfil().name} — Registros"
+        return f"{self._perfil().site_name} — Registros"
 
     def link(self):
         return absolute_url(reverse("media:recording_index"))
@@ -71,7 +71,7 @@ class RecordingsFeed(Feed):
     def feed_extra_kwargs(self, obj):
         p = self._perfil()
         return {
-            "itunes_author": p.name,
+            "itunes_author": p.site_name,
             "itunes_summary": p.tagline or self.description,
             "itunes_explicit": "false",
             "itunes_category": "Arts",

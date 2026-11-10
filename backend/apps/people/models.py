@@ -26,6 +26,14 @@ class ContributorQuerySet(models.QuerySet):
             | Exists(Poem.objects.published().filter(authors=signs))
         )
 
+    def with_page(self):
+        """Cada persona con `has_page`, si tiene ficha, con el criterio de su ficha
+        (`visible()`). Quien participa en una publicación, una actividad o un registro sin ser
+        integrante ni firmar nada publicado no la tiene: su enlace llevaría a un 404."""
+        return self.annotate(
+            has_page=Exists(Contributor.objects.visible().filter(pk=OuterRef("pk")))
+        )
+
     def members(self):
         """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
         # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).

@@ -669,7 +669,8 @@ const CHECKS = [
     widths: [951, 375],
     async run({ page }) {
       // Adónde lleva pulsar en el centro de cada pieza de la primera tarjeta que tiene todas: el
-      // enlace que recibe el pulsado, o nada.
+      // enlace que recibe el pulsado, o nada. Una pieza que dibuja un seudoelemento («.x::before»)
+      // no tiene nodo propio: su caja es la que el navegador le resuelve dentro de su elemento.
       const landings = (card, pieces) =>
         page.evaluate(
           ([card, pieces]) => {
@@ -677,31 +678,41 @@ const CHECKS = [
             if (!found) return null;
             found.scrollIntoView({ block: 'center' });
             const own = found.querySelector('.enlace-total')?.getAttribute('href') ?? 'sin enlace-total';
-            const at = Object.entries(pieces).map(([piece, selector]) => {
-              const box = found.querySelector(selector).getBoundingClientRect();
-              const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-              return [piece, hit?.closest('a')?.getAttribute('href') ?? null];
+            const measured = Object.entries(pieces).map(([piece, selector]) => {
+              const [element, pseudo] = selector.split(/(?=::)/);
+              const node = found.querySelector(element);
+              const box = node.getBoundingClientRect();
+              if (!pseudo) return { piece, node, x: box.left + box.width / 2, y: box.top + box.height / 2 };
+              const drawn = getComputedStyle(node, pseudo);
+              const x = box.left + parseFloat(drawn.left) + parseFloat(drawn.width) / 2;
+              const y = box.top + parseFloat(drawn.top) + parseFloat(drawn.height) / 2;
+              return { piece, node, x, y };
             });
-            const links = Object.fromEntries(
-              Object.entries(pieces).map(([piece, selector]) => [piece, found.querySelector(selector).closest('a')?.getAttribute('href') ?? own])
-            );
-            return { at: Object.fromEntries(at), links };
+            const at = measured.map(({ piece, x, y }) => [piece, document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href') ?? null]);
+            const links = measured.map(({ piece, node }) => [piece, node.closest('a')?.getAttribute('href') ?? own]);
+            return { at: Object.fromEntries(at), links: Object.fromEntries(links) };
           },
           [card, pieces]
         );
-      // Una fila de texto con sección y firma: la sección y la firma llevan a lo suyo; la fecha,
-      // que no es un enlace, al texto.
+      // Una fila de texto con sección, firma y miniatura: la sección y la firma llevan a lo suyo;
+      // la fecha y la miniatura, que no son enlaces, al texto.
       await visit(page, '/textos/');
-      const fila = await landings('.fila:has(.kicker a):has(.fila-pie a)', {
+      const fila = await landings('.fila:has(.kicker a):has(.fila-pie a):has(.fila-miniatura)', {
         sección: '.kicker a',
         firma: '.fila-pie a',
         fecha: '.fila-fecha',
+        miniatura: '.fila-miniatura',
       });
-      expect(fila, '/textos/: no hay una fila con sección y firma que medir');
+      expect(fila, '/textos/: no hay una fila con sección, firma y miniatura que medir');
       expect(JSON.stringify(fila.at) === JSON.stringify(fila.links), `/textos/: la fila lleva a ${JSON.stringify(fila.at)} y debía llevar a ${JSON.stringify(fila.links)}`);
-      // Una tarjeta de registro con su evento: el evento lleva al evento; la miniatura, al registro.
+      // Una tarjeta de registro con su evento: el evento lleva al evento; la miniatura y la marca ▶
+      // de su esquina, que va por encima de la capa del enlace, al registro.
       await visit(page, '/registros/');
-      const tarjeta = await landings('.recording-card:has(.meta a)', { evento: '.meta a', miniatura: '.rec-miniatura' });
+      const tarjeta = await landings('.recording-card:has(.meta a)', {
+        evento: '.meta a',
+        miniatura: '.rec-miniatura',
+        marca: '.rec-miniatura::before',
+      });
       expect(tarjeta, '/registros/: no hay una tarjeta con evento que medir');
       expect(JSON.stringify(tarjeta.at) === JSON.stringify(tarjeta.links), `/registros/: la tarjeta lleva a ${JSON.stringify(tarjeta.at)} y debía llevar a ${JSON.stringify(tarjeta.links)}`);
     },

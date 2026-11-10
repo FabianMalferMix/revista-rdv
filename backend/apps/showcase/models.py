@@ -134,6 +134,13 @@ class SiteProfile(models.Model):
         return obj
 
     @property
+    def site_name(self):
+        """El nombre con que firma el sitio: el del perfil o, si está en blanco, el fijo
+        (`SITE_NAME`). Lo leen las páginas, por el procesador de contexto, los feeds y el correo
+        de confirmación del boletín."""
+        return self.name or settings.SITE_NAME
+
+    @property
     def presentacion(self):
         """De dónde es y desde cuándo: «Colectivo de poesía», «Chile», «desde 2023», lo que
         haya. La usan la cejilla de la portada y el pie, que la unen con puntos medios."""

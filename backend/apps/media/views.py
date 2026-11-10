@@ -3,6 +3,7 @@ from django.shortcuts import render
 
 from apps.content.models import Poem
 from apps.site.pie import vecinos_en_lista
+from apps.site.services import participants_prefetch
 from config import protected_media, publishing
 
 from .models import Recording
@@ -21,7 +22,9 @@ def recording_index(request):
 def recording_detail(request, slug):
     recording, preview = publishing.piece_for(
         request,
-        Recording.objects.select_related("poster", "event").prefetch_related("participants"),
+        Recording.objects.select_related("poster", "event").prefetch_related(
+            participants_prefetch()
+        ),
         slug=slug,
     )
     response = render(
