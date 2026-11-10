@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04, y C34, el 2026-11-05. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 76 de 87 tickets cerrados (38 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 y B87 en la tanda 7, por una decisión del dueño en B68 y por lo que se vio al hacerla.
+> **Avance:** 77 de 88 tickets cerrados (39 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B88 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla, y B88, por lo que se vio en B72.
 
 ## Cómo se usa
 
@@ -184,6 +184,7 @@
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |
 | B86 | Las imágenes de otro sitio se copian al guardar | B68 | M | no | pendiente |
 | B87 | Los enlaces de YouTube en todas sus formas | B68 | S | no | pendiente |
+| B88 | La cápsula que se abre con el teclado busca con todo su ancho | B72 (etapa 1) | S | no | hecho (#270) |
 
 ## 3. Tickets
 
@@ -1517,6 +1518,19 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** Un registro con cualquiera de esas formas muestra el reproductor, y `frame-src` no cambia.
 
+#### B88 · La cápsula que se abre con el teclado busca con todo su ancho
+
+**Hallazgos:** fuera de la auditoría: visto en B72, al comparar los estados de la cabecera · **Depende de:** B72 (etapa 1: la marca de la portada) · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** D16
+
+**Qué pasa.** Arriba de la portada no hay cabecera: la cápsula aparece cuando el teclado llega a ella. Si desde ahí se abre la lupa, la cápsula se queda en 167 px a 951, con un campo de 30 px y los resultados en una columna de una letra. La regla que le da a la cápsula su ancho mientras se busca solo cubría la cápsula al bajar.
+
+**Alcance.**
+
+- la cápsula busca con el mismo ancho en sus dos estados: al bajar y, abierta con el teclado, arriba de la portada;
+- la prueba de humo abre la lupa con el teclado arriba de la portada, busca y compara el ancho de la cápsula, del campo y de los resultados con los de la cápsula al bajar, a 951 y a 375 px.
+
+**Hecho cuando.** Arriba de la portada, abrir la lupa con el teclado y buscar se ve igual que en la cápsula al bajar.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1536,7 +1550,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88
 
 ## 5. Lo diferido
 

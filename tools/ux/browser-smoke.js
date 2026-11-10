@@ -364,6 +364,40 @@ const CHECKS = [
     },
   },
   {
+    name: 'Arriba de la portada, la cápsula que se abre con el teclado busca con el mismo ancho que al bajar',
+    widths: [951, 375],
+    async run({ page }) {
+      // Lo que miden la cápsula, el campo y los resultados mientras se busca «casa», con la lupa
+      // abierta desde el teclado: arriba de la portada la cápsula está escondida y aparece al
+      // recibir el foco. El foco va directo a la lupa: tabular desde el principio pasaría por
+      // «Saltar al contenido», que devuelve la página arriba.
+      const measure = async (scrolled) => {
+        await visit(page, '/');
+        if (scrolled) {
+          await page.mouse.wheel(0, 800);
+          await page.waitForFunction(() => document.documentElement.getAttribute('data-barra') === 'pildora', null, { timeout: 3000 });
+        }
+        await page.focus('.busqueda summary');
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => document.activeElement.matches('.busqueda input[type="search"]'), null, { timeout: 2000 });
+        await page.keyboard.type('casa');
+        await page.waitForFunction(() => document.querySelector('#search-results a'), null, { timeout: 5000 });
+        await page.waitForTimeout(SETTLE_MS);
+        return page.evaluate(() =>
+          ['.masthead-fila', '.busqueda input[type="search"]', '#search-results'].map((s) =>
+            Math.round(document.querySelector(s).getBoundingClientRect().width)
+          )
+        );
+      };
+      const down = await measure(true);
+      const up = await measure(false);
+      expect(
+        up.every((width, i) => width === down[i]),
+        `la cápsula, el campo y los resultados miden ${up.join(', ')} px arriba de la portada y ${down.join(', ')} px al bajar`
+      );
+    },
+  },
+  {
     name: 'Sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue siendo usable',
     widths: [951, 375],
     async run({ context }, width) {
