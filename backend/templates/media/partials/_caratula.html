@@ -5,6 +5,9 @@
    página, así que no se anuncia dos veces. El año sale de la grabación o, si no la
    tiene, de su evento; en un argumento de filtro, un evento que falta rompería la
    plantilla.
+
+   Parámetros (se incluye con `only`):
+     r    el registro (obligatorio)
 {% endcomment %}
 <span class="rec-caratula" aria-hidden="true">
   <span class="rotulo">{{ r.get_kind_display }}{% if r.public_event %} · {{ r.public_event.get_type_display }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"Y" }}{% elif r.public_event %} · {{ r.public_event.starts_at|date:"Y" }}{% endif %}</span>

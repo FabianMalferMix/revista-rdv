@@ -6,7 +6,10 @@ import pytest
 from django.conf import settings
 from django.urls import reverse
 
+from apps.content.models import ArticleContributor, PoemContributor
+from apps.people.models import Contributor
 from tests import css
+from tests.factories import make_published_article, make_published_poem, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -123,12 +126,25 @@ def test_no_hay_fuentes_huerfanas():
     assert not huerfanas, f"fuentes que el CSS no referencia: {huerfanas}"
 
 
-# Las dos parciales que producen una tarjeta de listado. El titular de la tarjeta
-# es la superficie donde más se repite la tipografía de titular en todo el sitio.
-TARJETAS = [
-    "partials/_article_card.html",
-    "partials/_poem_card.html",
-]
+def _card_titles(client):
+    """Los títulos de las tarjetas de texto y de poema tal como salen bajo el h1 de un índice y
+    bajo el h2 de una sección (la ficha de una integrante), donde cambian de etiqueta. El titular
+    de la tarjeta es la superficie donde más se repite la tipografía de titular del sitio."""
+    member = Contributor.objects.create(slug="firma", display_name="Firma", is_member=True)
+    article = make_published_article(slug="tarjeta-texto")
+    ArticleContributor.objects.create(article=article, contributor=member)
+    poem = make_published_poem(slug="tarjeta-poema")
+    PoemContributor.objects.create(poem=poem, contributor=member)
+    titles = []
+    for url in (
+        reverse("content:text_archive"),
+        reverse("content:poem_index"),
+        member.get_absolute_url(),
+    ):
+        cards = soup(client, url).select("li.article-card")
+        assert cards, f"control: {url} no enseña ninguna tarjeta"
+        titles += [card.find(re.compile(r"^h[1-6]$")) for card in cards]
+    return titles
 
 
 def _selectores_de_titular():
@@ -143,23 +159,16 @@ def _selectores_de_titular():
     return selectores
 
 
-def test_titulo_de_tarjeta_usa_la_tipografia_de_titular():
-    """El CSS debe nombrar la etiqueta que la plantilla emite de verdad.
-
-    La regla apuntaba a `.article-card h2` mientras ambas parciales emiten
-    `<h3>`, así que el selector estaba muerto y los títulos de todos los
-    listados caían a `--serif`, la pila con Georgia. Con una serif de titular
-    la diferencia era casi invisible; con cualquier otra familia, evidente.
-    """
-    selectores = _selectores_de_titular()
-    for parcial in TARJETAS:
-        html = (settings.BASE_DIR / "templates" / parcial).read_text(encoding="utf-8")
-        etiqueta = re.search(r"<(h[1-6])[\s>]", html)
-        assert etiqueta, f"{parcial} ya no emite ningún titular"
-        assert f".article-card {etiqueta.group(1)}" in selectores, (
-            f"{parcial} emite <{etiqueta.group(1)}> pero la regla de titulares "
-            f"no lo cubre; el título caerá a la serif del cuerpo"
-        )
+def test_titulo_de_tarjeta_usa_la_tipografia_de_titular(client):
+    """El CSS nombra lo que las tarjetas emiten de verdad: la clase de su título, que es un h2 o
+    un h3 según dónde va la lista. Una regla que apunta a algo que las tarjetas no emiten no da
+    error: no se aplica, y los títulos de todos los listados caen a la serif del cuerpo."""
+    titles = _card_titles(client)
+    assert {title.name for title in titles} == {"h2", "h3"}, "control: las dos alturas"
+    assert all("fila-titulo" in title["class"] for title in titles), "un título sin su clase"
+    assert ".fila-titulo" in _selectores_de_titular(), (
+        "la regla de titulares no cubre el título de las tarjetas: caerá a la serif del cuerpo"
+    )
 
 
 # `.stats-strip` es la tira de cifras de la trayectoria: cifras de dato, no de cartel. La
@@ -197,35 +206,21 @@ def test_la_trayectoria_conserva_su_tira_y_el_dossier_tiene_sus_cifras():
         assert "hero-stats" not in texto
 
 
-def test_ninguna_regla_estiliza_un_titular_que_las_tarjetas_no_emiten():
-    """Caza TODAS las reglas con el selector muerto, no solo una.
-
-    `test_titulo_de_tarjeta_usa_la_tipografia_de_titular` solo vigilaba la
-    regla de la familia tipográfica. Otras tres —tamaño, color y subrayado—
-    siguieron apuntando a `.article-card h2`, que ninguna plantilla emite, así
-    que el título del listado caía al estilo global de enlace (magenta y
-    subrayado) y al cuerpo por defecto del navegador para un h3: 18,7px frente
-    a los 26 previstos, apenas un 17% por encima del resumen.
-
-    Una regla con selector muerto no da error: simplemente no se aplica. Por
-    eso hace falta comprobarlo, y comprobarlo entero.
-    """
-    tpl = settings.BASE_DIR / "templates"
-    emitidas = set()
-    for parcial in TARJETAS:
-        html = (tpl / parcial).read_text(encoding="utf-8")
-        emitidas.update(re.findall(r"<(h[1-6])[\s>]", html))
-    assert emitidas, "las parciales de tarjeta ya no emiten ningún titular"
-
-    estilizadas = {
-        titular
-        for regla in css.rules()
-        for selector in regla.selectors
-        for titular in re.findall(r"\.article-card (h[1-6])\b", selector)
-    }
-    assert estilizadas, "la hoja ya no estiliza el titular de las tarjetas"
-    muertas = estilizadas - emitidas
-    assert not muertas, (
-        f"el CSS estiliza .article-card {sorted(muertas)} pero las parciales emiten "
-        f"{sorted(emitidas)}: esas reglas no se aplican a nada"
+def test_no_rule_styles_the_card_title_by_its_tag(client):
+    """El título de la tarjeta es un h2 o un h3 según dónde va la lista: una regla que lo
+    alcanzara por su etiqueta (`.article-card h3`) se aplicaría en unas páginas y en otras no,
+    sin dar error. Su familia, su tamaño y su enlace van por la clase, que las tarjetas llevan
+    en las dos alturas."""
+    by_tag = sorted(
+        selector
+        for rule in css.rules()
+        for selector in rule.selectors
+        if re.search(r"\.(article-card|filas?)\b.*(?<![\w.#-])h[1-6](?![\w-])", selector)
     )
+    assert not by_tag, f"reglas que alcanzan el título de la tarjeta por su etiqueta: {by_tag}"
+    # Control: la hoja lo estiliza por la clase, y las tarjetas la llevan en sus dos alturas.
+    assert css.rule((), ".fila-titulo")["font-size"] == "var(--t3)"
+    assert css.rule((), ".fila-titulo a")["color"] == "var(--ink)"
+    titles = _card_titles(client)
+    assert {title.name for title in titles} == {"h2", "h3"}
+    assert all("fila-titulo" in title["class"] for title in titles)

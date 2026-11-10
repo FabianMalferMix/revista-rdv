@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 
 from apps.content.models import Article
@@ -6,14 +7,10 @@ from apps.showcase.models import Publication
 from .models import BookAuthor, Publisher, Work
 
 
-def _reviews_of(work_ids):
-    return (
-        Article.objects.published()
-        .filter(reviewed_works__in=work_ids)
-        .select_related("section")
-        .prefetch_related(Article.bylines_prefetch())
-        .distinct()
-    )
+def _reviews_of(request, work_ids):
+    """Los textos que reseñan esas obras, de 12 en 12 como los demás índices de textos."""
+    reviews = Article.objects.published().for_row().filter(reviewed_works__in=work_ids).distinct()
+    return Paginator(reviews, 12).get_page(request.GET.get("page"))
 
 
 def work_detail(request, slug):
@@ -27,7 +24,7 @@ def work_detail(request, slug):
     return render(
         request,
         "reviews/work_detail.html",
-        {"work": work, "articles": _reviews_of([work.id])},
+        {"work": work, "articles": _reviews_of(request, [work.id])},
     )
 
 
@@ -46,7 +43,7 @@ def publisher_detail(request, slug):
             "publisher": publisher,
             "publications": publications,
             "works": works.exclude(publicacion__in=publications),
-            "articles": _reviews_of(list(works.values_list("id", flat=True))),
+            "articles": _reviews_of(request, list(works.values_list("id", flat=True))),
         },
     )
 
@@ -60,6 +57,6 @@ def bookauthor_detail(request, slug):
         {
             "author": author,
             "works": works,
-            "articles": _reviews_of(list(works.values_list("id", flat=True))),
+            "articles": _reviews_of(request, list(works.values_list("id", flat=True))),
         },
     )

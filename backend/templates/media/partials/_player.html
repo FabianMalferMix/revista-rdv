@@ -1,5 +1,12 @@
 {% load embeds images %}
-{% with src=r.embed_url|embed_src proveedor=r.embed_url|embed_provider %}
+{% comment %}
+   El reproductor de un registro: el de su proveedor, que solo se carga al pulsar; el archivo
+   propio, en audio o en video; o, si no se puede incrustar, un enlace al proveedor.
+
+   Parámetros (se incluye con `only`):
+     r           el registro (obligatorio)
+     titulo_id   el id del título que nombra al reproductor de audio o de video
+{% endcomment %}{% with src=r.embed_url|embed_src proveedor=r.embed_url|embed_provider %}
   {% if src %}
     {% comment %}
        Click-to-play (hallazgo S-19). El iframe NO se inserta hasta que la persona lo
@@ -15,7 +22,7 @@
       {% if r.poster %}
         <span class="riso-duo">{% sizes "poster-reproductor" as sizes %}{% responsive_img r.poster sizes=sizes lazy=False decorativa=True %}</span>
       {% else %}
-        {% include "media/partials/_caratula.html" %}
+        {% include "media/partials/_caratula.html" with r=r only %}
       {% endif %}
       {% comment %}
          El mando va en un panel sólido abajo a la izquierda, la misma marca que la

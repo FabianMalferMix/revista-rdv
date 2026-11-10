@@ -192,6 +192,16 @@ def editorial_models():
     return [model for model in apps.get_models() if issubclass(model, EditorialItem)]
 
 
+class ArticleQuerySet(publishing.EditorialQuerySet):
+    def for_row(self):
+        """Lo que pinta la fila de cada texto (`partials/_article_card.html`), traído con la
+        lista: la sección de la cejilla, la imagen en miniatura y las firmas. Sin ello, cada fila
+        haría sus propias consultas."""
+        return self.select_related("section", "cover_image").prefetch_related(
+            self.model.bylines_prefetch()
+        )
+
+
 class Article(EditorialItem):
     slug = models.SlugField(max_length=255, unique=True)
     title = models.CharField(max_length=255)
@@ -230,6 +240,8 @@ class Article(EditorialItem):
         output_field=SearchVectorField(),
         db_persist=True,
     )
+
+    objects = ArticleQuerySet.as_manager()
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]
@@ -327,6 +339,13 @@ class ReviewedWork(models.Model):
         return f"«{self.work}», reseñada en «{self.article}»"
 
 
+class PoemQuerySet(publishing.EditorialQuerySet):
+    def for_row(self):
+        """Lo que pinta la fila de cada poema (`partials/_poem_card.html`), traído con la lista:
+        las firmas y el registro, del que la fila avisa «con registro» (`published_recording`)."""
+        return self.select_related("recording").prefetch_related(self.model.bylines_prefetch())
+
+
 class Poem(EditorialItem):
     """Poema de un integrante (obra propia del colectivo).
 
@@ -367,6 +386,8 @@ class Poem(EditorialItem):
         output_field=SearchVectorField(),
         db_persist=True,
     )
+
+    objects = PoemQuerySet.as_manager()
 
     class Meta(EditorialItem.Meta):
         ordering = ["-published_at", "-created_at"]

@@ -18,18 +18,18 @@
     <h2 class="subhead">Publicaciones del colectivo</h2>
     <ul class="pub-grid">
       {% for pub in publications %}
-        {% include "partials/_publication_card.html" %}
+        {% include "partials/_publication_card.html" with pub=pub only %}
       {% endfor %}
     </ul>
   {% endif %}
 
   {% if works %}
     <h2 class="subhead">Catálogo reseñado</h2>
-    {% include "reviews/_work_list.html" %}
+    {% include "reviews/partials/_work_list.html" with works=works only %}
   {% endif %}
 
   {% if articles %}
     <h2 class="subhead">Reseñas de esta editorial</h2>
-    {% include "partials/_article_list.html" %}
+    {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=3 only %}
   {% endif %}
 {% endblock %}

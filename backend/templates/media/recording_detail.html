@@ -23,7 +23,7 @@
       </p>
     </header>
 
-    {% include "media/partials/_player.html" with r=recording titulo_id="registro-titulo" %}
+    {% include "media/partials/_player.html" with r=recording titulo_id="registro-titulo" only %}
 
     {# El texto de lo que se oye, justo después del reproductor: el poema, o la transcripción, plegada. #}
     {% for poem in poems %}

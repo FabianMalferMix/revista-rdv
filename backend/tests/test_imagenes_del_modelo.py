@@ -17,10 +17,21 @@ from django.utils import timezone
 from PIL import Image
 
 from apps.agenda.models import EventPhoto
-from apps.content.models import EditorialStatus
+from apps.content.models import (
+    ArticleContributor,
+    Collection,
+    CollectionArticle,
+    CollectionPoem,
+    EditorialStatus,
+    PoemContributor,
+    PublishStatus,
+    Section,
+)
 from apps.media.models import MediaAsset
+from apps.people.models import Contributor
+from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Partner
-from tests.factories import make_article, make_event, soup
+from tests.factories import make_article, make_event, make_published_poem, make_recording, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -190,3 +201,78 @@ def test_las_imagenes_de_los_listados_no_cuestan_una_consulta_por_fila(client, v
     con_dos = consultas()
     sembrar(2, 6)
     assert consultas() == con_dos, "cada imagen de la lista añade una consulta"
+
+
+# Las fichas que pintan filas de textos y de poemas: cada fila de texto enseña su sección, su
+# imagen y sus firmas, y cada fila de poema, sus firmas y su registro.
+ROW_PAGES = [
+    "people:member_detail",
+    "content:collection_detail",
+    "reviews:work_detail",
+    "reviews:publisher_detail",
+    "reviews:bookauthor_detail",
+]
+
+
+@pytest.mark.parametrize("view", ROW_PAGES)
+def test_the_rows_of_a_page_cost_the_same_with_two_or_six(client, view):
+    """Lo que pinta cada fila llega con la consulta de su lista: seis filas cuestan las mismas
+    consultas que dos."""
+    section = Section.objects.create(slug="cronica", name="Crónica")
+    member = Contributor.objects.create(
+        slug="integrante", display_name="Integrante", is_member=True
+    )
+    publisher = Publisher.objects.create(slug="editorial", name="Editorial")
+    author = BookAuthor.objects.create(slug="autora", name="Autora")
+    work = Work.objects.create(slug="obra", title="Obra", publisher=publisher)
+    work.authors.add(author)
+    collection = Collection.objects.create(
+        slug="coleccion", title="Colección", status=PublishStatus.PUBLISHED
+    )
+    owner = {
+        "people:member_detail": member,
+        "content:collection_detail": collection,
+        "reviews:work_detail": work,
+        "reviews:publisher_detail": publisher,
+        "reviews:bookauthor_detail": author,
+    }
+    url = owner[view].get_absolute_url()
+
+    def seed(start, stop):
+        for i in range(start, stop):
+            other = Contributor.objects.create(
+                slug=f"firma-{i}", display_name=f"Firma {i}", photo=_imagen(f"retrato-{i}")
+            )
+            article = _texto(f"t{i}", section=section, cover_image=_imagen(f"t{i}"))
+            article.reviewed_works.add(work)
+            ArticleContributor.objects.create(article=article, contributor=member)
+            ArticleContributor.objects.create(article=article, contributor=other, position=1)
+            CollectionArticle.objects.create(collection=collection, article=article, position=2 * i)
+            poem = make_published_poem(slug=f"p{i}", recording=make_recording(slug=f"r{i}"))
+            PoemContributor.objects.create(poem=poem, contributor=member)
+            PoemContributor.objects.create(poem=poem, contributor=other, position=1)
+            CollectionPoem.objects.create(collection=collection, poem=poem, position=2 * i + 1)
+
+    def queries():
+        with CaptureQueriesContext(connection) as ctx:
+            page = soup(client, url)
+        return len(ctx), page
+
+    seed(0, 2)
+    # La primera petición crea el perfil del sitio (SiteProfile.load): se descuenta.
+    client.get(url)
+    with_two, _ = queries()
+    seed(2, 6)
+    with_six, page = queries()
+    # Control: se ven las seis filas de textos, con su sección, su imagen y la otra firma, y en
+    # las fichas que enseñan poemas, los seis con su registro.
+    texts = page.select("li.article-card:not(.fila--poema)")
+    assert len(texts) == 6
+    for row in texts:
+        assert row.select_one(".fila-miniatura img") is not None
+        assert "Crónica" in row.select_one(".kicker").get_text()
+        assert "Firma" in row.select_one(".fila-pie").get_text()
+    if view in ("people:member_detail", "content:collection_detail"):
+        poems = page.select("li.fila--poema")
+        assert len(poems) == 6 and all("con registro" in row.get_text() for row in poems)
+    assert with_six == with_two, "cada fila añade consultas"

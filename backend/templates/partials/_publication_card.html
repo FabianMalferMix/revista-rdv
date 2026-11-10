@@ -1,5 +1,11 @@
 {% load images %}
-<li class="pub-card">
+{% comment %}
+   Una publicación del colectivo en el catálogo: su tapa o, sin ella, su título impreso en la
+   caja, y debajo qué es, de qué año y de qué editorial. Toda la tapa es el enlace.
+
+   Parámetros (se incluye con `only`):
+     pub   la publicación (obligatorio)
+{% endcomment %}<li class="pub-card">
   <a href="{{ pub.get_absolute_url }}">
     {% if pub.cover %}{% sizes "tapa-catalogo" as sizes %}{% responsive_img pub.cover sizes=sizes %}{% else %}<span class="pub-cover-fallback" aria-hidden="true"><span>{{ pub.title }}</span></span>{% endif %}
     <span class="pub-title">{{ pub.title }}</span>

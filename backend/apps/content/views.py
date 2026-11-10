@@ -19,25 +19,6 @@ from .models import (
 )
 
 
-def _published():
-    # cover_image: la fila de cada texto enseña su imagen en miniatura.
-    return (
-        Article.objects.published()
-        .select_related("section", "cover_image")
-        .prefetch_related(Article.bylines_prefetch())
-    )
-
-
-def _published_poems():
-    # select_related("recording"): `published_recording` lo consulta en las fichas y en
-    # las tarjetas de los listados; sin esto sería una consulta por poema.
-    return (
-        Poem.objects.published()
-        .select_related("recording")
-        .prefetch_related(Poem.bylines_prefetch())
-    )
-
-
 def _paginate(request, queryset, per_page=12):
     return Paginator(queryset, per_page).get_page(request.GET.get("page"))
 
@@ -45,7 +26,9 @@ def _paginate(request, queryset, per_page=12):
 def text_archive(request):
     """Archivo completo de textos (reseñas, ensayos, entrevistas), paginado."""
     return render(
-        request, "content/text_archive.html", {"articles": _paginate(request, _published())}
+        request,
+        "content/text_archive.html",
+        {"articles": _paginate(request, Article.objects.published().for_row())},
     )
 
 
@@ -78,7 +61,12 @@ def section_detail(request, slug):
     return render(
         request,
         "content/section_detail.html",
-        {"section": section, "articles": _paginate(request, _published().filter(section=section))},
+        {
+            "section": section,
+            "articles": _paginate(
+                request, Article.objects.published().for_row().filter(section=section)
+            ),
+        },
     )
 
 
@@ -87,7 +75,10 @@ def tag_detail(request, slug):
     return render(
         request,
         "content/tag_detail.html",
-        {"tag": tag, "articles": _paginate(request, _published().filter(tags=tag))},
+        {
+            "tag": tag,
+            "articles": _paginate(request, Article.objects.published().for_row().filter(tags=tag)),
+        },
     )
 
 
@@ -101,8 +92,10 @@ def contributor_detail(request, slug):
         "content/contributor_detail.html",
         {
             "contributor": contributor,
-            "poems": _published_poems().filter(authors=contributor),
-            "articles": _paginate(request, _published().filter(authors=contributor)),
+            "poems": Poem.objects.published().for_row().filter(authors=contributor),
+            "articles": _paginate(
+                request, Article.objects.published().for_row().filter(authors=contributor)
+            ),
         },
     )
 
@@ -114,7 +107,9 @@ def collection_index(request):
 
 def poem_index(request):
     return render(
-        request, "content/poem_index.html", {"poems": _paginate(request, _published_poems())}
+        request,
+        "content/poem_index.html",
+        {"poems": _paginate(request, Poem.objects.published().for_row())},
     )
 
 
@@ -139,17 +134,14 @@ def poem_detail(request, slug):
 
 def collection_detail(request, slug):
     collection, preview = publishing.piece_for(request, Collection.objects.all(), slug=slug)
-    # Secuencia curada única: artículos y poemas publicados, mezclados por `position`.
-    article_links = (
-        CollectionArticle.objects.filter(
-            collection=collection, article__in=Article.objects.published()
-        )
-        .select_related("article", "article__section")
-        .prefetch_related(Article.bylines_prefetch("article__"))
-    )
+    # Secuencia curada única: artículos y poemas publicados, mezclados por `position`. Cada pieza
+    # llega con lo que pinta su fila.
+    article_links = CollectionArticle.objects.filter(
+        collection=collection, article__in=Article.objects.published()
+    ).prefetch_related(Prefetch("article", queryset=Article.objects.published().for_row()))
     poem_links = CollectionPoem.objects.filter(
         collection=collection, poem__in=Poem.objects.published()
-    ).prefetch_related(Poem.bylines_prefetch("poem__"))
+    ).prefetch_related(Prefetch("poem", queryset=Poem.objects.published().for_row()))
     entries = [("article", link.position, link.article) for link in article_links]
     entries += [("poem", link.position, link.poem) for link in poem_links]
     items = [{"kind": kind, "object": obj} for kind, _, obj in sorted(entries, key=lambda e: e[1])]

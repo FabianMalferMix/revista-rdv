@@ -11,8 +11,8 @@
   </header>
 
   <h2 class="subhead">Obras</h2>
-  {% include "reviews/_work_list.html" %}
+  {% include "reviews/partials/_work_list.html" with works=works only %}
 
   <h2 class="subhead">Reseñas</h2>
-  {% include "partials/_article_list.html" %}
+  {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=3 only %}
 {% endblock %}

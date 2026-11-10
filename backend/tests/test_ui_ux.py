@@ -4,8 +4,27 @@ import pytest
 from bs4 import BeautifulSoup
 from django.urls import reverse
 
+from apps.content.models import (
+    ArticleContributor,
+    Collection,
+    CollectionArticle,
+    CollectionPoem,
+    PoemContributor,
+    PublishStatus,
+    Section,
+    Tag,
+)
+from apps.people.models import Contributor
+from apps.reviews.models import BookAuthor, Publisher, Work
 from tests import css
-from tests.factories import make_article, make_event, make_photo
+from tests.factories import (
+    make_event,
+    make_photo,
+    make_publication,
+    make_published_article,
+    make_published_poem,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -69,20 +88,59 @@ def test_home_has_an_h1(client):
     assert b"<h1" in resp.content
 
 
-def test_article_card_title_is_h3(client):
-    """El título de tarjeta es <h3>: cuelga de secciones <h2>, así la jerarquía de
-    encabezados no queda aplanada (hallazgo #13). Aserción estructural con bs4."""
-    from bs4 import BeautifulSoup
+def test_card_titles_sit_one_level_below_the_heading_they_hang_from(client):
+    """Quien recorre una página por sus encabezados no se salta ningún nivel: bajo el h1 de un
+    índice, el título de cada tarjeta es un h2; bajo el h2 de una sección (los textos de una
+    integrante, las reseñas de una obra, la obra de la portada), un h3."""
+    section = Section.objects.create(slug="cronica", name="Crónica")
+    tag = Tag.objects.create(slug="ciudad", name="Ciudad")
+    member = Contributor.objects.create(
+        slug="integrante", display_name="Integrante", is_member=True
+    )
+    guest = Contributor.objects.create(slug="invitada", display_name="Invitada")
+    publisher = Publisher.objects.create(slug="editorial", name="Editorial")
+    author = BookAuthor.objects.create(slug="autora", name="Autora")
+    book = make_publication(slug="libro", title="Libro")
+    work = Work.objects.create(slug="obra", title="Obra", publisher=publisher, publicacion=book)
+    work.authors.add(author)
+    collection = Collection.objects.create(
+        slug="coleccion", title="Colección", status=PublishStatus.PUBLISHED
+    )
+    for person in (member, guest):
+        article = make_published_article(slug=f"texto-{person.slug}", section=section)
+        article.tags.add(tag)
+        article.reviewed_works.add(work)
+        ArticleContributor.objects.create(article=article, contributor=person)
+        poem = make_published_poem(slug=f"poema-{person.slug}")
+        PoemContributor.objects.create(poem=poem, contributor=person)
+        CollectionArticle.objects.create(collection=collection, article=article)
+        CollectionPoem.objects.create(collection=collection, poem=poem, position=1)
 
-    from apps.content.models import EditorialStatus
-
-    art = make_article(status=EditorialStatus.PUBLISHED, slug="card-h3", title="Tarjeta H3")
-    soup = BeautifulSoup(client.get(reverse("content:text_archive")).content, "html.parser")
-    card = soup.select_one("li.article-card")
-    assert card is not None, "no se renderizó ninguna tarjeta de artículo"
-    heading = card.find(["h1", "h2", "h3", "h4", "h5", "h6"])
-    assert heading.name == "h3"
-    assert art.title in heading.get_text()
+    pages = [
+        reverse("content:text_archive"),
+        reverse("content:poem_index"),
+        section.get_absolute_url(),
+        tag.get_absolute_url(),
+        collection.get_absolute_url(),
+        member.get_absolute_url(),
+        guest.get_absolute_url(),
+        work.get_absolute_url(),
+        publisher.get_absolute_url(),
+        author.get_absolute_url(),
+        book.get_absolute_url(),
+        reverse("site:home"),
+    ]
+    levels = {f"h{n}": n for n in range(1, 7)}
+    for url in pages:
+        headings = soup(client, url).select("main :is(h1, h2, h3, h4, h5, h6)")
+        cards = [h for h in headings if h.find_parent("li", class_="article-card")]
+        assert cards, f"control: {url} no enseña ninguna tarjeta"
+        for card in cards:
+            above = [h for h in headings[: headings.index(card)] if h not in cards]
+            assert levels[card.name] == levels[above[-1].name] + 1, (
+                f"en {url}, «{card.get_text(strip=True)}» es un {card.name} bajo el "
+                f"{above[-1].name} «{above[-1].get_text(strip=True)}»"
+            )
 
 
 def test_submit_file_help_aria_reference_resolves(client):

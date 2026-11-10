@@ -1,6 +1,11 @@
 {% comment %}
    El alta del boletín ({% newsletter_form %}, desde SubscribeForm). El correo lo describen el
    error, si lo hay, y el texto de consentimiento; el campo trampa, `apodo`, va fuera de la vista.
+
+   Parámetros (los da la etiqueta):
+     form         el formulario de alta, vacío o con lo enviado y sus errores (obligatorio)
+     next         adónde volver tras el alta (obligatorio)
+     csrf_token   el de la página, que la etiqueta copia (obligatorio)
 {% endcomment %}
 <form class="newsletter" method="post" action="{% url 'community:subscribe' %}">
   {% csrf_token %}
