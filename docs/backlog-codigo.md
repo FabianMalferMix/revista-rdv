@@ -1,8 +1,8 @@
 # Backlog de la auditoría de código
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
-> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, y C31 a C33, el 2026-11-04. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 72 de 85 tickets cerrados (37 S, 44 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía.
+> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04, y C34, el 2026-11-05. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
+> **Avance:** 73 de 87 tickets cerrados (38 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 y B87 en la tanda 7, por una decisión del dueño en B68 y por lo que se vio al hacerla.
 
 ## Cómo se usa
 
@@ -52,6 +52,7 @@
 | C31 | Las descargas en PDF tienen dirección fija: `/dossier.pdf` y `/publicacion/<slug>.pdf` | B81 |
 | C32 | El epígrafe de los poemas, con la dedicatoria, entra en la búsqueda con el peso del cuerpo (D) | B82 |
 | C33 | TinyMCE se queda en 7.9.3; el paso a la 8, o a otro editor, es un ticket propio | B84 |
+| C34 | Las imágenes de otro sitio en el HTML de autor se admiten copiadas al sitio; mientras no haya copia, se quitan | B68, B86 |
 
 **Decisión visual pendiente**, que se le muestra al dueño al llegar al ticket: dónde van Prensa y Aliados en la navegación (B73). La de los sellos de «Prensa y gestión» (B55) la tomó el 2026-11-04: la palabra pequeña de los sellos azules, en el azul hundido.
 
@@ -167,7 +168,7 @@
 | --- | --- | --- | --- | --- | --- |
 | B66 | Contratos de entidad completos | — | M | no | hecho (#256) |
 | B67 | La app del sitio, por etapas | B15 | L | no | hecho (#258, #259) |
-| B68 | Una política de contenido y una tabla de proveedores | — | S | no | pendiente |
+| B68 | Una política de contenido y una tabla de proveedores | — | S | no | hecho (#260) |
 | B69 | La composición visual sale de las vistas | B26 | M | no | pendiente |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | pendiente |
 | B71 | Recetas de plantilla compartidas | B25, B29 | M | no | pendiente |
@@ -181,6 +182,8 @@
 | B79 | La suite, por componente | B61 | L | no | pendiente |
 | B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |
+| B86 | Las imágenes de otro sitio se copian al guardar | B68 | M | no | pendiente |
+| B87 | Los enlaces de YouTube en todas sus formas | B68 | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1483,6 +1486,34 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** Una búsqueda de más de 120 caracteres cuyo corte cae a mitad de una palabra encuentra el texto que piden sus palabras enteras, y al SQL siguen llegando como mucho 120 caracteres.
 
+#### B86 · Las imágenes de otro sitio se copian al guardar
+
+**Hallazgos:** fuera de la auditoría: la decisión de B68 sobre las imágenes del HTML de autor · **Depende de:** B68 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C34
+
+**Qué pasa.** Desde B68, el HTML de autor solo muestra imágenes del propio sitio: una imagen de otro sitio pegada en el editor se quita al sanear. Cargarla desde fuera le daría a ese sitio la IP y el navegador de quien lee, y la política de seguridad la bloquea. El dueño eligió admitirlas copiadas al sitio (C34).
+
+**Alcance.**
+
+- al guardar un texto o un poema, cada imagen de otro sitio se descarga y se guarda como imagen del sitio por el servicio de imágenes (sin metadatos, C13; hasta 12 MB, JPEG, PNG o WebP, C7), y el HTML pasa a apuntar a la copia;
+- la descarga, acotada: solo `https`, sin direcciones internas ni redirecciones hacia ellas, con tiempo y tamaño máximos;
+- si no se puede copiar, la imagen se quita y el panel lo dice, sin impedir el guardado;
+- la limpieza de archivos y la exportación de desarrollo conocen las copias.
+
+**Hecho cuando.** Un texto guardado con una imagen de otro sitio la muestra desde el propio sitio; ninguna página pública pide una imagen a otro origen (prueba), y una dirección interna o un archivo que no es una imagen no se descargan.
+
+#### B87 · Los enlaces de YouTube en todas sus formas
+
+**Hallazgos:** fuera de la auditoría: visto en B68, al atar los reproductores a `config/content_policy.py` · **Depende de:** B68 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.** El patrón de YouTube de `EMBED_PROVIDERS` no reconoce los enlaces de los *shorts* (`/shorts/<id>`), los de `/embed/<id>` y `/live/<id>`, ni un `watch` con el `v` después de otro parámetro (`watch?si=…&v=<id>`). Un registro con un enlace así no muestra el reproductor: cae al botón «Ver / escuchar ↗».
+
+**Alcance.**
+
+- el patrón de YouTube reconoce esas formas y saca de todas el mismo identificador, y el reproductor sigue saliendo de `youtube-nocookie.com`;
+- una prueba por cada forma de enlace, con su control: un enlace que no es de un video sigue cayendo al botón.
+
+**Hecho cuando.** Un registro con cualquiera de esas formas muestra el reproductor, y `frame-src` no cambia.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1502,7 +1533,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87
 
 ## 5. Lo diferido
 

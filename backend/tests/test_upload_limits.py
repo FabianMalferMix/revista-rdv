@@ -128,3 +128,14 @@ def test_caddy_lets_the_panel_reach_the_form_error():
 def test_caddy_lets_the_public_form_reach_its_error():
     public = _caddy_limit("fuera_del_panel")
     assert MAX_FILE_MB < public < _caddy_limit("panel")
+
+
+def test_caddy_recognizes_the_panel_by_its_route():
+    """Caddy reconoce el panel por su dirección para darle el límite más alto: los dos
+    emparejadores siguen a la ruta del panel, no a un literal."""
+    if not CADDYFILE.exists():
+        pytest.skip("el Caddyfile no está en este árbol")
+    text = CADDYFILE.read_text(encoding="utf-8")
+    panel = re.search(r"@panel path (\S+)", text).group(1)
+    elsewhere = re.search(r"@fuera_del_panel not path (\S+)", text).group(1)
+    assert panel == elsewhere == reverse("admin:index") + "*"

@@ -21,6 +21,8 @@ from django.core.validators import FileExtensionValidator
 from django.utils.deconstruct import deconstructible
 from PIL import Image
 
+from config.content_policy import embed_provider_names
+
 MB = 1024 * 1024
 # Topes de tamaño, en megas, de lo que se sube desde el panel.
 MAX_AUDIO_MB = 50
@@ -29,14 +31,14 @@ MAX_IMAGE_MB = 12
 
 # Formatos de audio admitidos para los registros (Recording.file). Los vídeos no se alojan:
 # ocupan disco, respaldo y un proceso del servidor mientras suben, y se publican con su
-# enlace de YouTube o Vimeo.
+# enlace de uno de los proveedores de config/content_policy.py.
 AUDIO_EXTENSIONS = ["mp3", "m4a", "oga", "ogg", "opus", "wav", "flac"]
 
 validate_audio_extension = FileExtensionValidator(
     allowed_extensions=AUDIO_EXTENSIONS,
     message=(
         "Formato no permitido. Sube el audio en %(allowed_extensions)s. Un vídeo se publica "
-        "con su enlace de YouTube o Vimeo, en «Enlace para incrustar»."
+        f"con su enlace de {embed_provider_names()}, en «Enlace para incrustar»."
     ),
 )
 
