@@ -6,11 +6,11 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Agenda" territorio="colectivo" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." %}
+  {% include "partials/_index_head.html" with titulo="Agenda" territorio="colectivo" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." subnav_colectivo=subnav_colectivo only %}
   {% if events %}
     <ul class="event-list">
       {% for e in events %}
-        {% include "agenda/partials/_event_card.html" %}
+        {% include "agenda/partials/_event_card.html" with e=e only %}
       {% endfor %}
     </ul>
   {% else %}
@@ -31,7 +31,7 @@
       <h2 class="subhead">Lo más reciente</h2>
       <ul class="event-list">
         {% for e in recientes %}
-          {% include "agenda/partials/_event_card.html" %}
+          {% include "agenda/partials/_event_card.html" with e=e only %}
         {% endfor %}
       </ul>
       <p><a href="{% url 'agenda:trayectoria' %}">Ver toda la trayectoria →</a></p>

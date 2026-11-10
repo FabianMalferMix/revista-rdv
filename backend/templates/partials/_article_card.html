@@ -5,6 +5,13 @@
    siguen siendo enlaces propios. Ver «Filas» en site.css.
    Si el texto tiene imagen, va en miniatura a la derecha, a una tinta como las fotos de
    los listados: acompaña al título, que ya la nombra.
+
+   Parámetros (se incluye con `only`):
+     a              el texto (obligatorio), de `published().for_row()`: trae la sección, la
+                    imagen y las firmas que pinta la fila
+     nivel          el nivel de su título: 2 si no se da, bajo el h1 de la página; 3 bajo el
+                    título h2 de una sección
+     sin_firma_de   la persona de la ficha: su firma no se repite en cada fila
 {% endcomment %}
 <li class="article-card fila{% if a.cover_image %} fila--con-miniatura{% endif %}">
   {% if a.published_at %}<time class="meta fila-fecha" datetime="{{ a.published_at|date:'Y-m-d' }}">{{ a.published_at|date:"j M Y" }}</time>{% endif %}
@@ -12,7 +19,7 @@
     <span class="kicker">
       {% if a.section and a.seccion_aporta %}<a href="{{ a.section.get_absolute_url }}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{{ a.section.get_absolute_url }}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
     </span>
-    <h3 class="fila-titulo"><a href="{{ a.get_absolute_url }}">{{ a.title }}</a></h3>
+    {% firstof nivel 2 as nivel %}<h{{ nivel }} class="fila-titulo"><a href="{{ a.get_absolute_url }}">{{ a.title }}</a></h{{ nivel }}>
     {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
   </div>
   <p class="meta fila-pie">

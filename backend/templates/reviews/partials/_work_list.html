@@ -1,4 +1,10 @@
-<ul class="work-list">
+{% comment %}
+   Las obras reseñadas de una editorial o de un autor: el título, que lleva a su ficha, y al
+   lado su clase y su año.
+
+   Parámetros (se incluye con `only`):
+     works    las obras (obligatorio)
+{% endcomment %}<ul class="work-list">
   {% for w in works %}
     <li>
       <a href="{{ w.get_absolute_url }}">{{ w.title }}</a>

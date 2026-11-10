@@ -2,7 +2,6 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render
 
-from apps.content.models import Article, Poem
 from apps.site.pie import vecinos_en_lista
 
 from .models import Contributor, url_for_person
@@ -22,19 +21,8 @@ def member_detail(request, slug):
         if Contributor.objects.visible().filter(slug=slug).exists():
             return redirect(url_for_person(slug, is_member=False))
         raise Http404
-    articles = (
-        member.articles.published()
-        .select_related("section")
-        .prefetch_related(Article.bylines_prefetch())
-        .order_by("-published_at")
-    )
-    # select_related("recording"): la fila del poema avisa «con registro».
-    poems = (
-        member.poems.published()
-        .select_related("recording")
-        .prefetch_related(Poem.bylines_prefetch())
-        .order_by("-published_at")
-    )
+    articles = member.articles.published().for_row().order_by("-published_at")
+    poems = member.poems.published().for_row().order_by("-published_at")
     recordings = member.recordings.published()
     # Las actividades en que participó (ticket 4.5): la ficha enseñaba lo que escribe y lo
     # que grabó, pero no dónde ha leído. Las doce más recientes; el resto, en la trayectoria.

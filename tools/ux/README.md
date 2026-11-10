@@ -55,7 +55,7 @@ código, y sale con 1.
 | Columna | Qué es | Referencia |
 |---|---|---|
 | `razon` | ancho del texto / ancho del viewport | la auditoría midió 0,54 a 1440; las referencias, 0,80 a 0,96 |
-| `h1` | tamaño del primer `h1` visible | en un índice debe superar al `h3` de tarjeta |
+| `h1` | tamaño del primer `h1` visible | en un índice debe superar al título de las tarjetas |
 | `cpl` | caracteres de la línea más larga del cuerpo de artículo | 45 a 75 (Bringhurst) |
 | `img1` | imágenes en el primer viewport | |
 | `desv` | imágenes cuya caja no respeta la proporción pedida | debe ser 0 |

@@ -1,1 +1,15 @@
-<img src="{{ url }}"{% if srcset %} srcset="{{ srcset }}" sizes="{{ sizes }}"{% endif %}{% if width %} width="{{ width }}" height="{{ height }}"{% endif %} alt="{{ alt }}"{% if css_class %} class="{{ css_class }}"{% endif %}{% if lazy %} loading="lazy"{% endif %} decoding="async">
+{% comment %}
+   Una imagen con sus copias (`srcset`), su proporción (`width` y `height` reservan su caja
+   antes de que llegue) y su texto alternativo. La pinta la etiqueta `responsive_img`
+   (apps/media/templatetags/images.py).
+
+   Parámetros (los da la etiqueta):
+     url         la del archivo (obligatorio)
+     alt         el texto alternativo; vacío si la imagen es decorativa (obligatorio)
+     srcset      las copias de la imagen, si las tiene
+     sizes       lo que mide pintada, para elegir entre las copias
+     width       el ancho del archivo; con height, su proporción
+     height      el alto del archivo
+     css_class   la clase del <img>
+     lazy        si espera a acercarse a la vista para cargarse
+{% endcomment %}<img src="{{ url }}"{% if srcset %} srcset="{{ srcset }}" sizes="{{ sizes }}"{% endif %}{% if width %} width="{{ width }}" height="{{ height }}"{% endif %} alt="{{ alt }}"{% if css_class %} class="{{ css_class }}"{% endif %}{% if lazy %} loading="lazy"{% endif %} decoding="async">

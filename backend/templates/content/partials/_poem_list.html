@@ -1,9 +1,16 @@
-<ul class="filas">
+{% comment %}
+   La lista del índice de poemas: una fila por poema (`_poem_card.html`), sin la cejilla
+   «Poema», que ahí no dice nada, y debajo su paginación.
+
+   Parámetros (se incluye con `only`):
+     poems          los poemas de la lista (obligatorio), de `published().for_row()`
+     pagina         la página de Django de esa lista (obligatorio), o None si no se pagina
+{% endcomment %}<ul class="filas">
   {% for p in poems %}
-    {% include "partials/_poem_card.html" with sin_cejilla=True %}
+    {% include "partials/_poem_card.html" with p=p sin_cejilla=True only %}
   {% empty %}
     <li class="empty">Aún no hay poemas publicados.</li>
   {% endfor %}
 </ul>
 
-{% include "partials/_pagination.html" with pagina=poems unidad="poemas" %}
+{% include "partials/_pagination.html" with pagina=pagina unidad="poemas" only %}

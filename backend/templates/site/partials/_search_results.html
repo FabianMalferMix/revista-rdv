@@ -5,6 +5,15 @@
 
    En el panel de la lupa, además, lo que oye el lector de pantalla: el recuento (o el aviso),
    que htmx lleva a `search-status` (base.html), la región que se anuncia, y que aquí no se pinta.
+   El panel la pide sola: la pinta la vista `search`, con estos mismos nombres.
+
+   Parámetros (se incluye con `only`):
+     q        lo que se buscó (obligatorio); sin nada buscado, no se pinta nada
+     grupos   los resultados por tipo, cada grupo con su título y sus resultados (obligatorio)
+     total    cuántos resultados hay entre todos los grupos
+     aviso    por qué no se buscó (el límite de tasa), si no se buscó
+     panel    True en el panel de la lupa: lleva el recuento que se anuncia y el enlace a la
+              página de resultados
 {% endcomment %}
 {% if panel %}
   <p id="search-status" hx-swap-oob="innerHTML">{% if aviso %}{{ aviso }}{% elif q and total %}{{ total }} resultado{{ total|pluralize }} para “{{ q }}”{% elif q %}Sin resultados para “{{ q }}”.{% endif %}</p>

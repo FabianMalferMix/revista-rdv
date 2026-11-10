@@ -130,6 +130,12 @@ vigente más cercano y no se agrava la deuda.
      búsqueda, pie de las fichas, sitemaps), `apps/site/`.
    - Las parciales que pintan varias apps, `templates/partials/`; la de una sola, en la carpeta
      de su app (`tests/test_partial_folders.py`).
+   - Cada parcial dice en su cabecera qué recibe, en un bloque «Parámetros» que marca lo
+     obligatorio, y se incluye con `only` y sus parámetros por nombre, también lo que da un
+     procesador de contexto: `partials/_mapa.html` declara `en_menu`, `site_profile` y
+     `redes_del_colectivo`, y `base.html` se los pasa. Un parámetro opcional se lee con
+     `{% if %}` o `{% firstof %}`, nunca con `|default`, que con `string_if_invalid` hace fallar
+     la suite (`tests/test_partial_contracts.py`).
    - Las apps se importan solo por las aristas de hoy: `lint-imports --no-cache` (el contrato, en
      `backend/pyproject.toml`) falla ante un import nuevo entre dos apps que no se importaban.
 

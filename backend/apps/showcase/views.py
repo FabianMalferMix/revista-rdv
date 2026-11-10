@@ -37,9 +37,8 @@ def publication_detail(request, slug):
     # (`Work.publicacion`). Lo pidió el dueño del sitio después del paso 21 del plan.
     resenas = list(
         Article.objects.published()
+        .for_row()
         .filter(reviewed_works__publicacion=publication)
-        .select_related("section", "cover_image")
-        .prefetch_related(Article.bylines_prefetch())
         .order_by("-published_at")
         .distinct()
     )

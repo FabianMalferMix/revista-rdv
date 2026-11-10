@@ -177,7 +177,7 @@ def test_la_fila_de_un_texto_reparte_fecha_titulo_y_firma(client):
         "la fecha debe poder leerla una máquina"
     )
     assert "fila-cuerpo" in cuerpo["class"]
-    assert cuerpo.select_one("h3.fila-titulo a")["href"] == articulo.get_absolute_url()
+    assert cuerpo.select_one(".fila-titulo a")["href"] == articulo.get_absolute_url()
     assert cuerpo.select_one("p.dek").get_text() == "Su bajada"
     assert "fila-pie" in pie["class"]
     assert pie.select_one("a")["href"] == firma.get_absolute_url()

@@ -45,7 +45,7 @@
       </span>
       <h1{% if article.title|long_for_ficha %} class="titulo-largo"{% endif %}>{{ article.title }}</h1>
       {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
-      {% include "content/partials/_firmas_lectura.html" with personas=article.bylines %}
+      {% include "content/partials/_firmas_lectura.html" with personas=article.bylines only %}
       <p class="meta">{{ article.reading_time }} min{% if article.published_at %} · <time datetime="{{ article.published_at|date:'Y-m-d' }}">{{ article.published_at|date:"j M Y" }}</time>{% endif %}</p>
 
       {% with reviewed=article.reviewed_works.all %}

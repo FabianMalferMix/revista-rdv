@@ -1,2 +1,8 @@
-{% if image_url %}<meta property="og:image" content="{{ image_url }}">{% endif %}
+{% comment %}
+   La imagen para compartir la página: `og:image`, y la tarjeta de Twitter, grande si hay
+   imagen. La pinta la etiqueta `social_meta` (apps/media/templatetags/social.py).
+
+   Parámetros (los da la etiqueta):
+     image_url   la URL absoluta de la imagen, o vacía si no hay ninguna (obligatorio)
+{% endcomment %}{% if image_url %}<meta property="og:image" content="{{ image_url }}">{% endif %}
 <meta name="twitter:card" content="{% if image_url %}summary_large_image{% else %}summary{% endif %}">

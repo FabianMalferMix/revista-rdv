@@ -1,9 +1,19 @@
-<ul class="filas">
+{% comment %}
+   Lista de textos: una fila por texto (`_article_card.html`) y, debajo, su paginación.
+
+   Parámetros (se incluye con `only`):
+     articles       los textos de la lista (obligatorio), de `published().for_row()`
+     pagina         la página de Django de esa lista (obligatorio), o None en una lista con
+                    tope que no se pagina, como los tres textos de la portada
+     nivel          el nivel del título de cada fila (obligatorio): 2 bajo el h1 de la
+                    página, 3 bajo el título h2 de una sección
+     sin_firma_de   la persona de la ficha: su firma no se repite en cada fila
+{% endcomment %}<ul class="filas">
   {% for a in articles %}
-    {% include "partials/_article_card.html" %}
+    {% if sin_firma_de %}{% include "partials/_article_card.html" with a=a nivel=nivel sin_firma_de=sin_firma_de only %}{% else %}{% include "partials/_article_card.html" with a=a nivel=nivel only %}{% endif %}
   {% empty %}
     <li class="empty">Aún no hay publicaciones aquí.</li>
   {% endfor %}
 </ul>
 
-{% include "partials/_pagination.html" with pagina=articles unidad="textos" %}
+{% include "partials/_pagination.html" with pagina=pagina unidad="textos" only %}

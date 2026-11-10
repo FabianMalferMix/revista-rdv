@@ -2,6 +2,9 @@
 {% comment %}
    Retrato 4:5 a todo el ancho de la tarjeta, a una tinta (duotono) hasta que se señala.
    Sin foto, el monograma en la misma caja. Toda la tarjeta es el enlace (ver site.css).
+
+   Parámetros (se incluye con `only`):
+     m    la integrante (obligatorio)
 {% endcomment %}
 <li class="member-card">
   <a href="{{ m.get_absolute_url }}">

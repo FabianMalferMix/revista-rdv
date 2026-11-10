@@ -6,10 +6,10 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Integrantes" territorio="colectivo" cuenta=members|length singular="integrante" plural="integrantes" dek="Quiénes integran el colectivo: poetas, trayectorias y obra." %}
+  {% include "partials/_index_head.html" with titulo="Integrantes" territorio="colectivo" cuenta=members|length singular="integrante" plural="integrantes" dek="Quiénes integran el colectivo: poetas, trayectorias y obra." subnav_colectivo=subnav_colectivo only %}
   <ul class="member-grid">
     {% for m in members %}
-      {% include "people/partials/_member_card.html" %}
+      {% include "people/partials/_member_card.html" with m=m only %}
     {% empty %}
       <li class="empty">Aún no hay integrantes publicados.</li>
     {% endfor %}

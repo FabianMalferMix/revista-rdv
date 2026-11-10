@@ -3,11 +3,17 @@
    once enlaces separados por puntos. Los rótulos dan a cada enlace un lugar donde
    buscarlo en vez de obligar a leerlos todos.
 
-   etiqueta   nombre del bloque para un lector de pantalla (por defecto «Mapa del sitio»)
-   en_menu    en el menú de la cabecera los rótulos no son encabezados: irían antes del
-              título de la página. Hay que darlo siempre, True o False.
-   sin_contacto  sin el correo ni el Instagram: en el pie ya van en la identidad del
-              colectivo, que abre el pie. El menú del teléfono los conserva.
+   Parámetros (se incluye con `only`):
+     en_menu               en el menú de la cabecera los rótulos no son encabezados: irían
+                           antes del título de la página. Hay que darlo siempre, True o False
+                           (obligatorio)
+     site_profile          el perfil del colectivo, del procesador de contexto: su correo
+                           (obligatorio)
+     redes_del_colectivo   sus redes, del mismo procesador (obligatorio)
+     etiqueta              nombre del bloque para un lector de pantalla («Mapa del sitio» si
+                           no se da otro)
+     sin_contacto          sin el correo ni el Instagram: en el pie ya van en la identidad del
+                           colectivo, que abre el pie. El menú del teléfono los conserva
 {% endcomment %}
 {% with t=en_menu|yesno:"p,h2" %}
 <nav class="foot-groups" aria-label="{% firstof etiqueta 'Mapa del sitio' %}">

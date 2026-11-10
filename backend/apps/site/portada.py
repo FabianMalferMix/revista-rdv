@@ -168,17 +168,8 @@ class Obra:
 
 def build_obra():
     return Obra(
-        # select_related("recording"): la tarjeta de cada poema pregunta por su registro
-        # publicado (`published_recording`); sin esto sería una consulta por poema.
-        poemas=list(
-            Poem.objects.published()
-            .select_related("recording")
-            .prefetch_related(Poem.bylines_prefetch())[:3]
-        ),
-        # cover_image: la fila de cada texto enseña su imagen en miniatura.
-        articles=Article.objects.published()
-        .select_related("section", "cover_image")
-        .prefetch_related(Article.bylines_prefetch())[:3],
+        poemas=list(Poem.objects.published().for_row()[:3]),
+        articles=Article.objects.published().for_row()[:3],
     )
 
 

@@ -12,7 +12,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import EditorialStatus
-from tests.factories import make_article, make_poem, soup
+from apps.reviews.models import BookAuthor, Publisher, Work
+from tests.factories import make_article, make_poem, make_published_article, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -81,6 +82,40 @@ def test_los_textos_y_los_registros_usan_la_misma_paginacion(client):
         make_article(slug=f"t{i}", status=EditorialStatus.PUBLISHED, published_at=timezone.now())
     nav = _nav(client.get(reverse("content:text_archive")).content)
     assert "de 13 textos" in nav.get_text()
+
+
+@pytest.mark.parametrize(
+    "owner", ["reviews:work_detail", "reviews:publisher_detail", "reviews:bookauthor_detail"]
+)
+def test_the_reviews_of_a_work_a_publisher_or_an_author_go_twelve_by_twelve(client, owner):
+    """Como los índices: «1–12 de 13 textos», y la última, en la página siguiente."""
+    publisher = Publisher.objects.create(slug="editorial", name="Editorial")
+    author = BookAuthor.objects.create(slug="autora", name="Autora")
+    work = Work.objects.create(slug="obra", title="Obra", publisher=publisher)
+    work.authors.add(author)
+    for i in range(13):
+        make_published_article(slug=f"resena-{i}").reviewed_works.add(work)
+    url = {
+        "reviews:work_detail": work,
+        "reviews:publisher_detail": publisher,
+        "reviews:bookauthor_detail": author,
+    }[owner].get_absolute_url()
+
+    first = soup(client, url)
+    assert len(first.select("li.article-card")) == 12
+    nav = first.select_one("nav.pagination")
+    count = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
+    assert count == "1–12 de 13 textos"
+    assert nav.find(string=re.compile("Anteriores")).parent.name == "span"
+    next_link = nav.find("a", rel="next")
+    assert next_link.get_text() == "Siguientes →" and next_link["href"] == "?page=2"
+
+    last = soup(client, url + "?page=2")
+    assert len(last.select("li.article-card")) == 1
+    nav = last.select_one("nav.pagination")
+    count = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
+    assert count == "13–13 de 13 textos"
+    assert nav.find("a", rel="prev").get_text() == "← Anteriores"
 
 
 def test_las_tres_listas_comparten_el_parcial():
