@@ -1,22 +1,31 @@
 // Inicializa TinyMCE sobre los textarea con clase .richtext en el admin.
 // TinyMCE va auto-hospedado en static/vendor/tinymce-<versión>/ (sin CDN, sin API key);
 // su cargador resuelve el resto de recursos relativos a tinymce.min.js.
+//
+// Las etiquetas y atributos que admite el editor llegan en el atributo data-valid-elements de
+// cada cuadro (RichTextWidget): son los que deja pasar nh3 al guardar, de la misma lista. Un
+// cuadro sin esa lista se queda sin editor y lo dice en la consola: con la suya por defecto,
+// TinyMCE enseñaría lo que el servidor después quita.
 window.addEventListener("load", function () {
   if (!window.tinymce) return;
-  window.tinymce.init({
-    selector: "textarea.richtext",
-    menubar: false,
-    plugins: "lists link autolink",
-    // Una imagen pegada viaja como data: y la limpieza del HTML la borra al guardar: mejor
-    // que no entre. Las imágenes del texto se suben como recurso.
-    paste_data_images: false,
-    toolbar:
-      "undo redo | h2 h3 | bold italic | bullist numlist | blockquote link | removeformat",
-    height: 480,
-    branding: false,
-    // Coincide con la lista blanca de nh3 (el servidor vuelve a sanitizar al guardar).
-    valid_elements:
-      "p,br,hr,blockquote,pre,code,em,strong,i,b,u,s,sub,sup,small,cite," +
-      "h2,h3,h4,ul,ol,li,a[href|title],img[src|alt|title|width|height],figure,figcaption",
+  document.querySelectorAll("textarea.richtext").forEach(function (textarea) {
+    var validElements = textarea.getAttribute("data-valid-elements");
+    if (!validElements) {
+      console.error("richtext_init: el cuadro " + textarea.name + " no trae data-valid-elements");
+      return;
+    }
+    window.tinymce.init({
+      target: textarea,
+      menubar: false,
+      plugins: "lists link autolink",
+      // Una imagen pegada viaja como data: y la limpieza del HTML la borra al guardar: mejor
+      // que no entre. Las imágenes del texto se suben como recurso.
+      paste_data_images: false,
+      toolbar:
+        "undo redo | h2 h3 | bold italic | bullist numlist | blockquote link | removeformat",
+      height: 480,
+      branding: false,
+      valid_elements: validElements,
+    });
   });
 });

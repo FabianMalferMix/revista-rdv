@@ -1,37 +1,22 @@
-"""Conversión de URLs públicas (YouTube/Vimeo) a URLs embebibles en iframe."""
-
-import re
+"""El reproductor de un registro con enlace: los proveedores de `config/content_policy.py`."""
 
 from django import template
 
-register = template.Library()
+from config.content_policy import embed_provider_for
 
-_YOUTUBE = re.compile(r"(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]{6,})")
-_VIMEO = re.compile(r"vimeo\.com/(\d+)")
+register = template.Library()
 
 
 @register.filter
 def embed_src(url):
-    """URL de iframe para YouTube/Vimeo; cadena vacía si no se reconoce el proveedor."""
-    if not url:
-        return ""
-    match = _YOUTUBE.search(url)
-    if match:
-        return f"https://www.youtube-nocookie.com/embed/{match.group(1)}"
-    match = _VIMEO.search(url)
-    if match:
-        return f"https://player.vimeo.com/video/{match.group(1)}"
-    return ""
+    """La dirección del reproductor para el iframe; vacía si no se reconoce el proveedor."""
+    provider = embed_provider_for(url)
+    return provider.src(url) if provider else ""
 
 
 @register.filter
 def embed_provider(url):
-    """Nombre legible del proveedor, para poder avisar a quién se conecta el visitante
-    antes de que ocurra (hallazgo S-19). Cadena vacía si no se reconoce."""
-    if not url:
-        return ""
-    if _YOUTUBE.search(url):
-        return "YouTube"
-    if _VIMEO.search(url):
-        return "Vimeo"
-    return ""
+    """El nombre del proveedor, para avisar a quién se conecta el visitante antes de que ocurra.
+    Vacío si no se reconoce."""
+    provider = embed_provider_for(url)
+    return provider.name if provider else ""

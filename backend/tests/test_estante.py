@@ -19,6 +19,7 @@ from PIL import Image
 from apps.media.models import MediaAsset
 from apps.media.templatetags.images import SIZES, sizes
 from apps.reviews.models import Publisher
+from apps.showcase.models import INK, SURFACE
 from apps.site.portada import ESTANTE
 from config.breakpoints import ESTANTE_WIDE, from_cut
 from tests import css
@@ -174,6 +175,15 @@ def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
         assert svg["aria-hidden"] == "true" and svg["focusable"] == "false"
     fondo = css.rule((), ".ejemplar-lomo-fondo")
     assert (fondo["position"], fondo["inset"], fondo["z-index"]) == ("absolute", "0", "-1")
+
+
+def test_the_spine_text_is_in_the_ink_or_the_white_of_the_sheet():
+    """El lomo elige entre la tinta y el blanco el que más contraste da con su color: son los
+    colores con que la hoja pinta su texto, `--ink` y, sobre un lomo oscuro, `--surface`."""
+    assert css.rule((), ".ejemplar-lomo")["color"] == "var(--ink)"
+    assert css.rule((), ".ejemplar--oscuro .ejemplar-lomo")["color"] == "var(--surface)"
+    tokens = css.tokens()
+    assert (INK, SURFACE) == (tokens["--ink"].lower(), tokens["--surface"].lower())
 
 
 def test_con_una_sola_no_hay_guion(client):
