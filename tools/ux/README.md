@@ -81,6 +81,7 @@ guiones ejecutándose de verdad. Comprueba que:
   los campos trampa de los formularios no se ven;
 - la cabecera pasa a cápsula al bajar, y la portada se reconoce por su marca: arriba no tiene
   cabecera, y la cápsula le llega sin transición de vista;
+- arriba de la portada, la cápsula que se abre con el teclado busca con el mismo ancho que al bajar;
 - sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue
   usable: la cabecera clásica, la tirada en fila y el estante con sus enlaces;
 - el estante y la tirada responden al teclado (la tirada, también al dedo, y solo anuncia lo que

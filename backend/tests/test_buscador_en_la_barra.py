@@ -29,7 +29,8 @@ def test_al_buscar_el_campo_ocupa_el_lugar_de_los_enlaces():
 
 
 def test_la_capsula_conserva_su_ancho_mientras_se_busca():
-    capsula = css.rule((), f'html[data-barra="pildora"] {ABIERTA}')
+    """En sus dos estados: al bajar y, abierta desde el teclado, arriba de la portada."""
+    capsula = css.rule((), f"{CAPSULA} {ABIERTA}")
     assert capsula["width"] == "min(var(--capsula-ancho), 100% - 24px)"
 
 
@@ -48,12 +49,13 @@ def test_buscar_no_desplaza_la_pagina():
 
 
 def test_solo_cambia_la_cabecera():
-    """Cada regla del estilo nuevo empieza en la fila de la cabecera (o en <html>): el
-    formulario de /buscar/, fuera de la cabecera, queda como estaba."""
+    """Cada regla del estilo nuevo cuelga de la lupa abierta en la fila de la cabecera (o en
+    <html>), y delante solo puede llevar el estado de la cápsula: el formulario de /buscar/,
+    fuera de la cabecera, queda como estaba."""
     selectores = [s for r in css.rules() for s in r.selectors if ":has(.busqueda[open])" in s]
     assert selectores
     for selector in selectores:
-        assert selector.startswith((".masthead-fila:has(", "html")), selector
+        assert selector.removeprefix(f"{CAPSULA} ").startswith((ABIERTA, "html:has(")), selector
 
 
 def test_the_search_in_the_header_has_a_single_shape():

@@ -516,7 +516,9 @@ html[data-barra="pildora"] > :not([data-pagina="portada"]) .masthead-fila{view-t
   border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line); padding:var(--s2)}
 .masthead-fila:has(.busqueda[open]) .search-list a{font-family:var(--display); letter-spacing:var(--tr-titulo); font-weight:600; text-decoration:none}
 .masthead-fila:has(.busqueda[open]) .search-list a:hover{color:var(--accent)}
-html[data-barra="pildora"] .masthead-fila:has(.busqueda[open]){width:min(var(--capsula-ancho), 100% - 24px)}
+/* La cápsula busca con su ancho en sus dos estados: al bajar y, abierta desde el teclado,
+   arriba de la portada. */
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila:has(.busqueda[open]){width:min(var(--capsula-ancho), 100% - 24px)}
 /* Mientras se busca, sin el margen de arriba: el campo está dentro de la cabecera fija y el
    navegador lo creía tapado por ese margen, así que al escribir desplazaba la página para
    «mostrarlo». */
