@@ -1,4 +1,4 @@
-// La lupa de la cabecera abre el buscador en un panel (un <details> nativo: sin
+// La lupa de la cabecera abre el campo de búsqueda en la fila (un <details> nativo: sin
 // JavaScript abre igual y el formulario lleva a /buscar/). Esto solo afina:
 //   · al abrirlo, el foco va al campo, que es lo que se quiere hacer;
 //   · Escape cierra el panel abierto (o el menú del teléfono) y devuelve el foco a su botón;

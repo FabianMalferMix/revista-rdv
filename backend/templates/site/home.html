@@ -2,6 +2,7 @@
 {% load images joined pie portada publications static versos %}
 
 {% block title_tagline %}{{ site_profile.tagline }}{% endblock %}
+{% block pagina %}portada{% endblock %}
 {% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
 {% block head_extra %}
@@ -25,11 +26,10 @@
     {% portada_img arte.portada_imagen arte.portada_telefono %}
     <div class="portada-mancheta">
       {% comment %}
-         El nombre sigue siendo el único h1 y lleva la clase .hero-nombre: de ella cuelgan la
-         cápsula de la cabecera (site.css) y cabecera.js. Se ve el logo, y los lectores de
-         pantalla y los buscadores leen el nombre.
+         El nombre sigue siendo el único h1. Se ve el logo, y los lectores de pantalla y los
+         buscadores leen el nombre.
       {% endcomment %}
-      <h1 class="hero-nombre portada-logo" id="portada-nombre"><span class="sr-only">{{ site_name }}</span>{% include "site/partials/_logo_horizontal.html" only %}{% include "site/partials/_logo_apilado.html" only %}</h1>
+      <h1 class="portada-logo" id="portada-nombre"><span class="sr-only">{{ site_name }}</span>{% include "site/partials/_logo_horizontal.html" only %}{% include "site/partials/_logo_apilado.html" only %}</h1>
     </div>
   </section>
 

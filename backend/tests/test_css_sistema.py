@@ -225,7 +225,7 @@ def test_el_foco_se_ve_sobre_la_placa_del_reproductor():
 
 
 def test_el_panel_de_busqueda_se_cierra_al_dejar_de_usarlo():
-    regla = css.rule((), ".search:not(:focus-within):not(:hover) #search-results")
+    regla = css.rule((), ".search:not(:focus-within):not(:hover) .busqueda-resultados")
     assert regla["display"] == "none"
 
 
@@ -308,7 +308,8 @@ def _enlace_total():
     assert capa["content"] == '""' and capa["position"] == "absolute" and capa["inset"] == "0"
     assert css.rule((), "li:has(.enlace-total)")["position"] == "relative"
     secundarios = css.rule((), "li:has(.enlace-total) a:not(.enlace-total)")
-    assert secundarios["position"] == "relative" and secundarios["z-index"] == "1"
+    assert secundarios["position"] == "relative"
+    assert css.resolve(secundarios["z-index"]) == "1"
     assert secundarios["padding-block"] == "6px", "su zona de pulsado bajaría de 24 px"
 
 
@@ -326,7 +327,7 @@ def test_el_estado_de_la_fila_es_una_hoja_mas_clara_y_no_alcanza_a_las_que_no_en
     """Un hito no lleva a ninguna parte: su fila no debe prometerlo al pasar el puntero.
     El estado se pinta detrás del contenido (`isolation`) para no tapar el texto."""
     assert css.rule((), ".fila")["isolation"] == "isolate"
-    assert css.rule((), ".fila::before")["z-index"] == "-1"
+    assert css.resolve(css.rule((), ".fila::before")["z-index"]) == "-1"
     estado = css.rule((), ".fila:has(.fila-titulo a):hover::before, .fila:focus-within::before")
     assert estado["background-color"] == "var(--paper-2)"
     sueltos = [
@@ -406,7 +407,8 @@ def test_la_miniatura_de_registro_es_16_9_y_lleva_marca_de_reproduccion():
     assert miniatura["aspect-ratio"] == "16 / 9" and miniatura["background"] == "var(--caratula)"
     # El cartel va en posición absoluta: la marca necesita z-index o queda debajo.
     for capa in (".rec-miniatura::before", ".rec-miniatura::after"):
-        assert css.rule((), capa)["z-index"] == "1", f"«{capa}» quedaría tapada por el cartel"
+        altura = css.resolve(css.rule((), capa)["z-index"])
+        assert altura == "1", f"«{capa}» quedaría tapada por el cartel"
     assert css.rule((), ".recording-card")["position"] == "relative"
     _enlace_total()  # la tarjeta entera es el enlace
 
@@ -596,7 +598,6 @@ BLANCO_PERMITIDO = {
     ".search-page input",
     ".newsletter input[type=email]",
     ".form input, .form textarea, .form select",
-    "#search-results:not(:empty)",
     ".pub-card img, .pub-cover-fallback",
     ".embed-play",
     ".embed-play:hover::after",
@@ -1171,12 +1172,11 @@ def test_en_el_telefono_menu_va_en_tinta_como_la_lupa():
     assert estado["color"] == "var(--accent)"
 
 
-def test_el_campo_del_buscador_ocupa_su_panel():
-    """El «…» de htmx, invisible mientras no se busca, le quitaba al campo 35 px: va en el
-    margen del panel. El panel acaba donde el botón «Dossier», no en el borde de la ventana."""
+def test_the_htmx_indicator_takes_no_room_from_the_field():
+    """El «…» de htmx, invisible mientras no se busca, le quitaría al campo 35 px si fuera en
+    el flujo: va fuera de él, sobre el extremo del campo."""
     assert css.rule((), ".search input")["flex"] == "1"
     assert css.rule((), ".busqueda .htmx-indicator")["position"] == "absolute"
-    assert css.rule((), ".busqueda .search")["right"] == "var(--gutter)"
 
 
 # ── Titular de la portada (ticket 4.2, la opción A del dueño) ─────────────
@@ -1227,18 +1227,18 @@ def test_el_telon_solo_con_movimiento_y_si_la_obra_cabe():
     telon = ("@media (prefers-reduced-motion:no-preference) and (min-height:460px)",)
     obra = css.rule(telon, ".portada-arte")
     assert obra["position"] == "sticky" and obra["top"] == "0"
-    assert css.rule(telon, ".portada-arte:focus-within")["z-index"] == "2"
+    assert css.resolve(css.rule(telon, ".portada-arte:focus-within")["z-index"]) == "2"
     assert _contexts_where(".portada-arte", "position", "sticky") == {telon}, (
         "la obra solo es fija dentro de su bloque"
     )
     hoja = css.rule((), ".portada-telon")
     for propiedad, valor in (
         ("position", "relative"),
-        ("z-index", "1"),
         ("background", "var(--paper)"),
         ("grid-template-columns", "var(--carriles)"),
     ):
         assert hoja.get(propiedad) == valor, propiedad
+    assert css.resolve(hoja["z-index"]) == "1"
 
 
 def test_el_boton_del_titular_se_oculta_donde_aparece_el_de_la_cabecera():
@@ -1269,3 +1269,51 @@ def test_hidden_attribute_beats_any_author_display():
     componentes ocultos con el atributo no se ven."""
     oculto = css.rule((), "[hidden]")
     assert oculto.declarations == (css.Declaration("display", "none", important=True),)
+
+
+# ── Lo que se apila ───────────────────────────────────────────────────────
+
+# Una altura de la escala: su token, o su token más unos niveles (un lugar de la pila de la
+# tirada).
+DE_LA_ESCALA = re.compile(r"var\((--z-[\w-]+)\)|calc\(var\((--z-[\w-]+)\) \+ \d+\)")
+
+
+def _token_de(altura):
+    hallado = DE_LA_ESCALA.fullmatch(altura)
+    return hallado and (hallado[1] or hallado[2])
+
+
+def test_every_z_index_comes_from_the_scale():
+    """Lo que se apila toma su altura de la escala de `:root` (`--z-…`), que nombra lo que
+    apila: con números sueltos, quien añade algo que flota elige uno a ojo, y lo que debía ir
+    encima queda debajo sin que nada lo diga. La escala vive en un solo sitio: ninguna regla
+    declara su propio `--z-`."""
+    escala = {nombre: valor for nombre, valor in css.tokens().items() if nombre.startswith("--z-")}
+    assert escala and all(re.fullmatch(r"-?\d+", valor) for valor in escala.values()), escala
+    alturas = [(bloque, d.value) for bloque, d in css.declarations() if d.name == "z-index"]
+    assert alturas, "la prueba dejó de encontrar los z-index"
+    sueltas = [
+        f"línea {bloque.line}: {valor}"
+        for bloque, valor in alturas
+        if _token_de(valor) not in escala
+    ]
+    assert sueltas == []
+    fuera = [
+        f"línea {bloque.line}: {d.name}"
+        for bloque, d in css.declarations()
+        if d.name.startswith("--z-")
+        and not (getattr(bloque, "selector", None) == ":root" and bloque.context == ())
+    ]
+    assert fuera == []
+
+
+def test_what_floats_over_the_page_goes_over_the_fixed_header():
+    """«Saltar al contenido» y la vista ampliada de una foto van sobre la cabecera fija: debajo,
+    el salto quedaría tapado al recibir el foco, y la cabecera taparía el cierre de la vista."""
+
+    def altura(selector):
+        return int(css.resolve(css.rule((), selector)["z-index"]))
+
+    cabecera = altura(".masthead")
+    assert altura(".skip") > cabecera
+    assert altura(".lightbox") > cabecera

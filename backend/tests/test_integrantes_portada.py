@@ -167,11 +167,11 @@ def test_llega_bajo_una_pasada_de_tinta():
     for propiedad, valor in (
         ("position", "absolute"),
         ("inset", "-4px"),
-        ("z-index", "2"),
         ("pointer-events", "none"),
         ("background", "linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)"),
     ):
         assert tinta.get(propiedad) == valor, propiedad
+    assert css.resolve(tinta["z-index"]) == "2"
     assert "clipPath" in INTEGRANTES_JS and "!quieto.matches" in INTEGRANTES_JS
 
 

@@ -174,7 +174,8 @@ def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
     for svg in estante.select(".ejemplar svg"):
         assert svg["aria-hidden"] == "true" and svg["focusable"] == "false"
     fondo = css.rule((), ".ejemplar-lomo-fondo")
-    assert (fondo["position"], fondo["inset"], fondo["z-index"]) == ("absolute", "0", "-1")
+    assert (fondo["position"], fondo["inset"]) == ("absolute", "0")
+    assert css.resolve(fondo["z-index"]) == "-1"
 
 
 def test_the_spine_text_is_in_the_ink_or_the_white_of_the_sheet():

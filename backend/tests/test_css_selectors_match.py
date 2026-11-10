@@ -693,7 +693,7 @@ def test_what_the_browser_and_the_scripts_add_is_left_out(selector, server):
         # El aria-current de la barra lo pone el servidor; el de los pliegos, el guion.
         ".nav a[aria-current]",
         # Una negación ya se cumple en el HTML del servidor, que no trae ni estados ni marcas.
-        ".search:not(:focus-within):not(:hover) #search-results",
+        ".search:not(:focus-within):not(:hover) .busqueda-resultados",
         ".home-integrantes:not(.con-js) .integrantes-retratos > li:nth-child(2n)",
     ],
 )

@@ -142,8 +142,10 @@ def test_home_hero_has_manifesto_and_name(client):
     assert b"hero-manifesto" in resp.content
     assert b"Poes\xc3\xada en voz alta." in resp.content
     assert b"desde 2019" in resp.content
-    h1 = BeautifulSoup(resp.content, "html.parser").h1
-    assert "hero-nombre" in h1["class"] and " ".join(h1.get_text().split()) == "Colectivo Norte"
+    sopa = BeautifulSoup(resp.content, "html.parser")
+    # De la marca de la página cuelgan la cápsula de la cabecera y cabecera.js.
+    assert sopa.body["data-pagina"] == "portada"
+    assert " ".join(sopa.h1.get_text().split()) == "Colectivo Norte"
 
 
 # ── Sello de convocatoria (backlog UX, ticket 3.2) ────────────────────────

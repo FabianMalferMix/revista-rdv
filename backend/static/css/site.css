@@ -73,7 +73,7 @@
      bandas claras de la portada y los avisos que antes eran cajas blancas con borde
      (la fecha de la agenda, la próxima actividad, el contacto del dossier, la obra
      reseñada, los mensajes). El blanco (--surface) queda para los campos de formulario
-     y los objetos: cubiertas, retratos, el panel del buscador. Sobre el papel es
+     y los objetos: cubiertas y retratos. Sobre el papel es
      también el fondo de la fila que se está señalando. */
   --paper-2:#eef4fb;
   /* Filete decorativo: SEPARA, no delimita (para eso está --edge). Es tinta al 22 %, y
@@ -128,6 +128,21 @@
   /* Interlíneas por papel y espaciado de letra: abierto en los rótulos, cerrado en los títulos. */
   --lh-titulo:1.1; --lh-ui:1.35; --lh-lectura:1.55; --lh-verso:1.5;
   --tr-rotulo:.1em; --tr-meta:.02em; --tr-titulo:-.015em;
+  /* APILADO. Toda altura (z-index) sale de esta escala, que nombra lo que apila. Cada una
+     cuenta dentro de su contexto de apilado:
+       · en una pieza: --z-fondo, detrás de su contenido (la hoja de una fila al señalarla);
+         --z-encima, sobre su contenido y sobre la capa del enlace que la cubre (los enlaces
+         secundarios de una tarjeta); --z-sobreimpresion, sobre eso y sin recibir el puntero
+         (el fechador de un pliego);
+       · en la tirada: --z-pliego, y cada lugar de la pila, unos niveles más;
+       · en la cabecera: los resultados de la búsqueda y, encima, el mapa de «Menú»;
+       · en la página: el telón de la portada sobre la obra, y la obra que recibe el foco
+         sobre el telón; la cabecera fija sobre todo eso, la vista ampliada de una foto sobre
+         la cabecera y «Saltar al contenido» sobre todo. */
+  --z-fondo:-1; --z-encima:1; --z-sobreimpresion:2;
+  --z-pliego:1;
+  --z-resultados:60; --z-menu:80;
+  --z-telon:1; --z-obra-enfocada:2; --z-cabecera:100; --z-lightbox:120; --z-salto:200;
 }
 
 /* `hidden` oculta siempre. Sin esta regla, cualquier `display` del autor (flex, grid, el de
@@ -293,7 +308,7 @@ a, button, summary, input, textarea, select, .btn, .tag{
    el teléfono, con el campo de búsqueda siempre abierto. Un salto a un ancla deja su
    destino debajo de la cabecera, no tapado por ella. */
 html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
-.masthead{position:sticky; top:0; z-index:100; background:var(--paper); border-bottom:1px solid var(--line)}
+.masthead{position:sticky; top:0; z-index:var(--z-cabecera); background:var(--paper); border-bottom:1px solid var(--line)}
 .masthead-fila{position:relative; display:flex; align-items:center; gap:8px 24px;
   min-height:calc(var(--alto-cabecera) - 1px); padding-block:4px}
 .masthead-cta{flex:none}
@@ -323,18 +338,13 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   .brand{padding:5px 12px}
   .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
 }
-/* La lupa: abre el buscador en un panel bajo la cabecera, sin mover nada. */
+/* La lupa: abre el campo de búsqueda en la fila (ver «El buscador en la barra»). */
 .busqueda{margin-left:auto}
 .busqueda summary{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;
   list-style:none; cursor:pointer; color:var(--ink)}
 .busqueda summary::-webkit-details-marker{display:none}
 .busqueda summary:hover, .busqueda[open] summary{color:var(--accent)}
 .lupa{display:block; fill:none; stroke:currentColor; stroke-width:2.4}
-/* El panel acaba donde el botón «Dossier», no en el borde de la pantalla, y mide lo mismo
-   que la lista de resultados que se abre debajo. */
-.busqueda .search{position:absolute; right:var(--gutter); top:calc(100% + 1px); z-index:70;
-  width:min(440px, 100% - 2*var(--gutter)); padding:var(--s2); background:var(--paper);
-  border:1px solid var(--line); border-top:0}
 .search{display:flex; align-items:center; gap:8px; position:relative}
 .search input{flex:1; min-width:0; font-family:var(--serif); font-size:var(--t1); padding:7px 12px;
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink)}
@@ -343,8 +353,8 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 /* También cuando el indicador es el propio elemento marcado: el buscador lo nombra con
    hx-indicator, y htmx le pone la clase a él. */
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}
-/* El «…» de mientras llega la respuesta, en el margen del panel: invisible, le quitaba al
-   campo 35 px y lo dejaba descentrado. */
+/* El «…» de mientras llega la respuesta, sobre el extremo del campo y fuera del flujo: en
+   él, aun invisible, le quitaría al campo 35 px y lo dejaría descentrado. */
 .busqueda .htmx-indicator{position:absolute; right:4px; top:50%; translate:0 -50%}
 
 /* Nav principal: disclosure <details> en móvil, en línea en escritorio.
@@ -405,14 +415,10 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   .masthead .nav-disclosure summary{min-height:44px; padding:0 4px; color:var(--ink)}
   .masthead .nav-disclosure summary:hover, .masthead .nav-disclosure[open] summary{color:var(--accent)}
   .nav-disclosure > .nav{display:none}
-  .menu-mapa{position:absolute; left:0; right:0; top:calc(100% + 1px); z-index:80;
+  .menu-mapa{position:absolute; left:0; right:0; top:calc(100% + 1px); z-index:var(--z-menu);
     max-height:calc(100dvh - var(--alto-cabecera)); overflow-y:auto;
     padding:var(--s2) var(--gutter) var(--s3); background:var(--paper); border-bottom:1px solid var(--line)}
   .menu-mapa .foot-group a{display:block; padding:12px 0; font-size:var(--t1); color:var(--ink); text-decoration:none}
-  /* El panel, de lado a lado bajo la cabecera, y el campo y sus resultados alineados con
-     el sello. */
-  .busqueda .search{left:0; right:0; width:auto; padding-inline:var(--gutter); border-inline:0}
-  .busqueda #search-results{left:var(--gutter); right:var(--gutter)}
 }
 /* La cabecera al bajar (opción C del tablero de la barra, elegida por el dueño el
    2026-10-15). Arriba, la cabecera de siempre sin el filete; en la portada, nada: el nombre
@@ -433,49 +439,46 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 /* Arriba de las demás páginas: la cabecera sin el filete de abajo. Alto mínimo, no fijo:
    con el espaciado de texto ampliado (WCAG 1.4.12) crece, como antes. La fila lleva el
    papel para que nada se transparente a través de ella al pasar a la cápsula. */
-html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
-html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead-fila{background:var(--paper)}
+html[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
+html[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead-fila{background:var(--paper)}
 /* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
    queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
    sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
    portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
    «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
    de los botones. */
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
   margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
   column-gap:14px; background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1);
   box-shadow:6px 6px 0 var(--line)}
 /* El sello se queda en el monograma, de 44 px; el nombre sigue ahí para los lectores. */
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand{width:44px; height:44px; padding:0; gap:0; justify-content:center; border-radius:2px}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand-sep{display:none}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead .brand-nombre{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .nav a:not(:last-child)::after{margin:0 7px}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .nav-disclosure{margin-left:6px}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda{margin-left:0}
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-cta{padding:0 16px; border-radius:2px}
-/* Los paneles de la lupa y de «Menú» cuelgan de la cápsula, con su acabado. */
-:is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda .search{right:0; top:calc(100% + 8px); border:1px solid var(--line); border-radius:var(--r-1);
-  box-shadow:6px 6px 0 var(--line)}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand{width:44px; height:44px; padding:0; gap:0; justify-content:center; border-radius:2px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand-sep{display:none}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand-nombre{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .nav a:not(:last-child)::after{margin:0 7px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .nav-disclosure{margin-left:6px}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .busqueda{margin-left:0}
+:is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead-cta{padding:0 16px; border-radius:2px}
 @media (max-width:899px){
-  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .masthead-fila{width:calc(100% - 24px); padding:0 4px 0 0; column-gap:4px}
-  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda{margin-left:auto}
-  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .busqueda .search{left:0; right:0; width:auto}
-  :is(html[data-barra="pildora"], html[data-barra="arriba"]:has(.hero-nombre)) .menu-mapa{top:calc(100% + 8px); max-height:calc(100dvh - var(--alto-cabecera) - 16px);
+  :is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila{width:calc(100% - 24px); padding:0 4px 0 0; column-gap:4px}
+  :is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .busqueda{margin-left:auto}
+  /* El mapa de «Menú» cuelga de la cápsula, con su acabado. */
+  :is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"]) .menu-mapa{top:calc(100% + 8px); max-height:calc(100dvh - var(--alto-cabecera) - 16px);
     background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line)}
 }
 /* Arriba de la portada la cápsula está escondida: no se ve ni recibe el puntero, pero
    sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra como en
    brikken.co: un fundido y 10 px. */
-html[data-barra="arriba"]:has(.hero-nombre) .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
-html[data-barra="arriba"]:has(.hero-nombre) .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
+html[data-barra="arriba"] > [data-pagina="portada"] .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
+html[data-barra="arriba"] > [data-pagina="portada"] .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
 html[data-barra] .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
 /* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
-html[data-barra]:has(.hero-nombre) .hero-dossier{display:inline-flex}
+html[data-barra] > [data-pagina="portada"] .hero-dossier{display:inline-flex}
 /* En las demás páginas, de la cabecera a la cápsula hay una transición de vista
    (cabecera.js): cada forma con su nombre, para que no se deformen. */
-html[data-barra="arriba"]:not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-abierta}
-html[data-barra="pildora"]:not(:has(.hero-nombre)) .masthead-fila{view-transition-name:cabecera-capsula}
+html[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead-fila{view-transition-name:cabecera-abierta}
+html[data-barra="pildora"] > :not([data-pagina="portada"]) .masthead-fila{view-transition-name:cabecera-capsula}
 /* Solo la cabecera cambia: la página no entra en la transición. La cápsula llega con el
    fundido de Brikken y la fila se desvanece después, cuando la cápsula ya casi está: el
    centro nunca queda vacío. Al volver arriba, al revés. */
@@ -502,16 +505,14 @@ html[data-barra="pildora"]:not(:has(.hero-nombre)) .masthead-fila{view-transitio
    campo dentro de la misma fila, en el lugar de los cinco enlaces, que vuelven al cerrar
    (con la lupa o con Escape). En la cápsula pasa lo mismo: la cápsula se vuelve el
    buscador. Los resultados cuelgan debajo como una tarjeta con el acabado de la cápsula.
-   Todo cuelga de :has(): donde no lo hay, queda el panel de antes. Solo la cabecera: la
-   página /buscar/ no cambia. */
+   Solo la cabecera: la página /buscar/ no cambia. */
 .masthead-fila:has(.busqueda[open]) .nav-disclosure{display:none}
 .masthead-fila:has(.busqueda[open]) .busqueda{flex:1; position:relative; min-width:0; height:44px}
 .masthead-fila:has(.busqueda[open]) .busqueda summary{position:absolute; right:0; top:0}
-.masthead-fila:has(.busqueda[open]) .busqueda .search{position:absolute; left:0; right:52px; top:50%; translate:0 -50%; width:auto;
-  padding:0; background:none; border:0; border-radius:0; box-shadow:none}
+.masthead-fila:has(.busqueda[open]) .busqueda .search{position:absolute; left:0; right:52px; top:50%; translate:0 -50%}
 .masthead-fila:has(.busqueda[open]) .busqueda .search input{padding:9px 14px}
-.masthead-fila:has(.busqueda[open]) .busqueda #search-results{top:calc(100% + 14px)}
-.masthead-fila:has(.busqueda[open]) .busqueda #search-results:not(:empty){background:var(--paper-2); border:1px solid var(--line);
+.masthead-fila:has(.busqueda[open]) .busqueda .busqueda-resultados{top:calc(100% + 14px)}
+.masthead-fila:has(.busqueda[open]) .busqueda .busqueda-resultados:not(:empty){background:var(--paper-2); border:1px solid var(--line);
   border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line); padding:var(--s2)}
 .masthead-fila:has(.busqueda[open]) .search-list a{font-family:var(--display); letter-spacing:var(--tr-titulo); font-weight:600; text-decoration:none}
 .masthead-fila:has(.busqueda[open]) .search-list a:hover{color:var(--accent)}
@@ -524,12 +525,12 @@ html:has(.busqueda[open]){scroll-padding-top:0}
    sello) y los resultados, su ancho. */
 @media (max-width:899px){
   .masthead-fila:has(.busqueda[open]) .brand{display:none}
-  .masthead-fila:has(.busqueda[open]) .busqueda #search-results{left:0; right:-52px}
+  .masthead-fila:has(.busqueda[open]) .busqueda .busqueda-resultados{left:0; right:-52px}
 }
 .foot-group-titulo{margin:0 0 4px}
 
 /* Accesibilidad: salto al contenido y foco visible global. */
-.skip{position:absolute; left:8px; top:-48px; z-index:200; padding:8px 14px;
+.skip{position:absolute; left:8px; top:-48px; z-index:var(--z-salto); padding:8px 14px;
   background:var(--accent); color:var(--paper); border-radius:3px; text-decoration:none;
   transition:top var(--dur-fast) var(--ease)}
 .skip:focus{top:8px}
@@ -540,17 +541,16 @@ a:focus-visible, button:focus-visible, summary:focus-visible,
 input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
   outline-offset:2px; border-radius:2px}
 
-/* Buscador: resultados como overlay anclado al campo (no empujan el layout). */
+/* Buscador: resultados como overlay anclado al campo (no empujan el layout). Se estilan por
+   su clase: el id es el destino de htmx. */
 /* Con el zoom al 400 % (320 × 256) la lista con 64vh terminaba fuera de la pantalla, dentro
    de una cabecera fija que no se desplaza: el tope descuenta lo que queda encima. */
-#search-results{position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:60;
+.busqueda-resultados{position:absolute; left:0; right:0; z-index:var(--z-resultados);
   max-height:min(64vh, 100dvh - 150px); overflow-y:auto}
-#search-results:not(:empty){background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r-1); padding:8px 16px; box-shadow:0 12px 34px rgba(0,0,0,.22)}
-/* El panel se cierra cuando se deja de usar: se quedaba abierto, tapando la navegación,
-   hasta borrar el texto. `:not(:hover)` lo mantiene mientras se va a pulsar un
-   resultado; sin eso Safari lo cierra al soltar el foco, antes de que llegue el clic. */
-.search:not(:focus-within):not(:hover) #search-results{display:none}
+/* La lista se cierra cuando se deja de usar: se quedaba abierta, tapando la navegación,
+   hasta borrar el texto. `:not(:hover)` la mantiene mientras se va a pulsar un
+   resultado; sin eso Safari la cierra al soltar el foco, antes de que llegue el clic. */
+.search:not(:focus-within):not(:hover) .busqueda-resultados{display:none}
 .search-all{margin:10px 0 2px; padding-top:10px; border-top:1px solid var(--border); font-size:var(--t0)}
 /* Página de búsqueda: el mismo campo y el mismo botón que el resto del sitio. */
 .search-page{display:flex; gap:10px; max-width:var(--medida); margin:0 0 24px}
@@ -611,7 +611,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    25 px de alto en vez de los 13 de su letra (WCAG 2.5.8 pide 24). */
 li:has(.enlace-total){position:relative}
 .enlace-total::after{content:""; position:absolute; inset:0}
-li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding-block:6px}
+li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-encima); padding-block:6px}
 
 /* Filas. Los índices de textos, poemas, trayectoria y prensa son listas de filas
    tipográficas: un dato a la izquierda (cuándo), el título en el centro y otro dato a
@@ -632,7 +632,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding
   grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"cuerpo cuerpo" "pie fecha";
   gap:8px 16px; align-items:baseline; padding-block:16px; border-top:1px solid var(--line)}
 .fila:last-child{border-bottom:1px solid var(--line)}
-.fila::before{content:""; position:absolute; z-index:-1; inset:0 calc(-1 * var(--s2));
+.fila::before{content:""; position:absolute; z-index:var(--z-fondo); inset:0 calc(-1 * var(--s2));
   background-color:transparent; transition:background-color var(--dur-base) var(--ease)}
 .fila:has(.fila-titulo a):hover::before, .fila:focus-within::before{background-color:var(--paper-2)}
 .fila-cuerpo{grid-area:cuerpo; min-width:0}
@@ -885,7 +885,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding
    el objetivo del hash; se cierra enlazando de vuelta a la sección. */
 /* Sin margen: una <figure> trae 40 px a los lados y 16 arriba y abajo, y la capa no
    cubría la pantalla (asomaba la página por los bordes y la foto quedaba corrida). */
-.lightbox{position:fixed; inset:0; z-index:120; display:none; place-items:center; margin:0;
+.lightbox{position:fixed; inset:0; z-index:var(--z-lightbox); display:none; place-items:center; margin:0;
   padding:24px; background:rgba(0,0,0,.9)}
 .lightbox:target{display:grid}
 .lightbox img{max-width:96vw; max-height:86vh; object-fit:contain; border-radius:3px}
@@ -893,7 +893,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding
 .lightbox figcaption{position:absolute; bottom:16px; left:0; right:0; padding-inline:var(--s3); text-align:center;
   color:#e7edf2; font-family:var(--mono); font-size:var(--t-1)}
 .lightbox-cuenta{font-variant-numeric:tabular-nums}
-.lightbox-close{position:absolute; top:14px; right:22px; z-index:1;
+.lightbox-close{position:absolute; top:14px; right:22px; z-index:var(--z-encima);
   color:#fff; font-size:var(--t5); line-height:1; text-decoration:none}
 .lightbox-back{position:absolute; inset:0}
 
@@ -912,7 +912,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding
 .player-consent > .riso-duo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 /* El mando: un panel sólido abajo a la izquierda, con la misma marca que la miniatura
    del índice. Sólido para que el aviso se lea sobre cualquier póster. */
-.player-mando{position:absolute; z-index:1; left:0; bottom:0; display:flex; align-items:stretch;
+.player-mando{position:absolute; z-index:var(--z-encima); left:0; bottom:0; display:flex; align-items:stretch;
   max-width:100%}
 /* El botón es la marca de reproducción: un cuadrado blanco de 64 px con su triángulo, que
    pasa a magenta al señalarlo. Blanco porque sobre el azul el blanco no se lee como otro
@@ -977,9 +977,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    a la ficha. Un bloque blanco en la esquina con su triángulo, que pasa a magenta al
    señalar la tarjeta. Va por encima de la capa del enlace total y deja pasar el pulsado:
    pulsar la marca lleva al registro. */
-.rec-miniatura::before{content:""; position:absolute; z-index:1; left:0; bottom:0; width:52px; height:52px;
+.rec-miniatura::before{content:""; position:absolute; z-index:var(--z-encima); left:0; bottom:0; width:52px; height:52px;
   pointer-events:none; background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
-.rec-miniatura::after{content:""; position:absolute; z-index:1; left:20px; bottom:17px; width:14px; height:18px;
+.rec-miniatura::after{content:""; position:absolute; z-index:var(--z-encima); left:20px; bottom:17px; width:14px; height:18px;
   pointer-events:none; background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
   transition:background-color var(--dur-base) var(--ease)}
 .recording-card:hover .rec-miniatura::before,
@@ -1091,7 +1091,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 }
 /* El telón: la hoja y lo que sigue llevan el papel y pasan por encima de la obra. Repite los
    carriles del lienzo, para que cada pieza caiga donde caía. */
-.portada-telon{position:relative; z-index:1; display:grid; grid-template-columns:var(--carriles);
+.portada-telon{position:relative; z-index:var(--z-telon); display:grid; grid-template-columns:var(--carriles);
   background:var(--paper)}
 .portada-telon > *{grid-column:wide; min-width:0}
 .portada-telon > .sangre, .portada-telon > .band{grid-column:full}
@@ -1103,7 +1103,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    queda tapado (WCAG 2.4.11). */
 @media (prefers-reduced-motion:no-preference) and (min-height:460px){
   .portada-arte{position:sticky; top:0}
-  .portada-arte:focus-within{z-index:2}
+  .portada-arte:focus-within{z-index:var(--z-obra-enfocada)}
 }
 
 /* La hoja: lo que era el titular (ticket 4.2; D8, D9). La cejilla, el manifiesto en letra
@@ -1154,7 +1154,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   .hero-manifesto:has(:focus-visible){-webkit-mask-image:none; mask-image:none}
   .hero-manifesto a{color:inherit}
   .hero-ctas{grid-column:1; grid-row:3}
-  .hero::before{content:""; position:absolute; z-index:-1; right:0; top:50%; translate:0 -50%; width:min(40vw, 600px);
+  .hero::before{content:""; position:absolute; z-index:var(--z-fondo); right:0; top:50%; translate:0 -50%; width:min(40vw, 600px);
     aspect-ratio:1; pointer-events:none; background:radial-gradient(circle, var(--accent) 0 32%, transparent 36%) 0 0 / 13px 13px;
     -webkit-mask-image:radial-gradient(closest-side, #000 60%, transparent 100%); mask-image:radial-gradient(closest-side, #000 60%, transparent 100%)}
   .sello-convocatoria{grid-column:2; grid-row:1 / span 3; align-self:center; justify-self:center; margin:0;
@@ -1220,7 +1220,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* El color del lomo es el del borde de su tapa (D28): un rectángulo de SVG detrás del texto,
    en su propia capa. Sin tapa legible, la hoja clara. El filete marca el lomo sobre la banda
    aunque sea tan claro como ella; el texto va claro si el fondo es oscuro. */
-.ejemplar-lomo-fondo{position:absolute; inset:0; z-index:-1; width:100%; height:100%}
+.ejemplar-lomo-fondo{position:absolute; inset:0; z-index:var(--z-fondo); width:100%; height:100%}
 .ejemplar--oscuro .ejemplar-lomo{color:var(--surface)}
 .ejemplar-canto{position:absolute; top:0; right:-7px; width:7px; height:100%}
 /* Las fichas, apiladas en la misma celda: al cambiar de libro, la vieja se desvanece mientras
@@ -1282,7 +1282,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   color:var(--accent); text-align:center; rotate:-3deg;
   -webkit-mask-image:var(--grano); mask-image:var(--grano); -webkit-mask-size:180px; mask-size:180px}
 /* La segunda pasada: el mismo marco en la otra tinta, corrido y multiplicado. */
-.home-cierre .pie-entidad li::before{content:""; position:absolute; inset:-3px; z-index:-1; border:3px solid var(--otra);
+.home-cierre .pie-entidad li::before{content:""; position:absolute; inset:-3px; z-index:var(--z-fondo); border:3px solid var(--otra);
   translate:4px 3px; mix-blend-mode:multiply}
 .home-cierre .pie-entidad li:nth-child(2){--otra:var(--accent); color:var(--caratula); rotate:2.5deg}
 .home-cierre .pie-entidad li:nth-child(3){--otra:var(--riso-amarillo); color:var(--caratula); rotate:-1.5deg}
@@ -1394,7 +1394,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 /* El fechador de goma: montado sobre el borde de arriba de la hoja, girado como cae un sello a
    mano (quieto). Tinta y filete doble, sin relleno: se ve el papel debajo. El sello magenta
    girado sigue siendo solo el de la convocatoria. */
-.pliego-fechador{position:absolute; z-index:2; top:calc(-1 * var(--s2)); right:var(--s3); margin:0;
+.pliego-fechador{position:absolute; z-index:var(--z-sobreimpresion); top:calc(-1 * var(--s2)); right:var(--s3); margin:0;
   display:grid; justify-items:center; gap:2px; padding:7px 12px 8px;
   border:2px solid var(--sello); outline:1px solid var(--sello); outline-offset:-6px;
   color:var(--sello); rotate:-4deg; pointer-events:none}
@@ -1411,7 +1411,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pliego-titulo a{color:inherit; text-decoration:none}
 /* El único enlace del pliego: su capa cubre la hoja entera, también la placa, que va
    posicionada y sigue al título en la página. */
-.pliego .enlace-total::after{z-index:1}
+.pliego .enlace-total::after{z-index:var(--z-encima)}
 /* Un título largo, un paso más chico, para que no pase de dos líneas (cuántas letras, en
    apps/site/templatetags/titles.py). */
 .pliego--largo .pliego-titulo{font-size:var(--t6); min-height:calc(2 * .94 * var(--t6))}
@@ -1426,7 +1426,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    en trama azul sobre la hoja. */
 .pliego-placa{grid-area:placa; display:block; align-self:start; aspect-ratio:3 / 2; overflow:hidden}
 .pliego-placa img{display:block; width:100%; height:100%; object-fit:cover}
-.pliego-placa::before{content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+.pliego-placa::before{content:""; position:absolute; inset:0; z-index:var(--z-sobreimpresion); pointer-events:none;
   background-image:radial-gradient(circle at center, transparent 0 1.7px, var(--trama) 2.1px);
   background-size:5px 5px}
 .pliego-placa--vacia{position:relative;
@@ -1466,17 +1466,17 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .tirada.con-js .tirada-carril{overflow:clip; scroll-snap-type:none}
 .tirada.con-js .tirada-pista{display:grid; width:auto; max-width:calc(var(--wide) + 2 * var(--borde)); margin-inline:auto;
   padding:calc(var(--corte) + 18px) var(--borde) calc(var(--corte) + 40px); touch-action:pan-y pinch-zoom}
-.tirada.con-js .pliego{grid-area:1 / 1; --pliego:min(560px, 62cqi); --x:0px; --y:0px; --g:0deg; z-index:1;
+.tirada.con-js .pliego{grid-area:1 / 1; --pliego:min(560px, 62cqi); --x:0px; --y:0px; --g:0deg; z-index:var(--z-pliego);
   translate:calc(66px + var(--x)) var(--y); rotate:var(--g); transform-origin:30% 100%; box-shadow:6px 6px 0 var(--line)}
-.tirada.con-js .pliego[aria-current]{z-index:10}
-.tirada.con-js .pliego[aria-current] + .pliego{--x:150px; --y:12px; --g:2.4deg; z-index:9}
-.tirada.con-js .pliego[aria-current] + .pliego + .pliego{--x:270px; --y:22px; --g:-1.4deg; z-index:8}
-.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego{--x:370px; --y:8px; --g:3deg; z-index:7}
-.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego + .pliego{--x:450px; --y:26px; --g:-2deg; z-index:6}
-.tirada.con-js .pliego:has(+ .pliego[aria-current]){--x:-26px; --y:10px; --g:-3deg; z-index:5}
-.tirada.con-js .pliego:has(+ .pliego + .pliego[aria-current]){--x:-48px; --y:18px; --g:2deg; z-index:4}
-.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego[aria-current]){--x:-62px; --y:6px; --g:-2deg; z-index:3}
-.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego + .pliego[aria-current]){--x:-72px; --y:14px; --g:1.5deg; z-index:2}
+.tirada.con-js .pliego[aria-current]{z-index:calc(var(--z-pliego) + 9)}
+.tirada.con-js .pliego[aria-current] + .pliego{--x:150px; --y:12px; --g:2.4deg; z-index:calc(var(--z-pliego) + 8)}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego{--x:270px; --y:22px; --g:-1.4deg; z-index:calc(var(--z-pliego) + 7)}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego{--x:370px; --y:8px; --g:3deg; z-index:calc(var(--z-pliego) + 6)}
+.tirada.con-js .pliego[aria-current] + .pliego + .pliego + .pliego + .pliego{--x:450px; --y:26px; --g:-2deg; z-index:calc(var(--z-pliego) + 5)}
+.tirada.con-js .pliego:has(+ .pliego[aria-current]){--x:-26px; --y:10px; --g:-3deg; z-index:calc(var(--z-pliego) + 4)}
+.tirada.con-js .pliego:has(+ .pliego + .pliego[aria-current]){--x:-48px; --y:18px; --g:2deg; z-index:calc(var(--z-pliego) + 3)}
+.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego[aria-current]){--x:-62px; --y:6px; --g:-2deg; z-index:calc(var(--z-pliego) + 2)}
+.tirada.con-js .pliego:has(+ .pliego + .pliego + .pliego + .pliego[aria-current]){--x:-72px; --y:14px; --g:1.5deg; z-index:calc(var(--z-pliego) + 1)}
 /* Los de abajo enseñan su borde (placa en trama, sello, fechador y título); el texto queda
    para el de arriba. Con todos a la vista, el colofón sobra. */
 .tirada.con-js .pliego:not([aria-current]) .pliego-pie{visibility:hidden}
@@ -1741,7 +1741,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   border-bottom:3px solid var(--accent); text-align:center; font-weight:600}
 
 @media print{
-  .masthead, .site-foot, #search-results, .no-print{display:none !important}
+  .masthead, .site-foot, .busqueda-resultados, .no-print{display:none !important}
   body{display:block; min-height:0; background:#fff; color:#000; font-size:12pt}
   .wrap{max-width:none; padding:0}
   .lienzo{display:block; padding:0}
@@ -1981,7 +1981,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .integrante-enlace:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
 /* La pasada de tinta: el guion pone esta capa durante el relevo y la quita al terminar. El
    filo magenta va delante, del lado hacia el que avanza (--atras: de derecha a izquierda). */
-.integrante-tinta{position:absolute; inset:-4px; z-index:2; pointer-events:none;
+.integrante-tinta{position:absolute; inset:-4px; z-index:var(--z-sobreimpresion); pointer-events:none;
   background:linear-gradient(90deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}
 .integrante-tinta--atras{background:linear-gradient(270deg, var(--caratula) 0 80%, var(--accent) 80% 100%)}
 /* Con el guion, el gesto horizontal trae a otras; el vertical sigue bajando la página. */
