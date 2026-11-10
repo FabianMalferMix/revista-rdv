@@ -61,28 +61,15 @@ def press_index(request):
     return render(request, "showcase/press_index.html", {"mentions": mentions})
 
 
-# El rótulo de cada grupo de aliados: su tipo (`Partner.Kind`), en plural. Cada tipo tiene el
-# suyo; un aliado cuyo tipo no tiene grupo va con los de «Otro», para que la cabecera no cuente a
-# nadie que la página no enseña.
-GRUPOS_DE_ALIADOS = {
-    Partner.Kind.FINANCIAMIENTO: "Financiamiento",
-    Partner.Kind.INSTITUCION: "Instituciones",
-    Partner.Kind.EDITORIAL: "Editoriales",
-    Partner.Kind.MEDIO: "Medios",
-    Partner.Kind.ESPACIO: "Espacios",
-    Partner.Kind.OTRO: "Otros apoyos",
-}
-
-
 def partner_index(request):
     """Aliados agrupados por tipo, en el orden de los tipos: un fondo y una sala no son lo
     mismo para quien programa. Se agrupan en Python: una sola consulta."""
     partners = list(Partner.objects.published().select_related("logo"))
     by_kind = {kind: [] for kind in Partner.Kind}
     for partner in partners:
-        kind = partner.kind if partner.kind in GRUPOS_DE_ALIADOS else Partner.Kind.OTRO
+        kind = partner.kind if partner.kind in Partner.Kind.values else Partner.Kind.OTRO
         by_kind[kind].append(partner)
-    grupos = [(GRUPOS_DE_ALIADOS[kind], grupo) for kind, grupo in by_kind.items() if grupo]
+    grupos = [(kind, grupo) for kind, grupo in by_kind.items() if grupo]
     return render(request, "showcase/partner_index.html", {"partners": partners, "grupos": grupos})
 
 
