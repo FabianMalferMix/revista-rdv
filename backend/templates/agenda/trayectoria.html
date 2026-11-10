@@ -22,7 +22,7 @@
      y dónde. Los hitos no enlazan a nada: su fila no reacciona al puntero.
   {% endcomment %}
   {% for block in timeline %}
-    <section class="timeline-year" id="anio-{{ block.year }}">
+    <section class="timeline-year" id="{{ block.anchor }}">
       <h2 class="year-mark">{{ block.year }}</h2>
       <ul class="filas">
         {% for m in block.milestones %}
@@ -51,7 +51,7 @@
               {% if e.is_external and e.host %}<p class="dek">{{ e.host }}</p>{% endif %}
             </div>
             <p class="meta fila-pie">{{ e.get_type_display }}{% if e.city %} · {{ e.city }}{% endif %}</p>
-            {% if e.poster %}<span class="fila-miniatura riso-duo">{% responsive_img e.poster sizes="(max-width: 720px) 64px, 96px" decorativa=True %}</span>{% endif %}
+            {% if e.poster %}<span class="fila-miniatura riso-duo">{% sizes "miniatura-fila" as sizes %}{% responsive_img e.poster sizes=sizes decorativa=True %}</span>{% endif %}
           </li>
         {% endfor %}
       </ul>

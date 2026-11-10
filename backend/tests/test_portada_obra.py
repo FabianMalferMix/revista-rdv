@@ -21,7 +21,14 @@ from PIL import Image
 from apps.media.models import MediaAsset
 from apps.showcase.admin import SiteProfileAdmin
 from apps.showcase.models import SiteProfile
-from apps.site.templatetags.portada import LAMINA, PORTADA_TELEFONO
+from apps.site.templatetags.portada import (
+    ASOMO,
+    ASOMO_PHONE,
+    LAMINA,
+    MIN_HEIGHT,
+    PORTADA_TELEFONO,
+)
+from tests import css
 from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
@@ -73,6 +80,21 @@ def test_sin_imagen_elegida_la_portada_lleva_la_lamina(client):
     assert img["alt"] == ""
     assert img["fetchpriority"] == "high"
     assert not img.has_attr("loading"), "la imagen de la primera vista no espera"
+
+
+def test_the_obra_asks_for_the_size_the_sheet_paints_it_at():
+    """El `sizes` de la obra repite lo que mide en la hoja, que no puede leer: el alto mínimo,
+    el asomo de la pantalla ancha y el del teléfono, desde el mismo corte que la hoja."""
+    telefono = (f"@media {PORTADA_TELEFONO}",)
+    assert css.tokens()["--asomo"] == f"{ASOMO}px"
+    assert css.tokens(telefono)["--asomo"] == f"{ASOMO_PHONE}px"
+    assert css.rule((), ".portada-arte").values("min-height") == (
+        f"max({MIN_HEIGHT}px, 100vh - var(--asomo))",
+        f"max({MIN_HEIGHT}px, 100svh - var(--asomo))",
+    )
+    # El telón solo corre donde la obra cabe con su alto mínimo.
+    telon = (f"@media (prefers-reduced-motion:no-preference) and (min-height:{MIN_HEIGHT}px)",)
+    assert css.rule(telon, ".portada-arte")["position"] == "sticky"
 
 
 def test_la_lamina_esta_entera_y_cumple_el_presupuesto():

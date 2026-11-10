@@ -1,15 +1,22 @@
-"""La obra de la primera vista de la portada: la imagen que elige el colectivo o, sin ella, la
-lámina del estreno."""
+"""La obra de la primera vista de la portada (la imagen que elige el colectivo o, sin ella, la
+lámina del estreno) y la cuenta del colofón de la tirada, en letras."""
 
 from django import template
 from django.templatetags.static import static
 
 from apps.media.models import MediaAsset
+from config.breakpoints import PHONE, below
 
 register = template.Library()
 
 # La portada pasa al recorte vertical en el mismo ancho en que el logo pasa a dos líneas.
-PORTADA_TELEFONO = "(max-width: 719px)"
+PORTADA_TELEFONO = below(PHONE)
+# Lo que mide la obra en site.css, que `sizes` repite porque no puede leer la hoja: de alto,
+# max(MIN_HEIGHT, 100svh - --asomo), donde el asomo es lo que la obra le deja a la hoja en la
+# primera vista. `tests/test_portada_obra.py` compara cada número con la hoja.
+MIN_HEIGHT = 460
+ASOMO = 112
+ASOMO_PHONE = 96
 # La lámina del estreno: la obra de la portada mientras el colectivo no elija la suya.
 # Ancho × alto de cada copia en static/img/portada/, en los formatos de las copias de portada
 # (`MediaAsset.PORTADA_FORMATS`). Las rehace desde sus maestras el comando de desarrollo
@@ -22,6 +29,18 @@ LAMINA = {
 LAMINA_FALLBACK = ("ancha", 1440, "jpg")
 
 
+# Cuántos registros tiene la tirada, en letras, para el colofón («cinco registros elegidos por el
+# colectivo»): cada cuenta posible hasta el tope de la tirada (`TOPE_TIRADA`, en
+# `apps/site/portada.py`), que `tests/test_tirada.py` compara con esta tabla.
+NUMERALES = {2: "dos", 3: "tres", 4: "cuatro", 5: "cinco"}
+
+
+@register.filter
+def in_words(numero):
+    """El número en letras si está en NUMERALES; si no, en cifras."""
+    return NUMERALES.get(numero, str(numero))
+
+
 def lamina_path(forma, width, ext):
     """La ruta de una copia de la lámina, relativa a los estáticos."""
     return f"img/portada/lamina-{forma}-{width}.{ext}"
@@ -29,23 +48,25 @@ def lamina_path(forma, width, ext):
 
 def _pintada(proporcion, asomo):
     """Lo que mide pintada una obra de esa proporción (ancho / alto). La obra mide el ancho de
-    la ventana y de alto max(460px, 100svh - asomo) (ver site.css), y con object-fit: cover la
-    imagen crece hasta cubrirla: se pinta al ancho de la ventana o al alto de la obra por su
+    la ventana y de alto max(MIN_HEIGHT, 100svh - asomo), y con object-fit: cover la imagen
+    crece hasta cubrirla: se pinta al ancho de la ventana o al alto de la obra por su
     proporción, lo que sea mayor. Con «100vw» el navegador elegía una copia más chica que lo
     pintado: a 951 px, la de 960 para una lámina pintada a 1261. vh y no svh: en `sizes` es
     lo que entienden todos los navegadores."""
-    return f"max(100vw, {round(460 * proporcion)}px, (100vh - {asomo}px) * {proporcion:.3f})"
+    minimo = round(MIN_HEIGHT * proporcion)
+    return f"max(100vw, {minimo}px, (100vh - {asomo}px) * {proporcion:.3f})"
 
 
 def _sizes(ancho, alto, solo_telefono):
-    """`sizes` de una fuente de la portada: el asomo mide 96 px en el teléfono y 112 desde
-    720 px. La fuente del teléfono solo se usa ahí; las demás, en cualquier ancho."""
+    """`sizes` de una fuente de la portada, con el asomo del teléfono o el de la pantalla
+    ancha. La fuente del teléfono solo se usa ahí; las demás, en cualquier ancho."""
     if not ancho or not alto:
         return "100vw"
     proporcion = ancho / alto
+    telefono = _pintada(proporcion, ASOMO_PHONE)
     if solo_telefono:
-        return _pintada(proporcion, 96)
-    return f"{PORTADA_TELEFONO} {_pintada(proporcion, 96)}, {_pintada(proporcion, 112)}"
+        return telefono
+    return f"{PORTADA_TELEFONO} {telefono}, {_pintada(proporcion, ASOMO)}"
 
 
 def _fuente(media, ext, srcset, ancho, alto):

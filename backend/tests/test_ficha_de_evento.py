@@ -15,6 +15,8 @@ from django.utils import timezone
 
 from apps.agenda.models import EventPhoto
 from apps.people.models import Contributor
+from config.breakpoints import PHONE, below
+from tests import css
 from tests.factories import make_event, make_image, make_recording, soup
 
 pytestmark = pytest.mark.django_db
@@ -146,9 +148,20 @@ def test_la_ficha_cuesta_lo_mismo_con_dos_fotos_que_con_ocho(client):
 def test_each_photo_asks_for_the_size_it_takes_in_the_mosaic(total, first, rest):
     """Cada miniatura pide el ancho que ocupa en el mosaico: con una foto, todo; con dos,
     cuatro o cinco, la primera va a medias; con tres o seis, a doble tamaño. Antes la
-    primera pedía siempre 880 px, aunque ocupara todo el ancho o la mitad."""
+    primera pedía siempre 880 px, aunque ocupara todo el ancho o la mitad. En el teléfono,
+    desde el corte de la hoja."""
     from apps.agenda.templatetags.gallery import photo_sizes
 
-    assert photo_sizes(1, total) == f"(max-width: 720px) {first}"
+    assert photo_sizes(1, total) == f"{below(PHONE)} {first}"
     if rest:
-        assert photo_sizes(total, total) == f"(max-width: 720px) {rest}"
+        assert photo_sizes(total, total) == f"{below(PHONE)} {rest}"
+
+
+def test_the_mosaic_sizes_split_the_lane_of_the_sheet_into_its_columns():
+    """Cada miniatura pide su parte del carril (`--wide`) en las columnas del mosaico: los dos
+    números los decide la hoja, y la etiqueta los repite porque no puede leerla."""
+    from apps.agenda.templatetags.gallery import MOSAIC_COLUMNS, MOSAIC_WIDTH
+
+    rejilla = css.rule((), ".photo-grid, .photo-grid-resto")
+    assert rejilla["grid-template-columns"] == f"repeat({MOSAIC_COLUMNS}, minmax(0, 1fr))"
+    assert css.tokens()["--wide"] == f"{MOSAIC_WIDTH}px"

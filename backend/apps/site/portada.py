@@ -1,27 +1,26 @@
 """La portada, bloque a bloque: cada constructor reúne lo que enseña su bloque, y la vista de la
-portada (`views.home`) solo los junta. `site/home.html` pinta cada bloque desde el suyo."""
+portada (`views.home`) solo los junta. `site/home.html` pinta cada bloque desde el suyo: los
+constructores traen los datos y los indicadores, y los textos los escribe la plantilla."""
 
 from dataclasses import dataclass
 from datetime import date, datetime
 
 from django.db.models import Prefetch, QuerySet
-from django.urls import reverse
 from django.utils import timezone
 
 from apps.agenda.models import Event, EventPhoto
 from apps.content.models import Article, Poem
-from apps.content.templatetags.versos import primeros_versos
 from apps.media.models import TIRADA_SIZE, MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import Publication
 from apps.submissions.models import Call
+from config.breakpoints import PHONE, below
 
-from .pie import puerta
 from .services import ultima_publicacion
 
 # «Las voces»: cinco retratos a la vez, en una fila; en el teléfono, tres. Las demás vienen en la
 # página, escondidas, y el relevo las trae de a una. Es la única fuente: la plantilla los pasa a
-# integrantes.js por atributos data-, y la hoja no repite el número.
+# integrantes.js por atributos data-, con el corte del teléfono, y la hoja no repite el número.
 A_LA_VISTA = 5
 A_LA_VISTA_TELEFONO = 3
 
@@ -32,9 +31,6 @@ ESTANTE = 8
 
 # La tirada: como mucho TIRADA_SIZE registros, el tope que valida el panel.
 TOPE_TIRADA = TIRADA_SIZE
-NUMERALES = {2: "dos", 3: "tres", 4: "cuatro", 5: "cinco"}
-# Un título más largo se compone un paso más chico, para que no pase de dos líneas.
-TITULO_LARGO = 34
 
 
 @dataclass(frozen=True)
@@ -52,27 +48,28 @@ def build_arte(profile):
 
 @dataclass(frozen=True)
 class Hoja:
-    """La hoja que sube sobre la obra: la cejilla y, mientras haya una convocatoria abierta, su
-    sello."""
+    """La hoja que sube sobre la obra: lo que dice la cejilla (de dónde es el colectivo y desde
+    cuándo, y cuántas son) y, mientras haya una convocatoria abierta, su sello. El Instagram de la
+    cejilla lo pone la plantilla, con las redes que ya trae el procesador del perfil."""
 
-    cejilla: list[str]
+    presentacion: list[str]
+    member_count: int
     convocatoria: Call | None
 
 
 def build_hoja(profile, integrantes):
-    """La cejilla: el lema, el lugar, el año y cuántas son. El Instagram lo añade la plantilla,
-    con las redes que ya trae el procesador del perfil."""
-    cejilla = profile.presentacion
-    if integrantes:
-        cejilla.append(f"{integrantes} integrante{'s' if integrantes != 1 else ''}")
-    return Hoja(cejilla=cejilla, convocatoria=Call.objects.open_now().first())
+    return Hoja(
+        presentacion=profile.presentacion,
+        member_count=integrantes,
+        convocatoria=Call.objects.open_now().first(),
+    )
 
 
 @dataclass(frozen=True)
 class Pliego:
     """Un registro de la tirada: su imagen (el póster o, si no tiene, la primera foto del evento:
-    nunca nada con el título impreso, que ya va en grande), el primer verso del poema que se lee,
-    quién lee, dónde y cuándo."""
+    nunca nada con el título impreso, que ya va en grande), el poema que se lee (la plantilla
+    cita su primer verso y lo firma), quién lee, el evento publicado (dónde) y cuándo."""
 
     titulo: str
     url: str
@@ -80,13 +77,10 @@ class Pliego:
     duracion: str
     audio: bool
     imagen: MediaAsset | None
-    verso: str
-    firma: str
+    poem: Poem | None
     voces: list[str]
-    lugar: str
-    ciudad: str
+    event: Event | None
     fecha: date | None
-    largo: bool
 
 
 @dataclass(frozen=True)
@@ -95,10 +89,6 @@ class Tirada:
     su pliego. Sin ninguno marcado, el registro destacado del perfil del sitio."""
 
     registros: list[Pliego]
-
-    @property
-    def registros_cuantos(self):
-        return NUMERALES.get(len(self.registros), str(len(self.registros)))
 
 
 def build_tirada(profile):
@@ -136,7 +126,6 @@ def build_tirada(profile):
 def _pliego(registro, poema):
     evento = registro.public_event
     fotos = list(evento.photos.all()) if evento else []
-    autores = ", ".join(c.display_name for c in poema.bylines) if poema else ""
     if evento and evento.starts_at:
         cuando = registro.recorded_on or timezone.localtime(evento.starts_at).date()
     else:
@@ -148,13 +137,10 @@ def _pliego(registro, poema):
         duracion=registro.duracion,
         audio=registro.kind == Recording.Kind.AUDIO,
         imagen=registro.poster or (fotos[0].asset if fotos else None),
-        verso=(primeros_versos(poema.body, 1) or [""])[0] if poema else "",
-        firma=", ".join(p for p in (autores, f"«{poema.title}»") if p) if poema else "",
+        poem=poema,
         voces=[c.display_name for c in registro.participants.all()],
-        lugar=", ".join(p for p in (evento.venue_name, evento.city) if p) if evento else "",
-        ciudad=evento.city if evento else "",
+        event=evento,
         fecha=cuando,
-        largo=len(registro.title) > TITULO_LARGO,
     )
 
 
@@ -204,6 +190,7 @@ class Voces:
     members: list[Contributor]
     a_la_vista: int = A_LA_VISTA
     a_la_vista_telefono: int = A_LA_VISTA_TELEFONO
+    phone_media: str = below(PHONE)
 
     @property
     def integrantes_vista(self):
@@ -236,24 +223,16 @@ def build_estante():
 
 @dataclass(frozen=True)
 class Cierre:
-    """El cierre, para programadores y jurados: puertas a lo que piden, como las salidas al pie
-    de una ficha, lo último que hizo el colectivo y cuándo publicó por última vez."""
+    """El cierre, para programadores y jurados: lo último que hizo el colectivo y cuándo publicó
+    por última vez. Sus puertas, como las salidas al pie de una ficha, las pone la plantilla
+    (`{% cierre_pie %}`)."""
 
-    puertas: list[dict]
     ultima_actividad: Event | None
     ultima_publicacion: datetime | None
 
 
-def build_cierre(profile):
-    puertas = [
-        puerta("Kit de prensa", "Dossier", reverse("showcase:dossier")),
-        puerta("Notas y entrevistas", "Prensa", reverse("showcase:press_index")),
-        puerta("Quiénes nos apoyan", "Aliados", reverse("showcase:partner_index")),
-    ]
-    if profile.correo_de_contacto:
-        puertas.append(puerta("Contacto", "Escríbenos", f"mailto:{profile.correo_de_contacto}"))
+def build_cierre():
     return Cierre(
-        puertas=puertas,
         ultima_actividad=Event.objects.past().first(),
         ultima_publicacion=ultima_publicacion(),
     )

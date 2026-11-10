@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from apps.showcase.models import Publication, SiteProfile
 
-from .models import Event
+from .models import Event, year_anchor
 
 
 def stats(perfil=None):
@@ -46,12 +46,20 @@ def cronologia(eventos, hitos=(), publicaciones=()):
 
     El año de un evento es el de su fecha en la hora local, la que enseña la página: un
     recital del 31 de diciembre a las 22:00 en Santiago es del año que termina, aunque en
-    UTC ya sea el siguiente. Una publicación sin año no tiene dónde ir."""
+    UTC ya sea el siguiente. Una publicación sin año no tiene dónde ir. Cada año lleva su ancla
+    (`anchor`), la misma a la que llevan las salidas de las fichas (`url_for_year`)."""
     anios = {}
 
     def anio(numero):
         return anios.setdefault(
-            numero, {"year": numero, "milestones": [], "publications": [], "events": []}
+            numero,
+            {
+                "year": numero,
+                "anchor": year_anchor(numero),
+                "milestones": [],
+                "publications": [],
+                "events": [],
+            },
         )
 
     for hito in hitos:

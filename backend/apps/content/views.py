@@ -1,11 +1,10 @@
 from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 
 from apps.people.models import Contributor, url_for_person
 from apps.reviews.models import Work
-from apps.site.pie import firmas, puerta, puertas_vecinas, vecinos
+from apps.site.pie import vecinos
 from config import publishing
 
 from .models import (
@@ -62,16 +61,14 @@ def article_detail(request, slug):
         ),
         slug=slug,
     )
-    pie = [puerta("Índice", "Todos los textos", reverse("content:text_archive"))]
-    if article.section:
-        pie.append(puerta("Sección", article.section.name, article.section.get_absolute_url()))
-    pie += firmas(article.bylines)
-    anterior, siguiente = vecinos(Article.objects.published(), article)
-    pie += puertas_vecinas(anterior, siguiente, "Texto", lambda a: a.title)
     response = render(
         request,
         "content/article_detail.html",
-        {"article": article, "pie": pie, "preview": preview},
+        {
+            "article": article,
+            "neighbors": vecinos(Article.objects.published(), article),
+            "preview": preview,
+        },
     )
     return publishing.marked_as_preview(response, preview)
 
@@ -127,14 +124,15 @@ def poem_detail(request, slug):
         Poem.objects.select_related("recording").prefetch_related(Poem.bylines_prefetch()),
         slug=slug,
     )
-    anterior, siguiente = vecinos(Poem.objects.published(), poem)
-    colecciones = Collection.objects.published().filter(poems=poem).order_by("title")
-    pie = [puerta("Índice", "Todos los poemas", reverse("content:poem_index"))]
-    pie += firmas(poem.bylines)
-    pie += [puerta("En la colección", c.title, c.get_absolute_url()) for c in colecciones]
-    pie += puertas_vecinas(anterior, siguiente, "Poema", lambda p: p.title)
     response = render(
-        request, "content/poem_detail.html", {"poem": poem, "pie": pie, "preview": preview}
+        request,
+        "content/poem_detail.html",
+        {
+            "poem": poem,
+            "colecciones": Collection.objects.published().filter(poems=poem).order_by("title"),
+            "neighbors": vecinos(Poem.objects.published(), poem),
+            "preview": preview,
+        },
     )
     return publishing.marked_as_preview(response, preview)
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load social %}
+{% load pie social %}
 
 {% block title %}{{ recording.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ recording.description|default:recording.title }}{% endblock %}
@@ -48,6 +48,6 @@
         </section>
       {% endif %}
     {% endwith %}
-    {% include "partials/_pie_de_entidad.html" %}
+    {% recording_pie recording poems neighbors %}
   </article>
 {% endblock %}

@@ -1,9 +1,7 @@
 from django.shortcuts import render
-from django.urls import reverse
-from django.utils import timezone
 
 from apps.showcase.models import Publication
-from apps.site.pie import puerta, puertas_vecinas, vecinos
+from apps.site.pie import vecinos
 from config import publishing
 
 from .models import Event, Milestone
@@ -42,23 +40,9 @@ def event_detail(request, slug):
     # Los registros publicados salen de la caché del prefetch: un `.filter()` la saltaba y
     # hacía una consulta más.
     recordings = [r for r in event.recordings.all() if r.published]
-    if event.is_past:
-        pie = [
-            puerta(
-                "Trayectoria",
-                str(timezone.localtime(event.starts_at).year),
-                f"{reverse('agenda:trayectoria')}#anio-{timezone.localtime(event.starts_at).year}",
-            )
-        ]
-    else:
-        pie = [puerta("Índice", "Agenda", reverse("agenda:agenda"))]
-    if event.photos.all():
-        pie.append(puerta("Fotos", "Galería", reverse("agenda:gallery")))
-    pie.append(puerta("Para programar", "Dossier", reverse("showcase:dossier")))
     # Las actividades van por fecha: «anterior» es la de antes en el tiempo. `vecinos`
     # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.
     mas_reciente, mas_antigua = vecinos(Event.objects.published(), event, "starts_at")
-    pie += puertas_vecinas(mas_antigua, mas_reciente, "Actividad", lambda e: e.title)
     # Quién hizo las fotos, una vez bajo el álbum; cada foto lo repite en su vista ampliada.
     # Sale de la caché del prefetch (photos__asset): no añade consultas.
     creditos = sorted({p.asset.credit for p in event.photos.all() if p.asset.credit})
@@ -68,7 +52,7 @@ def event_detail(request, slug):
         {
             "event": event,
             "recordings": recordings,
-            "pie": pie,
+            "neighbors": (mas_antigua, mas_reciente),
             "creditos": creditos,
             "preview": preview,
         },

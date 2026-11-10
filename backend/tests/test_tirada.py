@@ -272,3 +272,80 @@ def test_the_pile_has_a_place_for_every_recording_in_the_tirada():
     niveles = set(range(1, TOPE_TIRADA))
     assert {nivel.count("+ .pliego") for nivel in detras} == niveles
     assert {nivel.count("+ .pliego") for nivel in delante} == niveles
+
+
+def test_a_poem_without_byline_is_signed_with_its_title(client):
+    """Sin quien lo firme, el pliego cita el poema con su título solo, sin una coma delante."""
+    registro = _registro("recital")
+    make_poem(
+        title="Umbral",
+        body="La casa guarda un idioma",
+        status=EditorialStatus.PUBLISHED,
+        published_at=timezone.now(),
+        recording=registro,
+    )
+    _, tirada = _tirada(client)
+    assert tirada.select_one(".pliego-verso").get_text() == "«La casa guarda un idioma»"
+    assert tirada.select_one(".pliego-firma").get_text() == "«Umbral»"
+
+
+def test_the_place_says_what_there_is_without_a_loose_comma(client):
+    """El lugar es la sala y la ciudad, con una coma solo si están las dos."""
+    sala = make_event(slug="sala", venue_name="Casa del Libro", city="", starts_at=timezone.now())
+    ciudad = make_event(slug="ciudad", venue_name="", city="Santiago", starts_at=timezone.now())
+    _registro("uno", event=sala)
+    _registro("dos", event=ciudad, position=1)
+    _, tirada = _tirada(client)
+    lugares = [p.select_one(".pliego-datos span").get_text() for p in tirada.select(".pliego")]
+    assert lugares == ["Casa del Libro", "Santiago"]
+    # Control: la ciudad va también en el fechador, y la sala no.
+    fechadores = [p.select_one(".pliego-fechador").get_text(" ") for p in tirada.select(".pliego")]
+    assert "Santiago" in fechadores[1] and "Casa del Libro" not in fechadores[0]
+
+
+def test_a_pliego_title_drops_a_step_past_34_letters(client):
+    """El título de un pliego va enorme y reserva dos líneas: con más de 34 letras baja un paso,
+    para no pasar de dos. El umbral es el de esta columna; el de la ficha mide otra y no se
+    unifican."""
+    _registro("justo", title="x" * 34)
+    _registro("largo", title="y" * 35, position=1)
+    _, tirada = _tirada(client)
+    assert ["pliego--largo" in p["class"] for p in tirada.select(".pliego")] == [False, True]
+
+
+def test_the_colophon_writes_every_possible_count_in_words(client):
+    """El colofón cuenta en letras los registros de la tirada, también cuando llega a su tope:
+    cada cuenta posible, de dos al tope, tiene su palabra."""
+    from apps.site.portada import TOPE_TIRADA
+    from apps.site.templatetags.portada import in_words
+
+    sin_palabra = [n for n in range(2, TOPE_TIRADA + 1) if not in_words(n).isalpha()]
+    assert not sin_palabra, f"el colofón diría estas cuentas en cifras: {sin_palabra}"
+    for i in range(TOPE_TIRADA):
+        _registro(f"r{i}", position=i)
+    _, tirada = _tirada(client)
+    colofon = tirada.select_one(".tirada-colofon-texto").get_text()
+    assert f": {in_words(TOPE_TIRADA)} registros elegidos" in colofon
+    assert not re.search(r"\d", colofon)
+
+
+def test_the_recording_dealt_on_top_goes_one_level_over_the_pile():
+    """El que se reparte vuelve encima de todos: un nivel sobre el más alto de la pila, que lee
+    de la hoja (el `z-index` de cada pliego). El guion no lleva una altura propia que tenga que
+    ganarle a mano a la de la hoja."""
+    niveles = re.findall(r"zIndex: ([\w.]+)", REGISTROS_JS)
+    assert niveles, "el reparto ya no anima la altura de los pliegos"
+    assert not [n for n in niveles if n[0].isdigit()], niveles
+
+
+def test_the_deal_lasts_longer_than_the_rest_of_the_pile_settles():
+    """El que pasa arriba sale de la pila y vuelve encima en un poco más de lo que tardan los
+    demás en acomodarse (la transición de `translate` de la hoja): si durara menos, llegaría
+    antes que los que se apartan."""
+    reparto = int(re.search(r"const REPARTO = (\d+);", REGISTROS_JS).group(1))
+    movimiento = ("@media (prefers-reduced-motion:no-preference)",)
+    transicion = css.rule(movimiento, ".tirada.con-js .pliego")["transition"]
+    (traslado,) = [t for t in css.split_commas(transicion) if t.startswith("translate ")]
+    duracion = css.resolve(traslado.split(" ", 1)[1])
+    veces, ms = re.match(r"calc\((\d+) \* (\d+)ms\)", duracion).groups()
+    assert reparto > int(veces) * int(ms), (reparto, duracion)

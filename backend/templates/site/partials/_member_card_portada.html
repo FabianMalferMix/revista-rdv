@@ -9,7 +9,7 @@
 <li class="integrante{% if solo_ancho %} integrante--solo-ancho{% endif %}"{% if escondida %} hidden{% endif %}>
   <a class="integrante-enlace" href="{{ m.get_absolute_url }}">
     {% if m.photo %}
-      <span class="riso-duo">{% responsive_img m.photo css_class="retrato" sizes="(max-width: 719px) 31vw, 210px" decorativa=True %}</span>
+      <span class="riso-duo">{% sizes "retrato-portada" as sizes %}{% responsive_img m.photo css_class="retrato" sizes=sizes decorativa=True %}</span>
     {% else %}
       <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
     {% endif %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images social %}
+{% load images pie social %}
 
 {% block title %}{{ publication.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ publication.synopsis|truncatechars:200|default:publication.title }}{% endblock %}
@@ -18,7 +18,7 @@
     <div class="ficha-cabecera">
       <div class="ficha-medio">
         {% if publication.cover %}
-          {% responsive_img publication.cover css_class="ficha-cubierta" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
+          {% sizes "ficha-medio" as sizes %}{% responsive_img publication.cover css_class="ficha-cubierta" sizes=sizes lazy=False %}
         {% else %}
           <span class="pub-cover-fallback ficha-cubierta" aria-hidden="true"><span>{{ publication.title }}</span></span>
         {% endif %}
@@ -62,6 +62,6 @@
         </ul>
       </section>
     {% endif %}
-    {% include "partials/_pie_de_entidad.html" %}
+    {% publication_pie publication neighbors %}
   </article>
 {% endblock %}

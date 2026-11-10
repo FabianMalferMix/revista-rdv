@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images %}
+{% load images partners %}
 
 {% block title %}Aliados — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}Fondos, instituciones y espacios que apoyan al colectivo.{% endblock %}
@@ -13,9 +13,9 @@
      programa. El logo va en gris y toma su color al señalarlo, el mismo gesto que las
      fotos a una tinta.
   {% endcomment %}
-  {% for rotulo, grupo in grupos %}
+  {% for kind, grupo in grupos %}
     <section class="aliados-grupo">
-      <h2 class="rotulo">{{ rotulo }}</h2>
+      <h2 class="rotulo">{{ kind|partner_group_title }}</h2>
       <ul class="partner-list">
         {% for p in grupo %}
           <li class="partner-item">

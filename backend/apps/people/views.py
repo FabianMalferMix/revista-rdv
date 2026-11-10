@@ -1,10 +1,9 @@
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render
-from django.urls import reverse
 
 from apps.content.models import Article, Poem
-from apps.site.pie import puerta, puertas_vecinas, vecinos_en_lista
+from apps.site.pie import vecinos_en_lista
 
 from .models import Contributor, url_for_person
 
@@ -49,15 +48,6 @@ def member_detail(request, slug):
             "poems": poems,
             "recordings": recordings,
             "actividades": actividades,
-            "pie": [
-                puerta("Índice", "Todo el colectivo", reverse("people:member_index")),
-                *puertas_vecinas(
-                    *vecinos_en_lista(Contributor.objects.members(), member),
-                    "Integrante",
-                    lambda c: c.display_name,
-                ),
-                puerta("El colectivo", "Trayectoria", reverse("agenda:trayectoria")),
-                puerta("Para programar", "Dossier", reverse("showcase:dossier")),
-            ],
+            "neighbors": vecinos_en_lista(Contributor.objects.members(), member),
         },
     )

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images social %}
+{% load images pie social %}
 
 {% block title %}{{ event.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ event.description|truncatechars:200|default:event.title }}{% endblock %}
@@ -46,7 +46,7 @@
     <div class="ficha-cabecera{% if event.poster %} ficha-cabecera--afiche{% else %} ficha-cabecera--sin-medio{% endif %}">
       {% if event.poster %}
         <figure class="ficha-medio">
-          {% responsive_img event.poster css_class="ficha-afiche" sizes="(max-width: 720px) 60vw, 420px" lazy=False %}
+          {% sizes "afiche-ficha" as sizes %}{% responsive_img event.poster css_class="ficha-afiche" sizes=sizes lazy=False %}
           {% if event.poster.caption or event.poster.credit %}
             <figcaption class="meta">Afiche{% if event.poster.caption %} · {{ event.poster.caption }}{% endif %}{% if event.poster.credit %} · {{ event.poster.credit }}{% endif %}</figcaption>
           {% endif %}
@@ -117,6 +117,6 @@
         </section>
       {% endif %}
     {% endwith %}
-    {% include "partials/_pie_de_entidad.html" %}
+    {% event_pie event neighbors %}
   </article>
 {% endblock %}

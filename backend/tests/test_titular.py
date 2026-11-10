@@ -82,6 +82,18 @@ def test_el_usuario_de_una_red_sale_de_su_url(url, usuario):
     assert SiteSocialLink(platform="Instagram", url=url).usuario == usuario
 
 
+@pytest.mark.parametrize(("cuantas", "cuenta"), [(1, "1 integrante"), (2, "2 integrantes")])
+def test_the_cejilla_counts_them_in_singular_or_plural(client, cuantas, cuenta):
+    """La cuenta de la cejilla concuerda con el número: una integrante, dos integrantes."""
+    perfil = SiteProfile.load()
+    perfil.tagline, perfil.location, perfil.founded_year = "Colectivo de poesía", "", None
+    perfil.save()
+    for i in range(cuantas):
+        Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
+    cejilla = _portada(client).select_one(".hero-cejilla").get_text()
+    assert cejilla == f"Colectivo de poesía · {cuenta}"
+
+
 def test_la_cejilla_cuenta_a_todas(client):
     """Las cuenta todas, también las que esperan su pliego en «El colectivo» (D22)."""
     for i in range(17):

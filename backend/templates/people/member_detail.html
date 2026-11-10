@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load images personas %}
+{% load images personas pie %}
 
 {% block title %}{{ member.display_name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
 {% block description %}{{ member.short_bio|default:member.display_name }}{% endblock %}
@@ -15,7 +15,7 @@
     <div class="ficha-cabecera">
       <div class="ficha-medio">
         {% if member.photo %}
-          {% responsive_img member.photo css_class="ficha-retrato" sizes="(max-width: 720px) 60vw, 320px" lazy=False %}
+          {% sizes "ficha-medio" as sizes %}{% responsive_img member.photo css_class="ficha-retrato" sizes=sizes lazy=False %}
         {% else %}
           <span class="ficha-retrato ficha-monograma" aria-hidden="true">{{ member.display_name|iniciales }}</span>
         {% endif %}
@@ -95,6 +95,6 @@
       </section>
     {% endif %}
 
-    {% include "partials/_pie_de_entidad.html" %}
+    {% member_pie neighbors %}
   </article>
 {% endblock %}

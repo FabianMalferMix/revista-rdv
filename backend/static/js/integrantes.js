@@ -1,6 +1,7 @@
 // «Las voces» en la portada: una fila de retratos y las demás esperando su turno. Cuántos se ven
 // lo dicen `data-a-la-vista` y `data-a-la-vista-telefono`, que la plantilla pone desde A_LA_VISTA
-// (apps/content/views.py). Cada 1,8 s llega otra a uno de los lugares, bajo una pasada de tinta
+// (apps/site/portada.py), y desde qué ancho es el teléfono, `data-telefono`, el corte de
+// config/breakpoints.py. Cada 1,8 s llega otra a uno de los lugares, bajo una pasada de tinta
 // azul con el filo magenta, como el tambor de una risógrafo. Corre solo donde hay un puntero que
 // pueda posarse y no se pidió menos movimiento, y se detiene con el puntero encima o el foco
 // dentro, fuera de la vista y con la pestaña oculta. En el teléfono, deslizar el dedo trae a
@@ -30,7 +31,6 @@
   };
   const solo = window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const movil = window.matchMedia('(max-width: 719px)');
   // El recorte de la capa: entra por un lado y sale por el otro; `atras`, de derecha a izquierda.
   const LLENO = 'inset(0 0 0 0)';
   const ANTES = (atras) => (atras ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)');
@@ -41,10 +41,12 @@
     const lista = seccion.querySelector('.integrantes-retratos');
     const aLaVista = Number(seccion.dataset.aLaVista);
     const enTelefono = Number(seccion.dataset.aLaVistaTelefono);
+    const phoneMedia = seccion.dataset.telefono;
     const todas = lista ? [...lista.children] : [];
-    // Sin la fila, sin cuántas se ven o sin el enlace de cada retrato, «Las voces» quedan como
-    // están: las primeras en la fila.
-    if (!lista || !(aLaVista > 0) || !(enTelefono > 0) || todas.some((li) => !enlace(li))) return;
+    // Sin la fila, sin cuántas se ven, sin el corte del teléfono o sin el enlace de cada retrato,
+    // «Las voces» quedan como están: las primeras en la fila.
+    if (!lista || !(aLaVista > 0) || !(enTelefono > 0) || !phoneMedia || todas.some((li) => !enlace(li))) return;
+    const movil = window.matchMedia(phoneMedia);
     // Quién ocupa cada lugar de la fila, y la espera, con la que lleva más tiempo primero. Al
     // montarse, como sin el guion: a la vista, las primeras de la lista.
     let lugares = [];

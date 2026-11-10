@@ -59,9 +59,12 @@
      45–75 (Bringhurst), con 66 como ideal. */
   --medida:58ch;
   /* Forma y movimiento: un radio, dos duraciones y una curva para todo el sitio.
-     Había cuatro transiciones sueltas para treinta estados :hover. */
+     Había cuatro transiciones sueltas para treinta estados :hover. Los guiones leen las
+     curvas de aquí (getComputedStyle): --ease-tirada es la del reparto de la tirada y la del
+     estante, que arranca suave, viaja por el medio y se asienta despacio. */
   --r-1:3px;
   --dur-fast:140ms; --dur-base:220ms; --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-tirada:cubic-bezier(.45,.05,.25,1);
   /* --border solo SEPARA: sobre el papel apenas se distingue. Lo que delimita un
      control —el borde de un campo de formulario— necesita 3:1 (WCAG 1.4.11), sobre el
      papel y sobre el blanco del campo: para eso está --edge. */
@@ -1402,6 +1405,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pliego-titulo a{color:inherit; text-decoration:none}
 /* El único enlace del pliego: su capa cubre la hoja entera. */
 .pliego-titulo a::after{content:""; position:absolute; z-index:1; inset:0}
+/* Un título largo, un paso más chico, para que no pase de dos líneas (cuántas letras, en
+   apps/site/templatetags/titles.py). */
 .pliego--largo .pliego-titulo{font-size:var(--t6); min-height:calc(2 * .94 * var(--t6))}
 .pliego:hover .pliego-titulo a, .pliego-titulo a:hover{text-decoration:underline; text-decoration-color:var(--accent);
   text-decoration-thickness:3px; text-underline-offset:.12em; text-decoration-skip-ink:none}
@@ -1788,8 +1793,8 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 }
 /* El título en la columna ancla, que mide unos 300 px a 951 de ventana: a su tamaño caben
    diez o doce letras por línea, y una palabra más larga («imposibilidad», «desmemoriadamente»)
-   se partía por la mitad y sin guion. Se divide con guion, en español. Un título de más de
-   noventa letras baja además un paso: el de un poema de 125 ocupaba catorce líneas. */
+   se partía por la mitad y sin guion. Se divide con guion, en español. Un título largo baja
+   además un paso (.titulo-largo: cuántas letras, en apps/site/templatetags/titles.py). */
 .lectura-ancla h1{hyphens:auto}
 .poem .lectura-ancla h1.titulo-largo{font-size:var(--t5)}
 .article .lectura-ancla h1.titulo-largo{font-size:var(--t4)}
