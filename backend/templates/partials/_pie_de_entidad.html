@@ -12,7 +12,7 @@
   <nav class="pie-entidad" aria-label="{% firstof etiqueta 'Seguir leyendo' %}">
     <ul>
       {% for p in pie %}
-        <li><span class="rotulo">{{ p.rotulo }}</span><a href="{{ p.url }}">{{ p.texto }}</a></li>
+        <li><span class="rotulo">{{ p.rotulo }}</span><a class="enlace-total" href="{{ p.url }}">{{ p.texto }}</a></li>
       {% endfor %}
     </ul>
   </nav>

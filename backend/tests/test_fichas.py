@@ -221,7 +221,7 @@ def test_la_ficha_de_integrante_pone_el_retrato_al_lado(client):
     )
     sopa = soup(client, sin_retrato.get_absolute_url())
     cabecera = sopa.select_one(".ficha .ficha-cabecera")
-    monograma = cabecera.select_one(".ficha-medio .ficha-retrato.ficha-monograma")
+    monograma = cabecera.select_one(".ficha-medio .retrato.monograma")
     assert monograma.get_text() == "RC" and monograma["aria-hidden"] == "true"
     assert cabecera.select_one(".ficha-texto h1").get_text() == "Rocío Carrasco"
 

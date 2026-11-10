@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load static images personas %}
+{% load images joined personas publications static %}
 
-{% block title %}Dossier — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}Dossier{% endblock %}
 {% block description %}Kit de prensa del colectivo: quiénes somos, trayectoria, publicaciones y contacto.{% endblock %}
 
 {% block head_extra %}
@@ -20,7 +20,7 @@
   <header class="dossier-head">
     <div>
       <p class="kicker">Dossier · kit de prensa</p>
-      <h1>{{ profile.name|default:"Colectivo" }}</h1>
+      <h1>{{ site_name }}</h1>
       {% if profile.tagline %}<p class="dek">{{ profile.tagline }}</p>{% endif %}
     </div>
     {# Sin JavaScript el botón no haría nada: dossier.js lo enseña al enlazarlo. #}
@@ -72,11 +72,7 @@
       <ul class="dossier-integrantes">
         {% for m in members %}
           <li class="dossier-integrante">
-            {% if m.photo %}
-              {% responsive_img m.photo css_class="retrato" sizes="96px" lazy=False decorativa=True %}
-            {% else %}
-              <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
-            {% endif %}
+            {% portrait m "96px" lazy=False decorative=True %}
             <div>
               <h3><a href="{{ m.get_absolute_url }}">{{ m.display_name }}</a></h3>
               {% if m.role %}<p class="member-role">{{ m.role }}</p>{% endif %}
@@ -107,7 +103,7 @@
                 <li><span class="rotulo">{{ pub.get_kind_display }}</span><span class="cronologia-titulo"><a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a></span>{% if pub.publisher %}<span class="meta">{{ pub.publisher.name }}</span>{% endif %}</li>
               {% endfor %}
               {% for e in bloque.events %}
-                <li><span class="rotulo">{{ e.get_type_display }}</span><span class="cronologia-titulo"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></span>{% if e.city or e.is_external and e.host %}<span class="meta">{% if e.is_external and e.host %}{{ e.host }}{% if e.city %} · {% endif %}{% endif %}{{ e.city }}</span>{% endif %}</li>
+                <li><span class="rotulo">{{ e.get_type_display }}</span><span class="cronologia-titulo"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></span>{% if e.city or e.is_external and e.host %}<span class="meta">{% joined %}{% if e.is_external %}{{ e.host }}{% endif %}{% part %}{{ e.city }}{% endjoined %}</span>{% endif %}</li>
               {% endfor %}
             </ul>
           </li>
@@ -123,14 +119,10 @@
       <ul class="dossier-publicaciones">
         {% for pub in publications %}
           <li class="dossier-publicacion">
-            {% if pub.cover %}
-              {% responsive_img pub.cover css_class="dossier-cubierta" sizes="120px" lazy=False decorativa=True %}
-            {% else %}
-              <span class="pub-cover-fallback dossier-cubierta" aria-hidden="true"><span>{{ pub.title }}</span></span>
-            {% endif %}
+            {% cover pub "120px" css_class="dossier-cubierta" lazy=False decorative=True %}
             <div>
               <h3 class="pub-title"><a href="{{ pub.get_absolute_url }}">{{ pub.title }}</a></h3>
-              <p class="meta">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
+              <p class="meta">{% joined %}{{ pub.get_kind_display }}{% part %}{% if pub.year %}{{ pub.year }}{% endif %}{% part %}{% if pub.publisher %}{{ pub.publisher.name }}{% endif %}{% endjoined %}</p>
               {% if pub.synopsis %}<p class="dossier-sinopsis">{{ pub.synopsis|truncatewords:40 }}</p>{% endif %}
             </div>
           </li>

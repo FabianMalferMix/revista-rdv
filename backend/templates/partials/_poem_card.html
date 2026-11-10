@@ -1,4 +1,4 @@
-{% load personas versos %}
+{% load joined personas versos %}
 {% comment %}
    Fila de poema. Bajo el título va su primer verso, como en el «índice de primeros
    versos» de una antología: es lo que permite reconocer un poema sin abrirlo. Sale del
@@ -20,7 +20,7 @@
   {% if p.published_at %}<time class="meta fila-fecha" datetime="{{ p.published_at|date:'Y-m-d' }}">{{ p.published_at|date:"j M Y" }}</time>{% endif %}
   <div class="fila-cuerpo">
     {% if not sin_cejilla %}<span class="kicker">Poema</span>{% endif %}
-    {% firstof nivel 2 as nivel %}<h{{ nivel }} class="fila-titulo"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h{{ nivel }}>
+    {% firstof nivel 2 as nivel %}<h{{ nivel }} class="fila-titulo"><a class="enlace-total" href="{{ p.get_absolute_url }}">{{ p.title }}</a></h{{ nivel }}>
     {% if versos %}
       {% with lineas=p.body|adelanto:versos %}{% if lineas %}<p class="fila-verso fila-versos">{% for v in lineas %}<span>{{ v }}</span>{% endfor %}</p>{% endif %}{% endwith %}
     {% else %}
@@ -28,6 +28,6 @@
     {% endif %}
   </div>
   <p class="meta fila-pie">
-    {% if sin_firma_de %}{% firmas_sin p.bylines sin_firma_de as firmas %}{% else %}{% firmas_sin p.bylines None as firmas %}{% endif %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.published_recording %}{% if firmas %} · {% endif %}<span class="fila-marca">♫ con registro</span>{% endif %}
+    {% if sin_firma_de %}{% firmas_sin p.bylines sin_firma_de as firmas %}{% else %}{% firmas_sin p.bylines None as firmas %}{% endif %}{% joined %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% part %}{% if p.published_recording %}<span class="fila-marca">♫ con registro</span>{% endif %}{% endjoined %}
   </p>
 </li>

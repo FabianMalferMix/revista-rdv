@@ -1,6 +1,7 @@
 from functools import cached_property
 from urllib.parse import urlsplit
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
@@ -23,7 +24,7 @@ class SiteProfile(models.Model):
     """
 
     # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
-    name = models.CharField(max_length=255, default="Colectivo", verbose_name="nombre")
+    name = models.CharField(max_length=255, default=settings.SITE_NAME, verbose_name="nombre")
     tagline = models.CharField(
         max_length=255, blank=True, verbose_name="lema", help_text="Poética corta / lema."
     )

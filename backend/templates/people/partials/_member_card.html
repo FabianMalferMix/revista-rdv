@@ -7,12 +7,8 @@
      m    la integrante (obligatorio)
 {% endcomment %}
 <li class="member-card">
-  <a href="{{ m.get_absolute_url }}">
-    {% if m.photo %}
-      <span class="riso-duo">{% sizes "retrato-colectivo" as sizes %}{% responsive_img m.photo css_class="retrato" sizes=sizes %}</span>
-    {% else %}
-      <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
-    {% endif %}
+  <a class="enlace-total" href="{{ m.get_absolute_url }}">
+    {% sizes "retrato-colectivo" as sizes %}{% portrait m sizes duotone=True %}
     <span class="member-name">{{ m.display_name }}</span>
   </a>
   {% if m.role %}<span class="member-role">{{ m.role }}</span>{% endif %}

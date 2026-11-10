@@ -171,6 +171,25 @@ def test_the_site_profile_exists_after_migrating_and_an_existing_one_is_kept(mig
     assert list(profiles) == [(1, "Repitentes")]
 
 
+def test_the_site_profile_still_named_with_the_old_default_takes_the_fixed_name(migrate):
+    """La fila del perfil la crea 0004 con el nombre por defecto de entonces, «Colectivo»: sin
+    esta migración, un sitio recién instalado se llamaría así hasta nombrarlo en el panel."""
+    old = migrate("showcase", "0015_timestamps")
+    old.get_model("showcase", "SiteProfile").objects.update_or_create(
+        pk=1, defaults={"name": "Colectivo"}
+    )
+    new = migrate("showcase", "0016_siteprofile_name_default")
+    profiles = new.get_model("showcase", "SiteProfile").objects.values_list("pk", "name")
+    assert list(profiles) == [(1, "Repitentes del Verso")]
+
+    # Control: un perfil ya nombrado en el panel conserva su nombre.
+    old = migrate("showcase", "0015_timestamps")
+    old.get_model("showcase", "SiteProfile").objects.filter(pk=1).update(name="Otro Colectivo")
+    new = migrate("showcase", "0016_siteprofile_name_default")
+    profiles = new.get_model("showcase", "SiteProfile").objects.values_list("pk", "name")
+    assert list(profiles) == [(1, "Otro Colectivo")]
+
+
 def test_the_rows_already_there_take_the_date_of_the_migration(migrate):
     """Las actividades, las publicaciones, las menciones de prensa y los aliados que ya había quedan
     creados y editados en la fecha de la migración. Un registro, que ya guardaba cuándo se creó, lo

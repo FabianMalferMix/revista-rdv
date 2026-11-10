@@ -35,6 +35,10 @@ CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 # sale de aquí y no del Host de cada petición (config/origin.py). Con DEBUG=0 es
 # obligatorio, en https y sin www; en desarrollo, el servidor local.
 SITE_URL = env_str("SITE_URL", "http://localhost:8000" if DEBUG else "").rstrip("/")
+# El nombre fijo del sitio: el de la página del error 500, que se pinta sin la base, el de la
+# cabecera del panel y el nombre por defecto del perfil del sitio. Las páginas firman con el del
+# perfil, que se cambia en el panel, y con este si el perfil lo deja en blanco.
+SITE_NAME = "Repitentes del Verso"
 
 # ── Aplicaciones ──────────────────────────────────────────
 INSTALLED_APPS = [

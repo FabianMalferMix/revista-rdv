@@ -11,11 +11,7 @@
 {% endcomment %}
 <li class="integrante{% if solo_ancho %} integrante--solo-ancho{% endif %}"{% if escondida %} hidden{% endif %}>
   <a class="integrante-enlace" href="{{ m.get_absolute_url }}">
-    {% if m.photo %}
-      <span class="riso-duo">{% sizes "retrato-portada" as sizes %}{% responsive_img m.photo css_class="retrato" sizes=sizes decorativa=True %}</span>
-    {% else %}
-      <span class="retrato monograma" aria-hidden="true">{{ m.display_name|iniciales }}</span>
-    {% endif %}
+    {% sizes "retrato-portada" as sizes %}{% portrait m sizes duotone=True decorative=True %}
     <span class="integrante-rotulo">
       <span class="member-name">{{ m.display_name }}</span>
       {% if m.role %}<span class="member-role">{{ m.role }}</span>{% endif %}

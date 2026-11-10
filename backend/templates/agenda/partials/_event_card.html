@@ -1,4 +1,4 @@
-{% load images %}
+{% load images joined %}
 {% comment %}
    El afiche va entre la fecha y la ficha, a una tinta como las imágenes de todos los
    listados; al señalar la tarjeta, y en la ficha del evento, se ve tal cual. Decorativo:
@@ -14,11 +14,16 @@
   </div>
   {% if e.poster %}<span class="event-afiche riso-duo">{% responsive_img e.poster sizes="128px" decorativa=True %}</span>{% endif %}
   <div class="event-info">
-    <span class="kicker">{{ e.get_type_display }}{% if e.is_external and e.host %} · {{ e.host }}{% endif %}</span>
+    <span class="kicker">{% joined %}{{ e.get_type_display }}{% part %}{% if e.is_external %}{{ e.host }}{% endif %}{% endjoined %}</span>
     <h2><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>
     <span class="meta">
-      {{ e.starts_at|date:"j M Y · H:i" }} hrs
-      {% if e.venue_name %} · {{ e.venue_name }}{% endif %}{% if e.city %} · {{ e.city }}{% endif %}
+      {% joined %}
+        {{ e.starts_at|date:"j M Y · H:i" }} hrs
+      {% part %}
+        {{ e.venue_name }}
+      {% part %}
+        {{ e.city }}
+      {% endjoined %}
     </span>
     {% if e.registration_url and not e.is_past %}
       <p><a class="btn" href="{{ e.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>

@@ -4,10 +4,10 @@
    Lleva a la portada; el monograma es un dibujo y no se anuncia.
 
    Parámetros (se incluye con `only`):
-     site_profile   el perfil del colectivo, del procesador de contexto: su nombre (obligatorio)
+     site_name   el nombre del sitio, del procesador de contexto (obligatorio)
 {% endcomment %}
 <a class="brand" href="{% url 'site:home' %}">
   <svg class="brand-mono" viewBox="0 0 46 40" width="30" height="26" aria-hidden="true" focusable="false"><text class="brand-mono-r" x="0" y="32" font-size="38">R</text><text class="brand-mono-v" x="19" y="34" font-size="38">V</text></svg>
   <span class="brand-sep" aria-hidden="true"></span>
-  <span class="brand-nombre">{{ site_profile.name|default:"Reseñas" }}</span>
+  <span class="brand-nombre">{{ site_name }}</span>
 </a>

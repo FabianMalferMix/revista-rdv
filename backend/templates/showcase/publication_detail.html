@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load images pie social %}
+{% load images joined pie publications social %}
 
-{% block title %}{{ publication.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ publication.title }}{% endblock %}
 {% block description %}{{ publication.synopsis|truncatechars:200|default:publication.title }}{% endblock %}
 
 {% block opengraph %}
@@ -17,30 +17,23 @@
   <article class="ficha pub-detail">
     <div class="ficha-cabecera">
       <div class="ficha-medio">
-        {% if publication.cover %}
-          {% sizes "ficha-medio" as sizes %}{% responsive_img publication.cover css_class="ficha-cubierta" sizes=sizes lazy=False %}
-        {% else %}
-          <span class="pub-cover-fallback ficha-cubierta" aria-hidden="true"><span>{{ publication.title }}</span></span>
-        {% endif %}
+        {% sizes "ficha-medio" as sizes %}{% cover publication sizes css_class="ficha-cubierta" lazy=False %}
       </div>
       <header class="ficha-texto">
-        <span class="kicker">{{ publication.get_kind_display }}{% if not publication.is_own %} · participación{% endif %}</span>
+        <span class="kicker">{% joined %}{{ publication.get_kind_display }}{% part %}{% if not publication.is_own %}participación{% endif %}{% endjoined %}</span>
         <h1>{{ publication.title }}</h1>
         <p class="meta">
-          {% if publication.year %}{{ publication.year }}{% endif %}
-          {% if publication.publisher %} · <a href="{{ publication.publisher.get_absolute_url }}">{{ publication.publisher.name }}</a>{% endif %}
-          {% if publication.isbn %} · ISBN {{ publication.isbn }}{% endif %}
+          {% joined %}
+            {% if publication.year %}{{ publication.year }}{% endif %}
+          {% part %}
+            {% if publication.publisher %}<a href="{{ publication.publisher.get_absolute_url }}">{{ publication.publisher.name }}</a>{% endif %}
+          {% part %}
+            {% if publication.isbn %}ISBN {{ publication.isbn }}{% endif %}
+          {% endjoined %}
         </p>
         {% if publication.synopsis %}<div class="member-about">{{ publication.synopsis|linebreaks }}</div>{% endif %}
 
-        {% with people=publication.participants.all %}
-          {% if people %}
-            <h2 class="rotulo ficha-rotulo">Participan</h2>
-            <p class="meta">
-              {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-            </p>
-          {% endif %}
-        {% endwith %}
+        {% include "partials/_participan.html" with personas=publication.participants.all only %}
 
         {% with stores=publication.where_to_buy.all %}
           {% if stores or publication.pdf %}

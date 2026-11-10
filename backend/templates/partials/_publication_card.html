@@ -1,4 +1,4 @@
-{% load images %}
+{% load images joined publications %}
 {% comment %}
    Una publicación del colectivo en el catálogo: su tapa o, sin ella, su título impreso en la
    caja, y debajo qué es, de qué año y de qué editorial. Toda la tapa es el enlace.
@@ -7,8 +7,8 @@
      pub   la publicación (obligatorio)
 {% endcomment %}<li class="pub-card">
   <a href="{{ pub.get_absolute_url }}">
-    {% if pub.cover %}{% sizes "tapa-catalogo" as sizes %}{% responsive_img pub.cover sizes=sizes %}{% else %}<span class="pub-cover-fallback" aria-hidden="true"><span>{{ pub.title }}</span></span>{% endif %}
+    {% sizes "tapa-catalogo" as sizes %}{% cover pub sizes %}
     <span class="pub-title">{{ pub.title }}</span>
   </a>
-  <span class="muted">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</span>
+  <span class="muted">{% joined %}{{ pub.get_kind_display }}{% part %}{% if pub.year %}{{ pub.year }}{% endif %}{% part %}{% if pub.publisher %}{{ pub.publisher.name }}{% endif %}{% endjoined %}</span>
 </li>

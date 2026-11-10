@@ -39,6 +39,6 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Títulos del panel editorial
-admin.site.site_header = "Reseñas — Panel editorial"
-admin.site.site_title = "Reseñas"
+admin.site.site_header = f"{settings.SITE_NAME} — Panel editorial"
+admin.site.site_title = settings.SITE_NAME
 admin.site.index_title = "Administración"

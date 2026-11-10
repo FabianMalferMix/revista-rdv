@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load authored %}
 
-{% block title %}{{ page.seo_title|default:page.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ page.seo_title|default:page.title }}{% endblock %}
 {% block description %}{{ page.seo_description|default:page.title }}{% endblock %}
 
 {% block content %}

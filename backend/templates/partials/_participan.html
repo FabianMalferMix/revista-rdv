@@ -1,0 +1,12 @@
+{% comment %}
+   Quienes participan en una publicación, una actividad o un registro: el rótulo y sus nombres,
+   cada uno hacia su página, como los demás datos de la ficha. Sin nadie, no se pinta.
+
+   Parámetros (se incluye con `only`):
+     personas   quienes participan, en su orden (obligatorio)
+{% endcomment %}{% if personas %}
+  <h2 class="rotulo ficha-rotulo">Participan</h2>
+  <p class="meta">
+    {% for c in personas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+  </p>
+{% endif %}

@@ -1,0 +1,10 @@
+{% comment %}
+   La cejilla de un texto: su tipo y, delante, su sección si dice algo que el tipo no diga ya
+   («Crónica · Entrevista»; ver `Article.seccion_aporta`). Con sección, la cejilla lleva a ella:
+   la sección enlazada o, si no aporta, el tipo. La pintan la fila de un texto y su ficha.
+
+   Parámetros (se incluye con `only`):
+     a   el texto (obligatorio), con su sección
+{% endcomment %}<span class="kicker">
+  {% if a.section and a.seccion_aporta %}<a href="{{ a.section.get_absolute_url }}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{{ a.section.get_absolute_url }}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
+</span>

@@ -665,6 +665,48 @@ const CHECKS = [
     },
   },
   {
+    name: 'Toda la tarjeta lleva a su ficha, y los demás enlaces de la tarjeta, a lo suyo',
+    widths: [951, 375],
+    async run({ page }) {
+      // Adónde lleva pulsar en el centro de cada pieza de la primera tarjeta que tiene todas: el
+      // enlace que recibe el pulsado, o nada.
+      const landings = (card, pieces) =>
+        page.evaluate(
+          ([card, pieces]) => {
+            const found = document.querySelector(card);
+            if (!found) return null;
+            found.scrollIntoView({ block: 'center' });
+            const own = found.querySelector('.enlace-total')?.getAttribute('href') ?? 'sin enlace-total';
+            const at = Object.entries(pieces).map(([piece, selector]) => {
+              const box = found.querySelector(selector).getBoundingClientRect();
+              const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+              return [piece, hit?.closest('a')?.getAttribute('href') ?? null];
+            });
+            const links = Object.fromEntries(
+              Object.entries(pieces).map(([piece, selector]) => [piece, found.querySelector(selector).closest('a')?.getAttribute('href') ?? own])
+            );
+            return { at: Object.fromEntries(at), links };
+          },
+          [card, pieces]
+        );
+      // Una fila de texto con sección y firma: la sección y la firma llevan a lo suyo; la fecha,
+      // que no es un enlace, al texto.
+      await visit(page, '/textos/');
+      const fila = await landings('.fila:has(.kicker a):has(.fila-pie a)', {
+        sección: '.kicker a',
+        firma: '.fila-pie a',
+        fecha: '.fila-fecha',
+      });
+      expect(fila, '/textos/: no hay una fila con sección y firma que medir');
+      expect(JSON.stringify(fila.at) === JSON.stringify(fila.links), `/textos/: la fila lleva a ${JSON.stringify(fila.at)} y debía llevar a ${JSON.stringify(fila.links)}`);
+      // Una tarjeta de registro con su evento: el evento lleva al evento; la miniatura, al registro.
+      await visit(page, '/registros/');
+      const tarjeta = await landings('.recording-card:has(.meta a)', { evento: '.meta a', miniatura: '.rec-miniatura' });
+      expect(tarjeta, '/registros/: no hay una tarjeta con evento que medir');
+      expect(JSON.stringify(tarjeta.at) === JSON.stringify(tarjeta.links), `/registros/: la tarjeta lleva a ${JSON.stringify(tarjeta.at)} y debía llevar a ${JSON.stringify(tarjeta.links)}`);
+    },
+  },
+  {
     name: 'Lo que lleva hidden no se ve, con los guiones y sin ellos',
     widths: [951, 375],
     async run({ page, context }, width) {

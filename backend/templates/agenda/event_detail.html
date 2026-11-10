@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load images pie social %}
+{% load images joined pie social %}
 
-{% block title %}{{ event.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ event.title }}{% endblock %}
 {% block description %}{{ event.description|truncatechars:200|default:event.title }}{% endblock %}
 
 {% block opengraph %}
@@ -28,7 +28,7 @@
     },{% endif %}
     {% social_image_url event as imagen %}{% if imagen %}"image": "{{ imagen|escapejs }}",{% endif %}
     {% if event.description %}"description": "{{ event.description|truncatechars:300|escapejs }}",{% endif %}
-    "organizer": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"},
+    "organizer": {"@type": "Organization", "name": "{{ site_name|escapejs }}"},
     "url": "{{ canonical_url }}"
   }
   </script>
@@ -48,32 +48,30 @@
         <figure class="ficha-medio">
           {% sizes "afiche-ficha" as sizes %}{% responsive_img event.poster css_class="ficha-afiche" sizes=sizes lazy=False %}
           {% if event.poster.caption or event.poster.credit %}
-            <figcaption class="meta">Afiche{% if event.poster.caption %} · {{ event.poster.caption }}{% endif %}{% if event.poster.credit %} · {{ event.poster.credit }}{% endif %}</figcaption>
+            <figcaption class="meta">{% joined %}Afiche{% part %}{{ event.poster.caption }}{% part %}{{ event.poster.credit }}{% endjoined %}</figcaption>
           {% endif %}
         </figure>
       {% endif %}
       <header class="ficha-texto">
-        <span class="kicker">{{ event.get_type_display }}{% if event.is_external and event.host %} · {{ event.host }}{% endif %}{% if event.is_past %} · realizado{% endif %}</span>
+        <span class="kicker">{% joined %}{{ event.get_type_display }}{% part %}{% if event.is_external %}{{ event.host }}{% endif %}{% part %}{% if event.is_past %}realizado{% endif %}{% endjoined %}</span>
         <h1>{{ event.title }}</h1>
         <p class="meta">
-          {{ event.starts_at|date:"l j M Y · H:i" }} hrs
-          {% if event.venue_name %} · {{ event.venue_name }}{% endif %}
-          {% if event.address %} · {{ event.address }}{% endif %}
-          {% if event.city %} · {{ event.city }}{% endif %}
+          {% joined %}
+            {{ event.starts_at|date:"l j M Y · H:i" }} hrs
+          {% part %}
+            {{ event.venue_name }}
+          {% part %}
+            {{ event.address }}
+          {% part %}
+            {{ event.city }}
+          {% endjoined %}
         </p>
         {% if event.registration_url and not event.is_past %}
           <p><a class="btn" href="{{ event.registration_url }}" rel="noopener" target="_blank">Inscripción / entradas ↗</a></p>
         {% endif %}
         {% if event.description %}<div class="member-about">{{ event.description|linebreaks }}</div>{% endif %}
 
-        {% with people=event.participants.all %}
-          {% if people %}
-            <h2 class="rotulo ficha-rotulo">Participan</h2>
-            <p class="meta">
-              {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-            </p>
-          {% endif %}
-        {% endwith %}
+        {% include "partials/_participan.html" with personas=event.participants.all only %}
 
         {% if recordings %}
           <h2 class="rotulo ficha-rotulo">Registros</h2>

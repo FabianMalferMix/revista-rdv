@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% load images pie portada static versos %}
+{% load images joined pie portada publications static versos %}
 
+{% block title_tagline %}{{ site_profile.tagline }}{% endblock %}
 {% block salto %}contenido{% endblock %}
 {% block lienzo %}lienzo--ancho{% endblock %}
 {% block head_extra %}
@@ -28,7 +29,7 @@
          cápsula de la cabecera (site.css) y cabecera.js. Se ve el logo, y los lectores de
          pantalla y los buscadores leen el nombre.
       {% endcomment %}
-      <h1 class="hero-nombre portada-logo" id="portada-nombre"><span class="sr-only">{{ site_profile.name|default:"Reseñas" }}</span>{% include "site/partials/_logo_horizontal.html" only %}{% include "site/partials/_logo_apilado.html" only %}</h1>
+      <h1 class="hero-nombre portada-logo" id="portada-nombre"><span class="sr-only">{{ site_name }}</span>{% include "site/partials/_logo_horizontal.html" only %}{% include "site/partials/_logo_apilado.html" only %}</h1>
     </div>
   </section>
 
@@ -44,7 +45,7 @@
   {% endcomment %}
   <section class="hero" id="contenido">
     {% if hoja.presentacion or hoja.member_count or instagram_del_colectivo.usuario %}
-      <p class="kicker hero-cejilla">{{ hoja.presentacion|join:" · " }}{% if hoja.member_count %}{% if hoja.presentacion %} · {% endif %}{{ hoja.member_count }} integrante{{ hoja.member_count|pluralize }}{% endif %}{% if instagram_del_colectivo.usuario %}{% if hoja.presentacion or hoja.member_count %} · {% endif %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}</p>
+      <p class="kicker hero-cejilla">{% joined %}{{ hoja.presentacion|join:" · " }}{% part %}{% if hoja.member_count %}{{ hoja.member_count }} integrante{{ hoja.member_count|pluralize }}{% endif %}{% part %}{% if instagram_del_colectivo.usuario %}<a href="{{ instagram_del_colectivo.url }}" rel="me">{{ instagram_del_colectivo.usuario }}</a>{% endif %}{% endjoined %}</p>
     {% endif %}
     <div class="hero-texto">
       {% if site_profile.manifesto %}
@@ -94,8 +95,11 @@
       <h2><a href="{{ featured_poem.get_absolute_url }}">{{ featured_poem.title }}</a></h2>
       <div class="poem-excerpt">{{ featured_poem.body|opening_stanzas|versos }}</div>
       <p class="meta">
-        {% for c in featured_poem.bylines %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-        · <a href="{{ featured_poem.get_absolute_url }}">Leer completo →</a>
+        {% joined %}
+          {% for c in featured_poem.bylines %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% part %}
+          <a href="{{ featured_poem.get_absolute_url }}">Leer completo →</a>
+        {% endjoined %}
       </p>
     </section>
   {% endif %}
@@ -107,9 +111,15 @@
         <span class="kicker">Próxima actividad</span>
         <h2><a href="{{ next_event.get_absolute_url }}">{{ next_event.title }}</a></h2>
         <p class="meta">
-          {{ next_event.starts_at|date:"l j M · H:i" }} hrs
-          {% if next_event.venue_name %} · {{ next_event.venue_name }}{% endif %}{% if next_event.city %} · {{ next_event.city }}{% endif %}
-          {% if next_event.registration_url %} · <a href="{{ next_event.registration_url }}" rel="noopener" target="_blank">Inscripción ↗</a>{% endif %}
+          {% joined %}
+            {{ next_event.starts_at|date:"l j M · H:i" }} hrs
+          {% part %}
+            {{ next_event.venue_name }}
+          {% part %}
+            {{ next_event.city }}
+          {% part %}
+            {% if next_event.registration_url %}<a href="{{ next_event.registration_url }}" rel="noopener" target="_blank">Inscripción ↗</a>{% endif %}
+          {% endjoined %}
         </p>
       </div>
     </section>
@@ -191,7 +201,7 @@
               <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}" data-ficha="ficha-{{ pub.slug }}">
                   {% comment %} La tapa repite el enlace de la ficha de al lado: fuera del tabulador. {% endcomment %}
                   <a class="ejemplar-frente" href="{{ pub.get_absolute_url }}" tabindex="-1" aria-hidden="true">
-                    {% if pub.cover %}{% sizes "tapa-estante" as sizes %}{% responsive_img pub.cover css_class="ejemplar-tapa" sizes=sizes decorativa=True %}{% else %}<span class="pub-cover-fallback ejemplar-tapa"><span>{{ pub.title }}</span></span>{% endif %}
+                    {% sizes "tapa-estante" as sizes %}{% cover pub sizes css_class="ejemplar-tapa" decorative=True %}
                     {% if pub.lomo %}<svg class="ejemplar-canto" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.canto }}"/></svg>{% endif %}
                   </a>
                   <a class="ejemplar-lomo" href="{{ pub.get_absolute_url }}">{% if pub.lomo %}<svg class="ejemplar-lomo-fondo" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="1" height="1" fill="{{ pub.lomo.fondo }}"/></svg>{% endif %}<span class="ejemplar-lomo-titulo">{{ pub.title }}</span>{% if pub.year %} <span class="ejemplar-lomo-anio">{{ pub.year }}</span>{% endif %}</a>
@@ -207,7 +217,7 @@
           <div class="estante-fichas">
             {% for pub in publications %}
               <div class="estante-ficha" id="ficha-{{ pub.slug }}"{% if not forloop.first %} hidden{% endif %}>
-                <p class="rotulo rotulo--acento estante-dato">{{ pub.get_kind_display }}{% if pub.year %} · {{ pub.year }}{% endif %}{% if pub.publisher %} · {{ pub.publisher.name }}{% endif %}</p>
+                <p class="rotulo rotulo--acento estante-dato">{% joined %}{{ pub.get_kind_display }}{% part %}{% if pub.year %}{{ pub.year }}{% endif %}{% part %}{% if pub.publisher %}{{ pub.publisher.name }}{% endif %}{% endjoined %}</p>
                 <h3 class="estante-titulo" tabindex="-1">{{ pub.title }}</h3>
                 {% if pub.synopsis %}<p class="estante-sinopsis">{{ pub.synopsis }}</p>{% endif %}
                 <a class="btn" href="{{ pub.get_absolute_url }}">Ver la publicación <span aria-hidden="true">→</span></a>
@@ -228,7 +238,7 @@
     {% include "site/partials/_cabeza_de_seccion.html" with cejilla="Prensa y gestión" titulo="Para programadores y jurados" territorio="prensa" only %}
     {% cierre_pie site_profile.correo_de_contacto etiqueta="Para programadores y jurados" %}
     {% if cierre.ultima_actividad or cierre.ultima_publicacion %}
-      <p class="meta home-cierre-datos">{% if cierre.ultima_actividad %}Última actividad: <a href="{{ cierre.ultima_actividad.get_absolute_url }}">{{ cierre.ultima_actividad.title }}</a>, {{ cierre.ultima_actividad.starts_at|date:"j M Y" }}{% endif %}{% if cierre.ultima_actividad and cierre.ultima_publicacion %} · {% endif %}{% if cierre.ultima_publicacion %}Actualizado el {{ cierre.ultima_publicacion|date:"j \d\e F \d\e Y" }}{% endif %}</p>
+      <p class="meta home-cierre-datos">{% joined %}{% if cierre.ultima_actividad %}Última actividad: <a href="{{ cierre.ultima_actividad.get_absolute_url }}">{{ cierre.ultima_actividad.title }}</a>, {{ cierre.ultima_actividad.starts_at|date:"j M Y" }}{% endif %}{% part %}{% if cierre.ultima_publicacion %}Actualizado el {{ cierre.ultima_publicacion|date:"j \d\e F \d\e Y" }}{% endif %}{% endjoined %}</p>
     {% endif %}
   </section>
 

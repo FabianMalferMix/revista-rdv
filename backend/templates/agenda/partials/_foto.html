@@ -1,4 +1,4 @@
-{% load gallery images %}
+{% load gallery images joined %}
 {% comment %}
    Una foto del álbum de un evento: la miniatura y su vista ampliada. Las fotos que no
    caben en el mosaico van en «Ver las N fotos», con su número de verdad.
@@ -23,6 +23,6 @@
     <a class="lightbox-back" href="#galeria-{{ slug }}" tabindex="-1" aria-label="Cerrar"></a>
     <a class="lightbox-close" href="#galeria-{{ slug }}" aria-label="Cerrar">×</a>
     {% responsive_img foto.asset sizes="90vw" alt=foto.caption %}
-    <figcaption><span class="lightbox-cuenta">{{ numero }} / {{ total }}</span>{% if foto.caption %} · {{ foto.caption }}{% endif %}{% if foto.asset.credit %} · {{ foto.asset.credit }}{% endif %}</figcaption>
+    <figcaption>{% joined %}<span class="lightbox-cuenta">{{ numero }} / {{ total }}</span>{% part %}{{ foto.caption }}{% part %}{{ foto.asset.credit }}{% endjoined %}</figcaption>
   </figure>
 </li>

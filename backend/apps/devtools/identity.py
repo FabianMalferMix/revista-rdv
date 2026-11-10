@@ -10,11 +10,13 @@ producción, la identidad se pone en el panel (Perfil del sitio).
 
 import textwrap
 
-# Los campos del perfil del sitio que son la identidad, con su valor. El correo general es el
-# del colectivo, que es público; no hay correo de gestión ni teléfono. El manifiesto es
-# provisional, hasta que el colectivo escriba el suyo.
+from django.conf import settings
+
+# Los campos del perfil del sitio que son la identidad, con su valor. El nombre es el fijo del
+# sitio (`SITE_NAME`). El correo general es el del colectivo, que es público; no hay correo de
+# gestión ni teléfono. El manifiesto es provisional, hasta que el colectivo escriba el suyo.
 PROFILE = {
-    "name": "Repitentes del Verso",
+    "name": settings.SITE_NAME,
     "tagline": "Colectivo de poesía",
     "founded_year": 2023,
     "location": "Chile",
