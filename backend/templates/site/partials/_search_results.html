@@ -1,4 +1,4 @@
-{% comment %}
+{% load joined %}{% comment %}
    Los resultados por tipo: cada grupo bajo su cejilla, con su tope, y al lado de cada
    resultado el dato que lo distingue: de una persona, su rol o si es integrante o colaborador;
    de lo demás, su clase y lo que tenga de fecha, año y lugar.
@@ -27,7 +27,7 @@
         <h2 class="rotulo">{{ grupo.titulo }}</h2>
         <ul class="search-list">
           {% for r in grupo.resultados %}
-            <li><a href="{{ r.url }}">{{ r.title }}</a>{% if r.person %} <span class="meta">{% if r.member %}{% firstof r.role "Integrante" %}{% else %}Colaborador{% endif %}</span>{% elif r.kind %} <span class="meta">{{ r.kind }}{% if r.date %} · {{ r.date|date:"j M Y" }}{% endif %}{% if r.year %} · {{ r.year }}{% endif %}{% if r.place %} · {{ r.place }}{% endif %}</span>{% endif %}</li>
+            <li><a href="{{ r.url }}">{{ r.title }}</a>{% if r.person %} <span class="meta">{% if r.member %}{% firstof r.role "Integrante" %}{% else %}Colaborador{% endif %}</span>{% elif r.kind %} <span class="meta">{% joined %}{{ r.kind }}{% part %}{% if r.date %}{{ r.date|date:"j M Y" }}{% endif %}{% part %}{% if r.year %}{{ r.year }}{% endif %}{% part %}{% if r.place %}{{ r.place }}{% endif %}{% endjoined %}</span>{% endif %}</li>
           {% endfor %}
         </ul>
       </section>

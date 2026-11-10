@@ -1,0 +1,12 @@
+{% load images %}{% comment %}
+   La tapa de una publicación: su cubierta o, sin ella, su título impreso en una caja del mismo
+   tamaño, que no se anuncia (el título ya se lee junto a la tapa). La pinta la etiqueta `cover`
+   (apps/showcase/templatetags/publications.py).
+
+   Parámetros (los da la etiqueta):
+     pub          la publicación (obligatorio)
+     sizes        lo que mide pintada la cubierta (obligatorio)
+     css_class    la clase de la cubierta y de la caja, o vacía (obligatorio)
+     lazy         si la cubierta espera a acercarse a la vista para cargarse (obligatorio)
+     decorative   si la cubierta no se anuncia (obligatorio)
+{% endcomment %}{% if pub.cover %}{% responsive_img pub.cover css_class=css_class sizes=sizes lazy=lazy decorativa=decorative %}{% else %}<span class="pub-cover-fallback{% if css_class %} {{ css_class }}{% endif %}" aria-hidden="true"><span>{{ pub.title }}</span></span>{% endif %}

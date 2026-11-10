@@ -301,17 +301,25 @@ def test_el_carril_ancho_de_cabecera_y_pie_coincide_con_el_del_lienzo():
 # ── Filas, miniaturas y cubiertas (ticket 2.2) ────────────────────────────
 
 
+def _enlace_total():
+    """La capa del enlace que cubre su tarjeta (`.enlace-total`) y la regla de los demás enlaces
+    de la tarjeta, que quedan por encima."""
+    capa = css.rule((), ".enlace-total::after")
+    assert capa["content"] == '""' and capa["position"] == "absolute" and capa["inset"] == "0"
+    assert css.rule((), "li:has(.enlace-total)")["position"] == "relative"
+    secundarios = css.rule((), "li:has(.enlace-total) a:not(.enlace-total)")
+    assert secundarios["position"] == "relative" and secundarios["z-index"] == "1"
+    assert secundarios["padding-block"] == "6px", "su zona de pulsado bajaría de 24 px"
+
+
 def test_la_fila_entera_es_el_enlace_de_su_titulo():
     """Solo era pulsable el texto del título. Una capa del propio enlace cubre la fila;
     los enlaces secundarios (sección, firmas) quedan por encima y siguen siendo propios."""
     assert css.rule((), ".fila")["position"] == "relative"
-    capa = css.rule((), ".fila-titulo a::after")
-    assert capa["content"] == '""' and capa["position"] == "absolute"
+    _enlace_total()
     # Lo que se pulsa es lo que se ilumina: la hoja clara del estado de la fila.
+    capa = css.rule((), ".fila .enlace-total::after")
     assert capa["inset"] == css.rule((), ".fila::before")["inset"]
-    secundarios = css.rule((), ".fila .kicker a, .fila-pie a")
-    assert secundarios["position"] == "relative" and secundarios["z-index"] == "1"
-    assert secundarios["padding-block"] == "6px", "su zona de pulsado bajaría de 24 px"
 
 
 def test_el_estado_de_la_fila_es_una_hoja_mas_clara_y_no_alcanza_a_las_que_no_enlazan():
@@ -399,9 +407,8 @@ def test_la_miniatura_de_registro_es_16_9_y_lleva_marca_de_reproduccion():
     # El cartel va en posición absoluta: la marca necesita z-index o queda debajo.
     for capa in (".rec-miniatura::before", ".rec-miniatura::after"):
         assert css.rule((), capa)["z-index"] == "1", f"«{capa}» quedaría tapada por el cartel"
-    assert css.rule((), ".recording-card h2 a::after")["inset"] == "0", (
-        "la tarjeta entera es el enlace"
-    )
+    assert css.rule((), ".recording-card")["position"] == "relative"
+    _enlace_total()  # la tarjeta entera es el enlace
 
 
 def test_rejillas_que_reparten_el_ancho_entre_lo_que_haya():
@@ -559,8 +566,7 @@ def test_un_verso_largo_continua_con_sangria_francesa():
 
 def test_cada_salida_del_pie_se_pulsa_entera():
     assert css.rule((), ".pie-entidad li")["position"] == "relative"
-    capa = css.rule((), ".pie-entidad a::after")
-    assert capa["content"] == '""' and capa["inset"] == "0"
+    _enlace_total()
 
 
 def test_los_retratos_nuevos_no_son_circulos():
@@ -568,14 +574,12 @@ def test_los_retratos_nuevos_no_son_circulos():
     mensajería (ticket 3.6). En los listados era un círculo de 72 px."""
     for selector in (
         ".firma-retrato",
-        ".ficha-retrato",
-        ".ficha-monograma",
+        ".firma-monograma",
         ".retrato",
         ".monograma",
     ):
         assert "border-radius" not in css.rule((), selector), f"«{selector}» redondea el retrato"
-    for selector in (".ficha-retrato", ".retrato"):
-        assert css.rule((), selector)["aspect-ratio"] == "4 / 5", f"«{selector}» no es 4:5"
+    assert css.rule((), ".retrato")["aspect-ratio"] == "4 / 5", "«.retrato» no es 4:5"
     circulos = [
         bloque for bloque, d in css.declarations() if d.name == "border-radius" and "50%" in d.value
     ]
@@ -909,6 +913,8 @@ def test_al_senalar_o_enfocar_se_ve_el_original():
 # de la agenda, la trayectoria y la próxima actividad de la portada. Las cubiertas de las
 # publicaciones, los logos y las fichas se ven tal cual.
 CON_DUOTONO = {
+    # El retrato, a una tinta cuando la tarjeta lo pide (`{% portrait … duotone=True %}`).
+    "_retrato.html",
     "_member_card.html",
     "_member_card_portada.html",
     "gallery.html",
@@ -925,15 +931,18 @@ CON_DUOTONO = {
 
 def test_el_duotono_solo_va_en_los_listados():
     plantillas = Path(__file__).resolve().parent.parent / "templates"
-    con_duo = {p.name for p in plantillas.rglob("*.html") if "riso-duo" in p.read_text("utf-8")}
+    con_duo = {
+        p.name
+        for p in plantillas.rglob("*.html")
+        if "riso-duo" in (texto := p.read_text("utf-8")) or "duotone=True" in texto
+    }
     assert con_duo == CON_DUOTONO, f"duotono en: {sorted(con_duo)}"
 
 
 def test_toda_la_tarjeta_de_integrante_es_el_enlace():
     """El rol y la reseña quedaban fuera del enlace: la capa del enlace cubre la tarjeta."""
     assert css.rule((), ".member-card")["position"] == "relative"
-    capa = css.rule((), ".member-card > a::after")
-    assert capa["content"] == '""' and capa["inset"] == "0"
+    _enlace_total()
 
 
 # ── Reproductor: póster o carátula (ticket 3.4, D10) ──────────────────────

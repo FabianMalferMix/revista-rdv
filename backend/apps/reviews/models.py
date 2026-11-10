@@ -30,6 +30,15 @@ class WorkQuerySet(models.QuerySet):
         own = Publication.objects.published().filter(pk=OuterRef("publicacion"))
         return self.filter(Exists(reviews) | Exists(own))
 
+    def with_page(self):
+        """Cada obra con `has_page`, si tiene ficha, y `publisher_has_page`, si la tiene su
+        editorial, con el criterio de sus fichas (`visible()`). La vista previa de un texto sin
+        publicar puede reseñar una obra que todavía no tiene ficha: su enlace llevaría a un 404."""
+        return self.annotate(
+            has_page=Exists(Work.objects.visible().filter(pk=OuterRef("pk"))),
+            publisher_has_page=Exists(Publisher.objects.visible().filter(pk=OuterRef("publisher"))),
+        )
+
 
 class Publisher(models.Model):
     """Editorial. Extraída de Work (3NF): habilita 'reseñas por editorial'."""

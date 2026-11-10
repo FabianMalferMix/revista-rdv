@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load images pie social authored titles %}
+{% load authored images joined pie social titles %}
 
-{% block title %}{{ article.seo_title|default:article.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ article.seo_title|default:article.title }}{% endblock %}
 {% block description %}{{ article.seo_description|default:article.subtitle|default:article.title }}{% endblock %}
 
 {% block opengraph %}
@@ -22,7 +22,7 @@
     "datePublished": "{{ article.published_at|date:'c' }}",
     "dateModified": "{{ article.updated_at|date:'c' }}",
     "author": [{% for c in article.bylines %}{"@type": "Person", "name": "{{ c.display_name|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
-    "publisher": {"@type": "Organization", "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}"}{% if article.subtitle %},
+    "publisher": {"@type": "Organization", "name": "{{ site_name|escapejs }}"}{% if article.subtitle %},
     "description": "{{ article.subtitle|escapejs }}"{% endif %}{% social_image_url article as imagen %}{% if imagen %},
     "image": "{{ imagen|escapejs }}"{% endif %}
   }
@@ -40,13 +40,11 @@
     {% endcomment %}
     <div class="lectura-sala">
     <header class="lectura-ancla">
-      <span class="kicker">
-        {% if article.section and article.seccion_aporta %}<a href="{{ article.section.get_absolute_url }}">{{ article.section.name }}</a> · {{ article.get_type_display }}{% elif article.section %}<a href="{{ article.section.get_absolute_url }}">{{ article.get_type_display }}</a>{% else %}{{ article.get_type_display }}{% endif %}
-      </span>
+      {% include "partials/_cejilla_de_texto.html" with a=article only %}
       <h1{% if article.title|long_for_ficha %} class="titulo-largo"{% endif %}>{{ article.title }}</h1>
       {% if article.subtitle %}<p class="dek">{{ article.subtitle }}</p>{% endif %}
       {% include "content/partials/_firmas_lectura.html" with personas=article.bylines only %}
-      <p class="meta">{{ article.reading_time }} min{% if article.published_at %} · <time datetime="{{ article.published_at|date:'Y-m-d' }}">{{ article.published_at|date:"j M Y" }}</time>{% endif %}</p>
+      <p class="meta">{% joined %}{{ article.reading_time }} min{% part %}{% if article.published_at %}<time datetime="{{ article.published_at|date:'Y-m-d' }}">{{ article.published_at|date:"j M Y" }}</time>{% endif %}{% endjoined %}</p>
 
       {% with reviewed=article.reviewed_works.all %}
         {% if reviewed %}
@@ -55,9 +53,19 @@
             {% for w in reviewed %}
               <div class="obra">
                 {% if w.cover_image %}{% responsive_img w.cover_image css_class="obra-cubierta" sizes="96px" decorativa=True %}{% endif %}
+                {% comment %}
+                   La obra y su editorial enlazan a su ficha solo si la tienen: en la vista previa
+                   de un texto sin publicar, la obra puede no tenerla todavía.
+                {% endcomment %}
                 <p>
-                  <a href="{{ w.get_absolute_url }}">{{ w.title }}</a>
-                  {% if w.publisher or w.publication_year %}<span class="meta">{% if w.publisher %}<a href="{{ w.publisher.get_absolute_url }}">{{ w.publisher.name }}</a>{% endif %}{% if w.publisher and w.publication_year %} · {% endif %}{% if w.publication_year %}{{ w.publication_year }}{% endif %}</span>{% endif %}
+                  {% if w.has_page %}<a href="{{ w.get_absolute_url }}">{{ w.title }}</a>{% else %}{{ w.title }}{% endif %}
+                  {% if w.publisher or w.publication_year %}
+                    <span class="meta">{% joined %}
+                      {% if w.publisher %}{% if w.publisher_has_page %}<a href="{{ w.publisher.get_absolute_url }}">{{ w.publisher.name }}</a>{% else %}{{ w.publisher.name }}{% endif %}{% endif %}
+                    {% part %}
+                      {% if w.publication_year %}{{ w.publication_year }}{% endif %}
+                    {% endjoined %}</span>
+                  {% endif %}
                 </p>
               </div>
             {% endfor %}
@@ -79,7 +87,7 @@
         <figure class="lectura-imagen">
           {% sizes "cubierta-texto" as sizes %}{% responsive_img article.cover_image sizes=sizes lazy=False %}
           {% if article.cover_image.caption or article.cover_image.credit %}
-            <figcaption class="meta">{{ article.cover_image.caption }}{% if article.cover_image.caption and article.cover_image.credit %} · {% endif %}{{ article.cover_image.credit }}</figcaption>
+            <figcaption class="meta">{% joined %}{{ article.cover_image.caption }}{% part %}{{ article.cover_image.credit }}{% endjoined %}</figcaption>
           {% endif %}
         </figure>
       {% endif %}

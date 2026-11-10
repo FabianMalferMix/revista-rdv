@@ -605,6 +605,14 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .meta, .muted{font-family:var(--mono); font-size:var(--t-1); letter-spacing:var(--tr-meta);
   color:var(--muted)}
 
+/* Toda la tarjeta es un enlace: su enlace principal lleva `.enlace-total`, y la capa de su
+   ::after cubre la tarjeta, el elemento de la lista que lo contiene. Los demás enlaces de la
+   tarjeta quedan por encima de la capa y siguen siendo propios, con una zona de pulsado de
+   25 px de alto en vez de los 13 de su letra (WCAG 2.5.8 pide 24). */
+li:has(.enlace-total){position:relative}
+.enlace-total::after{content:""; position:absolute; inset:0}
+li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:1; padding-block:6px}
+
 /* Filas. Los índices de textos, poemas, trayectoria y prensa son listas de filas
    tipográficas: un dato a la izquierda (cuándo), el título en el centro y otro dato a
    la derecha (quién, dónde). Eran tarjetas apiladas con todo pegado a la izquierda: en
@@ -612,9 +620,9 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    · La lista es un CONTENEDOR: la fila se dispone según el ancho que tiene, no según
      el de la ventana. La misma parcial vive en el carril ancho (1320 px), en el de
      lectura (780) y en un teléfono.
-   · Toda la fila es el enlace de su título: el ::after del enlace la cubre. Los enlaces
-     secundarios —sección, firmas— quedan por encima y siguen siendo propios. Antes solo
-     era pulsable el texto del título.
+   · Toda la fila es el enlace de su título (`.enlace-total`). Los enlaces secundarios
+     —sección, firmas— quedan por encima y siguen siendo propios. Antes solo era pulsable
+     el texto del título.
    · El estado se marca con una hoja más clara bajo la fila, que sobresale 16 px del
      texto para que no quede pegado a su borde. La pinta ::before, detrás del contenido;
      `isolation` hace que ese «detrás» sea detrás del texto y no detrás de la página.
@@ -634,20 +642,20 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
    según dónde va la lista (el nivel lo recibe la parcial), y se ve igual en los dos. */
 .fila-titulo{margin:0; font-size:var(--t3); font-weight:700; line-height:1.15; overflow-wrap:break-word}
 .fila-titulo a{text-decoration:none; color:var(--ink)}
-.fila-titulo a::after{content:""; position:absolute; inset:0 calc(-1 * var(--s2))}
+/* La capa del título llega a los lados hasta donde llega la hoja clara del estado. */
+.fila .enlace-total::after{inset:0 calc(-1 * var(--s2))}
 .fila .kicker{display:block; margin:0 0 4px}
 .fila .dek{margin:6px 0 0}
-/* Los enlaces secundarios van por encima de la capa del título, con una zona de pulsado
-   de 25 px de alto en vez de los 13 de su letra (WCAG 2.5.8 pide 24). */
-.fila .kicker a, .fila-pie a{position:relative; z-index:1; padding-block:6px}
 /* Primer verso del poema: lo que permite reconocerlo sin abrirlo. */
 .fila-verso{margin:4px 0 0; font-style:italic; font-size:var(--t1); line-height:1.4; color:var(--muted)}
 .fila-marca{white-space:nowrap}
 /* La imagen del texto (o el afiche del evento), en miniatura 3:4 a la derecha. Es un área
    más de la rejilla, no un flotante: en una lista estrecha va junto al título y la fecha
-   queda debajo; con sitio, es la última columna. Se alinea arriba, no por la línea base. */
+   queda debajo; con sitio, es la última columna. Se alinea arriba, no por la línea base.
+   `.riso-duo` la posiciona y va después del título, por encima de la capa del enlace total:
+   deja pasar el pulsado, y pulsar la imagen lleva adonde lleva el título. */
 .fila--con-miniatura{grid-template-areas:"cuerpo mini" "pie fecha"}
-.fila-miniatura{grid-area:mini; align-self:start; justify-self:end; width:56px}
+.fila-miniatura{grid-area:mini; align-self:start; justify-self:end; width:56px; pointer-events:none}
 .fila-miniatura img{display:block; width:100%; height:auto; aspect-ratio:3/4; object-fit:cover}
 .filas + .pagination{border-top:0; padding-top:0}
 /* Cuando la lista sigue a la cabecera del índice, el filete de la cabecera ES el de la
@@ -713,7 +721,6 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 /* Toda la tarjeta es el enlace: la capa del enlace cubre también el rol y la reseña. */
 .member-card{position:relative; display:flex; flex-direction:column; gap:6px}
 .member-card a{display:flex; flex-direction:column; gap:12px; text-decoration:none; color:var(--ink)}
-.member-card > a::after{content:""; position:absolute; inset:0}
 /* En una columna de 163 px, a 22 px los nombres partían en dos líneas. */
 .member-name{font-size:var(--t2); font-weight:700; line-height:1.2}
 @media (min-width:720px){
@@ -956,9 +963,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .recording-card{position:relative; max-width:720px}
 .recording-card h2{margin:14px 0 4px; font-size:var(--t3)}
 .recording-card h2 a{text-decoration:none; color:var(--ink)}
-.recording-card h2 a::after{content:""; position:absolute; inset:0}
 .recording-card .meta{margin:0}
-.recording-card .meta a{position:relative; z-index:1; padding-block:6px}
 .rec-miniatura{position:relative; aspect-ratio:16/9; overflow:hidden; background:var(--caratula)}
 .rec-miniatura > .riso-duo{position:absolute; inset:0}
 .rec-miniatura img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
@@ -970,11 +975,12 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .rec-caratula-titulo{font-weight:700; font-size:var(--t4); line-height:1.1}
 /* La marca de reproducción es un dibujo, no un botón: aquí no se reproduce nada, se va
    a la ficha. Un bloque blanco en la esquina con su triángulo, que pasa a magenta al
-   señalar la tarjeta. */
+   señalar la tarjeta. Va por encima de la capa del enlace total y deja pasar el pulsado:
+   pulsar la marca lleva al registro. */
 .rec-miniatura::before{content:""; position:absolute; z-index:1; left:0; bottom:0; width:52px; height:52px;
-  background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
+  pointer-events:none; background-color:#fff; transition:background-color var(--dur-base) var(--ease)}
 .rec-miniatura::after{content:""; position:absolute; z-index:1; left:20px; bottom:17px; width:14px; height:18px;
-  background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
+  pointer-events:none; background-color:var(--caratula-rotulo); clip-path:polygon(0 0, 100% 50%, 0 100%);
   transition:background-color var(--dur-base) var(--ease)}
 .recording-card:hover .rec-miniatura::before,
 .recording-card:focus-within .rec-miniatura::before{background-color:var(--accent)}
@@ -1403,8 +1409,9 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
   line-height:.94; letter-spacing:-.03em; color:var(--tinta); text-wrap:balance;
   text-shadow:.045em .035em 0 var(--sobre)}
 .pliego-titulo a{color:inherit; text-decoration:none}
-/* El único enlace del pliego: su capa cubre la hoja entera. */
-.pliego-titulo a::after{content:""; position:absolute; z-index:1; inset:0}
+/* El único enlace del pliego: su capa cubre la hoja entera, también la placa, que va
+   posicionada y sigue al título en la página. */
+.pliego .enlace-total::after{z-index:1}
 /* Un título largo, un paso más chico, para que no pase de dos líneas (cuántas letras, en
    apps/site/templatetags/titles.py). */
 .pliego--largo .pliego-titulo{font-size:var(--t6); min-height:calc(2 * .94 * var(--t6))}
@@ -1443,7 +1450,7 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    la ficha. */
 .tirada.con-js .pliego:not([aria-current]){--tinta:var(--caratula); --trama:var(--paper-2);
   --marca:transparent; --sello:var(--muted); cursor:pointer}
-.tirada.con-js .pliego:not([aria-current]) .pliego-titulo a::after{content:none}
+.tirada.con-js .pliego:not([aria-current]) .enlace-total::after{content:none}
 .tirada.con-js .pliego:not([aria-current]) .pliego-invita{visibility:hidden}
 .tirada.con-js .pliego:not([aria-current]) :is(.pliego-fechador, .pliego-tipo){border-color:var(--line); outline-color:var(--line)}
 .tirada.con-js .pliego:not([aria-current]):hover{--marca:var(--edge)}
@@ -1829,10 +1836,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .ficha-texto .btn{margin-top:var(--s2)}
 .ficha-rotulo{margin:var(--s4) 0 8px}
 .ficha .poetics{margin:var(--s4) 0 0}
-.ficha-retrato{display:block; width:100%; height:auto; aspect-ratio:4/5; object-fit:cover}
-/* Sin retrato: el monograma en la misma caja 4:5, sobre la hoja clara. */
-.ficha-monograma{display:flex; align-items:center; justify-content:center; background:var(--paper-2);
-  font-family:var(--display); font-weight:700; font-size:var(--t6); letter-spacing:-.02em; color:var(--ink)}
 .ficha-cubierta{display:block; width:100%; height:auto; aspect-ratio:5/7; object-fit:cover;
   border:1px solid var(--line); box-shadow:8px 8px 0 var(--line)}
 /* El afiche como objeto, con la sombra plana de las cubiertas: un cartel apoyado en la página. */
@@ -1848,7 +1851,6 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
 .pie-entidad li{position:relative; padding:var(--s3) var(--s3) var(--s3) 0; border-bottom:1px solid var(--line)}
 .pie-entidad .rotulo{display:block; margin:0 0 6px}
 .pie-entidad a{font-weight:700; font-size:var(--t3); line-height:1.15; text-decoration:none; color:var(--ink)}
-.pie-entidad a::after{content:""; position:absolute; inset:0}
 
 /* Detalle de artículo */
 .article{padding:20px 0 60px}

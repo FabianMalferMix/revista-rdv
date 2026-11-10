@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}{{ tag.name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ tag.name }}{% endblock %}
 
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  <header class="index-head" data-territorio="obra">
-    <span class="kicker">Etiqueta</span>
-    <h1>{{ tag.name }}</h1>
-  </header>
+  {% include "partials/_index_head.html" with titulo=tag.name territorio="obra" cuenta=articles.paginator.count singular="texto" plural="textos" cejilla="Etiqueta" subnav_colectivo=subnav_colectivo only %}
   {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=2 only %}
 {% endblock %}

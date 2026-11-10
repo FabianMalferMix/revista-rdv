@@ -59,7 +59,7 @@ def send_confirmation_email(subscriber_id):
     if sub is None or not sub.confirm_token:
         return  # se dio de baja, ya confirmó o se borró mientras esperaba en la cola
     context = {
-        "name": SiteProfile.load().name,
+        "name": SiteProfile.load().site_name,
         "confirm_url": absolute_url(reverse("community:confirm", args=[sub.confirm_token])),
         "unsub_url": absolute_url(reverse("community:unsubscribe", args=[sub.token])),
     }

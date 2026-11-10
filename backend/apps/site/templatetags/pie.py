@@ -96,7 +96,9 @@ def publication_pie(publication, neighbors):
         )
     if publication.year:
         pie.append(puerta("Trayectoria", str(publication.year), url_for_year(publication.year)))
-    pie += firmas(publication.participants.all())
+    # Quien participa sin ficha (`has_page`, de la precarga de la vista) no tiene puerta: no
+    # hay adónde ir.
+    pie += firmas(p for p in publication.participants.all() if p.has_page)
     pie += puertas_vecinas(neighbors, "Publicación", lambda p: p.title)
     return {"pie": pie}
 

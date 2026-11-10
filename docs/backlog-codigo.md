@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04, y C34, el 2026-11-05. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 75 de 87 tickets cerrados (38 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 y B87 en la tanda 7, por una decisión del dueño en B68 y por lo que se vio al hacerla.
+> **Avance:** 76 de 87 tickets cerrados (38 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 y B87 en la tanda 7, por una decisión del dueño en B68 y por lo que se vio al hacerla.
 
 ## Cómo se usa
 
@@ -171,7 +171,7 @@
 | B68 | Una política de contenido y una tabla de proveedores | — | S | no | hecho (#260) |
 | B69 | La composición visual sale de las vistas | B26 | M | no | hecho (#265) |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | hecho (#267) |
-| B71 | Recetas de plantilla compartidas | B25, B29 | M | no | pendiente |
+| B71 | Recetas de plantilla compartidas | B25, B29 | M | no | hecho (#268) |
 | B72 | La cascada de site.css en capas | B11, B58 | L | no | pendiente |
 | B73 | Navegación de una sola fuente | — | S | no | pendiente |
 | B74 | Guiones con un módulo común | B11 | S | no | pendiente |
@@ -1413,6 +1413,7 @@ La poda de comentarios va en B78.
 - De REN-2, lo opcional que B52 no hizo: Caddy sirve los `.gz` que ya escribe el almacenamiento (`precompressed gzip` en el `file_server` de `/static/`), o el almacenamiento deja de escribirlos.
 - Los `sizes` que no coinciden con lo que se pinta, medidos en B69 a 951 px: la galería pide 294 px y pinta 579, y las tapas del catálogo, 240 y 273 (salen borrosas); el pliego, el retrato de «Las voces», la cubierta del texto y el mosaico piden de más; en el teléfono, la hoja de contactos pide 96 y pinta 64; y `MOSAIC_WIDTH` (1320) no sigue al carril de 1440 desde 1600 px. Cambia la imagen que se descarga: se le enseña al dueño.
 - La ficha de una editorial hace una consulta por publicación, vista en B70: `publisher_detail` trae las publicaciones solo con su tapa (`select_related("cover")`), y `_publication_card` pinta `pub.publisher.name`.
+- Los índices de publicaciones y de registros precargan a quienes participan, que sus tarjetas no enseñan: una consulta de más por página, vista en B71.
 
 Medir el LCP en la vista previa de producción antes y después, como pide §4 del registro.
 

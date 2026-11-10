@@ -1,0 +1,14 @@
+{% load images personas %}{% comment %}
+   El retrato de una persona o, sin foto, su monograma: sus dos iniciales en la misma caja, que
+   no se anuncian (el nombre va al lado). La pinta la etiqueta `portrait`
+   (apps/people/templatetags/personas.py).
+
+   Parámetros (los da la etiqueta):
+     persona      la persona (obligatorio)
+     sizes        lo que mide pintado el retrato (obligatorio)
+     caja         la clase del retrato y de la caja del monograma (obligatorio)
+     monograma    la clase que la caja añade cuando lleva el monograma (obligatorio)
+     duotone      si el retrato va a una tinta, en `.riso-duo` (obligatorio)
+     lazy         si el retrato espera a acercarse a la vista para cargarse (obligatorio)
+     decorative   si el retrato no se anuncia (obligatorio)
+{% endcomment %}{% if persona.photo %}{% if duotone %}<span class="riso-duo">{% endif %}{% responsive_img persona.photo css_class=caja sizes=sizes lazy=lazy decorativa=decorative %}{% if duotone %}</span>{% endif %}{% else %}<span class="{{ caja }} {{ monograma }}" aria-hidden="true">{{ persona.display_name|iniciales }}</span>{% endif %}

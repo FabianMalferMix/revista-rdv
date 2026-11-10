@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load joined %}
 
-{% block title %}{{ publisher.name }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ publisher.name }}{% endblock %}
 {% block description %}Reseñas de libros de {{ publisher.name }}.{% endblock %}
 
 {% block content %}
@@ -8,8 +9,11 @@
     <span class="kicker">Editorial</span>
     <h1>{{ publisher.name }}</h1>
     <p class="meta">
-      {% if publisher.country %}{{ publisher.country }}{% endif %}
-      {% if publisher.website %} · <a href="{{ publisher.website }}" rel="nofollow">Sitio web</a>{% endif %}
+      {% joined %}
+        {{ publisher.country }}
+      {% part %}
+        {% if publisher.website %}<a href="{{ publisher.website }}" rel="nofollow">Sitio web</a>{% endif %}
+      {% endjoined %}
     </p>
   </header>
 

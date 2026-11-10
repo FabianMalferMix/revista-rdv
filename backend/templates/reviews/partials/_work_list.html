@@ -1,4 +1,4 @@
-{% comment %}
+{% load joined %}{% comment %}
    Las obras reseñadas de una editorial o de un autor: el título, que lleva a su ficha, y al
    lado su clase y su año.
 
@@ -8,7 +8,7 @@
   {% for w in works %}
     <li>
       <a href="{{ w.get_absolute_url }}">{{ w.title }}</a>
-      <span class="muted">{{ w.get_kind_display }}{% if w.publication_year %} · {{ w.publication_year }}{% endif %}</span>
+      <span class="muted">{% joined %}{{ w.get_kind_display }}{% part %}{% if w.publication_year %}{{ w.publication_year }}{% endif %}{% endjoined %}</span>
     </li>
   {% empty %}
     <li class="empty">Sin obras en el catálogo todavía.</li>

@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.agenda.models import Milestone
 from apps.media.models import Recording
 from apps.reviews.models import Publisher
-from tests.factories import make_event, make_photo, make_publication  # noqa: E402
+from tests.factories import make_event, make_photo, make_publication, soup  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -138,6 +138,33 @@ def test_la_agenda_vacia_ensena_lo_ultimo_y_como_contactar(client):
     assert reverse("showcase:dossier") in html
     # Una actividad ya realizada no ofrece entradas.
     assert "Inscripción / entradas" not in html
+
+
+@pytest.mark.parametrize(
+    "booking, general, contact",
+    [
+        ("gestion@example.com", "colectivo@example.com", "gestion@example.com"),
+        ("", "colectivo@example.com", "colectivo@example.com"),
+        ("", "", None),
+    ],
+)
+def test_the_empty_agenda_writes_to_the_same_address_as_the_footer(
+    client, booking, general, contact
+):
+    """«Escríbenos», en la agenda sin fechas, lleva al correo de contacto del sitio, el del pie:
+    el de gestión y, si no hay, el general. Sin ninguno, no hay botón, y sí el del dossier."""
+    from apps.showcase.models import SiteProfile
+
+    perfil = SiteProfile.load()
+    perfil.booking_email, perfil.general_email = booking, general
+    perfil.save()
+    sopa = soup(client, reverse("agenda:agenda"))
+    acciones = sopa.select_one(".vacio .vacio-acciones")
+    assert acciones.find("a", string="Ver el dossier")["href"] == reverse("showcase:dossier")
+    escribenos = acciones.find("a", string="Escríbenos")
+    pie = sopa.select('footer.site-foot a[href^="mailto:"]')
+    assert [a["href"] for a in pie] == ([f"mailto:{contact}"] if contact else [])
+    assert (escribenos["href"] if escribenos else None) == (pie[0]["href"] if pie else None)
 
 
 def test_con_fechas_anunciadas_no_se_mezclan_las_pasadas(client):

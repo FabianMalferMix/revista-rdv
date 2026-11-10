@@ -11,9 +11,18 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import ArticleType, EditorialStatus, Section
+from apps.content.models import (
+    ArticleType,
+    Collection,
+    CollectionArticle,
+    CollectionPoem,
+    EditorialStatus,
+    PublishStatus,
+    Section,
+    Tag,
+)
 from apps.showcase.models import SiteProfile
-from tests.factories import make_poem, make_published_article
+from tests.factories import make_poem, make_published_article, make_published_poem, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -59,6 +68,35 @@ def test_un_indice_vacio_no_anuncia_cero(client):
     cabecera = re.search(r'<header class="index-head"[^>]*>(.*?)</header>', html, re.S).group(1)
     assert re.search(r"<h1>Poemas</h1>", cabecera), "control: la cabecera trae su título"
     assert "kicker" not in cabecera, "«0 poemas» no informa de nada: la cejilla se omite"
+
+
+def test_a_section_a_tag_and_a_collection_count_what_they_hold(client):
+    """Abren con la cabecera de los índices: cuántos textos o piezas tienen, y qué son."""
+    resenas = Section.objects.create(slug="resenas", name="Reseñas", description="Lecturas.")
+    poesia = Tag.objects.create(slug="poesia", name="poesía")
+    textos = [make_published_article(slug=f"t{n}", section=resenas) for n in range(2)]
+    textos[0].tags.add(poesia)
+    coleccion = Collection.objects.create(
+        slug="voces", title="Voces", intro="Cinco lecturas.", status=PublishStatus.PUBLISHED
+    )
+    CollectionArticle.objects.create(collection=coleccion, article=textos[0], position=0)
+    CollectionPoem.objects.create(collection=coleccion, poem=make_published_poem(), position=1)
+    for url, cejilla, titulo, dek in (
+        (resenas.get_absolute_url(), "2 textos · Sección", "Reseñas", "Lecturas."),
+        (poesia.get_absolute_url(), "1 texto · Etiqueta", "poesía", None),
+        (coleccion.get_absolute_url(), "2 piezas · Colección", "Voces", "Cinco lecturas."),
+    ):
+        cabecera = soup(client, url).select_one("header.index-head")
+        assert cabecera["data-territorio"] == "obra", url
+        assert cabecera.select_one(".kicker").get_text(strip=True) == cejilla, url
+        assert cabecera.h1.get_text() == titulo, url
+        frase = cabecera.select_one(".dek")
+        assert (frase.get_text() if frase else None) == dek, url
+    # Vacía, la cejilla dice solo qué es: «0 textos» no informa de nada.
+    vacia = Section.objects.create(slug="vacia", name="Vacía")
+    cabecera = soup(client, vacia.get_absolute_url()).select_one("header.index-head")
+    assert cabecera.h1.get_text() == "Vacía"  # control: es su cabecera
+    assert cabecera.select_one(".kicker").get_text(strip=True) == "Sección"
 
 
 # ── Firma por territorio (backlog UX, ticket 3.1) ─────────────────────────

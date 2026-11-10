@@ -1,7 +1,7 @@
 """Consultas que cruzan varias apps: cuándo publicó el colectivo por última vez (la portada y el
-dossier) y las coincidencias por nombre de la búsqueda."""
+dossier), quienes participan en una ficha y las coincidencias por nombre de la búsqueda."""
 
-from django.db.models import DateTimeField, F, IntegerField, Value
+from django.db.models import DateTimeField, F, IntegerField, Prefetch, Value
 from django.db.models.functions import Cast, ExtractYear
 
 from apps.agenda.models import Event
@@ -25,6 +25,13 @@ def ultima_publicacion():
         for model in [*editorial_models(), Recording]
     ]
     return next(iter(fechas[0].union(*fechas[1:]).order_by("-published_at")[:1]), None)
+
+
+def participants_prefetch():
+    """La precarga de quienes participan en una publicación, una actividad o un registro, cada
+    persona con `has_page` (`Contributor.objects.with_page()`): «Participan» y el pie de la
+    ficha la enlazan solo si tiene ficha, y lo saben con la misma consulta de la lista."""
+    return Prefetch("participants", queryset=Contributor.objects.with_page())
 
 
 # Las columnas de cada fila de `coincidencias_por_nombre`, en este orden.

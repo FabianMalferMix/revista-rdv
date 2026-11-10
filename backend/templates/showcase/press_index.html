@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Prensa — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}Prensa{% endblock %}
 {% block description %}Entrevistas, reseñas y menciones del colectivo en medios.{% endblock %}
 
 {% block lienzo %}lienzo--ancho{% endblock %}
@@ -13,7 +13,7 @@
         {% if m.published_on %}<time class="meta fila-fecha" datetime="{{ m.published_on|date:'Y-m-d' }}">{{ m.published_on|date:"M Y" }}</time>{% endif %}
         <div class="fila-cuerpo">
           <span class="kicker">{{ m.get_kind_display }} · {{ m.outlet }}</span>
-          <h2 class="fila-titulo">{% if m.url %}<a href="{{ m.url }}" rel="noopener" target="_blank">{{ m.title }} ↗</a>{% else %}{{ m.title }}{% endif %}</h2>
+          <h2 class="fila-titulo">{% if m.url %}<a class="enlace-total" href="{{ m.url }}" rel="noopener" target="_blank">{{ m.title }} ↗</a>{% else %}{{ m.title }}{% endif %}</h2>
           {% if m.quote %}<blockquote class="press-quote">«{{ m.quote }}»</blockquote>{% endif %}
         </div>
         {% if m.author %}<p class="meta fila-pie">Por {{ m.author }}</p>{% endif %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load pie social %}
+{% load joined pie social %}
 
-{% block title %}{{ recording.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ recording.title }}{% endblock %}
 {% block description %}{{ recording.description|default:recording.title }}{% endblock %}
 
 {% block opengraph %}
@@ -14,12 +14,14 @@
 {% block content %}
   <article>
     <header class="index-head" data-territorio="obra">
-      <span class="kicker">Registro · {{ recording.get_kind_display }}{% if recording.duracion %} · {{ recording.duracion }}{% endif %}</span>
+      <span class="kicker">{% joined %}Registro{% part %}{{ recording.get_kind_display }}{% part %}{{ recording.duracion }}{% endjoined %}</span>
       <h1 id="registro-titulo">{{ recording.title }}</h1>
       <p class="meta">
-        {% if recording.recorded_on %}{{ recording.recorded_on|date:"j M Y" }}{% endif %}
-        {# el · va ENTRE fecha y evento: sin fecha abría la línea con un separador suelto #}
-        {% if recording.public_event %}{% if recording.recorded_on %} · {% endif %}<a href="{{ recording.public_event.get_absolute_url }}">{{ recording.public_event.title }}</a>{% endif %}
+        {% joined %}
+          {{ recording.recorded_on|date:"j M Y" }}
+        {% part %}
+          {% if recording.public_event %}<a href="{{ recording.public_event.get_absolute_url }}">{{ recording.public_event.title }}</a>{% endif %}
+        {% endjoined %}
       </p>
     </header>
 
@@ -38,16 +40,7 @@
 
     {% if recording.description %}<div class="member-about">{{ recording.description|linebreaks }}</div>{% endif %}
 
-    {% with people=recording.participants.all %}
-      {% if people %}
-        <section>
-          <h2 class="subhead">Participan</h2>
-          <p class="meta">
-            {% for c in people %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-          </p>
-        </section>
-      {% endif %}
-    {% endwith %}
+    {% include "partials/_participan.html" with personas=recording.participants.all only %}
     {% recording_pie recording poems neighbors %}
   </article>
 {% endblock %}

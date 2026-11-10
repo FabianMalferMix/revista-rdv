@@ -1,6 +1,7 @@
 from functools import cached_property
 from urllib.parse import urlsplit
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
@@ -23,7 +24,7 @@ class SiteProfile(models.Model):
     """
 
     # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
-    name = models.CharField(max_length=255, default="Colectivo", verbose_name="nombre")
+    name = models.CharField(max_length=255, default=settings.SITE_NAME, verbose_name="nombre")
     tagline = models.CharField(
         max_length=255, blank=True, verbose_name="lema", help_text="Poética corta / lema."
     )
@@ -131,6 +132,13 @@ class SiteProfile(models.Model):
         filas = cls.objects.select_related(*relaciones) if relaciones else cls.objects
         obj, _ = filas.get_or_create(pk=1)
         return obj
+
+    @property
+    def site_name(self):
+        """El nombre con que firma el sitio: el del perfil o, si está en blanco, el fijo
+        (`SITE_NAME`). Lo leen las páginas, por el procesador de contexto, los feeds y el correo
+        de confirmación del boletín."""
+        return self.name or settings.SITE_NAME
 
     @property
     def presentacion(self):

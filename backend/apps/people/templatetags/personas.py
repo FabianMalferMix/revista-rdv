@@ -29,3 +29,20 @@ def firmas_sin(personas, persona):
     if not persona:
         return list(personas)
     return [p for p in personas if p.pk != getattr(persona, "pk", None)]
+
+
+@register.inclusion_tag("partials/_retrato.html")
+def portrait(person, sizes, byline=False, duotone=False, lazy=True, decorative=False):
+    """El retrato de `person` o, sin foto, su monograma en la misma caja. `byline` es el retrato
+    pequeño junto a una firma (`.firma-retrato`) en vez de la caja 4:5 (`.retrato`); `duotone`
+    lo imprime a una tinta hasta que se señala (`.riso-duo`). `sizes`, `lazy` y `decorative` son
+    los de `responsive_img`."""
+    return {
+        "persona": person,
+        "sizes": sizes,
+        "caja": "firma-retrato" if byline else "retrato",
+        "monograma": "firma-monograma" if byline else "monograma",
+        "duotone": duotone,
+        "lazy": lazy,
+        "decorative": decorative,
+    }

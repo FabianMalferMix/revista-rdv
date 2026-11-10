@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from apps.showcase.models import Publication
 from apps.site.pie import vecinos
+from apps.site.services import participants_prefetch
 from config import publishing
 
 from .models import Event, Milestone
@@ -33,7 +34,7 @@ def event_detail(request, slug):
     event, preview = publishing.piece_for(
         request,
         Event.objects.select_related("poster").prefetch_related(
-            "participants", "photos__asset", "recordings"
+            participants_prefetch(), "photos__asset", "recordings"
         ),
         slug=slug,
     )

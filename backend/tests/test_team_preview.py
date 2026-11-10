@@ -15,7 +15,17 @@ from django.utils import timezone
 
 from apps.content.models import Collection, EditorialStatus, Page, PublishStatus
 from apps.people import roles
-from tests.factories import make_article, make_event, make_poem, make_publication, make_recording
+from apps.reviews.models import Publisher, Work
+from tests.factories import (
+    make_article,
+    make_event,
+    make_poem,
+    make_publication,
+    make_published_article,
+    make_recording,
+    publish,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 S = EditorialStatus
@@ -107,3 +117,42 @@ def test_without_access_to_the_panel_there_is_no_preview(client, groups):
     draft = make_article(status=S.DRAFT)
     client.force_login(former)
     assert client.get(draft.get_absolute_url()).status_code == 404
+
+
+def _reviewed_works(client, url):
+    """Cada obra reseñada de la ficha, como se lee, y adónde llevan sus enlaces."""
+    return [
+        (" ".join(obra.p.get_text(" ", strip=True).split()), [a["href"] for a in obra.select("a")])
+        for obra in soup(client, url).select(".reviewed .obra")
+    ]
+
+
+def test_the_preview_links_the_reviewed_work_only_if_it_has_a_page(client, editor):
+    """Una reseña sin publicar puede reseñar una obra que todavía no tiene ficha: la obra y su
+    editorial se nombran sin enlace, que llevaría a un 404. La que ya la tiene sigue enlazada."""
+    editorial = Publisher.objects.create(slug="editorial-nueva", name="Editorial Nueva")
+    nueva = Work.objects.create(
+        slug="obra-nueva", title="Obra nueva", publisher=editorial, publication_year=2025
+    )
+    resenada = Work.objects.create(slug="obra-resenada", title="Obra ya reseñada")
+    make_published_article(slug="la-otra-resena").reviewed_works.add(resenada)
+    borrador = make_article(slug="resena-en-borrador", status=S.IN_REVIEW)
+    borrador.reviewed_works.add(nueva, resenada)
+    # Lo que no tiene ficha responde 404.
+    assert client.get(nueva.get_absolute_url()).status_code == 404
+    assert client.get(editorial.get_absolute_url()).status_code == 404
+
+    client.force_login(editor)
+    url = borrador.get_absolute_url()
+    assert _is_preview(client.get(url))
+    assert _reviewed_works(client, url) == [
+        ("Obra nueva Editorial Nueva · 2025", []),
+        ("Obra ya reseñada", [resenada.get_absolute_url()]),
+    ]
+    # Al publicarse, la reseña le da ficha a la obra y a su editorial, y la ficha las enlaza.
+    publish(borrador)
+    assert _reviewed_works(client, url)[0] == (
+        "Obra nueva Editorial Nueva · 2025",
+        [nueva.get_absolute_url(), editorial.get_absolute_url()],
+    )
+    assert client.get(nueva.get_absolute_url()).status_code == 200

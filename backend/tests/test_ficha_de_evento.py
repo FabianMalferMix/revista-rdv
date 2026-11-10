@@ -64,7 +64,9 @@ def test_quienes_participan_y_los_registros_van_junto_al_afiche(client):
     """Como en la ficha de una publicación: lo que es del evento va al lado de su imagen,
     bajo un rótulo, y no en secciones sueltas debajo de ella."""
     evento = _evento(poster=make_image("afiche"))
-    evento.participants.add(Contributor.objects.create(slug="poeta", display_name="Poeta Uno"))
+    evento.participants.add(
+        Contributor.objects.create(slug="poeta", display_name="Poeta Uno", is_member=True)
+    )
     make_recording(slug="registro", title="Registro del recital", event=evento)
     make_recording(slug="oculto", title="Registro oculto", event=evento, published=False)
     texto = _sopa(client, evento).select_one(".ficha-cabecera .ficha-texto")

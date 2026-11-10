@@ -1,4 +1,4 @@
-{% comment %}
+{% load joined %}{% comment %}
    Cabecera de índice. Los once índices abrían con su nombre a 12 px en gris —el texto
    más pequeño de la página— y nada más: quien llegaba no sabía qué había ni cuánto.
 
@@ -14,7 +14,7 @@
 {% endcomment %}
 <header class="index-head"{% if territorio %} data-territorio="{{ territorio }}"{% endif %}>
   {% if cuenta %}
-    <p class="kicker">{{ cuenta }} {% if cuenta == 1 %}{{ singular }}{% else %}{{ plural }}{% endif %}{% if cejilla %} · {{ cejilla }}{% endif %}</p>
+    <p class="kicker">{% joined %}{{ cuenta }} {% if cuenta == 1 %}{{ singular }}{% else %}{{ plural }}{% endif %}{% part %}{% if cejilla %}{{ cejilla }}{% endif %}{% endjoined %}</p>
   {% elif cejilla %}
     <p class="kicker">{{ cejilla }}</p>
   {% endif %}

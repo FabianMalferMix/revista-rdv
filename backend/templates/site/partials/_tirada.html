@@ -1,4 +1,4 @@
-{% load images portada titles versos %}
+{% load images joined portada titles versos %}
 {% comment %}
    La tirada (D19, elegida por el dueño en el tablero de los registros destacados, 2026-10-21).
    Cada registro que el colectivo marca como destacado es un pliego de una tirada numerada,
@@ -20,8 +20,8 @@
     <ol class="tirada-pista" id="tirada-pista">
       {% for r in tirada.registros %}
         <li class="pliego{% if r.titulo|long_for_pliego %} pliego--largo{% endif %}" id="tirada-pliego-{{ forloop.counter }}" data-titulo="{{ r.titulo }}">
-          <h3 class="pliego-titulo"><a href="{{ r.url }}">{{ r.titulo }}</a></h3>
-          <p class="pliego-tipo"><span class="rotulo">{{ r.tipo }}{% if r.duracion %} · {{ r.duracion }}{% endif %}</span></p>
+          <h3 class="pliego-titulo"><a class="enlace-total" href="{{ r.url }}">{{ r.titulo }}</a></h3>
+          <p class="pliego-tipo"><span class="rotulo">{% joined %}{{ r.tipo }}{% part %}{% if r.duracion %}{{ r.duracion }}{% endif %}{% endjoined %}</span></p>
           {% if r.fecha %}
             <p class="pliego-fechador">{% if r.event.city %}<span class="rotulo">{{ r.event.city }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
           {% endif %}

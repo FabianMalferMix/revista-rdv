@@ -1,4 +1,4 @@
-{% load images personas %}
+{% load images joined personas %}
 {% comment %}
    Fila tipográfica: fecha · cejilla, título y bajada · autoría. Toda la fila es el
    enlace del título (su ::after la cubre); la sección y las firmas quedan por encima y
@@ -16,14 +16,12 @@
 <li class="article-card fila{% if a.cover_image %} fila--con-miniatura{% endif %}">
   {% if a.published_at %}<time class="meta fila-fecha" datetime="{{ a.published_at|date:'Y-m-d' }}">{{ a.published_at|date:"j M Y" }}</time>{% endif %}
   <div class="fila-cuerpo">
-    <span class="kicker">
-      {% if a.section and a.seccion_aporta %}<a href="{{ a.section.get_absolute_url }}">{{ a.section.name }}</a> · {{ a.get_type_display }}{% elif a.section %}<a href="{{ a.section.get_absolute_url }}">{{ a.get_type_display }}</a>{% else %}{{ a.get_type_display }}{% endif %}
-    </span>
-    {% firstof nivel 2 as nivel %}<h{{ nivel }} class="fila-titulo"><a href="{{ a.get_absolute_url }}">{{ a.title }}</a></h{{ nivel }}>
+    {% include "partials/_cejilla_de_texto.html" with a=a only %}
+    {% firstof nivel 2 as nivel %}<h{{ nivel }} class="fila-titulo"><a class="enlace-total" href="{{ a.get_absolute_url }}">{{ a.title }}</a></h{{ nivel }}>
     {% if a.subtitle %}<p class="dek">{{ a.subtitle }}</p>{% endif %}
   </div>
   <p class="meta fila-pie">
-    {% if sin_firma_de %}{% firmas_sin a.bylines sin_firma_de as firmas %}{% else %}{% firmas_sin a.bylines None as firmas %}{% endif %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if firmas %} · {% endif %}{{ a.reading_time }} min
+    {% if sin_firma_de %}{% firmas_sin a.bylines sin_firma_de as firmas %}{% else %}{% firmas_sin a.bylines None as firmas %}{% endif %}{% joined %}{% for c in firmas %}<a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% part %}{{ a.reading_time }} min{% endjoined %}
   </p>
   {% if a.cover_image %}<span class="fila-miniatura riso-duo">{% sizes "miniatura-fila" as sizes %}{% responsive_img a.cover_image sizes=sizes decorativa=True %}</span>{% endif %}
 </li>

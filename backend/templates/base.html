@@ -1,10 +1,15 @@
-{% load newsletter social static %}
+{% load joined newsletter social static %}
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ site_profile.name|default:"Reseñas" }}{% if site_profile.tagline %} — {{ site_profile.tagline }}{% endif %}{% endblock %}</title>
+  {% comment %}
+     El título de la pestaña: el de la página, en el bloque `title`, y el nombre del sitio
+     (`site_name`, del procesador de contexto), unidos con « — ». La portada no tiene título
+     propio: lleva el nombre y su lema (`title_tagline`).
+  {% endcomment %}
+  <title>{% joined " — " %}{% block title %}{% endblock %}{% part %}{{ site_name }}{% part %}{% block title_tagline %}{% endblock %}{% endjoined %}</title>
   <meta name="description" content="{% block description %}{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}{% endblock %}">
   <link rel="canonical" href="{{ canonical_url }}">
   {% if preview %}<meta name="robots" content="noindex, nofollow">{% endif %}
@@ -13,15 +18,15 @@
   <link rel="icon" href="{% static 'img/icono-32.png' %}" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="{% static 'img/icono-180.png' %}">
   <meta name="theme-color" content="#d9e8f7">
-  <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — textos" href="{% url 'feed' %}">
-  <link rel="alternate" type="application/rss+xml" title="{{ site_profile.name|default:"Reseñas" }} — registros (podcast)" href="{% url 'recordings_feed' %}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site_name }} — textos" href="{% url 'feed' %}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site_name }} — registros (podcast)" href="{% url 'recordings_feed' %}">
 
-  <meta property="og:site_name" content="{{ site_profile.name|default:"Reseñas" }}">
+  <meta property="og:site_name" content="{{ site_name }}">
   <meta property="og:locale" content="es_CL">
   <meta property="og:url" content="{{ canonical_url }}">
   {% block opengraph %}
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ site_profile.name|default:"Reseñas" }}">
+    <meta property="og:title" content="{{ site_name }}">
     <meta property="og:description" content="{{ site_profile.tagline|default:"Colectivo de poesía: obra, recitales y publicaciones." }}">
     {% social_meta %}
   {% endblock %}
@@ -31,9 +36,9 @@
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "{{ site_profile.name|default:'Reseñas'|escapejs }}",
-    "url": "{{ site_origin }}/"{% if site_profile.og_image %},
-    "logo": "{{ site_origin }}{{ site_profile.og_image.file.url }}"{% endif %}{% if redes_del_colectivo %},
+    "name": "{{ site_name|escapejs }}",
+    "url": "{{ site_origin }}/"{% social_image_url as logo %}{% if logo %},
+    "logo": "{{ logo }}"{% endif %}{% if redes_del_colectivo %},
     "sameAs": [{% for link in redes_del_colectivo %}"{{ link.url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]{% endif %}
   }
   </script>
@@ -86,7 +91,7 @@
          pisan como dos tintas) y el nombre, dentro del bloque magenta. El monograma es un
          dibujo: el enlace se llama como el colectivo.
       {% endcomment %}
-      {% include "partials/_sello.html" with site_profile=site_profile only %}
+      {% include "partials/_sello.html" with site_name=site_name only %}
       {% comment %}
          La barra: en escritorio, en línea; en el teléfono se pliega en «Menú», que enseña
          el mapa del sitio entero. La página o el territorio actual llevan `aria-current`
@@ -154,7 +159,7 @@
          final de una página no decía de quién era.
       {% endcomment %}
       <div class="foot-identidad">
-        {% include "partials/_sello.html" with site_profile=site_profile only %}
+        {% include "partials/_sello.html" with site_name=site_name only %}
         {% if site_profile.presentacion %}<p class="foot-presentacion">{{ site_profile.presentacion|join:" · " }}</p>{% endif %}
         {% if site_profile.correo_de_contacto or instagram_del_colectivo.usuario %}
           <p class="foot-contacto">

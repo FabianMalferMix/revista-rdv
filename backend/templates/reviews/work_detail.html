@@ -1,21 +1,24 @@
 {% extends "base.html" %}
+{% load joined %}
 
-{% block title %}{{ work.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ work.title }}{% endblock %}
 {% block description %}Reseñas de {{ work.title }}.{% endblock %}
 
 {% block content %}
   <header class="index-head" data-territorio="obra">
     <span class="kicker">{{ work.get_kind_display }}</span>
     <h1>{{ work.title }}</h1>
-    {% comment %} Los separadores solo entre piezas: sin autores, la línea empezaba con «·». {% endcomment %}
-    {% with autores=work.authors.all %}
-      <p class="meta">
-        {% for ba in autores %}<a href="{{ ba.get_absolute_url }}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
-        {% if work.publisher %}{% if autores %} · {% endif %}<a href="{{ work.publisher.get_absolute_url }}">{{ work.publisher.name }}</a>{% endif %}
-        {% if work.publication_year %}{% if autores or work.publisher %} · {% endif %}{{ work.publication_year }}{% endif %}
-        {% if work.isbn %}{% if autores or work.publisher or work.publication_year %} · {% endif %}ISBN {{ work.isbn }}{% endif %}
-      </p>
-    {% endwith %}
+    <p class="meta">
+      {% joined %}
+        {% for ba in work.authors.all %}<a href="{{ ba.get_absolute_url }}">{{ ba.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+      {% part %}
+        {% if work.publisher %}<a href="{{ work.publisher.get_absolute_url }}">{{ work.publisher.name }}</a>{% endif %}
+      {% part %}
+        {% if work.publication_year %}{{ work.publication_year }}{% endif %}
+      {% part %}
+        {% if work.isbn %}ISBN {{ work.isbn }}{% endif %}
+      {% endjoined %}
+    </p>
     {% if work.description %}<p class="dek">{{ work.description }}</p>{% endif %}
     {% if work.public_publication %}
       <p class="meta">Publicación del colectivo: <a href="{{ work.public_publication.get_absolute_url }}">{{ work.public_publication.title }}</a></p>

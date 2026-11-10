@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load images %}
+{% load images joined %}
 
-{% block title %}Registros — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}Registros{% endblock %}
 {% block description %}Registros en audio y video de lecturas y recitales del colectivo.{% endblock %}
 
 {% block lienzo %}lienzo--ancho{% endblock %}
@@ -26,9 +26,17 @@
             {% include "media/partials/_caratula.html" with r=r only %}
           {% endif %}
         </div>
-        <h2><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>
+        <h2><a class="enlace-total" href="{{ r.get_absolute_url }}">{{ r.title }}</a></h2>
         <p class="meta">
-          {{ r.get_kind_display }}{% if r.duracion %} · {{ r.duracion }}{% endif %}{% if r.recorded_on %} · {{ r.recorded_on|date:"M Y" }}{% endif %}{% if r.public_event %} · <a href="{{ r.public_event.get_absolute_url }}">{{ r.public_event.title }}</a>{% endif %}
+          {% joined %}
+            {{ r.get_kind_display }}
+          {% part %}
+            {{ r.duracion }}
+          {% part %}
+            {{ r.recorded_on|date:"M Y" }}
+          {% part %}
+            {% if r.public_event %}<a href="{{ r.public_event.get_absolute_url }}">{{ r.public_event.title }}</a>{% endif %}
+          {% endjoined %}
         </p>
       </li>
     {% empty %}

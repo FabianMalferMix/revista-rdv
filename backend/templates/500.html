@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load identity static %}<!doctype html>
 {% comment %}
   Error del servidor. NO extiende base.html, y es deliberado.
 
@@ -8,9 +8,10 @@
   500 es justamente que la base no responde, así que una página de error que la
   consultara fallaría en el único momento en que se la necesita.
 
-  Por eso aquí no hay ninguna variable de contexto, ninguna consulta y ningún dato del
-  sitio: solo la hoja de estilos (que sirve el borde, no la aplicación) y enlaces
-  escritos a mano. Debe poder dibujarse con la aplicación medio caída.
+  Por eso aquí no hay ninguna variable de contexto, ninguna consulta y ningún dato de la
+  base: solo la hoja de estilos (que sirve el borde, no la aplicación), enlaces escritos a
+  mano y el nombre fijo del sitio, que da `fixed_site_name` desde `SITE_NAME` (los ajustes)
+  y no desde el perfil. Debe poder dibujarse con la aplicación medio caída.
 
   Sin estilos en línea: la CSP de producción es `style-src 'self'`.
 {% endcomment %}
@@ -18,7 +19,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Error del servidor — Reseñas</title>
+  <title>Error del servidor — {% fixed_site_name %}</title>
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
 </head>

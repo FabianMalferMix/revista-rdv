@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load pie social titles versos %}
 
-{% block title %}{{ poem.seo_title|default:poem.title }} — {{ site_profile.name|default:"Reseñas" }}{% endblock %}
+{% block title %}{{ poem.seo_title|default:poem.title }}{% endblock %}
 {% block description %}{{ poem.seo_description|default:poem.epigraph|default:poem.title }}{% endblock %}
 
 {% block opengraph %}

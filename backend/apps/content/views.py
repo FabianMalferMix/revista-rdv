@@ -38,7 +38,8 @@ def article_detail(request, slug):
         Article.objects.select_related("section", "cover_image").prefetch_related(
             Article.bylines_prefetch(),
             Prefetch(
-                "reviewed_works", queryset=Work.objects.select_related("publisher", "cover_image")
+                "reviewed_works",
+                queryset=Work.objects.select_related("publisher", "cover_image").with_page(),
             ),
             "tags",
         ),
