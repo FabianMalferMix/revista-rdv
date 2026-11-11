@@ -8,14 +8,14 @@
 // se cambian clases y atributos y se anima con la API de animaciones; el aspecto vive en
 // componentes.css (la CSP no admite estilos en línea). Nada se mueve solo.
 (() => {
-  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Lo común llega antes, en common.js; sin él, cada lomo sigue llevando a su ficha.
+  const { common } = window;
+  if (!common) return;
+  // Las curvas son las de la hoja, que lee common.js: los libros, con la de la tirada
+  // (--ease-tirada); las fichas, con la de las transiciones del sitio (--ease).
+  const { canAnimate, mountAll, CURVA, SUAVE } = common;
   const DESLIZA = 800;
   const GIRO = 900;
-  // Las curvas son las de la hoja: los libros, con la de la tirada (--ease-tirada); las fichas,
-  // con la de las transiciones del sitio (--ease).
-  const rootStyle = getComputedStyle(document.documentElement);
-  const CURVA = rootStyle.getPropertyValue('--ease-tirada').trim();
-  const SUAVE = rootStyle.getPropertyValue('--ease').trim();
 
   function montar(seccion) {
     const ejemplares = [...seccion.querySelectorAll('.ejemplar')];
@@ -29,7 +29,7 @@
       if (ejemplares[i].classList.contains('es-frente')) return;
       // Un cambio a medias se corta: las clases ya dicen dónde va cada uno.
       seccion.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-      const anima = !quieto.matches && typeof Element.prototype.animate === 'function';
+      const anima = canAnimate();
       const previo = ejemplares.findIndex((li) => li.classList.contains('es-frente'));
       const antes = ejemplares.map((li) => li.getBoundingClientRect().left);
       ejemplares.forEach((li, k) => li.classList.toggle('es-frente', k === i));
@@ -83,5 +83,5 @@
     });
   }
 
-  document.querySelectorAll('[data-estante]').forEach(montar);
+  mountAll('[data-estante]', montar);
 })();

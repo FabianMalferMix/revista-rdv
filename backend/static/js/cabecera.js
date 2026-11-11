@@ -3,30 +3,31 @@
 // marca data-barra en <html>, «arriba» o «pildora»: el aspecto está en estados.css («La cabecera
 // al bajar»), que sin la marca deja la cabecera fija. Se carga en el <head>, sin defer, para que
 // la marca esté antes de la primera pintura y la portada no enseñe la cabecera un instante. Si
-// algo falla al montarse, la marca se quita y queda la cabecera fija, como sin JavaScript.
-(function () {
+// algo falla al montarse, o falta common.js, la marca se quita y queda la cabecera fija, como sin
+// JavaScript.
+(() => {
   "use strict";
 
-  var raiz = document.documentElement;
+  const raiz = document.documentElement;
   raiz.setAttribute("data-barra", "arriba");
 
-  function montar() {
+  function montar(common) {
+    const { quieto } = common;
     // La portada la marca su <body>, como para la hoja de estilos.
-    var portada = document.body.dataset.pagina === "portada";
-    var quieto = window.matchMedia("(prefers-reduced-motion: reduce)");
-    var arriba = true;
-    var primera = true;
+    const portada = document.body.dataset.pagina === "portada";
+    let arriba = true;
+    let primera = true;
 
     function poner(capsula) {
-      var marca = capsula ? "pildora" : "arriba";
+      const marca = capsula ? "pildora" : "arriba";
       if (raiz.getAttribute("data-barra") === marca) return;
-      var aplicar = function () {
+      const aplicar = () => {
         raiz.setAttribute("data-barra", marca);
       };
       // Fuera de la portada cambia la forma (de la cabecera a la cápsula): lo anima una
       // transición de vista. En la portada, la cápsula aparece con la hoja de estilos. La
       // primera decisión (una página que abre ya bajada) va sin animación.
-      var animar = !portada && !primera && !quieto.matches && !document.hidden;
+      const animar = !portada && !primera && !quieto.matches && !document.hidden;
       if (animar && document.startViewTransition) document.startViewTransition(aplicar);
       else aplicar();
     }
@@ -37,11 +38,11 @@
       poner(!arriba);
     }
 
-    var centinela = document.createElement("div");
+    const centinela = document.createElement("div");
     centinela.className = "barra-centinela";
     centinela.setAttribute("aria-hidden", "true");
     document.body.insertBefore(centinela, document.body.firstChild);
-    new IntersectionObserver(function (entradas) {
+    new IntersectionObserver((entradas) => {
       arriba = entradas[0].isIntersecting;
       decidir();
       primera = false;
@@ -51,8 +52,14 @@
   }
 
   function intentar() {
+    // common.js va con defer: cuando la página terminó de leerse, ya corrió.
+    const { common } = window;
+    if (!common) {
+      raiz.removeAttribute("data-barra");
+      return;
+    }
     try {
-      montar();
+      montar(common);
     } catch (error) {
       raiz.removeAttribute("data-barra");
       throw error;

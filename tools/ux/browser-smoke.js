@@ -68,16 +68,41 @@ function expect(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-// Un deslizamiento del dedo sobre lo que señala `locator`: hacia la izquierda si `dx` es negativo.
-// Los guiones solo miran el tipo de puntero y dónde empieza y termina el gesto.
-const swipe = (locator, dx) =>
-  locator.evaluate((element, distance) => {
+// Un deslizamiento del dedo sobre lo que señala `locator`: hacia la izquierda si `dx` es negativo,
+// y hacia abajo `dy` px. Los guiones solo miran el tipo de puntero (`pointerType`, otro que el
+// dedo si se pide) y dónde empieza y termina el gesto.
+const swipe = (locator, dx, { pointerType = 'touch', dy = 0 } = {}) =>
+  locator.evaluate((element, [distance, drop, kind]) => {
     const box = element.getBoundingClientRect();
-    const at = (x) => ({ pointerType: 'touch', isPrimary: true, bubbles: true, clientX: x, clientY: box.top + box.height / 2 });
+    const at = (x, y) => ({ pointerType: kind, isPrimary: true, bubbles: true, clientX: x, clientY: y });
     const middle = box.left + box.width / 2;
-    element.dispatchEvent(new PointerEvent('pointerdown', at(middle - distance / 2)));
-    element.dispatchEvent(new PointerEvent('pointerup', at(middle + distance / 2)));
-  }, dx);
+    const middleY = box.top + box.height / 2;
+    element.dispatchEvent(new PointerEvent('pointerdown', at(middle - distance / 2, middleY - drop / 2)));
+    element.dispatchEvent(new PointerEvent('pointerup', at(middle + distance / 2, middleY + drop / 2)));
+  }, [dx, dy, pointerType]);
+
+// El estante montado: cada lomo es un botón que dice una sola vez «Sacar al frente», y Enter sobre
+// uno saca ese libro al frente.
+async function expectMountedShelf(page, label) {
+  const shelf = page.locator('[data-estante]');
+  const actions = await shelf.locator('.ejemplar-lomo').evaluateAll((spines) =>
+    spines.map((spine) =>
+      spine.tagName === 'BUTTON'
+        ? [...spine.querySelectorAll('.sr-only')].filter((s) => s.textContent.startsWith('Sacar al frente')).length
+        : 0
+    )
+  );
+  expect(
+    actions.length >= 2 && actions.every((n) => n === 1),
+    `${label}: los lomos dicen «Sacar al frente» ${actions.join(', ')} veces`
+  );
+  const front = () =>
+    shelf.evaluate((s) => [...s.querySelectorAll('.ejemplar')].findIndex((e) => e.classList.contains('es-frente')));
+  const target = (await front()) === 0 ? 1 : 0;
+  await shelf.locator('.ejemplar').nth(target).locator('.ejemplar-lomo').focus();
+  await page.keyboard.press('Enter');
+  expect((await front()) === target, `${label}: Enter sobre el lomo no saca ese libro al frente`);
+}
 
 // Espera a que `condition` se cumpla, hasta `timeout` ms.
 async function until(condition, timeout) {
@@ -398,7 +423,7 @@ const CHECKS = [
     },
   },
   {
-    name: 'Sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue siendo usable',
+    name: 'Sin cada guion de la portada o sin lo que comparten, sin un nodo que necesita o si falla al montarse, la página sigue siendo usable',
     widths: [951, 375],
     async run({ context }, width) {
       // Cada caso, en una pestaña aparte: el fallo es el que se provoca, no uno que anotar. Un
@@ -434,17 +459,61 @@ const CHECKS = [
           inView: row.height > 0 && row.top >= 0 && row.bottom <= window.innerHeight,
         };
       });
+      // La cabecera clásica, arriba y al bajar: sin la marca data-barra, y a la vista.
+      const expectHeader = async (page, label) => {
+        for (const y of [0, 2500]) {
+          await page.evaluate((top) => window.scrollTo(0, top), y);
+          await page.waitForTimeout(SETTLE_MS);
+          const state = await header(page);
+          expect(!state.marked, `${label}: queda la marca data-barra`);
+          expect(state.shown && state.inView, `${label}: a ${y} px no se ve la cabecera clásica`);
+        }
+      };
+      // La tirada en una fila, sin la hoja de contactos y con cada título enlazado.
+      const expectRun = async (page, label) => {
+        const run = await page.locator('[data-tirada]').evaluate((s) => {
+          const sheets = [...s.querySelectorAll('.pliego')].map((p) => p.getBoundingClientRect());
+          return {
+            js: s.classList.contains('con-js'),
+            contacts: s.querySelector('.tirada-contactos').hidden,
+            current: s.querySelectorAll('[aria-current]').length,
+            row: sheets.every((r, i) => i === 0 || r.left >= sheets[i - 1].right - 1),
+            links: [...s.querySelectorAll('.pliego-titulo a')].every((a) => a.href && a.checkVisibility()),
+          };
+        });
+        expect(!run.js && run.contacts && !run.current, `${label}: la tirada queda a medio montar`);
+        expect(run.row && run.links, `${label}: la tirada no queda en una fila con sus títulos enlazados`);
+      };
+      // «Las voces» como sin su guion: a la vista, las que dice la portada, cada una con su enlace.
+      const expectVoices = async (page, label) => {
+        const voices = await page.locator('[data-integrantes]').evaluate((s) => {
+          const phone = window.matchMedia(s.dataset.telefono).matches;
+          const shown = [...s.querySelectorAll('.integrante')]
+            .filter((li) => li.checkVisibility() && li.getBoundingClientRect().width > 1);
+          return {
+            js: s.classList.contains('con-js'),
+            shown: shown.length,
+            expected: Number(phone ? s.dataset.aLaVistaTelefono : s.dataset.aLaVista),
+            links: shown.every((li) => li.querySelector('a')?.href),
+          };
+        });
+        expect(
+          !voices.js && voices.expected > 0 && voices.shown === voices.expected && voices.links,
+          `${label}: «Las voces» no quedan como sin su guion (se ven ${voices.shown} de ${voices.expected})`
+        );
+      };
+      // Cada lomo del estante lleva a su ficha. Al pulsar uno se sale de la portada: va al final.
+      const expectShelf = async (page, label) => {
+        const spines = page.locator('[data-estante] .ejemplar-lomo');
+        const hrefs = await spines.evaluateAll((links) => links.map((a) => a.getAttribute('href')));
+        expect(hrefs.length >= 2 && new Set(hrefs).size === hrefs.length, `${label}: los lomos no llevan cada uno a su ficha`);
+        await Promise.all([page.waitForURL(BASE + hrefs[1]), spines.nth(1).click()]);
+      };
       for (const broken of [null, 'document.body.insertBefore(centinela, document.body.firstChild);']) {
         const label = broken ? 'cabecera.js roto' : 'sin cabecera.js';
         const { tab, page, unexpected } = await portada('cabecera', { broken });
         try {
-          for (const y of [0, 2500]) {
-            await page.evaluate((top) => window.scrollTo(0, top), y);
-            await page.waitForTimeout(SETTLE_MS);
-            const state = await header(page);
-            expect(!state.marked, `${label}: queda la marca data-barra`);
-            expect(state.shown && state.inView, `${label}: a ${y} px no se ve la cabecera clásica`);
-          }
+          await expectHeader(page, label);
           expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
         } finally {
           await tab.close();
@@ -458,18 +527,7 @@ const CHECKS = [
       for (const [label, options] of tirada) {
         const { tab, page, unexpected } = await portada('registros', options);
         try {
-          const run = await page.locator('[data-tirada]').evaluate((s) => {
-            const sheets = [...s.querySelectorAll('.pliego')].map((p) => p.getBoundingClientRect());
-            return {
-              js: s.classList.contains('con-js'),
-              contacts: s.querySelector('.tirada-contactos').hidden,
-              current: s.querySelectorAll('[aria-current]').length,
-              row: sheets.every((r, i) => i === 0 || r.left >= sheets[i - 1].right - 1),
-              links: [...s.querySelectorAll('.pliego-titulo a')].every((a) => a.href && a.checkVisibility()),
-            };
-          });
-          expect(!run.js && run.contacts && !run.current, `${label}: la tirada queda a medio montar`);
-          expect(run.row && run.links, `${label}: la tirada no queda en una fila con sus títulos enlazados`);
+          await expectRun(page, label);
           expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
         } finally {
           await tab.close();
@@ -482,11 +540,26 @@ const CHECKS = [
       for (const [label, options] of estante) {
         const { tab, page, unexpected } = await portada('estante', options);
         try {
-          const spines = page.locator('[data-estante] .ejemplar-lomo');
-          const hrefs = await spines.evaluateAll((links) => links.map((a) => a.getAttribute('href')));
-          expect(hrefs.length >= 2 && new Set(hrefs).size === hrefs.length, `${label}: los lomos no llevan cada uno a su ficha`);
           expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
-          await Promise.all([page.waitForURL(BASE + hrefs[1]), spines.nth(1).click()]);
+          await expectShelf(page, label);
+        } finally {
+          await tab.close();
+        }
+      }
+      // Sin lo que comparten los guiones (common.js), o si falla antes de dejarlo en
+      // `window.common`, cada guion deja su componente como sin JavaScript: todos a la vez.
+      const common = [
+        ['sin common.js', {}],
+        ['common.js roto', { broken: "const canAnimate = () => !quieto.matches && typeof Element.prototype.animate === 'function';" }],
+      ];
+      for (const [label, options] of common) {
+        const { tab, page, unexpected } = await portada('common', options);
+        try {
+          await expectRun(page, label);
+          await expectVoices(page, label);
+          await expectHeader(page, label);
+          expect(!unexpected().length, `${label}: ${unexpected().join(' | ')}`);
+          await expectShelf(page, label);
         } finally {
           await tab.close();
         }
@@ -551,10 +624,188 @@ const CHECKS = [
       await page.keyboard.press('ArrowLeft');
       expect((await current()) === 1, 'la flecha izquierda no vuelve al anterior');
       // Deslizar no mueve el foco: eso sí se anuncia.
-      await swipe(run.locator('.tirada-pista'), -160);
+      const track = run.locator('.tirada-pista');
+      await swipe(track, -160);
       expect((await current()) === 2, 'deslizar hacia la izquierda no pasa al registro siguiente');
       const said = await run.evaluate((s) => s.querySelector('[data-anuncio]').textContent);
       expect(said.startsWith('Registro 3 de '), `al deslizar se anuncia «${said}»`);
+      // Solo cuenta el gesto del dedo o del lápiz, de 40 px o más y claramente horizontal: con el
+      // ratón, uno corto o uno casi vertical (que baja la página) no pasan de registro.
+      for (const [gesture, dx, options] of [
+        ['con el ratón', -160, { pointerType: 'mouse' }],
+        ['de 20 px', -20, {}],
+        ['casi vertical', -60, { dy: 50 }],
+      ]) {
+        await swipe(track, dx, options);
+        expect((await current()) === 2, `un deslizamiento ${gesture} pasa de registro`);
+      }
+      // Un deslizamiento no abre lo que quedó debajo: el clic que le sigue se corta, y no sube el
+      // pliego que toca. Pasado el gesto, pulsar un pliego de abajo sí lo sube.
+      const tapBelow = () =>
+        run.evaluate((s) => {
+          const sheets = [...s.querySelectorAll('.pliego')];
+          const before = sheets.findIndex((p) => p.hasAttribute('aria-current'));
+          const below = sheets.findIndex((p) => !p.hasAttribute('aria-current'));
+          const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+          const cut = !sheets[below].dispatchEvent(click);
+          return { before, below, cut, after: sheets.findIndex((p) => p.hasAttribute('aria-current')) };
+        });
+      await swipe(track, 160);
+      const early = await tapBelow();
+      expect(early.before === 1, 'deslizar hacia la derecha no vuelve al registro anterior');
+      expect(early.cut && early.after === 1, 'el clic que sigue a un deslizamiento sube el pliego que toca');
+      await page.waitForTimeout(500);
+      const late = await tapBelow();
+      expect(!late.cut && late.after === late.below, 'pasado el gesto, pulsar un pliego de abajo no lo sube');
+    },
+  },
+  {
+    name: 'Montar otra vez la portada no duplica las escuchas: un gesto o una tecla, un solo efecto',
+    widths: [951, 375],
+    async run({ page }, width) {
+      await visit(page, '/');
+      // Otra pasada por cada camino de montaje: lo que llega con htmx (htmx:load, sobre toda la
+      // página) y los tres guiones, cargados otra vez.
+      const again = await page.evaluate(() => {
+        window.htmx.trigger(document.body, 'htmx:load');
+        const scripts = [...document.querySelectorAll('script[src]')]
+          .filter((script) => /\/js\/(registros|integrantes|estante)\./.test(script.src));
+        const load = (old) =>
+          new Promise((done, fail) => {
+            const script = document.createElement('script');
+            script.src = old.src;
+            script.onload = done;
+            script.onerror = () => fail(new Error(`no cargó ${old.src}`));
+            document.head.append(script);
+          });
+        return Promise.all(scripts.map(load)).then(() => scripts.length);
+      });
+      expect(again === 3, `la portada carga ${again} de los tres guiones que se montan`);
+      // La tirada: un deslizamiento pasa un solo registro y se anuncia una sola vez.
+      const run = page.locator('[data-tirada]');
+      const current = () =>
+        run.evaluate((s) => [...s.querySelectorAll('.pliego')].findIndex((p) => p.hasAttribute('aria-current')));
+      await run.evaluate((s) => {
+        window.anuncios = 0;
+        new MutationObserver((records) => {
+          window.anuncios += records.length;
+        }).observe(s.querySelector('[data-anuncio]'), { childList: true, characterData: true, subtree: true });
+      });
+      const before = await current();
+      await swipe(run.locator('.tirada-pista'), -160);
+      await page.waitForTimeout(100);
+      const [after, said] = [await current(), await page.evaluate(() => window.anuncios)];
+      expect(after === before + 1, `un deslizamiento pasa del registro ${before + 1} al ${after + 1}`);
+      expect(said === 1, `un deslizamiento se anuncia ${said} veces`);
+      // «Las voces», en el teléfono (en la pantalla ancha llegan solas): un deslizamiento trae a
+      // una a cada lugar, cada una bajo su pasada de tinta. Se cuentan en el mismo instante: cada
+      // relevo pone su capa al empezar.
+      if (width === 375) {
+        const voices = await page.locator('[data-integrantes] .integrantes-retratos').evaluate((list) => {
+          const box = list.getBoundingClientRect();
+          const at = (x) => ({ pointerType: 'touch', isPrimary: true, bubbles: true, clientX: x, clientY: box.top + box.height / 2 });
+          list.dispatchEvent(new PointerEvent('pointerdown', at(box.left + box.width / 2 + 80)));
+          list.dispatchEvent(new PointerEvent('pointerup', at(box.left + box.width / 2 - 80)));
+          return {
+            inks: list.querySelectorAll('.integrante-tinta').length,
+            places: [...list.children].filter((li) => !li.classList.contains('sr-only')).length,
+          };
+        });
+        expect(
+          voices.places > 0 && voices.inks === voices.places,
+          `un deslizamiento pone ${voices.inks} pasadas de tinta en ${voices.places} lugares`
+        );
+      }
+      await expectMountedShelf(page, 'montado otra vez');
+    },
+  },
+  {
+    name: 'Lo que llega con htmx se monta: un estante nuevo saca libros al frente con el teclado',
+    widths: [951],
+    async run({ page }) {
+      await visit(page, '/');
+      // El estante, otra vez del servidor, en lugar del que está: llega sin montar.
+      await page.evaluate(() => {
+        window.estanteViejo = document.querySelector('[data-estante]');
+        return window.htmx.ajax('GET', '/', { target: '[data-estante]', select: '[data-estante]', swap: 'outerHTML' });
+      });
+      const arrived = await until(
+        () =>
+          page.evaluate(() => {
+            const shelf = document.querySelector('[data-estante]');
+            return shelf !== window.estanteViejo && !!shelf.querySelector('button.ejemplar-lomo');
+          }),
+        3000
+      );
+      expect(arrived, 'el estante que llega con htmx queda sin montar: sus lomos siguen siendo enlaces');
+      await expectMountedShelf(page, 'el estante que llega con htmx');
+    },
+  },
+  {
+    name: 'Con «reducir movimiento» nada se anima, y la tirada, el estante, «Las voces» y la cabecera cambian igual',
+    widths: [951, 375],
+    async run({ page }, width) {
+      // Lo que piden los guiones en cada página, contado: animaciones (las transiciones y los
+      // @keyframes de la hoja son otra cosa) y transiciones de vista.
+      await page.addInitScript(() => {
+        window.moved = 0;
+        window.viewTransitions = 0;
+        const animate = Element.prototype.animate;
+        Element.prototype.animate = function (...args) {
+          window.moved += 1;
+          return animate.apply(this, args);
+        };
+        const start = Document.prototype.startViewTransition;
+        if (!start) return;
+        Document.prototype.startViewTransition = function (...args) {
+          window.viewTransitions += 1;
+          return start.apply(this, args);
+        };
+      });
+      const counted = () => page.evaluate(() => ({ moved: window.moved, transitions: window.viewTransitions }));
+      // Sin la preferencia, lo mismo se anima: es el control de que se cuenta lo que hay que contar.
+      for (const reducedMotion of ['no-preference', 'reduce']) {
+        const still = reducedMotion === 'reduce';
+        const label = still ? 'con «reducir movimiento»' : 'sin «reducir movimiento»';
+        await page.emulateMedia({ reducedMotion });
+        await visit(page, '/');
+        const run = page.locator('[data-tirada]');
+        const current = () =>
+          run.evaluate((s) => [...s.querySelectorAll('.pliego')].findIndex((p) => p.hasAttribute('aria-current')));
+        const before = await current();
+        await swipe(run.locator('.tirada-pista'), -160);
+        expect((await current()) === before + 1, `${label}, deslizar no pasa de registro`);
+        await expectMountedShelf(page, label);
+        // «Las voces», en el teléfono, cambian con el dedo (en la pantalla ancha, solas y solo sin
+        // la preferencia); sin animar, el relevo es inmediato.
+        if (width === 375) {
+          const voices = page.locator('[data-integrantes] .integrantes-retratos');
+          const shown = () =>
+            voices.evaluate((list) =>
+              [...list.querySelectorAll('.integrante')]
+                .filter((li) => li.checkVisibility() && li.getBoundingClientRect().width > 1)
+                .map((li) => li.querySelector('a').getAttribute('href'))
+                .join(' ')
+            );
+          const first = await shown();
+          await swipe(voices, -160);
+          if (still) expect((await shown()) !== first, `${label}, deslizar sobre «Las voces» no trae a otras`);
+        }
+        const home = await counted();
+        expect(still ? home.moved === 0 : home.moved > 0, `${label}, en la portada los guiones piden ${home.moved} animaciones`);
+        // La cabecera pasa a la cápsula con una transición de vista fuera de la portada.
+        if (width === 951) {
+          await visit(page, '/registros/');
+          await page.waitForTimeout(SETTLE_MS);
+          await page.mouse.wheel(0, 800);
+          const down = await page
+            .waitForFunction(() => document.documentElement.getAttribute('data-barra') === 'pildora', null, { timeout: 3000 })
+            .then(() => true, () => false);
+          expect(down, `${label}, al bajar no aparece la cápsula`);
+          const { transitions } = await counted();
+          expect(still ? transitions === 0 : transitions > 0, `${label}, la cápsula llega con ${transitions} transiciones de vista`);
+        }
+      }
     },
   },
   {

@@ -285,7 +285,7 @@ jobs:
         run: npm ci --prefix tools/ux
 
       - name: ESLint de los guiones (ES2020, sin módulos)
-        run: tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js
+        run: tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js backend/static/admin/richtext_init.js
 
       - name: Levantar el sitio con los datos de desarrollo
         run: |

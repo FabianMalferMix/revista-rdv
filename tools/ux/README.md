@@ -82,10 +82,16 @@ guiones ejecutándose de verdad. Comprueba que:
 - la cabecera pasa a cápsula al bajar, y la portada se reconoce por su marca: arriba no tiene
   cabecera, y la cápsula le llega sin transición de vista;
 - arriba de la portada, la cápsula que se abre con el teclado busca con el mismo ancho que al bajar;
-- sin cada guion de la portada, sin un nodo que necesita o si falla al montarse, la página sigue
-  usable: la cabecera clásica, la tirada en fila y el estante con sus enlaces;
+- sin cada guion de la portada, sin lo que comparten (`common.js`), sin un nodo que necesita o si
+  falla al montarse, la página sigue usable: la cabecera clásica, la tirada en fila, «Las voces»
+  con las primeras y el estante con sus enlaces;
 - el estante y la tirada responden al teclado (la tirada, también al dedo, y solo anuncia lo que
-  no mueve el foco);
+  no mueve el foco). El gesto cuenta solo con el dedo o el lápiz, si es largo y horizontal, y el
+  clic que le sigue no abre lo que quedó debajo;
+- montar otra vez la portada no duplica las escuchas (un gesto o una tecla, un solo efecto), y lo
+  que llega con htmx se monta;
+- con «reducir movimiento», ningún guion anima nada ni pide transiciones de vista, y la tirada, el
+  estante, «Las voces» y la cabecera cambian igual;
 - el reproductor externo solo se carga al pulsar;
 - en las tarjetas, pulsar la fecha, la miniatura o la marca ▶ lleva a la pieza, y los enlaces
   secundarios (la sección, la firma, el evento de un registro) llevan a lo suyo;
@@ -122,11 +128,15 @@ node tools/ux/contraste.js --base http://127.0.0.1:8000
 
 ## ESLint de los guiones
 
-`eslint.config.mjs` fija el dialecto de `backend/static/js/`: ES2020, en guiones clásicos sin
-módulos. Desde la raíz del repositorio:
+`eslint.config.mjs` fija el dialecto de `backend/static/js/` y de
+`backend/static/admin/richtext_init.js`: ES2020, en guiones clásicos sin módulos. Además de las
+reglas recomendadas, exige lo que ES2020 ya tiene: `let` y `const` (y `const` si no se reasigna),
+flechas en las llamadas de vuelta, plantillas en vez de concatenar, la forma corta de los objetos,
+`...` y `**`. Ningún guion deja nombres en el ámbito global, que comparten todos: lo común va en
+`window.common`, de `common.js`. Desde la raíz del repositorio:
 
 ```bash
-tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js
+tools/ux/node_modules/.bin/eslint -c tools/ux/eslint.config.mjs backend/static/js backend/static/admin/richtext_init.js
 ```
 
 ## Lo demás que hay en esta carpeta

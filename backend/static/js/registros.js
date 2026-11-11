@@ -6,13 +6,16 @@
 // componentes.css (la CSP no admite estilos en línea). Nada avanza solo y no se toca la
 // dirección ni el historial.
 (() => {
-  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Lo común llega antes, en common.js; sin él, la tirada queda como está: la fila con imán.
+  const { common } = window;
+  if (!common) return;
+  // La curva es la de la hoja (--ease-tirada en tokens.css), que lee common.js: la comparte el
+  // estante.
+  const { canAnimate, onSwipe, mountAll, CURVA } = common;
   // El reparto dura un poco más que el acomodo de los demás (la transición de `translate` en
   // componentes.css; tests/test_tirada.py compara las dos): el que pasa arriba sale de la pila
   // por su lado y vuelve encima, como una carta que se reparte.
   const REPARTO = 700;
-  // La curva es la de la hoja (--ease-tirada en tokens.css): la comparte el estante.
-  const CURVA = getComputedStyle(document.documentElement).getPropertyValue('--ease-tirada').trim();
 
   function montar(seccion) {
     const pliegos = [...seccion.querySelectorAll('.pliego')];
@@ -70,7 +73,7 @@
       pliegos.forEach((p, j) => (j === i ? p.setAttribute('aria-current', 'true') : p.removeAttribute('aria-current')));
       contactos.forEach((c, j) => (j === i ? c.setAttribute('aria-current', 'true') : c.removeAttribute('aria-current')));
       if (avisar) anuncio.textContent = `Registro ${i + 1} de ${n}: ${titulos[i]}`;
-      if (previo >= 0 && !quieto.matches && typeof Element.prototype.animate === 'function') repartir(previo, i, antes);
+      if (previo >= 0 && canAnimate()) repartir(previo, i, antes);
     }
     function ir(i, avisar = true) {
       marcar(Math.max(0, Math.min(n - 1, i)), avisar);
@@ -117,33 +120,9 @@
       }, { signal });
 
       // Deslizar con el dedo (o el lápiz) sobre la pila: hacia la izquierda, el siguiente; hacia
-      // la derecha, el anterior. Solo un gesto claramente horizontal: el vertical sigue bajando
-      // la página (touch-action en componentes.css). Un deslizamiento no abre la ficha que quedó
-      // debajo.
-      let x0 = null;
-      let y0 = 0;
-      let deslizado = 0;
-      mesa.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'mouse') return;
-        x0 = e.clientX;
-        y0 = e.clientY;
-      }, { signal });
-      mesa.addEventListener('pointerup', (e) => {
-        if (x0 === null) return;
-        const dx = e.clientX - x0;
-        const dy = e.clientY - y0;
-        x0 = null;
-        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-        deslizado = e.timeStamp;
-        ir(actual + (dx < 0 ? 1 : -1));
-      }, { signal });
-      mesa.addEventListener('pointercancel', () => { x0 = null; }, { signal });
-      seccion.addEventListener('click', (e) => {
-        if (deslizado && e.timeStamp - deslizado < 400) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }, { capture: true, signal });
+      // la derecha, el anterior. Un deslizamiento no abre la ficha que quedó debajo, en ningún
+      // lugar de la tirada.
+      onSwipe(mesa, (dx) => ir(actual + (dx < 0 ? 1 : -1)), { clicks: seccion, signal });
 
       // Pulsar un pliego de abajo lo sube; su título, en cambio, siempre lleva a la ficha.
       seccion.addEventListener('click', (e) => {
@@ -154,5 +133,5 @@
     }
   }
 
-  document.querySelectorAll('[data-tirada]').forEach(montar);
+  mountAll('[data-tirada]', montar);
 })();
