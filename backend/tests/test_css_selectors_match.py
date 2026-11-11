@@ -11,13 +11,25 @@ Antes de buscar, se quita del selector lo que no viene en el HTML del servidor:
   vista…), que soupsieve no admite: cuelgan del elemento que nombra el resto del selector;
 - los estados que da el navegador (`BROWSER_STATES`: `:hover`, `:focus-visible`, `:target`…)
   y el `[open]` del desplegable que abre la persona;
-- las marcas que pone un guion (`SCRIPT_MARKS`), solo en el elemento donde la pone.
+- las marcas que pone un guion (`SCRIPT_MARKS`), solo en el elemento donde la pone; si la
+  pone en una etiqueta (`html`), también en un compuesto sin etiqueta ni clase, que solo puede
+  ser ese elemento: `[data-barra] > …` es el `<html>` con la marca.
 
 Un compuesto que se queda sin nada pasa a ser `*`: era un estado o un elemento que crea un
 guion. Dentro de `:is()`, `:where()` y `:has()` se quita lo mismo; dentro de `:not()`, nada,
 porque el HTML del servidor no trae esos estados ni esas marcas y la negación ya se cumple. El
 contexto de la regla no cuenta: una regla de `@media print` o del teléfono también estila algo
 que tiene que existir.
+
+Con las mismas páginas se mira también lo contrario: la parte de un selector que no elige nada.
+Un ancestro que ya tiene todo elemento que casa con el resto, la etiqueta o una clase que van
+siempre con las demás piezas de su compuesto, o una pieza repetida, solo suben la
+especificidad. Si con eso una regla le gana a otra posterior de su capa, que sin eso le ganaría
+por ir después, es especificidad puesta para ganar: el orden lo dan la capa y el lugar dentro
+de la capa. Contra una regla anterior no hay orden que corregir, y esa parte es el alcance de
+la regla (`.dossier-prensa cite`): sin ella, un nombre genérico se volvería global. Tampoco
+cuentan lo que nombran las dos reglas, que es la pieza que estilan, ni el elemento de un estado
+(`.busqueda[open]`, `a:hover`).
 """
 
 import re
@@ -158,16 +170,32 @@ def _simple_selectors(compound):
         start = end
 
 
+def _carries(pieces, on, mark):
+    """Si el compuesto (sus piezas) lleva esa marca donde la pone el guion: en ese elemento o,
+    si la pone en una etiqueta, en un compuesto sin etiqueta ni clase, que solo puede ser él."""
+    if mark not in pieces:
+        return False
+    if on is None or on in pieces:
+        return True
+    return on[0].isalpha() and not any(piece[0].isalpha() or piece[0] in ".*" for piece in pieces)
+
+
+def _added_later(piece, pieces):
+    """Si la pieza del compuesto la pone el navegador o un guion, y no el HTML del servidor."""
+    name = piece.lstrip(":").partition("(")[0]
+    if piece.startswith("::") or (piece.startswith(":") and name in BROWSER_STATES):
+        return True
+    if piece.startswith("[") and re.match(r"\[([\w-]+)", piece)[1] in BROWSER_ATTRIBUTES:
+        return True
+    return any(piece == mark and _carries(pieces, on, mark) for on, mark, _, _ in SCRIPT_MARKS)
+
+
 def _server_compound(compound):
     pieces = list(_simple_selectors(compound))
     kept = []
     for piece in pieces:
         name, _, arguments = piece.lstrip(":").partition("(")
-        if piece.startswith("::") or (piece.startswith(":") and name in BROWSER_STATES):
-            continue
-        if piece.startswith("[") and re.match(r"\[([\w-]+)", piece)[1] in BROWSER_ATTRIBUTES:
-            continue
-        if any(piece == mark and (on in (None, *pieces)) for on, mark, _, _ in SCRIPT_MARKS):
+        if _added_later(piece, pieces):
             continue
         if piece.startswith(":") and name in ("is", "where", "has"):
             piece = f":{name}({server_selector(arguments[:-1])})"
@@ -185,6 +213,21 @@ def server_selector(selector):
         )
         for complex_selector in _split(selector, ",")
     )
+
+
+def _compounds(selector):
+    """Las piezas de cada compuesto del selector, también de los que van dentro de `:is()`,
+    `:where()`, `:has()` y `:not()`."""
+    for complex_selector in _split(selector, ","):
+        for part in _split(complex_selector, " "):
+            if part in (">", "+", "~"):
+                continue
+            pieces = list(_simple_selectors(part))
+            yield pieces
+            for piece in pieces:
+                _, _, arguments = piece.lstrip(":").partition("(")
+                if piece.startswith(":") and arguments:
+                    yield from _compounds(arguments[:-1])
 
 
 def _classes_and_ids(selector):
@@ -234,6 +277,273 @@ def _loading(sheet, pages):
         for soup in pages
         if any(sheet in link.get("href", "") for link in soup.select("link[rel=stylesheet]"))
     ]
+
+
+# ── La parte del selector que no elige nada ───────────────────────────────────
+
+
+def _specificity(selector):
+    """(id, clases, etiquetas) de un selector suelto, como la cuenta el navegador: `:where()` no
+    suma, y `:is()`, `:not()` y `:has()` suman la de su argumento más específico."""
+    ids = classes = types = 0
+    for part in _split(selector, " "):
+        if part in (">", "+", "~"):
+            continue
+        for piece in _simple_selectors(part):
+            name, _, arguments = piece.lstrip(":").partition("(")
+            if piece[0] == "#":
+                ids += 1
+            elif piece[0] in ".[":
+                classes += 1
+            elif piece.startswith("::") or piece in (":before", ":after"):
+                types += 1
+            elif piece[0] == ":" and name in ("is", "not", "has"):
+                inner = max(_specificity(s) for s in _split(arguments[:-1], ","))
+                ids, classes, types = ids + inner[0], classes + inner[1], types + inner[2]
+            elif piece[0] == ":":
+                classes += name != "where"
+            elif piece != "*":
+                types += 1
+    return ids, classes, types
+
+
+def _pseudo_element(selector):
+    """La caja que estila el selector: la del elemento (None) o la de su pseudoelemento."""
+    subject = _split(selector, " ")[-1]
+    for piece in _simple_selectors(subject):
+        if piece.startswith("::") or piece in (":before", ":after"):
+            return piece.lstrip(":")
+    return None
+
+
+def _names(pieces):
+    """Las piezas de un compuesto que solo nombran: la etiqueta y las clases. Ninguna si el
+    compuesto lleva algo que pone el navegador o un guion (`.busqueda[open]`, `a:hover`,
+    `.tirada.con-js`): ahí el nombre dice de qué elemento es la condición."""
+    if any(_added_later(piece, pieces) for piece in pieces if not piece.startswith("::")):
+        return []
+    return [k for k, piece in enumerate(pieces) if piece[0].isalpha() or piece[0] == "."]
+
+
+def _reductions(selector, keep=frozenset()):
+    """Cada parte del selector que podría no elegir nada, con el selector sin ella: un compuesto
+    de delante o del medio que solo nombra y, en un compuesto con más piezas, una que solo nombra
+    o una repetida. Las piezas de `keep` se quedan, salvo su repetición."""
+    parts, combinators = [], []
+    pending = " "
+    for token in _split(selector, " "):
+        if token in (">", "+", "~"):
+            pending = token
+            continue
+        parts.append(token)
+        combinators.append(pending)
+        pending = " "
+
+    def join(parts, combinators):
+        text = parts[0]
+        for part, combinator in zip(parts[1:], combinators[1:], strict=True):
+            text += f" {part}" if combinator == " " else f" {combinator} {part}"
+        return text
+
+    for i, compound in enumerate(parts[:-1]):
+        around = {combinators[i] if i else " ", combinators[i + 1]}
+        pieces = list(_simple_selectors(compound))
+        if around & {"+", "~"} or around == {">"} or keep & set(pieces):
+            continue
+        if len(_names(pieces)) < len(pieces):
+            continue
+        if i == 0:
+            yield compound, join(parts[1:], combinators[1:])
+        else:
+            yield (
+                compound,
+                join(parts[:i] + parts[i + 1 :], [*combinators[:i], " ", *combinators[i + 2 :]]),
+            )
+    for i, compound in enumerate(parts):
+        pieces = list(_simple_selectors(compound))
+        if len(pieces) < 2:
+            continue
+        for k, piece in enumerate(pieces):
+            if piece in pieces[:k] or (k in _names(pieces) and piece not in keep):
+                rest = "".join(pieces[:k] + pieces[k + 1 :])
+                yield piece, join([*parts[:i], rest, *parts[i + 1 :]], combinators)
+
+
+_SIDES = ("top", "right", "bottom", "left")
+# Las largas de cada atajo que usa la hoja, con lo lógico en físico (la página va de izquierda
+# a derecha y en horizontal). Dos declaraciones se pisan si comparten alguna larga; la que no
+# está aquí es su propia larga.
+_LONGHANDS = {
+    "inset": set(_SIDES),
+    **{box: {f"{box}-{side}" for side in _SIDES} for box in ("margin", "padding")},
+    **{f"{box}-block": {f"{box}-top", f"{box}-bottom"} for box in ("margin", "padding")},
+    **{
+        f"{box}-inline": {f"{box}-left", f"{box}-right"}
+        for box in ("margin", "padding", "scroll-padding")
+    },
+    "border": {f"border-{side}-{part}" for side in _SIDES for part in ("width", "style", "color")},
+    **{
+        f"border-{side}": {f"border-{side}-{p}" for p in ("width", "style", "color")}
+        for side in _SIDES
+    },
+    **{
+        f"border-{part}": {f"border-{side}-{part}" for side in _SIDES}
+        for part in ("width", "style", "color")
+    },
+    "border-radius": {
+        f"border-{v}-{h}-radius" for v in ("top", "bottom") for h in ("left", "right")
+    },
+    "outline": {"outline-color", "outline-style", "outline-width"},
+    "background": {
+        f"background-{part}"
+        for part in ("color", "image", "size", "position", "repeat", "attachment", "origin", "clip")
+    },
+    "font": {
+        "font-family",
+        "font-size",
+        "font-style",
+        "font-weight",
+        "font-stretch",
+        "font-variant-numeric",
+        "line-height",
+    },
+    "flex": {"flex-grow", "flex-shrink", "flex-basis"},
+    "gap": {"row-gap", "column-gap"},
+    "place-items": {"align-items", "justify-items"},
+    "overflow": {"overflow-x", "overflow-y"},
+    "list-style": {"list-style-type", "list-style-position", "list-style-image"},
+    "text-decoration": {
+        f"text-decoration-{part}" for part in ("line", "style", "color", "thickness")
+    },
+    "white-space": {"white-space-collapse", "text-wrap-mode"},
+    "text-wrap": {"text-wrap-mode", "text-wrap-style"},
+    "transition": {
+        f"transition-{part}" for part in ("property", "duration", "timing-function", "delay")
+    },
+    "animation": {
+        f"animation-{part}"
+        for part in (
+            "name",
+            "duration",
+            "timing-function",
+            "delay",
+            "iteration-count",
+            "direction",
+            "fill-mode",
+            "play-state",
+        )
+    },
+    "grid-area": {f"grid-{axis}-{end}" for axis in ("row", "column") for end in ("start", "end")},
+    **{f"grid-{axis}": {f"grid-{axis}-start", f"grid-{axis}-end"} for axis in ("row", "column")},
+    "container": {"container-name", "container-type"},
+    "inline-size": {"width"},
+    "block-size": {"height"},
+}
+
+
+def _longhands(name):
+    if not name.startswith("--"):
+        name = re.sub(r"^-(webkit|moz)-", "", name)
+    return _LONGHANDS.get(name, {name})
+
+
+def _compatible(context, other):
+    """Si dos reglas pueden valer a la vez: los anchos de sus @media se cruzan y no piden
+    movimientos contrarios."""
+    media = [at_rule for at_rule in (*context, *other) if at_rule.startswith("@media")]
+    widths = [
+        (kind, int(px)) for m in media for kind, px in re.findall(r"(min|max)-width:(\d+)px", m)
+    ]
+    low = max((px for kind, px in widths if kind == "min"), default=0)
+    high = min((px for kind, px in widths if kind == "max"), default=10**6)
+    motion = {"reduce" in m for m in media if "prefers-reduced-motion" in m}
+    return low <= high and len(motion) < 2
+
+
+def _pieces(selector):
+    return {piece for pieces in _compounds(selector) for piece in pieces}
+
+
+def _wins_by_a_part_that_picks_nothing(sheet, pages):
+    """Las reglas que le ganan a otra posterior de su capa solo por partes del selector que, en
+    esas páginas, no cambian los elementos que elige: sin ellas, en las dos, perderían por ir
+    antes. Lo que nombran las dos no cuenta: es la pieza que estilan."""
+    names = [
+        {f".{name}" for tag in soup.select("[class]") for name in tag["class"]}
+        | {f"#{tag['id']}" for tag in soup.select("[id]")}
+        for soup in pages
+    ]
+    picked = {}
+
+    def pick(selector):
+        """Los elementos que elige en cada página. Ninguno si solo elige lo que crea un guion:
+        en el HTML del servidor no está."""
+        if selector not in picked:
+            server = server_selector(selector)
+            subject = list(_simple_selectors(_split(selector, " ")[-1]))
+            created = _split(server, " ")[-1] == "*" and any(
+                on is None and mark in subject for on, mark, _, _ in SCRIPT_MARKS
+            )
+            pattern, needed = sv.compile(server), _classes_and_ids(server)
+            picked[selector] = tuple(
+                frozenset(map(id, pattern.select(soup)))
+                if not created and needed <= page_names
+                else frozenset()
+                for soup, page_names in zip(pages, names, strict=True)
+            )
+        return picked[selector]
+
+    def bare(selector, keep):
+        """El selector sin las partes que no cambian lo que elige, y esas partes."""
+        chosen, dropped = pick(selector), []
+        while True:
+            for part, reduced in _reductions(selector, keep):
+                if pick(reduced) == chosen:
+                    selector = reduced
+                    dropped.append(part)
+                    break
+            else:
+                return selector, dropped
+
+    rules, groups = {}, {}
+    for order, rule in enumerate(sheet.rules):
+        if any(at_rule.startswith("@keyframes") for at_rule in rule.context):
+            continue
+        rules[order] = rule
+        longhands = {(d.important, h) for d in rule.declarations for h in _longhands(d.name)}
+        for selector in rule.selectors:
+            entry = (order, selector, _specificity(selector), _pseudo_element(selector))
+            for key in longhands:
+                groups.setdefault((rule.layer, key), []).append(entry)
+    pairs = {}
+    for (_, (_, longhand)), group in groups.items():
+        for order, selector, specificity, pseudo in group:
+            for order_q, rival, specificity_q, pseudo_q in group:
+                if (
+                    order < order_q
+                    and specificity > specificity_q
+                    and pseudo == pseudo_q
+                    and _compatible(rules[order].context, rules[order_q].context)
+                ):
+                    pairs.setdefault((order, selector, order_q, rival), set()).add(longhand)
+    found = {}
+    for (order, selector, order_q, rival), longhands in sorted(pairs.items()):
+        if not any(a & b for a, b in zip(pick(selector), pick(rival), strict=True)):
+            continue
+        keep = _pieces(selector) & _pieces(rival)
+        bare_selector, dropped = bare(selector, keep)
+        if not dropped or _specificity(bare_selector) > _specificity(rival):
+            continue
+        if _specificity(bare_selector) <= _specificity(bare(rival, keep)[0]):
+            properties = dict.fromkeys(
+                d.name for d in rules[order].declarations if _longhands(d.name) & longhands
+            )
+            found[selector, rival] = (
+                f"«{selector}» (línea {rules[order].line}) le gana a «{rival}» (línea "
+                f"{rules[order_q].line}), que va después, en {', '.join(properties)} solo por "
+                f"«{' '.join(dropped)}», que no elige nada"
+            )
+    return found
 
 
 # ── Los datos ───────────────────────────────────────────────────────────────────
@@ -679,6 +989,12 @@ def test_every_selector_of_the_stylesheets_matches_some_page(site_pages):
             ".masthead-fila:has(.busqueda[open]) .busqueda",
             ".masthead-fila:has(.busqueda) .busqueda",
         ),
+        # La marca de `<html>`, también sin nombrarlo: un compuesto sin etiqueta ni clase.
+        (
+            '[data-barra="arriba"] > [data-pagina="portada"] .masthead',
+            '* > [data-pagina="portada"] .masthead',
+        ),
+        ('html[data-barra="pildora"] > :not([data-pagina])', "html > :not([data-pagina])"),
         (".tirada.con-js .pliego[aria-current] + .pliego", ".tirada .pliego + .pliego"),
         (".tirada.con-js .pliego:has(~ .pliego[aria-current])", ".tirada .pliego:has(~ .pliego)"),
     ],
@@ -695,10 +1011,52 @@ def test_what_the_browser_and_the_scripts_add_is_left_out(selector, server):
         # Una negación ya se cumple en el HTML del servidor, que no trae ni estados ni marcas.
         ".search:not(:focus-within):not(:hover) .busqueda-resultados",
         ".home-integrantes:not(.con-js) .integrantes-retratos > li:nth-child(2n)",
+        # Una marca en otro elemento que el suyo no es la del guion: el selector la pide.
+        ".masthead[data-barra]",
+        ".con-js .pliego",
     ],
 )
 def test_what_the_server_sends_stays(selector):
     assert server_selector(selector) == selector
+
+
+# Lo que hoy gana así y se queda como está, con su motivo.
+TOLERATED = {
+    (".newsletter input[type=email]", '.newsletter [aria-invalid="true"]'): (
+        "El campo con error del boletín conserva su borde: la etiqueta le gana al borde del "
+        "error, que va después. Corregirlo cambia lo que se ve."
+    ),
+}
+
+
+@pytest.mark.django_db
+def test_no_rule_wins_by_a_part_of_its_selector_that_picks_nothing(site_pages):
+    pages = _loading("css/site.css", site_pages)
+    found = _wins_by_a_part_that_picks_nothing(css.site(), pages)
+    # Lo tolerado se sigue dando: si ya no, sobra en la lista.
+    assert set(TOLERATED) <= set(found), set(TOLERATED) - set(found)
+    unexpected = [message for pair, message in found.items() if pair not in TOLERATED]
+    assert not unexpected, (
+        "Estas reglas ganan por especificidad puesta para ganar: sin esa parte eligen los mismos "
+        "elementos y perderían. Que ganen por la capa o por ir después en la suya.\n"
+        + "\n".join(unexpected)
+    )
+    # Control: un botón que le gana a la receta de `.btn`, que va después, solo por un ancestro
+    # que siempre está, se informa; la marca de la cabecera, cuyo ancestro sí elige (el sello
+    # también está en el pie), no.
+    control = css.Stylesheet(
+        ".masthead .masthead-cta{display:none} .masthead .brand{color:red}"
+        ".btn{display:inline-flex} .brand{color:blue}"
+    )
+    page = BeautifulSoup(
+        '<header class="masthead"><a class="brand">R</a><a class="btn masthead-cta">D</a>'
+        '</header><a class="btn">Ver</a><footer><a class="brand">R</a></footer>',
+        "html.parser",
+    )
+    assert list(_wins_by_a_part_that_picks_nothing(control, [page]).values()) == [
+        "«.masthead .masthead-cta» (línea 1) le gana a «.btn» (línea 1), que va después, en "
+        "display solo por «.masthead», que no elige nada"
+    ]
 
 
 def test_each_script_mark_is_set_by_its_script_and_used_by_a_stylesheet():
@@ -710,6 +1068,6 @@ def test_each_script_mark_is_set_by_its_script_and_used_by_a_stylesheet():
         source = (STATIC / script).read_text(encoding="utf-8")
         if not all(word in source for word in re.findall(r"[\w-]+", mark)):
             stale.append(f"{script} no pone {mark}")
-        if not any(mark in s and (on is None or on in s) for s in selectors):
+        if not any(_carries(pieces, on, mark) for s in selectors for pieces in _compounds(s)):
             stale.append(f"ninguna hoja usa {mark}" + (f" en {on}" if on else ""))
     assert not stale, stale

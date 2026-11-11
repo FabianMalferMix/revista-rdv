@@ -1140,8 +1140,13 @@ def test_el_subrayado_de_la_pagina_actual_no_alcanza_al_separador():
 
 
 def test_en_el_telefono_el_boton_del_dossier_se_guarda_en_el_menu():
-    """El botón le gana a la regla general de `.btn` solo con `.masthead` delante."""
-    assert css.rule(PHONE, ".masthead .masthead-cta")["display"] == "none"
+    """El botón le gana a la receta de `.btn`, con su misma especificidad (una clase), por ir
+    después en la misma capa."""
+    boton = css.rule(PHONE, ".masthead-cta")
+    assert boton["display"] == "none"
+    (receta,) = [r for r in css.rules_with((), ".btn") if "display" in r]
+    assert receta["display"] == "inline-flex"
+    assert boton.layer == receta.layer and boton.line > receta.line
 
 
 def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
@@ -1149,7 +1154,7 @@ def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
     con el corte en 720, a 768 y a 820 el botón quedaba fuera de la pantalla. Los dos cortes
     se tocan, para que ningún ancho se quede con las dos cabeceras o sin ninguna. En el
     teléfono los huecos son de 8 px: con los de 24, a 320 px «Menú» no cabía."""
-    telefonos = _contexts_where(".masthead .masthead-cta", "display", "none")
+    telefonos = _contexts_where(".masthead-cta", "display", "none")
     assert len(telefonos) == 1, f"el botón se guarda en más de un corte: {telefonos}"
     (telefono,) = telefonos
     hasta = re.fullmatch(r"@media \(max-width:(\d+)px\)", " ".join(telefono))
@@ -1161,14 +1166,17 @@ def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
 
 
 def test_en_el_telefono_menu_va_en_tinta_como_la_lupa():
-    """La receta de los rótulos, más abajo en la hoja, lo dejaba en gris: con `.masthead`
-    delante gana la regla de la cabecera, y el magenta queda para el paso del ratón y para
-    cuando está abierto, como en la lupa."""
-    menu = css.rule(PHONE, ".masthead .nav-disclosure summary")
+    """«Menú» va en tinta y no en el gris de la receta de los rótulos, a la que le gana, con su
+    misma especificidad, por ir después en la misma capa; el magenta queda para el paso del
+    ratón y para cuando está abierto, como en la lupa."""
+    menu = css.rule(PHONE, ".nav-disclosure summary")
     assert menu["color"] == "var(--ink)", "«Menú» se queda en el gris de los rótulos"
-    estado = css.rule(
-        PHONE, ".masthead .nav-disclosure summary:hover, .masthead .nav-disclosure[open] summary"
-    )
+    (receta,) = [
+        r for r in css.rules_with((), ".nav-disclosure summary") if ".rotulo" in r.selectors
+    ]
+    assert receta["color"] != menu["color"]
+    assert menu.layer == receta.layer and menu.line > receta.line
+    estado = css.rule(PHONE, ".nav-disclosure summary:hover, .nav-disclosure[open] summary")
     assert estado["color"] == "var(--accent)"
 
 

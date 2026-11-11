@@ -2,8 +2,9 @@
 
 La lupa abre el campo dentro de la misma fila, en el lugar de los cinco enlaces (vuelven al
 cerrar); en la cápsula, la cápsula se vuelve el buscador. Los resultados cuelgan debajo como
-una tarjeta con el acabado de la cápsula. Todo cuelga de la lupa abierta
-(`:has(.busqueda[open])`), y solo toca la cabecera, no la página /buscar/.
+una tarjeta con el acabado de la cápsula. Todo cuelga de la lupa abierta (`.busqueda[open]`,
+o `:has(.busqueda[open])` en lo que está fuera de ella), y solo toca la cabecera, no la página
+/buscar/.
 """
 
 import re
@@ -18,13 +19,14 @@ from tests import css
 RAIZ = Path(__file__).resolve().parent.parent
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 ABIERTA = ".masthead-fila:has(.busqueda[open])"
-CAPSULA = ':is(html[data-barra="pildora"], html[data-barra="arriba"] > [data-pagina="portada"])'
+LUPA = ".busqueda[open]"
+CAPSULA = ':is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"])'
 
 
 def test_al_buscar_el_campo_ocupa_el_lugar_de_los_enlaces():
     assert css.rule((), f"{ABIERTA} .nav-disclosure")["display"] == "none"
-    assert css.rule((), f"{ABIERTA} .busqueda")["flex"] == "1"
-    campo = css.rule((), f"{ABIERTA} .busqueda .search")
+    assert css.rule((), LUPA)["flex"] == "1"
+    campo = css.rule((), f"{LUPA} .search")
     assert (campo["position"], campo["left"], campo["right"]) == ("absolute", "0", "52px")
 
 
@@ -35,7 +37,7 @@ def test_la_capsula_conserva_su_ancho_mientras_se_busca():
 
 
 def test_los_resultados_cuelgan_como_una_tarjeta_de_la_capsula():
-    tarjeta = css.rule((), f"{ABIERTA} .busqueda .busqueda-resultados:not(:empty)")
+    tarjeta = css.rule((), f"{LUPA} .busqueda-resultados:not(:empty)")
     capsula = css.rule((), f"{CAPSULA} .masthead-fila")
     for propiedad in ("background", "border", "border-radius", "box-shadow"):
         assert tarjeta[propiedad] == capsula[propiedad], propiedad
@@ -49,13 +51,14 @@ def test_buscar_no_desplaza_la_pagina():
 
 
 def test_solo_cambia_la_cabecera():
-    """Cada regla del estilo nuevo cuelga de la lupa abierta en la fila de la cabecera (o en
-    <html>), y delante solo puede llevar el estado de la cápsula: el formulario de /buscar/,
-    fuera de la cabecera, queda como estaba."""
-    selectores = [s for r in css.rules() for s in r.selectors if ":has(.busqueda[open])" in s]
+    """Cada regla del estilo nuevo cuelga de la lupa abierta (la de la cabecera, la única
+    `.busqueda`), de la fila que la tiene o de <html>, y delante solo puede llevar el estado
+    de la cápsula: el formulario de /buscar/, fuera de la cabecera, queda como estaba."""
+    selectores = [s for r in css.rules() for s in r.selectors if ".busqueda[open]" in s]
     assert selectores
     for selector in selectores:
-        assert selector.removeprefix(f"{CAPSULA} ").startswith((ABIERTA, "html:has(")), selector
+        inicio = selector.removeprefix(f"{CAPSULA} ")
+        assert inicio.startswith((LUPA, ABIERTA, "html:has(")), selector
 
 
 def test_the_search_in_the_header_has_a_single_shape():
@@ -65,7 +68,7 @@ def test_the_search_in_the_header_has_a_single_shape():
     la fila tendría que anularla, y quien la retocara no cambiaría nada en ningún navegador de
     hoy. Lo que sitúa el campo o le da acabado a los resultados cuelga de la lupa abierta."""
     reglas = [(selector, regla) for regla in css.rules() for selector in regla.selectors]
-    campo = [s for s, _ in reglas if s.endswith(".busqueda .search")]
+    campo = [s for s, _ in reglas if re.search(r"\.busqueda\S* \.search$", s)]
     acabado = {"background", "border", "border-radius", "box-shadow", "padding"}
     tarjeta = [
         s
@@ -91,3 +94,27 @@ def test_the_results_are_styled_by_their_class_and_their_id_is_only_htmxs_target
     # Los corchetes van fuera: `[href^="#"]` no es un id.
     con_id = [s for s in selectores if re.search(r"#[\w-]", re.sub(r"\[[^\]]*\]", "", s))]
     assert con_id == []
+
+
+@pytest.mark.django_db
+def test_the_live_search_form_is_only_in_the_lupa_and_only_the_open_lupa_places_it(client):
+    """El formulario de la búsqueda en vivo solo está en la lupa de la cabecera, y lo sitúa solo
+    la lupa abierta: cerrada, no se pinta. El «…» y los resultados se sitúan contra él, así que
+    un formulario fuera de la lupa no tendría contra qué."""
+    forms = {}
+    for url in (reverse("site:home"), reverse("content:poem_index"), reverse("site:search")):
+        soup = BeautifulSoup(client.get(url, {"q": "voz"}).content, "html.parser")
+        forms[url] = soup.select(".search")
+    assert forms[reverse("site:home")]
+    outside = [
+        url for url, found in forms.items() for f in found if not f.find_parent(class_="busqueda")
+    ]
+    assert outside == []
+    placing = [
+        selector
+        for rule in css.rules()
+        if "position" in rule
+        for selector in rule.selectors
+        if re.search(r"(^| )\.search(:[\w-]+(\([^)]*\))?)*$", selector)
+    ]
+    assert placing and all(selector.startswith(LUPA) for selector in placing), placing

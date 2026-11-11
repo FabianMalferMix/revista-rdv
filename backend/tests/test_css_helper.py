@@ -104,6 +104,7 @@ def test_reformatting_the_site_sheet_changes_nothing():
     assert len(antes.rules) > 100 and antes.at_rules("font-face")
     assert despues.rules == antes.rules
     assert despues.at_rules() == antes.at_rules()
+    assert despues.layers == antes.layers
 
 
 def test_queries_are_normalized_like_the_sheet():
@@ -143,6 +144,53 @@ def test_nested_at_rules_stack_their_context():
         ".a": ("@media print", "@supports (display:grid)"),
         ".b": ("@container filas (min-width:700px)",),
     }
+
+
+def test_a_layer_orders_its_rules_but_is_not_their_context():
+    hoja = css.Stylesheet(
+        "@layer base, componentes;"
+        "@layer componentes{.a{color:blue}}"
+        "@layer base{.a{color:red; margin:0} @media (min-width:900px){.b{color:green}}}"
+        "@media print{@layer componentes{.c{color:black}}}"
+        ".d{color:white}"
+    )
+    assert hoja.layers == ("base", "componentes")
+    a = hoja.rule((), ".a")
+    assert a["color"] == "blue", "la capa posterior gana aunque la hoja la escriba antes"
+    assert a.values("color") == ("red", "blue") and a["margin"] == "0"
+    assert a.layer == ("base", "componentes")
+    assert hoja.rule(("@media (min-width:900px)",), ".b").layer == "base"
+    assert hoja.rule(("@media print",), ".c").layer == "componentes"
+    assert hoja.rule((), ".d").layer is None
+    (orden,) = hoja.at_rules("layer")
+    assert orden.prelude == "base, componentes" and orden.layer is None
+
+
+def test_outside_the_layers_a_rule_wins_unless_it_is_important():
+    """Las normales: la capa posterior gana, y fuera de las capas, a todas. Las `!important`,
+    al revés: la primera capa gana, y la de fuera de las capas pierde con todas."""
+    hoja = css.Stylesheet(
+        "@layer a, b;"
+        ".x{color:black; margin:1px !important}"
+        "@layer b{.x{color:blue; margin:2px !important; padding:2px !important}}"
+        "@layer a{.x{color:red; margin:3px !important; padding:3px !important}}"
+    )
+    x = hoja.rule((), ".x")
+    assert x["color"] == "black"
+    assert x["margin"] == "3px" and x.is_important("margin")
+    assert x["padding"] == "3px"
+    assert x.layer == ("a", "b", None)
+
+
+def test_the_layers_are_ordered_by_their_first_mention():
+    hoja = css.Stylesheet("@layer b{.x{color:blue}} @layer a{.x{color:red}} @layer a, b;")
+    assert hoja.layers == ("b", "a")
+    assert hoja.rule((), ".x")["color"] == "red"
+
+
+def test_tokens_in_several_layers_resolve_as_the_cascade():
+    hoja = css.Stylesheet("@layer a, b; @layer b{:root{--x:2px}} @layer a{:root{--x:1px; --y:1px}}")
+    assert hoja.tokens() == {"--x": "2px", "--y": "1px"}
 
 
 def test_font_faces_custom_properties_and_keyframes():
@@ -186,9 +234,14 @@ def test_what_the_parser_cannot_read_fails_instead_of_passing():
         css.Stylesheet(".a{color:red; .b{color:blue}}")
     with pytest.raises(AssertionError, match="mal formado"):
         css.Stylesheet(".a{color}")
+    with pytest.raises(AssertionError, match="capas anidadas"):
+        css.Stylesheet("@layer a{@layer b{.x{color:red}}}")
+    with pytest.raises(AssertionError, match="capas anidadas"):
+        css.Stylesheet("@layer a.b;")
 
 
 def test_the_site_sheet_is_read_once():
     assert css.site() is css.site()
     assert css.rules() is css.site().rules
+    assert css.layers() is css.site().layers
     assert css.rule((), ":root")["color-scheme"] == "light"
