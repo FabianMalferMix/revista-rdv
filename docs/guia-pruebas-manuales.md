@@ -210,7 +210,8 @@ no una plantilla vacía.
       y crece un poco; con «reducir movimiento», no se mueve. Cada sello se pulsa entero.
 - [ ] **Índices** (Poemas, Textos, Integrantes, Registros…): una cejilla con el número, el
       título grande y una frase. Los del colectivo llevan debajo la sub-fila «Integrantes ·
-      Trayectoria · Agenda · Galería · Prensa · Aliados».
+      Agenda · Trayectoria · Galería», y Prensa y Aliados, la de «Prensa y gestión»: «Dossier ·
+      Prensa · Aliados · Enviar una propuesta». En Prensa y Aliados la barra no marca nada.
 - [ ] **Teclado.** El primer Tab de cualquier página enseña «Saltar al contenido», y todo lo
       que se puede pulsar lleva un contorno magenta al recibir el foco.
 - [ ] **Textos largos.** Los datos de desarrollo traen seis textos y cinco poemas largos, con el

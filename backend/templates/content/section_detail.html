@@ -6,6 +6,6 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo=section.name territorio="obra" cuenta=articles.paginator.count singular="texto" plural="textos" cejilla="Sección" dek=section.description subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo=section.name territorio="obra" cuenta=articles.paginator.count singular="texto" plural="textos" cejilla="Sección" dek=section.description subnav=subnav only %}
   {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=2 only %}
 {% endblock %}

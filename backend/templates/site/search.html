@@ -12,7 +12,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Búsqueda" dek="Textos, poemas, personas, registros, publicaciones y actividades del colectivo." subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo="Búsqueda" dek="Textos, poemas, personas, registros, publicaciones y actividades del colectivo." subnav=subnav only %}
   <form class="search-page" role="search" action="{% url 'site:search' %}" method="get">
     <label for="q-page" class="sr-only">Buscar en el sitio</label>
     <input id="q-page" type="search" name="q" value="{{ q }}" placeholder="Buscar en el sitio…" autocomplete="off">

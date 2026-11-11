@@ -4,8 +4,9 @@
 
    Parámetros (se incluye con `only`):
      titulo                      el nombre de la página (obligatorio)
-     subnav_colectivo            la sub-fila del colectivo, la que da el procesador de
-                                 contexto `nav` (obligatorio): vacía fuera de sus índices
+     subnav                      la sub-fila, la que da el procesador de contexto `nav`
+                                 (obligatorio): `None` fuera de los índices de un grupo que la
+                                 lleva
      cuenta, singular, plural    dato vivo de la cejilla («12 poemas»); se omite si es 0
      cejilla                     texto fijo, solo o tras la cuenta
      dek                         una frase que dice qué hay aquí
@@ -21,10 +22,10 @@
   <h1>{{ titulo }}</h1>
   {% if dek %}<p class="dek">{{ dek }}</p>{% endif %}
   {% comment %}
-     La sub-fila del colectivo (D9): en la barra, «Colectivo» lleva a Integrantes, y desde
-     cualquiera de sus índices se llega a los demás. La da el procesador de contexto `nav`.
+     La sub-fila: desde cada índice de un grupo del mapa que la lleva (el colectivo, prensa y
+     gestión) se llega a los demás de su grupo. La da el procesador de contexto `nav`.
   {% endcomment %}
-  {% if subnav_colectivo %}
-    <nav class="subnav" aria-label="El colectivo">{% for enlace in subnav_colectivo %}<a href="{{ enlace.url }}"{% if enlace.actual %} aria-current="{{ enlace.actual }}"{% endif %}>{{ enlace.rotulo }}</a>{% endfor %}</nav>
+  {% if subnav %}
+    <nav class="subnav" aria-label="{{ subnav.titulo }}">{% for enlace in subnav.enlaces %}<a href="{{ enlace.url }}"{% if enlace.actual %} aria-current="{{ enlace.actual }}"{% endif %}>{{ enlace.rotulo }}</a>{% endfor %}</nav>
   {% endif %}
 </header>

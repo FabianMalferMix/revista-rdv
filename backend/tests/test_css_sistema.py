@@ -1114,10 +1114,10 @@ def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
 
 
 def test_los_enlaces_de_la_barra_se_pulsan_en_44_px():
-    """Los enlaces de la barra y de la sub-fila del colectivo miden 44 px de alto o más. Cada
-    uno es un elemento de una fila flexible, así que mide su línea (la letra por la
-    interlínea) más el relleno de arriba y de abajo; la marca de la página actual es un
-    subrayado, que va con el texto. Los de la cabecera los mide además la prueba de humo."""
+    """Los enlaces de la barra y de la sub-fila miden 44 px de alto o más. Cada uno es un
+    elemento de una fila flexible, así que mide su línea (la letra por la interlínea) más el
+    relleno de arriba y de abajo; la marca de la página actual es un subrayado, que va con el
+    texto. Los de la cabecera los mide además la prueba de humo."""
     interlinea = css.rule((), "body")["line-height"]
     for fila, enlace in ((".nav", ".nav a"), (".subnav", ".subnav a")):
         assert css.rule((), fila)["display"] == "flex", (

@@ -230,7 +230,7 @@ input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent);
 .index-head .kicker{display:block; margin:0}
 .index-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0; text-wrap:balance}
 .index-head .dek{font-size:var(--t2); line-height:1.45; margin:14px 0 0}
-/* La sub-fila del colectivo (D9): en sus índices, el resto de su territorio. */
+/* La sub-fila: en los índices de un grupo del mapa que la lleva, el grupo entero. */
 .subnav{display:flex; flex-wrap:wrap; gap:0 20px; margin:var(--s2) 0 0}
 .subnav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); padding-block:11px}
 .subnav a:hover{color:var(--accent)}
