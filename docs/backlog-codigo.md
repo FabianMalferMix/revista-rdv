@@ -1,8 +1,8 @@
 # Backlog de la auditoría de código
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
-> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04, y C34, el 2026-11-05. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 78 de 90 tickets cerrados (39 S, 45 M y 5 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B90 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72, y B89 y B90, por la ronda de vistos buenos.
+> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
+> **Avance:** 79 de 90 tickets cerrados (40 S, 45 M y 5 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B90 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72, y B89 y B90, por la ronda de vistos buenos.
 
 ## Cómo se usa
 
@@ -53,8 +53,9 @@
 | C32 | El epígrafe de los poemas, con la dedicatoria, entra en la búsqueda con el peso del cuerpo (D) | B82 |
 | C33 | TinyMCE se queda en 7.9.3; el paso a la 8, o a otro editor, es un ticket propio | B84 |
 | C34 | Las imágenes de otro sitio en el HTML de autor se admiten copiadas al sitio; mientras no haya copia, se quitan | B68, B86 |
+| C35 | En una vista previa, lo que no tiene página pública se nombra sin enlace | B90 |
 
-**Decisión visual pendiente**, que se le muestra al dueño al llegar al ticket: dónde van Prensa y Aliados en la navegación (B73). La de los sellos de «Prensa y gestión» (B55) la tomó el 2026-11-04: la palabra pequeña de los sellos azules, en el azul hundido.
+**Decisiones visuales de los tickets.** La de los sellos de «Prensa y gestión» (B55) la tomó el dueño el 2026-11-04: la palabra pequeña de los sellos azules, en el azul hundido. La de la navegación (B73) la aprobó el 2026-11-11: Prensa y Aliados van en «Prensa y gestión», la sub-fila de cada índice es la de su grupo, Agenda va antes que Trayectoria y Registros antes que Publicaciones (D35, en `docs/deferidos-y-decisiones.md` §1).
 
 ## 2. Plan
 
@@ -173,7 +174,7 @@
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | hecho (#267) |
 | B71 | Recetas de plantilla compartidas | B25, B29 | M | no | hecho (#268) |
 | B72 | La cascada de site.css en capas | B11, B58 | L | no | hecho (#269, #271, #272) |
-| B73 | Navegación de una sola fuente | — | S | no | pendiente |
+| B73 | Navegación de una sola fuente | — | S | no | hecho (#273) |
 | B74 | Guiones con un módulo común | B11 | S | no | pendiente |
 | B75 | Convenciones HTTP | — | S | no | pendiente |
 | B76 | Rendimiento menor | — | M | no | pendiente |
@@ -1372,7 +1373,7 @@ La poda de comentarios va en B78.
 
 #### B73 · Navegación de una sola fuente
 
-**Hallazgos:** FRO-9 · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** decisión visual del dueño
+**Hallazgos:** FRO-9 · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** D35 (decisión visual del dueño)
 
 **Alcance.** La recomendación de FRO-9. Antes de unificar, se le muestra al dueño, con alternativas, dónde van Prensa y Aliados («Colectivo» o «Prensa y gestión») y en qué orden van Agenda y Trayectoria y Registros y Publicaciones, que hoy difieren entre la barra, la sub-fila y el mapa. Después, una estructura en Python de la que salen la barra, la sub-fila, el mapa del pie y el menú del teléfono.
 
