@@ -6,6 +6,7 @@ from datetime import timedelta
 from io import BytesIO
 
 import pytest
+from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
@@ -15,7 +16,7 @@ from apps.agenda.models import Event
 from apps.content.models import EditorialStatus
 from apps.media.models import MediaAsset, Recording
 from apps.showcase.models import SiteProfile
-from tests.factories import make_article, make_poem
+from tests.factories import make_article, make_poem, make_published_article
 
 pytestmark = pytest.mark.django_db
 
@@ -113,11 +114,24 @@ def test_canonical_and_og_url_strip_tracking_query(client, settings):
     assert "utm_source" not in head
 
 
-def test_canonical_preserves_pagination(client, settings):
-    """En listados paginados sí se preserva ?page= (cada página es un recurso)."""
+def _canonical(client, url):
+    return BeautifulSoup(client.get(url).content, "html.parser").select_one(
+        'head link[rel="canonical"]'
+    )["href"]
+
+
+def test_the_canonical_names_the_page_that_was_served(client, settings):
+    """En un listado paginado cada página es un recurso: la canónica de la segunda lleva
+    `?page=2`. La de la primera no lo lleva, tampoco pedida con `?page=1`, y una página que no
+    pagina no lo copia de la URL."""
     settings.SITE_URL = "https://revista.example.org"
-    head = client.get("/?page=2").content.decode().split("</head>")[0]
-    assert '<link rel="canonical" href="https://revista.example.org/?page=2">' in head
+    for _ in range(13):
+        make_published_article()
+    archive = reverse("content:text_archive")
+    assert _canonical(client, f"{archive}?page=2") == f"https://revista.example.org{archive}?page=2"
+    assert _canonical(client, f"{archive}?page=1") == f"https://revista.example.org{archive}"
+    assert _canonical(client, archive) == f"https://revista.example.org{archive}"
+    assert _canonical(client, "/?page=2") == "https://revista.example.org/"
 
 
 # ── image en JSON-LD, fallback de meta description, endDate de Event ─────────

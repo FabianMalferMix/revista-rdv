@@ -6,6 +6,7 @@ gunicorn sin guardar nada de la petición, y un Host distinto no cambia lo que r
 lectores de feeds ni las aplicaciones de pódcast.
 """
 
+import inspect
 import re
 
 import pytest
@@ -57,7 +58,7 @@ def test_the_podcast_enclosure_comes_from_the_site_url(feeds_with_items):
 @pytest.mark.parametrize("path", ["/feed/", "/feed/registros/"])
 def test_both_feeds_are_registered_the_same_way(path):
     """Una instancia compartida: no guardan nada de la petición, así que no hay nada que
-    se pisen dos hilos."""
+    se pisen dos hilos. La ruta la envuelve en el decorador de los métodos de lectura."""
     from django.contrib.syndication.views import Feed
 
-    assert isinstance(resolve(path).func, Feed)
+    assert isinstance(inspect.unwrap(resolve(path).func), Feed)

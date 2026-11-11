@@ -1,7 +1,7 @@
 {% load paginacion %}
 {% comment %}
-   Paginación. Decía «Página 2 de 4» entre dos enlaces de 12 px: no se sabía cuántas
-   piezas había ni se podía saltar a una página concreta.
+   Paginación: la cuenta («13–24 de 30 textos», o «13 de 13 textos» si la página enseña
+   una sola pieza), los enlaces a la anterior y a la siguiente, y los números de página.
 
    Parámetros (se incluye con `only`):
      pagina   la página de Django (obligatorio), o None en una lista que no se pagina, y
@@ -12,7 +12,7 @@
 {% endcomment %}
 {% if pagina %}{% with paginador=pagina.paginator %}{% if pagina.has_other_pages %}
   <nav class="pagination" aria-label="Paginación">
-    <p class="pagination-count meta">{{ pagina.start_index }}–{{ pagina.end_index }} de {{ paginador.count }}{% if unidad %} {{ unidad }}{% endif %}</p>
+    <p class="pagination-count meta">{% page_positions pagina %} de {{ paginador.count }}{% if unidad %} {{ unidad }}{% endif %}</p>
     <ul class="pagination-pages">
       <li>
         {% if pagina.has_previous %}

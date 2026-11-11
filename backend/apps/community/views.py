@@ -7,11 +7,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django_ratelimit.decorators import ratelimit
+from django.views.decorators.http import require_http_methods, require_POST
 from kombu.exceptions import OperationalError as BrokerError
 
-from config.cache import SERVICE_UNAVAILABLE, counters_available
+from config.ratelimit import rate_limited
 
 from . import services
 from .forms import SubscribeForm
@@ -25,6 +24,7 @@ logger = logging.getLogger(__name__)
 # público en un oráculo de pertenencia: cualquiera podía comprobar si una dirección
 # concreta estaba en la lista (hallazgo S-17).
 ALTA_NEUTRA = "Si la dirección es válida, te enviamos un correo para confirmar la suscripción."
+TOO_MANY_ATTEMPTS = "Demasiados intentos. Espera un momento e inténtalo de nuevo."
 
 
 def _por_token(campo, token):
@@ -52,8 +52,16 @@ def _safe_next(request):
     return reverse("site:home")
 
 
+def _subscribe_limited(request, aviso):
+    """Pasado el límite de intentos, la página del boletín con lo escrito y el aviso."""
+    form = SubscribeForm(request.POST)
+    form.is_valid()
+    form.add_error(None, aviso)
+    return _newsletter_page(request, form, _safe_next(request))
+
+
 @require_POST
-@ratelimit(key="ip", rate="5/m", method="POST", block=False)
+@rate_limited("5/m", notice=TOO_MANY_ATTEMPTS, limited=_subscribe_limited)
 def subscribe(request):
     """Alta con **doble opt-in**: crea (o reusa) el suscriptor en 'pending' y envía un
     correo con enlace de confirmación. Solo tras confirmar se le puede escribir. El
@@ -64,13 +72,6 @@ def subscribe(request):
     no sirve, o se superó el límite de intentos, responde la página del boletín."""
     nxt = _safe_next(request)
     form = SubscribeForm(request.POST)
-    if getattr(request, "limited", False):  # rate-limit por IP superado, o la caché caída
-        form.is_valid()
-        if counters_available():
-            form.add_error(None, "Demasiados intentos. Espera un momento e inténtalo de nuevo.")
-        else:
-            form.add_error(None, SERVICE_UNAVAILABLE)
-        return _newsletter_page(request, form, nxt)
     if not form.is_valid():
         return _newsletter_page(request, form, nxt)
     if form.is_spam:
@@ -120,6 +121,7 @@ def _no_referrer(view):
     return wrapper
 
 
+@require_http_methods(["GET", "HEAD", "POST"])
 @_no_referrer
 def confirm(request, token):
     """Confirmación del doble opt-in.
@@ -152,6 +154,7 @@ def confirm(request, token):
 
 
 @csrf_exempt
+@require_http_methods(["GET", "HEAD", "POST"])
 @_no_referrer
 def unsubscribe(request, token):
     """Baja.

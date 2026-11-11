@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
+from django.views.decorators.http import require_safe
 
 from apps.content.feeds import LatestArticlesFeed
 from apps.media.feeds import RecordingsFeed
@@ -17,11 +18,12 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz/", healthz, name="healthz"),
     path("readyz/", readyz, name="readyz"),
-    path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
+    # El sitemap y los feeds son de lectura, como las vistas de las apps: solo GET y HEAD.
+    path("sitemap.xml", require_safe(sitemap), {"sitemaps": SITEMAPS}, name="sitemap"),
     # Una instancia por feed, compartida entre los hilos de gunicorn: los feeds no guardan
     # nada de la petición (las URL absolutas salen de SITE_URL).
-    path("feed/", LatestArticlesFeed(), name="feed"),
-    path("feed/registros/", RecordingsFeed(), name="recordings_feed"),
+    path("feed/", require_safe(LatestArticlesFeed()), name="feed"),
+    path("feed/registros/", require_safe(RecordingsFeed()), name="recordings_feed"),
     path("robots.txt", robots, name="robots"),
     path("favicon.ico", favicon, name="favicon"),
     path("", include("apps.site.urls")),

@@ -20,10 +20,11 @@ def nav(request):
 
 def canonical(request):
     """URL canónica: el origen fijo (SITE_URL) y la ruta, SIN el query string (utm_*, q, …)
-    que ensuciaría la señal de canonicalización. Preserva solo ?page= en listados
-    paginados, donde cada página es un recurso distinto."""
+    que ensuciaría la señal de canonicalización. En un listado paginado cada página es un
+    recurso distinto: la canónica lleva `?page=N` si la vista sirvió la página N
+    (`config.pagination.paginate`), y la primera no lo lleva."""
     url = absolute_url(request.path)
-    page = request.GET.get("page", "")
-    if page.isdigit() and page != "1":
+    page = getattr(request, "served_page", None)
+    if page is not None and page > 1:
         url = f"{url}?page={page}"
     return {"canonical_url": url}

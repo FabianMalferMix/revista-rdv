@@ -319,7 +319,7 @@ def test_the_pagination_fails_with_a_list_that_is_not_a_page(pieces):
     """Una consulta en lugar de una página dejaría la lista sin tope y sin paginación, y sin
     ningún aviso: la suite falla. Sin página (None) no se pinta nada."""
     template = get_template("partials/_pagination.html")
-    assert "1–1 de 2 textos" in " ".join(
+    assert "1 de 2 textos" in " ".join(
         template.render({"pagina": pieces["articles"], "unidad": "textos"}).split()
     )
     assert template.render({"pagina": None}).strip() == ""

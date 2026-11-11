@@ -1,16 +1,19 @@
-from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_safe
 
 from apps.site.pie import vecinos_en_lista
+from config.pagination import paginate
 
 from .models import Contributor, url_for_person
 
 
+@require_safe
 def member_index(request):
     return render(request, "people/member_index.html", {"members": Contributor.objects.members()})
 
 
+@require_safe
 def member_detail(request, slug):
     # Los integrantes históricos (active=False) conservan su perfil accesible.
     member = Contributor.objects.select_related("photo").filter(slug=slug, is_member=True).first()
@@ -32,7 +35,7 @@ def member_detail(request, slug):
         "people/member_detail.html",
         {
             "member": member,
-            "articles": Paginator(articles, 12).get_page(request.GET.get("page")),
+            "articles": paginate(request, articles),
             "poems": poems,
             "recordings": recordings,
             "actividades": actividades,

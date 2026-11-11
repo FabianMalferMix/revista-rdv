@@ -13,7 +13,6 @@
   "backend/apps/people/views.py": 1,
   "backend/apps/showcase/models.py": 3,
   "backend/apps/showcase/views.py": 1,
-  "backend/apps/submissions/views.py": 1,
   "backend/config/cache.py": 2,
   "backend/config/clientip.py": 1,
   "backend/config/context_processors.py": 1,

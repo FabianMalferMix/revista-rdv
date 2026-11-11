@@ -13,6 +13,7 @@ from django.test import override_settings
 from django.urls import reverse
 
 from config.cache import FALLBACKS, SERVICE_UNAVAILABLE, WITHOUT_REDIS
+from tests.factories import SEARCH_PANEL_HEADERS
 
 # Puerto sin nadie escuchando: simula Redis caído sin tocar el de verdad.
 CACHE_CAIDA = {
@@ -48,8 +49,10 @@ def test_el_alta_de_newsletter_no_da_500_con_redis_caido(client):
     resp = client.post(
         reverse("community:subscribe"), {"email": "alguien@example.com", "apodo": ""}, follow=True
     )
-    assert resp.status_code == 200
-    # El límite falla cerrado, y lo dice con la verdad: no fueron demasiados intentos.
+    # El límite falla cerrado, y lo dice con la verdad: no fueron demasiados intentos, sino que
+    # el servicio no está disponible (un 503, que dice cuándo volver).
+    assert resp.status_code == 503
+    assert int(resp["Retry-After"]) > 0
     assert SERVICE_UNAVAILABLE in resp.content.decode()
 
 
@@ -57,7 +60,8 @@ def test_el_alta_de_newsletter_no_da_500_con_redis_caido(client):
 @override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
 def test_el_buscador_no_da_500_con_redis_caido(client):
     resp = client.get(reverse("site:search"), {"q": "umbral"})
-    assert resp.status_code == 200
+    assert resp.status_code == 503
+    assert int(resp["Retry-After"]) > 0
     assert SERVICE_UNAVAILABLE in resp.content.decode()
 
 
@@ -67,7 +71,7 @@ def test_the_search_panel_announces_that_the_service_is_down(client):
     """El aviso llega también a la región de estado de la lupa, que es lo que oye el lector."""
     from bs4 import BeautifulSoup
 
-    resp = client.get(reverse("site:search"), {"q": "umbral"}, headers={"HX-Request": "true"})
+    resp = client.get(reverse("site:search"), {"q": "umbral"}, headers=SEARCH_PANEL_HEADERS)
     assert resp.status_code == 200
     estado = BeautifulSoup(resp.content, "html.parser").select_one("#search-status")
     assert estado.get_text() == SERVICE_UNAVAILABLE
@@ -90,7 +94,8 @@ def test_el_envio_de_propuestas_no_da_500_con_redis_caido(client):
         "body": "Unos versos",
     }
     resp = client.post(reverse("submissions:submit"), data)
-    assert resp.status_code == 200
+    assert resp.status_code == 503
+    assert int(resp["Retry-After"]) > 0
     assert SERVICE_UNAVAILABLE in resp.content.decode()
     form = BeautifulSoup(resp.content, "html.parser")
     assert form.select_one('input[name="title"]').get("value") == "Un título"  # control

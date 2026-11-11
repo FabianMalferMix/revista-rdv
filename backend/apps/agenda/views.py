@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.decorators.http import require_safe
 
 from apps.showcase.models import Publication
 from apps.site.pie import vecinos
@@ -9,6 +10,7 @@ from .models import Event, Milestone
 from .services import cronologia, stats
 
 
+@require_safe
 def agenda(request):
     # `recientes` solo se evalúa si la plantilla lo usa, es decir, si no hay nada anunciado:
     # una agenda vacía enseña lo último que se hizo en vez de una página en blanco.
@@ -19,6 +21,7 @@ def agenda(request):
     )
 
 
+@require_safe
 def trayectoria(request):
     # Línea de tiempo agrupada por año, del más reciente al más antiguo. La editorial de
     # cada publicación viene en la misma consulta: la fila la nombra.
@@ -30,6 +33,7 @@ def trayectoria(request):
     return render(request, "agenda/trayectoria.html", {"timeline": timeline, "stats": stats()})
 
 
+@require_safe
 def event_detail(request, slug):
     event, preview = publishing.piece_for(
         request,
@@ -61,6 +65,7 @@ def event_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def gallery(request):
     events = (
         Event.objects.published()

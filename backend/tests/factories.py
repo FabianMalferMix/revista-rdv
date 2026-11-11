@@ -17,10 +17,15 @@ from apps.agenda.models import Event, EventPhoto
 from apps.content.models import Article, EditorialStatus, Poem
 from apps.media.models import MediaAsset, Recording
 from apps.showcase.models import Publication
+from apps.site.views import SEARCH_PANEL
 
 # El número de cada slug: no se repite en todo el proceso, aunque una prueba borre filas (el
 # recuento de la tabla sí se repetiría).
 _sequence = itertools.count()
+
+# Las cabeceras con que htmx pide el panel de la lupa: HX-Target lleva el id de su destino.
+# tests/test_search.py comprueba que es el `hx-target` que pinta base.html.
+SEARCH_PANEL_HEADERS = {"HX-Request": "true", "HX-Target": SEARCH_PANEL}
 
 
 def make_event(**kwargs):

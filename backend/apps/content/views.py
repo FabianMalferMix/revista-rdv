@@ -1,11 +1,12 @@
-from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_safe
 
 from apps.people.models import Contributor, url_for_person
 from apps.reviews.models import Work
 from apps.site.pie import vecinos
 from config import publishing
+from config.pagination import paginate
 
 from .models import (
     Article,
@@ -19,19 +20,17 @@ from .models import (
 )
 
 
-def _paginate(request, queryset, per_page=12):
-    return Paginator(queryset, per_page).get_page(request.GET.get("page"))
-
-
+@require_safe
 def text_archive(request):
     """Archivo completo de textos (reseñas, ensayos, entrevistas), paginado."""
     return render(
         request,
         "content/text_archive.html",
-        {"articles": _paginate(request, Article.objects.published().for_row())},
+        {"articles": paginate(request, Article.objects.published().for_row())},
     )
 
 
+@require_safe
 def article_detail(request, slug):
     article, preview = publishing.piece_for(
         request,
@@ -57,6 +56,7 @@ def article_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def section_detail(request, slug):
     section = get_object_or_404(Section, slug=slug)
     return render(
@@ -64,13 +64,14 @@ def section_detail(request, slug):
         "content/section_detail.html",
         {
             "section": section,
-            "articles": _paginate(
+            "articles": paginate(
                 request, Article.objects.published().for_row().filter(section=section)
             ),
         },
     )
 
 
+@require_safe
 def tag_detail(request, slug):
     tag = get_object_or_404(Tag, slug=slug)
     return render(
@@ -78,11 +79,12 @@ def tag_detail(request, slug):
         "content/tag_detail.html",
         {
             "tag": tag,
-            "articles": _paginate(request, Article.objects.published().for_row().filter(tags=tag)),
+            "articles": paginate(request, Article.objects.published().for_row().filter(tags=tag)),
         },
     )
 
 
+@require_safe
 def contributor_detail(request, slug):
     contributor = get_object_or_404(Contributor.objects.visible(), slug=slug)
     if contributor.is_member:
@@ -94,26 +96,29 @@ def contributor_detail(request, slug):
         {
             "contributor": contributor,
             "poems": Poem.objects.published().for_row().filter(authors=contributor),
-            "articles": _paginate(
+            "articles": paginate(
                 request, Article.objects.published().for_row().filter(authors=contributor)
             ),
         },
     )
 
 
+@require_safe
 def collection_index(request):
     collections = Collection.objects.published()
     return render(request, "content/collection_index.html", {"collections": collections})
 
 
+@require_safe
 def poem_index(request):
     return render(
         request,
         "content/poem_index.html",
-        {"poems": _paginate(request, Poem.objects.published().for_row())},
+        {"poems": paginate(request, Poem.objects.published().for_row())},
     )
 
 
+@require_safe
 def poem_detail(request, slug):
     poem, preview = publishing.piece_for(
         request,
@@ -133,6 +138,7 @@ def poem_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def collection_detail(request, slug):
     collection, preview = publishing.piece_for(request, Collection.objects.all(), slug=slug)
     # Secuencia curada única: artículos y poemas publicados, mezclados por `position`. Cada pieza
@@ -154,6 +160,7 @@ def collection_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def page_detail(request, slug):
     page, preview = publishing.piece_for(request, Page.objects.all(), slug=slug)
     response = render(request, "content/page_detail.html", {"page": page, "preview": preview})

@@ -1,4 +1,5 @@
 from django import template
+from django.utils.formats import localize
 
 register = template.Library()
 
@@ -16,3 +17,10 @@ def rango_paginas(pagina, a_cada_lado=1, en_extremos=1):
             pagina.number, on_each_side=a_cada_lado, on_ends=en_extremos
         )
     )
+
+
+@register.simple_tag
+def page_positions(pagina):
+    """Las posiciones que enseña la página en la lista: «13–24», o «13» si enseña una sola."""
+    first, last = localize(pagina.start_index()), localize(pagina.end_index())
+    return first if first == last else f"{first}–{last}"
