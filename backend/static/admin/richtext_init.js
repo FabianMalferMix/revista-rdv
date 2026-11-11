@@ -6,12 +6,12 @@
 // cada cuadro (RichTextWidget): son los que deja pasar nh3 al guardar, de la misma lista. Un
 // cuadro sin esa lista se queda sin editor y lo dice en la consola: con la suya por defecto,
 // TinyMCE enseñaría lo que el servidor después quita.
-window.addEventListener("load", function () {
+window.addEventListener("load", () => {
   if (!window.tinymce) return;
-  document.querySelectorAll("textarea.richtext").forEach(function (textarea) {
-    var validElements = textarea.getAttribute("data-valid-elements");
+  document.querySelectorAll("textarea.richtext").forEach((textarea) => {
+    const validElements = textarea.getAttribute("data-valid-elements");
     if (!validElements) {
-      console.error("richtext_init: el cuadro " + textarea.name + " no trae data-valid-elements");
+      console.error(`richtext_init: el cuadro ${textarea.name} no trae data-valid-elements`);
       return;
     }
     window.tinymce.init({

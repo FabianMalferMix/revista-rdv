@@ -13,6 +13,10 @@
 // `order`, la única propiedad que escribe el guion: la CSP bloquea el atributo style, no el
 // CSSOM. La tinta es una capa con su clase en componentes.css.
 (() => {
+  // Lo común llega antes, en common.js; sin él, «Las voces» quedan como sin este guion.
+  const { common } = window;
+  if (!common) return;
+  const { canAnimate, onSwipe, mountAll } = common;
   const CADA = 1800;
   const CUBRE = 240;
   const DESTAPA = 300;
@@ -30,7 +34,6 @@
     return orden;
   };
   const solo = window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
-  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
   // El recorte de la capa: entra por un lado y sale por el otro; `atras`, de derecha a izquierda.
   const LLENO = 'inset(0 0 0 0)';
   const ANTES = (atras) => (atras ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)');
@@ -49,7 +52,7 @@
     const movil = window.matchMedia(phoneMedia);
     // Quién ocupa cada lugar de la fila, y la espera, con la que lleva más tiempo primero. Al
     // montarse, como sin el guion: a la vista, las primeras de la lista.
-    let lugares = [];
+    const lugares = [];
     let espera = todas;
     let ocupado = 0;
     let turno = 0;
@@ -95,7 +98,7 @@
     // Al lugar `k` llega la que lleva más tiempo esperando, y la que se va pasa al final de la
     // espera. Si el retrato que se va tiene el foco, se queda: el foco no puede quedar escondido.
     async function relevar(k, retraso, atras) {
-      const anima = !quieto.matches && typeof Element.prototype.animate === 'function';
+      const anima = canAnimate();
       const viejo = lugares[k];
       ocupado += 1;
       let capa = null;
@@ -159,36 +162,14 @@
     });
 
     // Deslizar con el dedo (o el lápiz) sobre los retratos trae a otras, con la tinta en el
-    // sentido del gesto. Solo un gesto claramente horizontal: el vertical sigue bajando la página
-    // (touch-action en componentes.css). Un deslizamiento no abre la ficha de debajo.
-    let x0 = null;
-    let y0 = 0;
-    let deslizado = 0;
-    lista.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse') return;
-      x0 = e.clientX;
-      y0 = e.clientY;
-    });
-    lista.addEventListener('pointerup', (e) => {
-      if (x0 === null) return;
-      const dx = e.clientX - x0;
-      const dy = e.clientY - y0;
-      x0 = null;
-      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      deslizado = e.timeStamp;
+    // sentido del gesto. Un deslizamiento no abre la ficha de debajo, aunque no traiga a nadie.
+    onSwipe(lista, (dx) => {
       if (ocupado || !espera.length) return;
       const atras = dx < 0;
       const ks = [...lugares.keys()];
       (atras ? ks.reverse() : ks).forEach((k, j) => relevar(k, j * 110, atras));
     });
-    lista.addEventListener('pointercancel', () => { x0 = null; });
-    lista.addEventListener('click', (e) => {
-      if (deslizado && e.timeStamp - deslizado < 400) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
   }
 
-  document.querySelectorAll('[data-integrantes]').forEach(montar);
+  mountAll('[data-integrantes]', montar);
 })();

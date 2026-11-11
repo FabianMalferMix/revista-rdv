@@ -7,14 +7,14 @@
 //
 // Aquí el iframe solo se crea cuando la persona lo pide. Un único escuchador delegado en
 // el documento cubre todos los reproductores, incluidos los que llegan por htmx.
-(function () {
+(() => {
   "use strict";
 
   function reproducir(contenedor) {
-    var src = contenedor.getAttribute("data-embed-src");
+    const src = contenedor.getAttribute("data-embed-src");
     if (!src) return;
 
-    var iframe = document.createElement("iframe");
+    const iframe = document.createElement("iframe");
     iframe.setAttribute("src", src);
     iframe.setAttribute("title", contenedor.getAttribute("data-embed-title") || "Video");
     iframe.setAttribute("allowfullscreen", "");
@@ -28,10 +28,10 @@
     iframe.focus();
   }
 
-  document.addEventListener("click", function (evento) {
-    var boton = evento.target.closest(".embed-play");
+  document.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".embed-play");
     if (!boton) return;
-    var contenedor = boton.closest(".player-consent");
+    const contenedor = boton.closest(".player-consent");
     if (contenedor) reproducir(contenedor);
   });
 })();

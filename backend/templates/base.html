@@ -60,6 +60,12 @@
   {% endcomment %}
   <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+  {% comment %}
+     Lo que comparten los guiones (common.js): con defer, después de htmx, que monta lo que llega
+     con él, y antes que los guiones que lo usan. cabecera.js, aunque va sin defer, lo lee cuando
+     la página terminó de leerse.
+  {% endcomment %}
+  <script src="{% static 'js/common.js' %}{{ version_estaticos }}" defer></script>
   {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa (S-19). #}
   <script src="{% static 'js/embeds.js' %}{{ version_estaticos }}" defer></script>
   {# La lupa de la cabecera: foco al campo al abrir y Escape para cerrar. #}

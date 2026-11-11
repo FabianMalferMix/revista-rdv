@@ -7,6 +7,7 @@ Sin JavaScript cada lomo lleva a su ficha; static/js/estante.js lo convierte en 
 saca ese libro al frente. Nada se mueve solo.
 """
 
+import re
 from io import BytesIO
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from apps.site.portada import ESTANTE
 from config.breakpoints import ESTANTE_WIDE, from_cut
 from tests import css
 from tests.factories import make_image, make_publication, soup
+from tests.scripts import shared_by_common, taken_from_common
 
 pytestmark = pytest.mark.django_db
 
@@ -211,7 +213,8 @@ def test_el_guion_saca_al_frente_sin_moverse_solo():
         assert prohibido not in ESTANTE_JS
     assert "enlace.replaceWith(boton)" in ESTANTE_JS and "'Sacar al frente: '" in ESTANTE_JS
     assert "querySelector('.estante-titulo').focus({ preventScroll: true })" in ESTANTE_JS
-    assert "prefers-reduced-motion: reduce" in ESTANTE_JS and "!quieto.matches" in ESTANTE_JS
+    # Si se anima lo dice common.js, que responde que no a quien pidió menos movimiento.
+    assert "canAnimate" in taken_from_common(ESTANTE_JS)
 
 
 def test_la_tabla_tiene_aire_al_final_ni_medio_vacia_ni_saturada():
@@ -234,13 +237,13 @@ def test_el_cambio_de_libro_es_suave():
 def test_el_cambio_de_libro_va_sin_prisa():
     """D32: el cambio se veía demasiado rápido: su curva hacía casi todo el recorrido en los
     primeros 90 ms. Ahora los libros se mueven con la curva de la tirada, en casi un segundo:
-    los dos guiones la leen de la hoja, donde está una sola vez."""
+    los dos guiones la toman de common.js, que la lee de la hoja, donde está una sola vez."""
     assert "const DESLIZA = 800;" in ESTANTE_JS and "const GIRO = 900;" in ESTANTE_JS
     registros_js = (BACKEND / "static" / "js" / "registros.js").read_text()
-    curva = "const CURVA = "
     for guion in (ESTANTE_JS, registros_js):
-        declaracion = next(line for line in guion.splitlines() if curva in line)
-        assert "getPropertyValue('--ease-tirada')" in declaracion
+        assert "CURVA" in taken_from_common(guion)
+        assert not re.search(r"\b(?:const|let|var)\s+CURVA\b", guion), "una curva propia"
+    assert shared_by_common()[1]["CURVA"] == "--ease-tirada"
     assert css.tokens()["--ease-tirada"] == "cubic-bezier(.45, .05, .25, 1)"
 
 

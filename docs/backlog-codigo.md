@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 79 de 90 tickets cerrados (40 S, 45 M y 5 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B90 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72, y B89 y B90, por la ronda de vistos buenos.
+> **Avance:** 80 de 90 tickets cerrados (41 S, 45 M y 5 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B90 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72, y B89 y B90, por la ronda de vistos buenos.
 
 ## Cómo se usa
 
@@ -175,7 +175,7 @@
 | B71 | Recetas de plantilla compartidas | B25, B29 | M | no | hecho (#268) |
 | B72 | La cascada de site.css en capas | B11, B58 | L | no | hecho (#269, #271, #272) |
 | B73 | Navegación de una sola fuente | — | S | no | hecho (#273) |
-| B74 | Guiones con un módulo común | B11 | S | no | pendiente |
+| B74 | Guiones con un módulo común | B11 | S | no | hecho (#274) |
 | B75 | Convenciones HTTP | — | S | no | pendiente |
 | B76 | Rendimiento menor | — | M | no | pendiente |
 | B77 | Nombres trampa y rótulos completos | — | S | no | pendiente |

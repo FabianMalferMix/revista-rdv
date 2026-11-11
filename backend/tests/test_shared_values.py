@@ -100,7 +100,7 @@ def test_the_scripts_read_their_curves_from_the_stylesheet():
             if re.sub(r"\s", "", curve) in sheet_curves
         ]
     assert not copied, f"curvas de la hoja copiadas en un guion: {copied}"
-    # Control: los guiones de la tirada y del estante leen la de la tirada.
-    assert {("registros.js", "--ease-tirada"), ("estante.js", "--ease-tirada")} <= read
+    # Control: common.js lee la de la tirada, que comparten la tirada y el estante.
+    assert ("common.js", "--ease-tirada") in read
     missing = sorted(f"{script}: {name}" for script, name in read if name not in tokens)
     assert not missing, f"los guiones leen propiedades que la hoja no declara: {missing}"

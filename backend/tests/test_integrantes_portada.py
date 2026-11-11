@@ -19,6 +19,7 @@ from apps.site.portada import A_LA_VISTA, A_LA_VISTA_TELEFONO
 from config.breakpoints import PHONE, below
 from tests import css
 from tests.factories import make_image, soup
+from tests.scripts import taken_from_common
 
 pytestmark = pytest.mark.django_db
 
@@ -172,7 +173,8 @@ def test_llega_bajo_una_pasada_de_tinta():
     ):
         assert tinta.get(propiedad) == valor, propiedad
     assert css.resolve(tinta["z-index"]) == "2"
-    assert "clipPath" in INTEGRANTES_JS and "!quieto.matches" in INTEGRANTES_JS
+    # Si se anima lo dice common.js, que responde que no a quien pidió menos movimiento.
+    assert "clipPath" in INTEGRANTES_JS and "canAnimate" in taken_from_common(INTEGRANTES_JS)
 
 
 def test_the_script_only_writes_each_portraits_place_and_leaves_the_address_alone():
@@ -193,11 +195,10 @@ def test_the_script_only_writes_each_portraits_place_and_leaves_the_address_alon
 
 
 def test_en_el_telefono_se_cambia_con_el_dedo():
-    """En el teléfono no corre solo: deslizar sobre los retratos trae a otras tres, solo con
-    el dedo o el lápiz, y un deslizamiento no abre la ficha de debajo."""
-    for evento in ("pointerdown", "pointerup", "pointercancel"):
-        assert f"'{evento}'" in INTEGRANTES_JS
-    assert "e.pointerType === 'mouse'" in INTEGRANTES_JS
-    assert "e.stopPropagation()" in INTEGRANTES_JS
+    """En el teléfono no corre solo: deslizar sobre los retratos trae a otras tres. El gesto lo
+    da common.js, como a la tirada; que sea solo del dedo o del lápiz y que un deslizamiento no
+    abra la ficha de debajo lo mira la prueba de humo, en el navegador. Deslizar en vertical
+    sigue bajando la página."""
+    assert "onSwipe" in taken_from_common(INTEGRANTES_JS)
     retratos = css.rule((), ".home-integrantes.con-js .integrantes-retratos")
     assert retratos["touch-action"] == "pan-y pinch-zoom"
