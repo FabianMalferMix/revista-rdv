@@ -92,7 +92,7 @@ www.{$SITE_ADDRESS::80} {
 	# workers de gunicorn: consumo del recurso más escaso del sistema para devolver
 	# ficheros inmutables, y superficie extra para el agotamiento de workers (S-07).
 	#
-	# Lo que lleva hash del contenido en el nombre (el manifiesto de Django: «site.3f2a9c1b7e4d.css»)
+	# Lo que lleva hash del contenido en el nombre (el manifiesto de Django: «tokens.3f2a9c1b7e4d.css»)
 	# se cachea como inmutable y eterno: un cambio de contenido cambia el nombre. Lo demás (la
 	# carpeta de TinyMCE, que va sin hash porque su cargador pide sus archivos por ruta relativa)
 	# se revalida en cada uso con el ETag: aunque su carpeta lleve la versión, un archivo que

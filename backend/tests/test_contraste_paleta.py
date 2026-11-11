@@ -1,6 +1,6 @@
 """Contraste WCAG de la paleta, recalculado desde el propio CSS.
 
-Los comentarios de site.css no llevan cifras de contraste, porque se
+Los comentarios de la hoja no llevan cifras de contraste, porque se
 desincronizan en cuanto alguien cambia un color. Los números se calculan aquí,
 de los colores que el CSS declara de verdad, así que cambiar un color obliga a
 seguir cumpliendo AA.
@@ -37,7 +37,7 @@ def contraste(uno, otro):
 
 
 def _paleta():
-    """Los colores que declaran como tokens las reglas :root de site.css."""
+    """Los colores que declaran como tokens las reglas :root de la hoja."""
     colores = {
         nombre.removeprefix("--"): valor
         for nombre, valor in css.tokens().items()

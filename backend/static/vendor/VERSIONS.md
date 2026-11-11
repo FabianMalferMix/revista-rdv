@@ -31,8 +31,8 @@ publicado en npm.
   archivo. Se carga en todas las páginas (`base.html`) y mueve el buscador en vivo. Va con
   `includeIndicatorStyles: false` (la etiqueta `htmx-config` de `base.html`): por defecto mete
   sus estilos de indicador en un `<style>` en línea que la CSP bloquea. Esos estilos viven en
-  `site.css`; al actualizar htmx, comprobar que la opción sigue existiendo y que la consola no
-  avisa de la CSP.
+  `componentes.css`; al actualizar htmx, comprobar que la opción sigue existiendo y que la
+  consola no avisa de la CSP.
 - **TinyMCE** — `tinymce-<versión>/` (14 archivos del paquete `tinymce`: núcleo, tema, modelo,
   iconos, 3 plugins, pieles y licencias). Solo se carga en el panel editorial. La carpeta está
   **exenta del hash del manifiesto** de estáticos (`config/staticfiles.py`, que toma la

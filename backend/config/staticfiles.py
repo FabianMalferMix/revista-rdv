@@ -1,4 +1,9 @@
-"""Storage de estáticos que exime a TinyMCE del hashing del manifiesto.
+"""Las hojas del sitio y el storage de estáticos que exime a TinyMCE del hashing del manifiesto.
+
+`STYLESHEETS` es la lista de las hojas del sitio, una por capa, en el orden de la cascada: de
+ella salen sus `<link>` (`{% stylesheet_links %}`, en apps/site), el sufijo que rompe la caché
+en desarrollo (config/context_processors.py), lo que leen las pruebas (tests/css.py) y lo que
+comprueba el CI en producción.
 
 En runtime TinyMCE se auto-carga pidiendo `themes/silver/theme.min.js`,
 `skins/ui/oxide/skin.min.css`, `plugins/lists/plugin.min.js`, etc. relativos a
@@ -22,6 +27,18 @@ _VENDOR = json.loads(
 )
 # La carpeta de TinyMCE, con su versión, relativa a STATIC_URL: «vendor/tinymce-7.9.3/».
 TINYMCE_DIR = "vendor/" + _VENDOR["tinymce"]["target"].format(version=_VENDOR["tinymce"]["version"])
+
+# Las hojas del sitio, relativas a STATIC_URL: una por capa y en el orden de la cascada, que es
+# el de sus `<link>`. La primera declara ese orden con `@layer`; las pruebas comprueban que
+# coincide con esta lista y que cada hoja lleva solo su capa.
+STYLESHEETS = (
+    "css/tokens.css",
+    "css/base.css",
+    "css/lienzo.css",
+    "css/componentes.css",
+    "css/estados.css",
+    "css/impresion.css",
+)
 
 
 class VendoredStaticFilesStorage(CompressedManifestStaticFilesStorage):

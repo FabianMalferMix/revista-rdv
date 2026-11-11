@@ -15,7 +15,7 @@
 {% endcomment %}
 <li>
   <a href="#lb-{{ slug }}-{{ numero }}" aria-label="Ampliar foto {{ numero }} de {{ total }}">
-    {% comment %} El tamaño que pide cada miniatura es el que ocupa en el mosaico (ver site.css). {% endcomment %}
+    {% comment %} El tamaño que pide cada miniatura es el que ocupa en el mosaico (ver componentes.css). {% endcomment %}
     {% photo_sizes numero total as sizes %}
     {% responsive_img foto.asset sizes=sizes alt=foto.caption %}
   </a>

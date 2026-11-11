@@ -1,0 +1,87 @@
+/* La capa estados (el orden de las capas, en tokens.css): lo que cambia la cabecera según una
+   marca de la página o de su estado: la barra (data-barra), la página (data-pagina) y la
+   lupa abierta. Le gana a la pieza por su capa, así que su selector no lleva más que la
+   condición y la pieza. */
+@layer estados{
+/* La cabecera al bajar (opción C del tablero de la barra, elegida por el dueño el
+   2026-10-15). Arriba, la cabecera de siempre sin el filete; en la portada, nada: el nombre
+   grande es la cabecera, como en brikken.co. Al bajar lo que mide la cabecera, una cápsula
+   pequeña y centrada, separada del borde, con el monograma, los cinco enlaces, la lupa y el
+   «Dossier». static/js/cabecera.js, que se carga en el <head>, pone data-barra="arriba" en
+   <html> antes de la primera pintura y la cambia a "pildora" al bajar; estas reglas solo
+   cambian la cabecera con esa marca. Si el guion no llega o falla al montarse, no hay marca y
+   queda la cabecera fija de siempre, como sin JavaScript. La franja mide siempre
+   --alto-cabecera: lo fijo de la página (la columna ancla, los años) y los saltos a anclas no
+   se mueven. */
+/* Arriba de las demás páginas: la cabecera sin el filete de abajo. Alto mínimo, no fijo:
+   con el espaciado de texto ampliado (WCAG 1.4.12) crece, como antes. La fila lleva el
+   papel para que nada se transparente a través de ella al pasar a la cápsula. */
+[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
+[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead-fila{background:var(--paper)}
+/* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
+   queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
+   sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
+   portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
+   «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
+   de los botones. */
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
+  margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
+  column-gap:14px; background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1);
+  box-shadow:6px 6px 0 var(--line)}
+/* El sello se queda en el monograma, de 44 px; el nombre sigue ahí para los lectores. */
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand{width:44px; height:44px; padding:0; gap:0; justify-content:center; border-radius:2px}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand-sep{display:none}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead .brand-nombre{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .nav a:not(:last-child)::after{margin:0 7px}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .nav-disclosure{margin-left:6px}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .busqueda{margin-left:0}
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-cta{padding:0 16px; border-radius:2px}
+@media (max-width:899px){
+  :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila{width:calc(100% - 24px); padding:0 4px 0 0; column-gap:4px}
+  :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .busqueda{margin-left:auto}
+  /* El mapa de «Menú» cuelga de la cápsula, con su acabado. */
+  :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .menu-mapa{top:calc(100% + 8px); max-height:calc(100dvh - var(--alto-cabecera) - 16px);
+    background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line)}
+}
+/* Arriba de la portada la cápsula está escondida: no se ve ni recibe el puntero, pero
+   sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra como en
+   brikken.co: un fundido y 10 px. */
+[data-barra="arriba"] > [data-pagina="portada"] .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
+[data-barra="arriba"] > [data-pagina="portada"] .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
+[data-barra] .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
+/* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
+[data-barra] > [data-pagina="portada"] .hero-dossier{display:inline-flex}
+/* El buscador en la barra (estilo 4, elegido por el dueño el 2026-10-15). La lupa abre el
+   campo dentro de la misma fila, en el lugar de los cinco enlaces, que vuelven al cerrar
+   (con la lupa o con Escape). En la cápsula pasa lo mismo: la cápsula se vuelve el
+   buscador. Los resultados cuelgan debajo como una tarjeta con el acabado de la cápsula.
+   Solo la cabecera: la página /buscar/ no cambia. */
+.masthead-fila:has(.busqueda[open]) .nav-disclosure{display:none}
+.busqueda[open]{flex:1; position:relative; min-width:0; height:44px}
+.busqueda[open] summary{position:absolute; right:0; top:0; color:var(--accent)}
+.busqueda[open] .search{position:absolute; left:0; right:52px; top:50%; translate:0 -50%}
+.busqueda[open] .search input{padding:9px 14px}
+.busqueda[open] .busqueda-resultados{top:calc(100% + 14px)}
+.busqueda[open] .busqueda-resultados:not(:empty){background:var(--paper-2); border:1px solid var(--line);
+  border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line); padding:var(--s2)}
+.busqueda[open] .search-list a{font-family:var(--display); letter-spacing:var(--tr-titulo); font-weight:600; text-decoration:none}
+.busqueda[open] .search-list a:hover{color:var(--accent)}
+/* La cápsula busca con su ancho en sus dos estados: al bajar y, abierta desde el teclado,
+   arriba de la portada. */
+:is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila:has(.busqueda[open]){width:min(var(--capsula-ancho), 100% - 24px)}
+/* Mientras se busca, sin el margen de arriba: el campo está dentro de la cabecera fija y el
+   navegador lo creía tapado por ese margen, así que al escribir desplazaba la página para
+   «mostrarlo». */
+html:has(.busqueda[open]){scroll-padding-top:0}
+/* En el teléfono, mientras se busca, el campo ocupa la fila entera (también el sitio del
+   sello) y los resultados, su ancho. */
+@media (max-width:899px){
+  .masthead-fila:has(.busqueda[open]) .brand{display:none}
+  .busqueda[open] .busqueda-resultados{left:0; right:-52px}
+}
+/* En las demás páginas, de la cabecera a la cápsula hay una transición de vista
+   (cabecera.js): cada forma con su nombre, para que no se deformen. */
+[data-barra="arriba"] > :not([data-pagina="portada"]) .masthead-fila{view-transition-name:cabecera-abierta}
+[data-barra="pildora"] > :not([data-pagina="portada"]) .masthead-fila{view-transition-name:cabecera-capsula}
+}

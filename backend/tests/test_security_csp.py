@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from apps.content.models import EditorialStatus
 from config.csp import ContentSecurityPolicyMiddleware
-from config.staticfiles import TINYMCE_DIR
+from config.staticfiles import STYLESHEETS, TINYMCE_DIR
 from tests import css
 from tests.factories import make_article
 
@@ -57,7 +57,7 @@ def test_no_hay_documentos_navegables_entre_los_estaticos():
     from pathlib import Path
 
     static = Path(__file__).resolve().parent.parent / "static"
-    assert (static / "css" / "site.css").is_file(), "control: se recorren los estáticos"
+    assert (static / STYLESHEETS[0]).is_file(), "control: se recorren los estáticos"
     navegables = [
         p.relative_to(static)
         for p in static.rglob("*")
@@ -144,7 +144,7 @@ def test_home_carries_csp_and_selfhosts_htmx(client):
 def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     """Por defecto htmx mete sus estilos de indicador en un <style> en línea: la CSP lo bloquea
     y la consola avisa en cada página. Con `includeIndicatorStyles: false` no lo intenta, y sus
-    reglas viven en site.css, también la del indicador que es el propio elemento marcado (el
+    reglas viven en componentes.css, también la del indicador que es el propio elemento marcado (el
     buscador lo nombra con hx-indicator, y sin ella el «…» no aparecía nunca)."""
     contenido = client.get(reverse("site:home")).content.decode()
     meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)

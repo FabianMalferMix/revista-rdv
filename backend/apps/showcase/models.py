@@ -199,7 +199,7 @@ def url_for_publication(slug):
 
 
 # Los dos colores que puede llevar el texto de un lomo: la tinta y el blanco de la hoja (`--ink` y
-# `--surface` en site.css, que tests/test_estante.py compara con estos).
+# `--surface` en tokens.css, que tests/test_estante.py compara con estos).
 INK = "#121823"
 SURFACE = "#ffffff"
 

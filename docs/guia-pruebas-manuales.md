@@ -508,7 +508,7 @@ curl -sS -D - -o /dev/null http://127.0.0.1:8090/media/<algun-archivo>
 ### 8.3 Estáticos desde el borde
 
 ```bash
-curl -sS -D - -o /dev/null http://127.0.0.1:8090/static/css/site.<hash>.css
+curl -sS -D - -o /dev/null http://127.0.0.1:8090/static/css/tokens.<hash>.css
 ```
 
 - [x] `Cache-Control: public, max-age=31536000, immutable`.

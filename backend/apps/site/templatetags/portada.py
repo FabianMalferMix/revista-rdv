@@ -11,9 +11,10 @@ register = template.Library()
 
 # La portada pasa al recorte vertical en el mismo ancho en que el logo pasa a dos líneas.
 PORTADA_TELEFONO = below(PHONE)
-# Lo que mide la obra en site.css, que `sizes` repite porque no puede leer la hoja: de alto,
-# max(MIN_HEIGHT, 100svh - --asomo), donde el asomo es lo que la obra le deja a la hoja en la
-# primera vista. `tests/test_portada_obra.py` compara cada número con la hoja.
+# Lo que mide la obra en la hoja, que `sizes` repite porque no puede leerla: de alto,
+# max(MIN_HEIGHT, 100svh - --asomo) (componentes.css), donde el asomo (tokens.css) es lo que la
+# obra le deja a la hoja en la primera vista. `tests/test_portada_obra.py` compara cada número
+# con la hoja.
 MIN_HEIGHT = 460
 ASOMO = 112
 ASOMO_PHONE = 96

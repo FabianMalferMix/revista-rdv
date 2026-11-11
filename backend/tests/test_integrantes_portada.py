@@ -178,7 +178,7 @@ def test_llega_bajo_una_pasada_de_tinta():
 def test_the_script_only_writes_each_portraits_place_and_leaves_the_address_alone():
     """La CSP bloquea el atributo style (y cssText, que lo escribe entero), no el CSSOM: el guion
     solo le da a cada retrato su lugar en la fila (`order`), porque la lista ya no cambia de
-    orden. El aspecto sigue en site.css. Que la que llega ocupe el lugar de la que se va, que
+    orden. El aspecto sigue en componentes.css. Que la que llega ocupe el lugar de la que se va, que
     los pares vayan más abajo y que el lector reciba la lista entera lo mira la prueba de humo."""
     assert set(re.findall(r"\.style\b(\.\w+)?", INTEGRANTES_JS)) == {".order"}
     for prohibido in (

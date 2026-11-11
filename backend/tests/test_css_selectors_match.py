@@ -3,7 +3,8 @@
 Cuando una plantilla cambia de estructura, las reglas que la estilaban dejan de aplicarse sin
 dar error, y quien las lee después cree que siguen haciendo algo. Esta prueba pinta una página
 de cada tipo, con datos que cubren sus estados opcionales, y exige que cada selector de cada hoja
-case, con soupsieve, en alguna de las páginas que cargan esa hoja.
+case, con soupsieve, en alguna de las páginas que cargan esa hoja. Cada archivo de la hoja del
+sitio cuenta como una hoja: sus reglas, en las páginas que lo enlazan.
 
 Antes de buscar, se quita del selector lo que no viene en el HTML del servidor:
 
@@ -42,6 +43,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.template import loader
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
@@ -62,6 +64,7 @@ from apps.people.models import Contributor, SocialLink
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Partner, PressMention, SiteProfile, SiteSocialLink, WhereToBuy
 from apps.submissions.models import Call
+from config.staticfiles import STYLESHEETS
 from tests import css
 from tests.factories import (
     make_article,
@@ -73,13 +76,13 @@ from tests.factories import (
     make_recording,
 )
 
-STATIC = css.SITE_CSS.parent.parent
-# Cada hoja, por cómo la nombran las páginas que la cargan.
+STATIC = css.STATIC
+NOTES = "admin/editorial_notes.css"
+# Las reglas de cada hoja, por su ruta en static/: la de cada archivo de la hoja del sitio,
+# leídos juntos como los lee el navegador, y la de las notas del panel.
 SHEETS = {
-    "css/site.css": css.site(),
-    "admin/editorial_notes.css": css.Stylesheet(
-        (STATIC / "admin" / "editorial_notes.css").read_text(encoding="utf-8")
-    ),
+    **{path: tuple(rule for rule in css.rules() if rule.sheet == path) for path in STYLESHEETS},
+    NOTES: css.Stylesheet((NOTES, (STATIC / NOTES).read_text(encoding="utf-8"))).rules,
 }
 
 # Lo que hace la persona en el navegador: señalar, enfocar, pulsar, haber visitado un enlace o
@@ -241,8 +244,8 @@ def _classes_and_ids(selector):
     }
 
 
-def _unmatched(sheet, soups):
-    """Los selectores de la hoja que no casan en ninguna de esas páginas, con dónde están."""
+def _unmatched(rules, soups):
+    """Los selectores de esas reglas que no casan en ninguna de esas páginas, con dónde están."""
     pages = [
         (
             soup,
@@ -252,7 +255,7 @@ def _unmatched(sheet, soups):
         for soup in soups
     ]
     missing = []
-    for rule in sheet.rules:
+    for rule in rules:
         if any(at_rule.startswith("@keyframes") for at_rule in rule.context):
             continue  # `from`, `to` y los porcentajes no son selectores
         where = " › ".join(rule.context) or "fuera de toda at-rule"
@@ -262,20 +265,23 @@ def _unmatched(sheet, soups):
                 pattern = sv.compile(server)
             except sv.SelectorSyntaxError as error:
                 reason = str(error).splitlines()[0]
-                missing.append(f"«{selector}» (línea {rule.line}, {where}): {reason}")
+                missing.append(f"«{selector}» ({rule.place}, {where}): {reason}")
                 continue
             needed = _classes_and_ids(server)
             if not any(needed <= names and pattern.select_one(soup) for soup, names in pages):
-                missing.append(f"«{selector}» (línea {rule.line}, {where})")
+                missing.append(f"«{selector}» ({rule.place}, {where})")
     return missing
 
 
-def _loading(sheet, pages):
-    """Las páginas que cargan esa hoja."""
+def _loading(sheets, pages):
+    """Las páginas que cargan todas esas hojas, nombradas por su ruta en static/. Se compara la
+    ruta entera, sin el sufijo de la versión: `css/base.css` no es `admin/css/base.css`."""
+    wanted = {static(sheet) for sheet in sheets}
     return [
         soup
         for soup in pages
-        if any(sheet in link.get("href", "") for link in soup.select("link[rel=stylesheet]"))
+        if wanted
+        <= {link.get("href", "").partition("?")[0] for link in soup.select("link[rel=stylesheet]")}
     ]
 
 
@@ -539,8 +545,8 @@ def _wins_by_a_part_that_picks_nothing(sheet, pages):
                 d.name for d in rules[order].declarations if _longhands(d.name) & longhands
             )
             found[selector, rival] = (
-                f"«{selector}» (línea {rules[order].line}) le gana a «{rival}» (línea "
-                f"{rules[order_q].line}), que va después, en {', '.join(properties)} solo por "
+                f"«{selector}» ({rules[order].place}) le gana a «{rival}» "
+                f"({rules[order_q].place}), que va después, en {', '.join(properties)} solo por "
                 f"«{' '.join(dropped)}», que no elige nada"
             )
     return found
@@ -962,10 +968,11 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
 @pytest.mark.django_db
 def test_every_selector_of_the_stylesheets_matches_some_page(site_pages):
     missing = []
-    for sheet, parsed in SHEETS.items():
-        pages = _loading(sheet, site_pages)
+    for sheet, rules in SHEETS.items():
+        pages = _loading((sheet,), site_pages)
+        assert rules, f"{sheet} no tiene reglas"
         assert pages, f"ninguna página carga {sheet}"
-        missing += [f"{sheet}: {selector}" for selector in _unmatched(parsed, pages)]
+        missing += _unmatched(rules, pages)
     assert not missing, (
         "Estos selectores no casan en ninguna página: o la regla está muerta, o faltan datos "
         "para el estado que estila (en site_pages), o depende de algo que pone un guion "
@@ -973,11 +980,20 @@ def test_every_selector_of_the_stylesheets_matches_some_page(site_pages):
     )
     # Control: un selector que nombra algo que ninguna plantilla pinta sí se informa, aunque
     # lleve marcas de guion y estados del navegador.
-    ghost = css.Stylesheet(".tirada.con-js .pliego[aria-current] .pliego-sin-plantilla:hover{}")
-    assert _unmatched(ghost, _loading("css/site.css", site_pages)) == [
+    ghost = css.Stylesheet(
+        ("css/fantasma.css", ".tirada.con-js .pliego[aria-current] .pliego-sin-plantilla:hover{}")
+    )
+    assert _unmatched(ghost.rules, _loading(STYLESHEETS, site_pages)) == [
         "«.tirada.con-js .pliego[aria-current] .pliego-sin-plantilla:hover» "
-        "(línea 1, fuera de toda at-rule)"
+        "(css/fantasma.css, línea 1, fuera de toda at-rule)"
     ]
+    # Y una página que no enlaza un archivo de la hoja no cuenta para sus reglas, aunque
+    # enlace otro del mismo nombre: la base del panel.
+    panel = BeautifulSoup(
+        f'<link rel="stylesheet" href="{static("admin/css/base.css")}">', "html.parser"
+    )
+    assert _loading(("css/base.css",), [panel]) == []
+    assert _loading(("admin/css/base.css",), [panel]) == [panel]
 
 
 @pytest.mark.parametrize(
@@ -1031,7 +1047,7 @@ TOLERATED = {
 
 @pytest.mark.django_db
 def test_no_rule_wins_by_a_part_of_its_selector_that_picks_nothing(site_pages):
-    pages = _loading("css/site.css", site_pages)
+    pages = _loading(STYLESHEETS, site_pages)
     found = _wins_by_a_part_that_picks_nothing(css.site(), pages)
     # Lo tolerado se sigue dando: si ya no, sobra en la lista.
     assert set(TOLERATED) <= set(found), set(TOLERATED) - set(found)
@@ -1062,7 +1078,7 @@ def test_no_rule_wins_by_a_part_of_its_selector_that_picks_nothing(site_pages):
 def test_each_script_mark_is_set_by_its_script_and_used_by_a_stylesheet():
     """Que la lista no se quede con marcas que ya nadie pone o que ya no usa ninguna hoja: una
     marca de más deja pasar una regla muerta."""
-    selectors = [s for sheet in SHEETS.values() for rule in sheet.rules for s in rule.selectors]
+    selectors = [s for rules in SHEETS.values() for rule in rules for s in rule.selectors]
     stale = []
     for on, mark, script, _ in SCRIPT_MARKS:
         source = (STATIC / script).read_text(encoding="utf-8")

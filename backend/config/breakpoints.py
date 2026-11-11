@@ -1,5 +1,5 @@
 """Los cortes de la hoja de estilos, con nombre: el ancho de ventana desde el que cambia la
-maquetación de `static/css/site.css`.
+maquetación de la hoja (las de `static/css/`, una por capa).
 
 La hoja los escribe en sus `@media`, que no leen variables. Aquí viven para lo que no es la
 hoja: los `sizes` de las imágenes (la etiqueta `{% sizes %}`), las fuentes de la obra de la

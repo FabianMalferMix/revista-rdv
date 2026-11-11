@@ -2,7 +2,7 @@
 
 El enlace principal de la tarjeta lleva la clase; la capa de su ::after cubre la tarjeta, el
 elemento de la lista que lo contiene, y los demás enlaces de la tarjeta quedan por encima
-(site.css). Antes había cinco recetas, y solo dos subían los enlaces secundarios: un enlace nuevo
+(componentes.css). Antes había cinco recetas, y solo dos subían los enlaces secundarios: un enlace nuevo
 dentro de una tarjeta quedaba tapado si nadie se acordaba de subirlo. Que siguen pulsables lo
 comprueba en el navegador la prueba de humo (tools/ux/browser-smoke.js).
 """

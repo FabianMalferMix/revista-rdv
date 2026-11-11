@@ -2,7 +2,8 @@
 # mutar.sh — comprueba que una prueba FALLA cuando se rompe lo que vigila.
 #
 #   tools/ux/mutar.sh <archivo> <texto actual> <texto roto> <id de la prueba>
-#   tools/ux/mutar.sh static/css/site.css 'container:filas / inline-size' 'container-type:normal' \
+#   tools/ux/mutar.sh static/css/componentes.css \
+#       'container:filas / inline-size' 'container-type:normal' \
 #       'tests/test_css_sistema.py::test_las_filas_se_disponen_segun_el_ancho_de_su_lista'
 #
 # <archivo> es relativo a backend/; lo de la raíz se nombra con ../ (../tools/ux/pages.txt).

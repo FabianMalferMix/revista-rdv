@@ -1,6 +1,6 @@
 """El inventario de terceros (NOTICE.md) nombra las fuentes que sirve el sitio, y solo esas.
 
-Las familias autoalojadas son las de las @font-face de site.css que cargan un archivo con url();
+Las familias autoalojadas son las de las @font-face de la hoja que cargan un archivo con url();
 las de reserva solo nombran fuentes del sistema con local() y no se distribuyen. Cada familia
 autoalojada figura, con su licencia, en una fila de NOTICE.md cuya ubicación es
 backend/static/fonts/, y ninguna de esas filas nombra una fuente que el sitio ya no carga: el
@@ -18,7 +18,7 @@ import pytest
 from tests import css
 
 NOTICE = Path(__file__).resolve().parents[2] / "NOTICE.md"
-FONTS = css.SITE_CSS.parents[1] / "fonts"
+FONTS = css.STATIC / "fonts"
 
 
 def _self_hosted_families():
@@ -64,6 +64,6 @@ def test_every_self_hosted_font_is_in_the_notice_with_its_license():
 def test_the_notice_names_no_font_the_site_no_longer_loads():
     families, rows = _self_hosted_families(), _font_rows()
     stale = [row[0] for row in rows if not any(_names(row[0], family) for family in families)]
-    assert not stale, f"NOTICE.md inventaría fuentes que site.css ya no carga: {stale}"
+    assert not stale, f"NOTICE.md inventaría fuentes que la hoja ya no carga: {stale}"
     # Control: se leyeron las filas de fuentes; sin ninguna, la comprobación pasaría en vacío.
     assert rows

@@ -1,7 +1,10 @@
 """La hoja de estilos del sitio, analizada para las pruebas.
 
-Las pruebas que miran `site.css` la leen con este módulo y nunca como texto. La hoja se analiza
-una sola vez por proceso, con tinycss2, y cada regla sale con:
+Las pruebas que miran la hoja del sitio la leen con este módulo y nunca como texto. La hoja son
+varios archivos, uno por capa, que las páginas enlazan en el orden de `STYLESHEETS`
+(config/staticfiles.py); el navegador los lee uno tras otro como una sola hoja, y este módulo
+también: `site()` los analiza juntos y en ese orden, una sola vez por proceso, con tinycss2. Cada
+regla sale con:
 
 - su contexto: la tupla de las at-rules que la contienen, de fuera hacia dentro, como
   `("@media (min-width:900px)",)`; `()` es el nivel de arriba;
@@ -10,7 +13,11 @@ una sola vez por proceso, con tinycss2, y cada regla sale con:
   prueba puede afirmar en qué capa vive;
 - su selector: la lista entera (`".nav a, .subnav a"`) y cada selector suelto (`selectors`);
 - sus declaraciones, en el orden de la hoja: `regla["display"]` da el último valor, que es el
-  que aplica el navegador, y `regla.values("min-height")` da todos.
+  que aplica el navegador, y `regla.values("min-height")` da todos;
+- su lugar: el archivo (`regla.sheet`, su ruta en static/; None en una hoja sin nombre) y la
+  línea dentro de él (`regla.line`), que nombran los mensajes (`regla.place`). Antes y después
+  se comparan con `regla.position`, el lugar del archivo en la lista y la línea, que es el orden
+  en que el navegador lee las reglas.
 
 El orden de las capas es el del navegador: el de la primera vez que se nombra cada una, en una
 declaración `@layer a, b;` o en un bloque (`Stylesheet.layers`). Las capas anidadas no se leen:
@@ -37,7 +44,11 @@ from pathlib import Path
 
 import tinycss2
 
-SITE_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "site.css"
+from config.staticfiles import STYLESHEETS
+
+STATIC = Path(__file__).resolve().parent.parent / "static"
+# Los archivos de la hoja del sitio, en el orden en que los enlazan las páginas.
+SITE_SHEETS = tuple(STATIC / path for path in STYLESHEETS)
 
 # At-rules cuyo bloque contiene reglas: lo que va dentro se analiza con la at-rule como
 # contexto. `@layer` también contiene reglas, pero no es contexto (ver `_walk`). Las demás con
@@ -69,6 +80,19 @@ class _Block:
     # La capa: su nombre, None fuera de las capas; en una regla que `rule()` junta de varias
     # capas, la tupla de esas capas en el orden de la cascada.
     layer: str | tuple[str | None, ...] | None = None
+    # El archivo: su nombre (None si la hoja no lo tiene) y su lugar entre los de la hoja.
+    sheet: str | None = field(default=None, compare=False)
+    sheet_index: int = field(default=0, compare=False)
+
+    @property
+    def position(self):
+        """El orden en que el navegador lee la regla: el lugar de su archivo y su línea."""
+        return self.sheet_index, self.line
+
+    @property
+    def place(self):
+        """El archivo y la línea, para los mensajes: «css/base.css, línea 12»."""
+        return _place(self.sheet, self.line)
 
     def __contains__(self, name):
         return any(d.name == name for d in self.declarations)
@@ -99,7 +123,9 @@ class Rule(_Block):
     selectors: tuple[str, ...] = ()
 
     def _where(self):
-        return f"«{self.selector}» en {_describe(self.context)}{_in_layer(self.layer)} (línea {self.line})"
+        return (
+            f"«{self.selector}» en {_describe(self.context)}{_in_layer(self.layer)} ({self.place})"
+        )
 
 
 @dataclass(frozen=True)
@@ -110,17 +136,34 @@ class AtRule(_Block):
     def _where(self):
         return (
             f"@{self.name} {self.prelude} en {_describe(self.context)}{_in_layer(self.layer)} "
-            f"(línea {self.line})"
+            f"({self.place})"
         )
 
 
-class Stylesheet:
-    """Una hoja analizada: sus reglas y sus at-rules con declaraciones, en orden."""
+class _Source:
+    """El archivo que se está leyendo: lo que cada regla guarda de su lugar."""
 
-    def __init__(self, text):
+    def __init__(self, name, index):
+        self.name, self.index = name, index
+
+    def place(self, line):
+        return _place(self.name, line)
+
+
+class Stylesheet:
+    """Una hoja analizada: sus reglas y sus at-rules con declaraciones, en orden.
+
+    La hoja puede ser varios archivos, que se leen uno tras otro, como los lee el navegador
+    cuando una página los enlaza en ese orden: cada uno es su texto o un par (nombre, texto), y
+    el nombre es el que dan los mensajes.
+    """
+
+    def __init__(self, *sheets):
         rules, at_rules, layers = [], [], []
-        nodes = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
-        _walk(nodes, (), None, rules, at_rules, layers)
+        for index, sheet in enumerate(sheets):
+            name, text = sheet if isinstance(sheet, tuple) else (None, sheet)
+            nodes = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
+            _walk(nodes, (), None, rules, at_rules, layers, _Source(name, index))
         self.rules = tuple(rules)
         self._at_rules = tuple(at_rules)
         # Las capas, de la que menos pesa a la que más: el orden de su primera mención.
@@ -135,8 +178,8 @@ class Stylesheet:
         gana al final: las normales por capa (la última gana; fuera de las capas, a todas) y por
         orden de la hoja; después las `!important`, con las capas al revés (la primera gana; las
         de fuera de las capas pierden con todas)."""
-        normal = sorted(found, key=lambda r: (self._rank(r), r.line))
-        important = sorted(found, key=lambda r: (-self._rank(r), r.line))
+        normal = sorted(found, key=lambda r: (self._rank(r), r.position))
+        important = sorted(found, key=lambda r: (-self._rank(r), r.position))
         return (
             *(d for r in normal for d in r.declarations if not d.important),
             *(d for r in important for d in r.declarations if d.important),
@@ -179,6 +222,8 @@ class Stylesheet:
             self._cascade_order(found),
             found[0].line,
             layers[0] if len(layers) == 1 else layers,
+            found[0].sheet,
+            found[0].sheet_index,
             selector=selector,
             selectors=found[0].selectors,
         )
@@ -220,6 +265,10 @@ def _describe(context):
     return " › ".join(context) if context else "el nivel de arriba"
 
 
+def _place(sheet, line):
+    return f"{sheet}, línea {line}" if sheet else f"línea {line}"
+
+
 def _in_layer(layer):
     if layer is None:
         return ", fuera de las capas"
@@ -228,18 +277,26 @@ def _in_layer(layer):
     return f", en la capa {layer}"
 
 
-def _walk(nodes, context, layer, rules, at_rules, layers):
+def _walk(nodes, context, layer, rules, at_rules, layers, source):
     for node in nodes:
         if node.type == "error":
-            raise AssertionError(f"CSS mal formado en la línea {node.source_line}: {node.message}")
+            raise AssertionError(
+                f"CSS mal formado en {source.place(node.source_line)}: {node.message}"
+            )
+        # Lo que cada bloque guarda de su lugar: su línea, su capa y su archivo.
+        where = {
+            "line": node.source_line,
+            "layer": layer,
+            "sheet": source.name,
+            "sheet_index": source.index,
+        }
         if node.type == "qualified-rule":
             selectors = _selector_list(node.prelude)
             rules.append(
                 Rule(
                     context,
-                    _declarations(node.content),
-                    node.source_line,
-                    layer,
+                    _declarations(node.content, source),
+                    **where,
                     selector=", ".join(selectors),
                     selectors=selectors,
                 )
@@ -253,37 +310,39 @@ def _walk(nodes, context, layer, rules, at_rules, layers):
             names = split_commas(prelude) if prelude else (f"<anónima {len(layers)}>",)
             if layer is not None or any("." in n for n in names):
                 raise AssertionError(
-                    f"capas anidadas en la línea {node.source_line}: no sé ordenarlas"
+                    f"capas anidadas en {source.place(node.source_line)}: no sé ordenarlas"
                 )
             layers.extend(n for n in dict.fromkeys(names) if n not in layers)
             if node.content is None:
-                at_rules.append(AtRule(context, (), node.source_line, layer, name, prelude))
+                at_rules.append(AtRule(context, (), **where, name=name, prelude=prelude))
             else:
                 (inner_layer,) = names
                 inner = tinycss2.parse_rule_list(
                     node.content, skip_comments=True, skip_whitespace=True
                 )
-                _walk(inner, context, inner_layer, rules, at_rules, layers)
+                _walk(inner, context, inner_layer, rules, at_rules, layers, source)
         elif node.content is None:
-            at_rules.append(AtRule(context, (), node.source_line, layer, name, prelude))
+            at_rules.append(AtRule(context, (), **where, name=name, prelude=prelude))
         elif name in _GROUPING or name in _KEYFRAMES:
             inner = tinycss2.parse_rule_list(node.content, skip_comments=True, skip_whitespace=True)
-            _walk(inner, (*context, f"@{name} {prelude}".rstrip()), layer, rules, at_rules, layers)
+            inner_context = (*context, f"@{name} {prelude}".rstrip())
+            _walk(inner, inner_context, layer, rules, at_rules, layers, source)
         else:
-            at_rules.append(
-                AtRule(context, _declarations(node.content), node.source_line, layer, name, prelude)
-            )
+            declarations = _declarations(node.content, source)
+            at_rules.append(AtRule(context, declarations, **where, name=name, prelude=prelude))
 
 
-def _declarations(content):
+def _declarations(content, source):
     found = []
     for item in tinycss2.parse_blocks_contents(content, skip_comments=True, skip_whitespace=True):
         if item.type == "error":
-            raise AssertionError(f"CSS mal formado en la línea {item.source_line}: {item.message}")
+            raise AssertionError(
+                f"CSS mal formado en {source.place(item.source_line)}: {item.message}"
+            )
         if item.type != "declaration":
             # El anidamiento de CSS cambiaría el selector de lo anidado: falla en vez de
             # dar por buenas unas reglas que no son las que aplica el navegador.
-            raise AssertionError(f"regla anidada en la línea {item.source_line}: sin resolver")
+            raise AssertionError(f"regla anidada en {source.place(item.source_line)}: sin resolver")
         name = item.name if item.name.startswith("--") else item.lower_name
         found.append(Declaration(name, _render(item.value, "value"), item.important))
     return tuple(found)
@@ -409,8 +468,10 @@ def split_commas(value):
 
 @cache
 def site():
-    """La hoja del sitio, analizada una vez por proceso."""
-    return Stylesheet(SITE_CSS.read_text(encoding="utf-8"))
+    """La hoja del sitio, analizada una vez por proceso: sus archivos, en el orden de la lista."""
+    return Stylesheet(
+        *((path, (STATIC / path).read_text(encoding="utf-8")) for path in STYLESHEETS)
+    )
 
 
 def rules():

@@ -1,0 +1,185 @@
+/* La hoja del sitio, en capas: un archivo por capa, y las páginas los enlazan en el orden de
+   la cascada, el de la lista STYLESHEETS de config/staticfiles.py, que es también el que
+   declara la línea de abajo. Entre reglas de capas distintas gana la de la capa posterior,
+   sea cual sea su especificidad (con `!important`, al revés: la anterior); dentro de una
+   capa, la más específica y, a igualdad, la que va después. Cada archivo dice arriba qué
+   lleva su capa.
+   El orden se declara aquí, antes de cualquier regla, porque la CSP no deja declararlo en un
+   <style> de la página. Cada archivo abre su capa por su nombre: si este no llegara, las
+   demás seguirían en el orden de sus <link>, que es el mismo.
+   La capa tokens: las propiedades personalizadas, en :root, con sus cambios por ancho. */
+@layer tokens, base, lienzo, componentes, estados, impresion;
+
+@layer tokens{
+:root{
+  /* El sitio tiene UNA sola paleta, clara. Sin esta declaración, un sistema en modo
+     oscuro seguiría pintando oscuros los controles nativos —campos, desplegables,
+     barras de desplazamiento— sobre un fondo claro. */
+  color-scheme: light;
+  /* Paleta del colectivo, tomada de sus carteles risográficos. El papel es el celeste
+     del afiche: MISMO tono que el gris azulado anterior (210°) pero con 65% de
+     saturación en vez de 20%. Esa era toda la diferencia entre «corporativo» y
+     «impreso» — el azul nunca fue el problema, lo era su palidez.
+     El magenta #B8086B es el del cartel oscurecido hasta superar el mínimo de 4,5:1
+     sobre el papel; el magenta literal (#E40C9C) solo alcanza para texto grande.
+     Los contrastes de esta paleta los calcula test_contraste_de_la_paleta desde estos
+     mismos valores; si cambias un color y baja de AA, esa prueba falla. Por eso aquí no
+     se escriben cifras.
+
+     REPARTO. El magenta era «el color de los enlaces»: 27 reglas lo usaban como color
+     de texto, y en la primera pantalla de la portada había nueve piezas magenta. Un
+     color que está en todas partes no señala nada. Ahora:
+       · --ink     el texto, los enlaces (con el subrayado en magenta) y los botones.
+       · --accent  la marca, las cejillas (.kicker) y los ESTADOS: al pasar el
+                   puntero, el foco, lo activo. Nada más lleva texto magenta.
+       · --muted   los datos y los rótulos. */
+  --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
+  --accent:#b8086b; --border:#c2d8ee;
+  /* El amarillo del cartel. Como TEXTO no sirve: sobre el papel casi no se distingue.
+     Pero el contraste se mide por pares: como FONDO, con tinta o con magenta encima,
+     cumple AA. Entra solo como superficie. */
+  --riso-amarillo:#fce43c;
+  /* El grano de la risografía: una máscara de ruido, para que la tinta no cubra pareja. La
+     usan los sellos del cierre (D31) y el manifiesto de la hoja (D33). */
+  --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  /* El magenta sobre la tinta del pie no llega a AA: ahí el acento es este rosa. Sobre
+     el papel no se lee: es solo para fondo oscuro. */
+  --accent-on-ink:#f77cc3;
+  /* El celeste de la V del monograma, dentro del sello magenta: un dibujo, no un texto,
+     así que le basta 3:1. Es el azul del cartel aclarado. */
+  --celeste:#9cc3ea;
+  /* El alto de la cabecera fija: 56 px en el teléfono y 64 desde 900 px (ver «Masthead»).
+     Lo usan los elementos fijos de la página para quedar debajo de ella. */
+  --alto-cabecera:56px;
+  /* Y el gris de los datos, que sobre la tinta no llega a AA: este, del mismo tono, sí.
+     Es el texto secundario del pie. */
+  --muted-on-ink:#9fadbf;
+  /* Carátula del reproductor: el azul del cartel (tono 210°, el de --paper, y
+     saturación 73%) hundido a luminosidad 45%. A la luminosidad original del
+     cartel, 61%, el blanco encima no llegaba a AA; a 45%, sí. */
+  --caratula:#1f73c7; --caratula-rotulo:#0e3358;
+  /* Serif de lectura: Source Serif 4 de Adobe, autoalojada. Es una versión recortada (solo
+     el alfabeto latino, tamaño óptico fijo, pesos de 400 a 700) y la licencia OFL reserva
+     el nombre «Source» para el original: por eso la familia se llama «RdV Serif». Antes
+     la pila de sistema daba Palatino en un Mac, Times en Linux y Georgia en Windows: el
+     sitio tenía tres voces según quién lo abriera. Ver fonts/NOTICE.txt. */
+  --serif:"RdV Serif","RdV Serif Fallback",Georgia,"Times New Roman",serif;
+  --display:"Bricolage Grotesque","Bricolage Fallback",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  /* Medida de lectura: el largo de línea, en anchos del «0» de la fuente en uso.
+     Medido en la página: 58ch dan unas 74 letras por línea en una serif estrecha
+     (Times, Liberation Serif) y unas 65 en una de ancho normal. El rango legible es
+     45–75 (Bringhurst), con 66 como ideal. */
+  --medida:58ch;
+  /* Forma y movimiento: un radio, dos duraciones y una curva para todo el sitio.
+     Había cuatro transiciones sueltas para treinta estados :hover. Los guiones leen las
+     curvas de aquí (getComputedStyle): --ease-tirada es la del reparto de la tirada y la del
+     estante, que arranca suave, viaja por el medio y se asienta despacio. */
+  --r-1:3px;
+  --dur-fast:140ms; --dur-base:220ms; --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-tirada:cubic-bezier(.45,.05,.25,1);
+  /* --border solo SEPARA: sobre el papel apenas se distingue. Lo que delimita un
+     control —el borde de un campo de formulario— necesita 3:1 (WCAG 1.4.11), sobre el
+     papel y sobre el blanco del campo: para eso está --edge. */
+  --edge:#5e7ea7;
+  /* Una hoja más clara que el papel. Es la segunda superficie del sitio: las
+     bandas claras de la portada y los avisos que antes eran cajas blancas con borde
+     (la fecha de la agenda, la próxima actividad, el contacto del dossier, la obra
+     reseñada, los mensajes). El blanco (--surface) queda para los campos de formulario
+     y los objetos: cubiertas y retratos. Sobre el papel es
+     también el fondo de la fila que se está señalando. */
+  --paper-2:#eef4fb;
+  /* Filete decorativo: SEPARA, no delimita (para eso está --edge). Es tinta al 22 %, y
+     por eso se adapta a lo que tenga debajo: papel, hoja clara o amarillo. Este valor
+     es el que resulta sobre el papel, para los navegadores que no conocen color-mix();
+     los demás reciben el de más abajo. Sustituye a --border allí donde la línea tiene
+     que verse. */
+  --line:#adbac8;
+
+  /* LIENZO. El sitio tenía un solo contenedor de 820 px para todo: cabecera, pie,
+     rejillas, índices y lectura. El texto ocupaba el 54 % de una pantalla de 1440 y el
+     41 % de una de 1920, y nada cambiaba al crecer el monitor. Ahora hay tres carriles:
+       · lectura  --measure  el ancho de siempre: lo que se lee de corrido.
+       · ancho    --wide     cabecera, pie, portada, índices y rejillas.
+       · sangre              de borde a borde: las bandas de color y «El colectivo».
+     La columna de lectura NO se ensancha: lo legible son 45–75 letras por línea, y eso
+     no depende del monitor. Lo que usa el ancho es todo lo demás.
+     --carriles es la plantilla de columnas, con las líneas nombradas. Se declara una
+     vez y la usan <main> y lo que haga falta alinear con él.
+     Sin unidades vw en los anchos: incluyen la barra de desplazamiento y provocan
+     scroll horizontal. Los márgenes laterales salen de pistas 1fr. */
+  --measure:780px;
+  --wide:1320px;
+  --gutter:clamp(20px, 4vw, 64px);
+  --carriles:
+    [full-start] minmax(var(--gutter), 1fr)
+    [wide-start] minmax(0, calc((var(--wide) - var(--measure)) / 2))
+    [content-start] min(var(--measure), 100% - 2*var(--gutter)) [content-end]
+    minmax(0, calc((var(--wide) - var(--measure)) / 2)) [wide-end]
+    minmax(var(--gutter), 1fr) [full-end];
+  /* Espacio: una escala, para que el aire entre secciones sea una decisión y no la
+     suma de los márgenes que casualmente se tocan. */
+  --s1:8px; --s2:16px; --s3:24px; --s4:40px; --s5:64px; --s6:96px; --s7:144px;
+  /* TIPOGRAFÍA. Una escala de diez pasos, donde había 25 tamaños escritos a mano. Cada
+     paso tiene un papel:
+       --t-2 12   rótulo (mayúsculas espaciadas)
+       --t-1 13   dato: fecha, firma, lugar
+       --t0  15   interfaz: navegación, botones, etiquetas, pie
+       --t1  16   campos de formulario (en iOS, menos de 16 hace zoom al enfocar)
+                  y lectura secundaria: extractos, el primer verso de una fila
+       --t2  19   lectura: artículo, poema, cita, bajada de índice
+       --t3  22   título de tarjeta y de fila estrecha; bajada de artículo
+       --t4  26   título de fila; día de la agenda
+       --t5  28-40   título de sección, año, cifra
+       --t6  34-56   título de página
+       --t7  34-72   el título de un pliego de la tirada de registros (D19). En cqi: crece con
+                     el pliego, no con la ventana. El nombre del colectivo ya no es un tamaño: es
+                     el logo (D18).
+     El cuerpo base no es un paso: crece con el monitor (ver `html`). */
+  --t-2:12px; --t-1:13px; --t0:15px; --t1:16px; --t2:19px; --t3:22px; --t4:26px;
+  --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px); --t7:clamp(34px, 9cqi, 72px);
+  /* Interlíneas por papel y espaciado de letra: abierto en los rótulos, cerrado en los títulos. */
+  --lh-titulo:1.1; --lh-ui:1.35; --lh-lectura:1.55; --lh-verso:1.5;
+  --tr-rotulo:.1em; --tr-meta:.02em; --tr-titulo:-.015em;
+  /* APILADO. Toda altura (z-index) sale de esta escala, que nombra lo que apila. Cada una
+     cuenta dentro de su contexto de apilado:
+       · en una pieza: --z-fondo, detrás de su contenido (la hoja de una fila al señalarla);
+         --z-encima, sobre su contenido y sobre la capa del enlace que la cubre (los enlaces
+         secundarios de una tarjeta); --z-sobreimpresion, sobre eso y sin recibir el puntero
+         (el fechador de un pliego);
+       · en la tirada: --z-pliego, y cada lugar de la pila, unos niveles más;
+       · en la cabecera: los resultados de la búsqueda y, encima, el mapa de «Menú»;
+       · en la página: el telón de la portada sobre la obra, y la obra que recibe el foco
+         sobre el telón; la cabecera fija sobre todo eso, la vista ampliada de una foto sobre
+         la cabecera y «Saltar al contenido» sobre todo. */
+  --z-fondo:-1; --z-encima:1; --z-sobreimpresion:2;
+  --z-pliego:1;
+  --z-resultados:60; --z-menu:80;
+  --z-telon:1; --z-obra-enfocada:2; --z-cabecera:100; --z-lightbox:120; --z-salto:200;
+}
+
+@supports (color:color-mix(in srgb, #000 50%, transparent)){
+  :root{--line:color-mix(in srgb, var(--ink) 22%, transparent)}
+}
+/* En monitores muy grandes el carril ancho crece; el de lectura, no. */
+@media (min-width:1600px){
+  :root{--wide:1440px}
+}
+/* La cabecera de escritorio, desde 900 px (ver «Masthead»). */
+@media (min-width:900px){
+  :root{--alto-cabecera:64px}
+}
+/* Las medidas de la cápsula (ver «La cabecera al bajar»). */
+/* --capsula-ancho: lo que mide la cápsula con sus cinco enlaces. Mientras se busca, los
+   enlaces se esconden y la cápsula conserva ese ancho. */
+:root{--capsula-alto:48px; --capsula-relleno:2px; --capsula-arriba:12px; --capsula-ancho:625px}
+@media (max-width:899px){
+  :root{--capsula-alto:44px; --capsula-relleno:0px; --capsula-arriba:6px}
+}
+/* --asomo: lo que la obra le deja a la hoja en la primera vista. Con el aire de arriba de la
+   hoja se leen la cejilla y la primera línea del manifiesto: 88 px a 951 y 72 en el teléfono. */
+:root{--asomo:112px}
+@media (max-width:719px){
+  :root{--asomo:96px}
+}
+}

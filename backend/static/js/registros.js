@@ -3,15 +3,15 @@
 // es una fila con imán y todos los pliegos a dos tintas. Se pasa de uno a otro con la hoja de contactos (desde 1100 px,
 // un índice al lado de la pila, D29), el teclado o el dedo: sin flechas. Aquí se cambian clases y
 // atributos (aria-current, hidden) y se anima el reparto; las posiciones de la pila viven en
-// site.css (la CSP no admite estilos en línea). Nada avanza solo y no se toca la dirección
-// ni el historial.
+// componentes.css (la CSP no admite estilos en línea). Nada avanza solo y no se toca la
+// dirección ni el historial.
 (() => {
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
   // El reparto dura un poco más que el acomodo de los demás (la transición de `translate` en
-  // site.css; tests/test_tirada.py compara las dos): el que pasa arriba sale de la pila por su
-  // lado y vuelve encima, como una carta que se reparte.
+  // componentes.css; tests/test_tirada.py compara las dos): el que pasa arriba sale de la pila
+  // por su lado y vuelve encima, como una carta que se reparte.
   const REPARTO = 700;
-  // La curva es la de la hoja (--ease-tirada en site.css): la comparte el estante.
+  // La curva es la de la hoja (--ease-tirada en tokens.css): la comparte el estante.
   const CURVA = getComputedStyle(document.documentElement).getPropertyValue('--ease-tirada').trim();
 
   function montar(seccion) {
@@ -34,7 +34,7 @@
     // encima de otro mientras se cruzan; el que pasa arriba sale por su lado (por la derecha si
     // viene de los que siguen, por la izquierda si viene de los ya vistos), sube cuando ya no
     // pisa a nadie y vuelve encima: un nivel sobre el más alto de la pila, el que le da la hoja
-    // al de arriba. Los demás se acomodan con la transición de site.css.
+    // al de arriba. Los demás se acomodan con la transición de componentes.css.
     function repartir(desde, hacia, antes) {
       const entra = pliegos[hacia];
       const lado = hacia > desde ? 1 : -1;
@@ -59,7 +59,7 @@
     }
 
     // El pliego de arriba: lo marca aria-current (de ahí cuelgan la pila y las tintas en
-    // site.css), la hoja de contactos lo señala y la región viva lo anuncia.
+    // componentes.css), la hoja de contactos lo señala y la región viva lo anuncia.
     function marcar(i, avisar) {
       if (i === actual) return;
       const previo = actual;
@@ -79,8 +79,8 @@
     try {
       escuchar();
       marcar(0, false);
-      // La marca de la que cuelga la pila en site.css, y la hoja de contactos, al final: si
-      // algo falló antes, la tirada no queda a medias.
+      // La marca de la que cuelga la pila en componentes.css, y la hoja de contactos, al final:
+      // si algo falló antes, la tirada no queda a medias.
       seccion.classList.add('con-js');
       hoja.hidden = false;
     } catch (error) {
@@ -118,7 +118,8 @@
 
       // Deslizar con el dedo (o el lápiz) sobre la pila: hacia la izquierda, el siguiente; hacia
       // la derecha, el anterior. Solo un gesto claramente horizontal: el vertical sigue bajando
-      // la página (touch-action en site.css). Un deslizamiento no abre la ficha que quedó debajo.
+      // la página (touch-action en componentes.css). Un deslizamiento no abre la ficha que quedó
+      // debajo.
       let x0 = null;
       let y0 = 0;
       let deslizado = 0;

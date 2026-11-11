@@ -22,7 +22,7 @@ DESKTOP = ("@media (min-width:900px)",)
 
 
 def test_la_hoja_de_estilos_existe():
-    assert css.SITE_CSS.is_file()
+    assert css.SITE_SHEETS and all(hoja.is_file() for hoja in css.SITE_SHEETS)
 
 
 def test_en_escritorio_se_oculta_el_desplegable():

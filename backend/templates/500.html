@@ -1,4 +1,4 @@
-{% load identity static %}<!doctype html>
+{% load identity stylesheets %}<!doctype html>
 {% comment %}
   Error del servidor. NO extiende base.html, y es deliberado.
 
@@ -9,7 +9,7 @@
   consultara fallaría en el único momento en que se la necesita.
 
   Por eso aquí no hay ninguna variable de contexto, ninguna consulta y ningún dato de la
-  base: solo la hoja de estilos (que sirve el borde, no la aplicación), enlaces escritos a
+  base: solo las hojas de estilos (que sirve el borde, no la aplicación), enlaces escritos a
   mano y el nombre fijo del sitio, que da `fixed_site_name` desde `SITE_NAME` (los ajustes)
   y no desde el perfil. Debe poder dibujarse con la aplicación medio caída.
 
@@ -21,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Error del servidor — {% fixed_site_name %}</title>
   <meta name="robots" content="noindex">
-  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% stylesheet_links %}
 </head>
 <body>
   <main class="wrap" id="main">

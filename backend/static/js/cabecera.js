@@ -1,9 +1,9 @@
 // La cabecera al bajar. Arriba, la cabecera de siempre (en la portada, nada: la hoja de estilos
 // la esconde); al pasar lo que mide, una cápsula pequeña y centrada. Este archivo solo pone la
-// marca data-barra en <html>, «arriba» o «pildora»: el aspecto está en site.css («La cabecera al
-// bajar»), que sin la marca deja la cabecera fija. Se carga en el <head>, sin defer, para que la
-// marca esté antes de la primera pintura y la portada no enseñe la cabecera un instante. Si algo
-// falla al montarse, la marca se quita y queda la cabecera fija, como sin JavaScript.
+// marca data-barra en <html>, «arriba» o «pildora»: el aspecto está en estados.css («La cabecera
+// al bajar»), que sin la marca deja la cabecera fija. Se carga en el <head>, sin defer, para que
+// la marca esté antes de la primera pintura y la portada no enseñe la cabecera un instante. Si
+// algo falla al montarse, la marca se quita y queda la cabecera fija, como sin JavaScript.
 (function () {
   "use strict";
 
