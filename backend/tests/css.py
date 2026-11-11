@@ -5,9 +5,16 @@ una sola vez por proceso, con tinycss2, y cada regla sale con:
 
 - su contexto: la tupla de las at-rules que la contienen, de fuera hacia dentro, como
   `("@media (min-width:900px)",)`; `()` es el nivel de arriba;
+- su capa (`regla.layer`): el nombre de la `@layer` que la contiene, o `None` si está fuera de
+  las capas. La capa no es contexto: una regla se busca igual dentro y fuera de ellas, y una
+  prueba puede afirmar en qué capa vive;
 - su selector: la lista entera (`".nav a, .subnav a"`) y cada selector suelto (`selectors`);
 - sus declaraciones, en el orden de la hoja: `regla["display"]` da el último valor, que es el
   que aplica el navegador, y `regla.values("min-height")` da todos.
+
+El orden de las capas es el del navegador: el de la primera vez que se nombra cada una, en una
+declaración `@layer a, b;` o en un bloque (`Stylesheet.layers`). Las capas anidadas no se leen:
+ordenarlas pide el árbol de capas, y la hoja no las usa.
 
 Una regla se busca siempre por su contexto y su selector (`rule`, `rules_with`), de modo que una
 regla que sale de su `@media` ya no se encuentra donde la prueba la busca. Los comentarios no
@@ -33,10 +40,9 @@ import tinycss2
 SITE_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "site.css"
 
 # At-rules cuyo bloque contiene reglas: lo que va dentro se analiza con la at-rule como
-# contexto. Las demás con bloque (@font-face, @property…) contienen declaraciones.
-_GROUPING = frozenset(
-    {"media", "supports", "container", "layer", "scope", "starting-style", "document"}
-)
+# contexto. `@layer` también contiene reglas, pero no es contexto (ver `_walk`). Las demás con
+# bloque (@font-face, @property…) contienen declaraciones.
+_GROUPING = frozenset({"media", "supports", "container", "scope", "starting-style", "document"})
 _KEYFRAMES = frozenset({"keyframes", "-webkit-keyframes"})
 _NTH = frozenset({"nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type"})
 _COMBINATORS = frozenset({">", "+", "~"})
@@ -60,6 +66,9 @@ class _Block:
     context: tuple[str, ...]
     declarations: tuple[Declaration, ...]
     line: int = field(default=0, compare=False)
+    # La capa: su nombre, None fuera de las capas; en una regla que `rule()` junta de varias
+    # capas, la tupla de esas capas en el orden de la cascada.
+    layer: str | tuple[str | None, ...] | None = None
 
     def __contains__(self, name):
         return any(d.name == name for d in self.declarations)
@@ -90,7 +99,7 @@ class Rule(_Block):
     selectors: tuple[str, ...] = ()
 
     def _where(self):
-        return f"«{self.selector}» en {_describe(self.context)} (línea {self.line})"
+        return f"«{self.selector}» en {_describe(self.context)}{_in_layer(self.layer)} (línea {self.line})"
 
 
 @dataclass(frozen=True)
@@ -99,18 +108,39 @@ class AtRule(_Block):
     prelude: str = ""
 
     def _where(self):
-        return f"@{self.name} {self.prelude} en {_describe(self.context)} (línea {self.line})"
+        return (
+            f"@{self.name} {self.prelude} en {_describe(self.context)}{_in_layer(self.layer)} "
+            f"(línea {self.line})"
+        )
 
 
 class Stylesheet:
     """Una hoja analizada: sus reglas y sus at-rules con declaraciones, en orden."""
 
     def __init__(self, text):
-        rules, at_rules = [], []
+        rules, at_rules, layers = [], [], []
         nodes = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
-        _walk(nodes, (), rules, at_rules)
+        _walk(nodes, (), None, rules, at_rules, layers)
         self.rules = tuple(rules)
         self._at_rules = tuple(at_rules)
+        # Las capas, de la que menos pesa a la que más: el orden de su primera mención.
+        self.layers = tuple(layers)
+
+    def _rank(self, block):
+        """El lugar de la capa de una regla en la cascada: fuera de las capas, la última."""
+        return len(self.layers) if block.layer is None else self.layers.index(block.layer)
+
+    def _cascade_order(self, found):
+        """Las declaraciones de esas reglas en el orden en que las aplica la cascada, con la que
+        gana al final: las normales por capa (la última gana; fuera de las capas, a todas) y por
+        orden de la hoja; después las `!important`, con las capas al revés (la primera gana; las
+        de fuera de las capas pierden con todas)."""
+        normal = sorted(found, key=lambda r: (self._rank(r), r.line))
+        important = sorted(found, key=lambda r: (-self._rank(r), r.line))
+        return (
+            *(d for r in normal for d in r.declarations if not d.important),
+            *(d for r in important for d in r.declarations if d.important),
+        )
 
     def at_rules(self, name=None):
         """Las at-rules con ese nombre (sin la arroba), o todas, en cualquier contexto."""
@@ -125,9 +155,9 @@ class Stylesheet:
     def rule(self, context, selector):
         """La regla con exactamente esa lista de selectores en exactamente ese contexto.
 
-        Si el mismo selector aparece varias veces en el mismo contexto, sus declaraciones se
-        juntan en el orden de la hoja, como las junta la cascada. Si no está, falla diciendo
-        en qué contextos sí está.
+        Si el mismo selector aparece varias veces en el mismo contexto, también en capas
+        distintas, sus declaraciones se juntan como las junta la cascada (`_cascade_order`).
+        Si no está, falla diciendo en qué contextos sí está.
         """
         context, selector = normalize_context(context), normalize_selector(selector)
         found = [r for r in self.rules if r.context == context and r.selector == selector]
@@ -143,8 +173,15 @@ class Stylesheet:
                 f"está en: {elsewhere or 'ningún contexto'}"
                 + (f"; forma parte de: {within}" if within else "")
             )
-        declarations = tuple(d for r in found for d in r.declarations)
-        return Rule(context, declarations, found[0].line, selector, found[0].selectors)
+        layers = tuple(dict.fromkeys(r.layer for r in sorted(found, key=self._rank)))
+        return Rule(
+            context,
+            self._cascade_order(found),
+            found[0].line,
+            layers[0] if len(layers) == 1 else layers,
+            selector=selector,
+            selectors=found[0].selectors,
+        )
 
     def rules_with(self, context, selector):
         """Las reglas de ese contexto cuya lista de selectores incluye ese selector."""
@@ -152,15 +189,11 @@ class Stylesheet:
         return tuple(r for r in self.rules if r.context == context and selector in r.selectors)
 
     def tokens(self, context=()):
-        """Las propiedades personalizadas que declaran las reglas `:root` de ese contexto."""
+        """Las propiedades personalizadas que declaran las reglas `:root` de ese contexto, en
+        cualquier capa: si dos declaran la misma, la que gana en la cascada."""
         context = normalize_context(context)
-        return {
-            d.name: d.value
-            for r in self.rules
-            if r.context == context and r.selector == ":root"
-            for d in r.declarations
-            if d.name.startswith("--")
-        }
+        found = [r for r in self.rules if r.context == context and r.selector == ":root"]
+        return {d.name: d.value for d in self._cascade_order(found) if d.name.startswith("--")}
 
     def resolve(self, value, context=()):
         """El valor con cada `var(--x)` sustituido por el token de ese contexto, si existe."""
@@ -187,7 +220,15 @@ def _describe(context):
     return " › ".join(context) if context else "el nivel de arriba"
 
 
-def _walk(nodes, context, rules, at_rules):
+def _in_layer(layer):
+    if layer is None:
+        return ", fuera de las capas"
+    if isinstance(layer, tuple):
+        return f", en las capas {', '.join(str(n) for n in layer)}"
+    return f", en la capa {layer}"
+
+
+def _walk(nodes, context, layer, rules, at_rules, layers):
     for node in nodes:
         if node.type == "error":
             raise AssertionError(f"CSS mal formado en la línea {node.source_line}: {node.message}")
@@ -198,21 +239,39 @@ def _walk(nodes, context, rules, at_rules):
                     context,
                     _declarations(node.content),
                     node.source_line,
-                    ", ".join(selectors),
-                    selectors,
+                    layer,
+                    selector=", ".join(selectors),
+                    selectors=selectors,
                 )
             )
             continue
         name = node.lower_at_keyword
         prelude = _render(node.prelude, "prelude")
-        if node.content is None:
-            at_rules.append(AtRule(context, (), node.source_line, name, prelude))
+        if name == "layer":
+            # Una capa ordena, no condiciona: lo de dentro sigue en el mismo contexto, con la
+            # capa como dato. `@layer a, b;` solo nombra capas, en ese orden.
+            names = split_commas(prelude) if prelude else (f"<anónima {len(layers)}>",)
+            if layer is not None or any("." in n for n in names):
+                raise AssertionError(
+                    f"capas anidadas en la línea {node.source_line}: no sé ordenarlas"
+                )
+            layers.extend(n for n in dict.fromkeys(names) if n not in layers)
+            if node.content is None:
+                at_rules.append(AtRule(context, (), node.source_line, layer, name, prelude))
+            else:
+                (inner_layer,) = names
+                inner = tinycss2.parse_rule_list(
+                    node.content, skip_comments=True, skip_whitespace=True
+                )
+                _walk(inner, context, inner_layer, rules, at_rules, layers)
+        elif node.content is None:
+            at_rules.append(AtRule(context, (), node.source_line, layer, name, prelude))
         elif name in _GROUPING or name in _KEYFRAMES:
             inner = tinycss2.parse_rule_list(node.content, skip_comments=True, skip_whitespace=True)
-            _walk(inner, (*context, f"@{name} {prelude}".rstrip()), rules, at_rules)
+            _walk(inner, (*context, f"@{name} {prelude}".rstrip()), layer, rules, at_rules, layers)
         else:
             at_rules.append(
-                AtRule(context, _declarations(node.content), node.source_line, name, prelude)
+                AtRule(context, _declarations(node.content), node.source_line, layer, name, prelude)
             )
 
 
@@ -357,6 +416,11 @@ def site():
 def rules():
     """Todas las reglas de la hoja del sitio, en su orden."""
     return site().rules
+
+
+def layers():
+    """Las capas de la hoja del sitio, en el orden de la cascada."""
+    return site().layers
 
 
 def rule(context, selector):

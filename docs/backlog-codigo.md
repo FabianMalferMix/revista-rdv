@@ -172,7 +172,7 @@
 | B69 | La composición visual sale de las vistas | B26 | M | no | hecho (#265) |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | hecho (#267) |
 | B71 | Recetas de plantilla compartidas | B25, B29 | M | no | hecho (#268) |
-| B72 | La cascada de site.css en capas | B11, B58 | L | no | en curso (etapa 1: #269) |
+| B72 | La cascada de site.css en capas | B11, B58 | L | no | en curso (etapa 1: #269; etapa 2: #271) |
 | B73 | Navegación de una sola fuente | — | S | no | pendiente |
 | B74 | Guiones con un módulo común | B11 | S | no | pendiente |
 | B75 | Convenciones HTTP | — | S | no | pendiente |

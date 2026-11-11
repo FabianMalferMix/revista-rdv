@@ -20,9 +20,10 @@ RAIZ = Path(__file__).resolve().parent.parent
 CABECERA_JS = (RAIZ / "static" / "js" / "cabecera.js").read_text()
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 
-ARRIBA = 'html[data-barra="arriba"]'
+# La marca va en <html>, el único elemento que la lleva: la hoja no lo nombra.
+ARRIBA = '[data-barra="arriba"]'
 PORTADA = '[data-pagina="portada"]'
-CAPSULA = f':is(html[data-barra="pildora"], {ARRIBA} > {PORTADA})'
+CAPSULA = f':is([data-barra="pildora"], {ARRIBA} > {PORTADA})'
 
 
 @pytest.mark.django_db
@@ -78,7 +79,7 @@ def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
     """La cápsula escondida y el dossier en el titular, solo con la marca del guion: sin ella,
     la cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
     assert css.rule((), f"{ARRIBA} > {PORTADA} .masthead-fila")["opacity"] == "0"
-    dossier = f"html[data-barra] > {PORTADA} .hero-dossier"
+    dossier = f"[data-barra] > {PORTADA} .hero-dossier"
     assert css.rule((), dossier)["display"] == "inline-flex"
     assert [
         r.selector

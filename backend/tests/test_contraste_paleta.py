@@ -210,7 +210,8 @@ def test_text_that_fails_on_the_paper_says_where_it_is_read():
 
 
 # El magenta como color de TEXTO en reposo: solo la receta de la cejilla y el asterisco
-# de campo obligatorio. Todo lo demás que se pinta en magenta es un estado.
+# de campo obligatorio. Todo lo demás que se pinta en magenta es un estado: señalar, enfocar,
+# marcar, la página actual o el desplegable abierto (la lupa).
 # Y los sellos de «Prensa y gestión» (D31): objetos en su tinta, no texto magenta suelto.
 MAGENTA_EN_REPOSO = {
     ".rotulo--acento, .kicker",
@@ -218,7 +219,7 @@ MAGENTA_EN_REPOSO = {
     ".form .req",
     ".home-cierre .pie-entidad li",
 }
-ESTADOS = (":hover", ":focus", ":checked", "[aria-current")
+ESTADOS = (":hover", ":focus", ":checked", "[aria-current", "[open]")
 
 
 def test_el_magenta_no_es_el_color_de_reposo_de_nada_mas():
