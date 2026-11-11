@@ -111,8 +111,9 @@ no una plantilla vacía.
       «Imagen de portada» y guarda: la portada la muestra en lugar de la lámina de círculos.
       Una imagen en «Imagen de portada para el teléfono» se ve solo en un teléfono. Vacía
       los dos campos y guarda: vuelve la lámina.
-- [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2` y `?page=999`
-      (este último **no debe reventar**).
+- [x] **`/textos/`** — Archivo de textos, con paginación. Prueba `?page=2`: la cuenta dice
+      «13–24 de …», o solo la posición («13 de 13 textos») si la página tiene una sola pieza.
+      `?page=999`, `?page=0`, `?page=01` y `?page=x` dan la página **404**, no un 500.
 - [x] **`/poemas/`** — Índice de poemas. Cada fila cita el **primer verso** del poema y se
       pulsa entera; el nombre de quien firma es su propio enlace.
 
@@ -263,8 +264,10 @@ no una plantilla vacía.
       última palabra y deja un token suelto que, con Y lógico, no casa con nada. Es
       consecuencia del truncado, no un fallo.
 - [x] **Rate limit:** recarga `/buscar/?q=a` más de 60 veces en un minuto. Debe aparecer
-      «Demasiadas búsquedas seguidas» con **HTTP 200**, no un 429 ni un error. Ojo: deja
-      el navegador limitado el resto del minuto; se pasa solo.
+      «Demasiadas búsquedas seguidas» en la página de búsqueda de siempre, con **HTTP 429** y
+      la cabecera `Retry-After` (los segundos que faltan), no un error. En el panel de la lupa
+      el aviso llega con un 200, porque htmx no pinta las respuestas de error. Ojo: deja el
+      navegador limitado el resto del minuto; se pasa solo.
 
 ---
 
@@ -288,7 +291,8 @@ no una plantilla vacía.
 - [x] **3.7 Baja.** Abre el enlace de baja → página con botón → pulsa → «Te diste de baja».
 - [x] **3.8 Honeypot.** Con las herramientas del navegador, rellena el campo oculto
       `apodo` y envía. Responde igual, pero **no se crea** el suscriptor.
-- [x] **3.9 Rate limit.** Más de 5 altas en un minuto → «Demasiados intentos».
+- [x] **3.9 Rate limit.** Más de 5 altas en un minuto → «Demasiados intentos», junto al campo,
+      en la página del boletín, con **HTTP 429**.
 - [x] **3.10 Correo largo.** Un correo válido de 260 caracteres → error de validación
       limpio, **no** un 500.
 
@@ -311,8 +315,8 @@ docker compose exec web python manage.py shell -c \
 - [x] **4.4 Contenido que no cuadra.** Renombra un `.png` a `.pdf` y adjúntalo → rechazado
       («el contenido no coincide con su extensión»): se validan los **bytes mágicos**.
 - [x] **4.5 Tamaño.** Un archivo de más de 10 MB → rechazado.
-- [x] **4.6 Rate limit.** Más de 10 envíos en una hora → aviso, **y no se pierde el texto
-      escrito**.
+- [x] **4.6 Rate limit.** Más de 10 envíos en una hora → aviso, con **HTTP 429**, **y no se
+      pierde el texto escrito**.
 - [x] **4.7 El adjunto es privado.** Comprueba que **no** es accesible por URL pública:
       vive fuera de `MEDIA_ROOT`.
 - [x] **4.8 Un `.txt` con bytes nulos** → rechazado. El texto plano no tiene firma, así que
@@ -457,7 +461,8 @@ docker compose exec web python manage.py generate_image_derivatives
       **no** borradores.
 - [x] **`/robots.txt`** — Debe hacer `Disallow: /admin/` y apuntar al sitemap.
 - [x] **Canonical:** en cualquier ficha, `<link rel="canonical">` no debe arrastrar la
-      query string, salvo `?page=`.
+      query string. En la segunda página de un listado lleva `?page=2`; en la primera, y en
+      una página que no pagina, nunca.
 - [x] **Open Graph y JSON-LD:** ver el código fuente de la portada y de un artículo.
 
 ```bash
@@ -539,7 +544,9 @@ docker compose exec web python manage.py axes_reset      # para desbloquearte
 
 - [x] **`/healthz/`** → `ok` (no toca la base).
 - [x] **`/readyz/`** → JSON con el estado de base y broker. **Para Redis** y debe pasar a
-      **503**.
+      **503**. Con Redis parado, la búsqueda, el alta al boletín y el envío de propuestas
+      responden su página con «El servicio no está disponible en este momento», también con
+      **503** y `Retry-After`.
 
 ---
 

@@ -67,6 +67,7 @@ from apps.submissions.models import Call
 from config.staticfiles import STYLESHEETS
 from tests import css
 from tests.factories import (
+    SEARCH_PANEL_HEADERS,
     make_article,
     make_event,
     make_image,
@@ -929,10 +930,10 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
     keep(client.post(reverse("community:subscribe"), {"email": "bea@example.org"}, follow=True))
     for _ in range(10):
         client.post(reverse("submissions:submit"), {})
-    keep(client.post(reverse("submissions:submit"), {}))
+    keep(client.post(reverse("submissions:submit"), {}), status=429)
 
     # La lupa con los resultados que pide htmx.
-    panel = client.get(reverse("site:search") + "?q=voz", HTTP_HX_REQUEST="true")
+    panel = client.get(reverse("site:search") + "?q=voz", headers=SEARCH_PANEL_HEADERS)
     home = client.get(reverse("site:home")).content.decode()
     pages.append(_with_search_results(home, panel.content.decode()))
 

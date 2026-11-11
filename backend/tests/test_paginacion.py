@@ -11,9 +11,17 @@ from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import EditorialStatus
+from apps.content.models import EditorialStatus, Section, Tag
+from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
-from tests.factories import make_article, make_poem, make_published_article, soup
+from tests.factories import (
+    make_article,
+    make_poem,
+    make_published_article,
+    make_published_poem,
+    make_recording,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -46,9 +54,15 @@ def test_la_paginacion_cuenta_lo_que_hay(client):
     cuenta = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
     assert cuenta == "1–12 de 13 poemas"
 
+    # Una sola pieza en la página: su posición, sin rango.
     nav = _nav(client.get(reverse("content:poem_index") + "?page=2").content)
     cuenta = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
-    assert cuenta == "13–13 de 13 poemas"
+    assert cuenta == "13 de 13 poemas"
+
+    make_published_poem(slug="p13")
+    nav = _nav(client.get(reverse("content:poem_index") + "?page=2").content)
+    cuenta = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
+    assert cuenta == "13–14 de 14 poemas"
 
 
 def test_la_pagina_actual_y_los_extremos_se_marcan_sin_depender_del_color(client):
@@ -114,8 +128,96 @@ def test_the_reviews_of_a_work_a_publisher_or_an_author_go_twelve_by_twelve(clie
     assert len(last.select("li.article-card")) == 1
     nav = last.select_one("nav.pagination")
     count = re.sub(r"\s+", " ", nav.select_one(".pagination-count").get_text()).strip()
-    assert count == "13–13 de 13 textos"
+    assert count == "13 de 13 textos"
     assert nav.find("a", rel="prev").get_text() == "← Anteriores"
+
+
+# ── Solo se sirve una página que existe ─────────────────────────────────────
+
+
+def _thirteen_texts(**fields):
+    return [make_published_article(**fields) for _ in range(13)]
+
+
+def _text_archive():
+    _thirteen_texts()
+    return reverse("content:text_archive")
+
+
+def _section_detail():
+    section = Section.objects.create(slug="seccion", name="Sección")
+    _thirteen_texts(section=section)
+    return reverse("content:section_detail", args=[section.slug])
+
+
+def _tag_detail():
+    tag = Tag.objects.create(slug="etiqueta", name="Etiqueta")
+    for article in _thirteen_texts():
+        article.tags.add(tag)
+    return reverse("content:tag_detail", args=[tag.slug])
+
+
+def _signed_by(is_member):
+    person = Contributor.objects.create(slug="firma", display_name="Firma", is_member=is_member)
+    for article in _thirteen_texts():
+        article.authors.add(person)
+    return person.slug
+
+
+def _contributor_detail():
+    return reverse("content:contributor_detail", args=[_signed_by(is_member=False)])
+
+
+def _member_detail():
+    return reverse("people:member_detail", args=[_signed_by(is_member=True)])
+
+
+def _poem_index():
+    _poemas(13)
+    return reverse("content:poem_index")
+
+
+def _recording_index():
+    for _ in range(13):
+        make_recording()
+    return reverse("media:recording_index")
+
+
+def _reviewed(owner):
+    publisher = Publisher.objects.create(slug="editorial", name="Editorial")
+    author = BookAuthor.objects.create(slug="autora", name="Autora")
+    work = Work.objects.create(slug="obra", title="Obra", publisher=publisher)
+    work.authors.add(author)
+    for article in _thirteen_texts():
+        article.reviewed_works.add(work)
+    return {"work": work, "publisher": publisher, "author": author}[owner].get_absolute_url()
+
+
+# Cada lista que se pagina, con trece piezas: doce en la primera página y una en la segunda.
+PAGINATED = {
+    "content:text_archive": _text_archive,
+    "content:section_detail": _section_detail,
+    "content:tag_detail": _tag_detail,
+    "content:contributor_detail": _contributor_detail,
+    "content:poem_index": _poem_index,
+    "people:member_detail": _member_detail,
+    "media:recording_index": _recording_index,
+    "reviews:work_detail": lambda: _reviewed("work"),
+    "reviews:publisher_detail": lambda: _reviewed("publisher"),
+    "reviews:bookauthor_detail": lambda: _reviewed("author"),
+}
+
+
+@pytest.mark.parametrize("view", sorted(PAGINATED))
+def test_only_a_page_that_exists_is_served(client, view):
+    """Un `?page=` que no nombra una página de la lista da 404: el cero, una página de más, el
+    número con un cero delante (sería otra dirección de la misma página), lo que no es un
+    número y el valor vacío. Control: la segunda página existe, y es la que se sirve."""
+    url = PAGINATED[view]()
+    current = soup(client, url, data={"page": "2"}).select_one("nav.pagination [aria-current=page]")
+    assert current.get_text(strip=True) == "2"
+    for value in ("0", "99999", "01", "x", ""):
+        assert client.get(url, {"page": value}).status_code == 404, f"?page={value}"
 
 
 def test_las_tres_listas_comparten_el_parcial():

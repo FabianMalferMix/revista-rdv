@@ -1,8 +1,9 @@
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_safe
 
 from apps.content.models import Article
 from apps.showcase.models import Publication
+from config.pagination import paginate
 
 from .models import BookAuthor, Publisher, Work
 
@@ -10,9 +11,10 @@ from .models import BookAuthor, Publisher, Work
 def _reviews_of(request, work_ids):
     """Los textos que reseñan esas obras, de 12 en 12 como los demás índices de textos."""
     reviews = Article.objects.published().for_row().filter(reviewed_works__in=work_ids).distinct()
-    return Paginator(reviews, 12).get_page(request.GET.get("page"))
+    return paginate(request, reviews)
 
 
+@require_safe
 def work_detail(request, slug):
     work = get_object_or_404(
         # Con su publicación del colectivo, si la tiene: la cabecera enlaza a ella.
@@ -28,6 +30,7 @@ def work_detail(request, slug):
     )
 
 
+@require_safe
 def publisher_detail(request, slug):
     publisher = get_object_or_404(Publisher.objects.visible(), slug=slug)
     # Las publicaciones del colectivo con esta editorial, y aparte las demás obras visibles: la
@@ -48,6 +51,7 @@ def publisher_detail(request, slug):
     )
 
 
+@require_safe
 def bookauthor_detail(request, slug):
     author = get_object_or_404(BookAuthor.objects.visible(), slug=slug)
     works = author.works.visible()

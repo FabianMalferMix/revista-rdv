@@ -1,18 +1,18 @@
 import logging
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
-from django.db import OperationalError
+from django.db import OperationalError, transaction
 from django.db.models import F
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
-from django_ratelimit.decorators import ratelimit
+from django.views.decorators.vary import vary_on_headers
 
 from apps.agenda.models import Event, url_for_event
 from apps.content.models import SEARCH_CONFIG, Article, Poem
 from apps.media.models import Recording, url_for_recording
 from apps.people.models import url_for_person
 from apps.showcase.models import Publication, SiteProfile, url_for_publication
-from config.cache import SERVICE_UNAVAILABLE, counters_available
+from config.ratelimit import rate_limited
 
 from . import portada
 from .services import (
@@ -29,6 +29,7 @@ from .services import (
 logger = logging.getLogger(__name__)
 
 
+@require_safe
 def home(request):
     """La portada: junta sus bloques, cada uno desde su constructor (`portada.py`)."""
     # Con el poema destacado y la obra de la primera vista en la misma consulta.
@@ -60,6 +61,8 @@ SEARCH_RESULTS_PANEL = 5
 # encarece el `to_tsquery`.
 SEARCH_MAX_QUERY = 120
 TOO_MANY_SEARCHES = "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
+# El id del panel de la lupa (base.html), que htmx manda en HX-Target al pedir sus resultados.
+SEARCH_PANEL = "search-results"
 
 
 # Cada resultado lleva su dirección, su título y los datos que lo distinguen, que la plantilla
@@ -132,10 +135,50 @@ def _trim_search_query(text):
     return head.rstrip()
 
 
+def _search_query(request):
+    # PostgreSQL no admite el byte nulo en un campo de texto: sin quitarlo, `?q=%00` llegaría
+    # al driver y la página respondería 500.
+    return _trim_search_query(request.GET.get("q", "").replace("\x00", ""))
+
+
+def _wants_panel(request):
+    """La lupa pide el fragmento de sus resultados: htmx manda HX-Request y, en HX-Target, el id
+    del panel. Cualquier otra petición, también una de htmx con otro destino, recibe la página
+    completa, que es la búsqueda sin JavaScript."""
+    return (
+        request.headers.get("HX-Request") == "true"
+        and request.headers.get("HX-Target") == SEARCH_PANEL
+    )
+
+
+def _search_response(request, q, grupos, aviso):
+    """El fragmento del panel o la página de búsqueda, según quién la pida. `aviso` dice por qué
+    no se buscó, si no se buscó."""
+    panel = _wants_panel(request)
+    return render(
+        request,
+        "site/partials/_search_results.html" if panel else "site/search.html",
+        {
+            "grupos": grupos,
+            "total": sum(len(grupo["resultados"]) for grupo in grupos),
+            "q": q,
+            "aviso": aviso,
+            "panel": panel,
+        },
+    )
+
+
+def _search_limited(request, aviso):
+    """Pasado el límite de tasa, la misma página, sin buscar, con el aviso."""
+    return _search_response(request, _search_query(request), [], aviso)
+
+
 # HEAD ejecuta la vista entera (Django solo descarta el cuerpo): cuenta para el límite como
-# un GET. Los demás métodos no tienen nada que hacer aquí.
+# un GET. Los demás métodos no tienen nada que hacer aquí. El fragmento y la página comparten
+# la URL: la respuesta declara de qué cabeceras depende, para que ninguna caché las confunda.
 @require_safe
-@ratelimit(key="ip", rate="60/m", method=["GET", "HEAD"], block=False)
+@vary_on_headers("HX-Request", "HX-Target")
+@rate_limited("60/m", notice=TOO_MANY_SEARCHES, limited=_search_limited)
 def search(request):
     """El buscador en vivo (htmx) y la página de búsqueda: los textos y los poemas publicados,
     por su texto completo, y por nombre o título, las personas, los registros, las
@@ -150,20 +193,10 @@ def search(request):
     el tamaño del archivo: textos, poemas y una que une los otros cuatro tipos. Los textos
     y los poemas no precargan sus autores, que los resultados no enseñan.
     """
-    # PostgreSQL no admite el byte nulo en un campo de texto: sin quitarlo, `?q=%00` llegaría
-    # al driver y la página respondería 500.
-    q = _trim_search_query(request.GET.get("q", "").replace("\x00", ""))
-    # htmx pide solo el fragmento (overlay en vivo); una navegación normal (sin JS)
-    # recibe la página completa con layout, para que la búsqueda degrade con gracia.
-    panel = bool(request.headers.get("HX-Request"))
-    tope = SEARCH_RESULTS_PANEL if panel else SEARCH_RESULTS
+    q = _search_query(request)
+    tope = SEARCH_RESULTS_PANEL if _wants_panel(request) else SEARCH_RESULTS
     grupos = []
-    limited = bool(getattr(request, "limited", False))
-    # Por qué no se buscó, si no se buscó: el límite de tasa, o sus contadores caídos.
-    aviso = ""
-    if limited:
-        aviso = TOO_MANY_SEARCHES if counters_available() else SERVICE_UNAVAILABLE
-    if q and not limited:
+    if q:
         query = SearchQuery(q, config=SEARCH_CONFIG)
         # `[:tope]` en cada queryset hace que el LIMIT viaje al SQL, y `only()` evita
         # traer el texto completo de cada pieza para nada.
@@ -183,16 +216,20 @@ def search(request):
         )
         por_tipo = {tipo: [] for tipo, _ in SEARCH_TYPES}
         try:
-            por_tipo[TEXT] = [
-                {"url": a.get_absolute_url(), "title": a.title, "kind": a.get_type_display()}
-                for a in articles
-            ]
-            por_tipo[POEM] = [{"url": p.get_absolute_url(), "title": p.title} for p in poems]
-            # Una letra sola casa con casi todos los nombres: no dice nada.
-            if len(q) >= 2:
-                for fila in coincidencias_por_nombre(q, tope):
-                    resultado = _resultado_por_nombre(fila)
-                    por_tipo[fila["tipo"]].append(resultado)
+            # Las tres consultas, en un bloque atómico: PostgreSQL aborta la transacción en que
+            # falla una consulta, y el punto de guardado del bloque deja intacta la de fuera, si
+            # la hay (ATOMIC_REQUESTS), para que la página pueda seguir consultando la base.
+            with transaction.atomic():
+                por_tipo[TEXT] = [
+                    {"url": a.get_absolute_url(), "title": a.title, "kind": a.get_type_display()}
+                    for a in articles
+                ]
+                por_tipo[POEM] = [{"url": p.get_absolute_url(), "title": p.title} for p in poems]
+                # Una letra sola casa con casi todos los nombres: no dice nada.
+                if len(q) >= 2:
+                    for fila in coincidencias_por_nombre(q, tope):
+                        resultado = _resultado_por_nombre(fila)
+                        por_tipo[fila["tipo"]].append(resultado)
         except OperationalError:
             # Una conexión caída o una consulta cancelada por su plazo: «sin resultados» en
             # vez de un 500, y un ERROR para que llegue a Sentry. Un error de programación no
@@ -204,15 +241,4 @@ def search(request):
             for tipo, titulo in SEARCH_TYPES
             if por_tipo.get(tipo)
         ]
-    template = "site/partials/_search_results.html" if panel else "site/search.html"
-    return render(
-        request,
-        template,
-        {
-            "grupos": grupos,
-            "total": sum(len(grupo["resultados"]) for grupo in grupos),
-            "q": q,
-            "aviso": aviso,
-            "panel": panel,
-        },
-    )
+    return _search_response(request, q, grupos, "")

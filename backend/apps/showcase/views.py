@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.http import require_safe
 from django.views.generic import RedirectView
 
 from apps.agenda.models import Event, Milestone
@@ -17,6 +18,7 @@ def _published():
     return Publication.objects.published().select_related("publisher", "cover")
 
 
+@require_safe
 def publication_index(request):
     return render(
         request,
@@ -25,6 +27,7 @@ def publication_index(request):
     )
 
 
+@require_safe
 def publication_detail(request, slug):
     publication, preview = publishing.piece_for(
         request,
@@ -55,11 +58,13 @@ def publication_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def press_index(request):
     mentions = PressMention.objects.published().select_related("logo")
     return render(request, "showcase/press_index.html", {"mentions": mentions})
 
 
+@require_safe
 def partner_index(request):
     """Aliados agrupados por tipo, en el orden de los tipos: un fondo y una sala no son lo
     mismo para quien programa. Se agrupan en Python: una sola consulta."""
@@ -72,6 +77,7 @@ def partner_index(request):
     return render(request, "showcase/partner_index.html", {"partners": partners, "grupos": grupos})
 
 
+@require_safe
 def dossier(request):
     """Kit de prensa: página imprimible que agrega el contenido vivo del sitio.
 
@@ -103,12 +109,14 @@ def dossier(request):
     )
 
 
+@require_safe
 def dossier_pdf(request):
     """El dossier maquetado, en una dirección que no cambia al reemplazarlo: es lo que un gestor
     reenvía."""
     return protected_media.serve_current(request, SiteProfile.load().dossier_pdf, preview=False)
 
 
+@require_safe
 def publication_pdf(request, slug):
     publication, preview = publishing.piece_for(request, Publication.objects, slug=slug)
     return protected_media.serve_current(request, publication.pdf, preview)
@@ -119,6 +127,7 @@ class OldPublicationPdf(RedirectView):
     nombre, porque ya se repartió."""
 
     permanent = True
+    http_method_names = ["get", "head"]
 
     def get_redirect_url(self, slug, filename):
         return reverse("showcase:publication_pdf", args=[slug])

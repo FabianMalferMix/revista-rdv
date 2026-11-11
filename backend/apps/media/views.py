@@ -1,10 +1,11 @@
-from django.core.paginator import Paginator
 from django.shortcuts import render
+from django.views.decorators.http import require_safe
 
 from apps.content.models import Poem
 from apps.site.pie import vecinos_en_lista
 from apps.site.services import participants_prefetch
 from config import protected_media, publishing
+from config.pagination import paginate
 
 from .models import Recording
 
@@ -13,12 +14,15 @@ def _published():
     return Recording.objects.published().select_related("poster", "event")
 
 
+@require_safe
 def recording_index(request):
     recordings = _published().prefetch_related("participants")
-    page = Paginator(recordings, 12).get_page(request.GET.get("page"))
-    return render(request, "media/recording_index.html", {"recordings": page})
+    return render(
+        request, "media/recording_index.html", {"recordings": paginate(request, recordings)}
+    )
 
 
+@require_safe
 def recording_detail(request, slug):
     recording, preview = publishing.piece_for(
         request,
@@ -40,6 +44,7 @@ def recording_detail(request, slug):
     return publishing.marked_as_preview(response, preview)
 
 
+@require_safe
 def recording_file(request, slug, filename):
     recording, preview = publishing.piece_for(request, Recording.objects, slug=slug)
     return protected_media.serve(recording.file, filename, preview)

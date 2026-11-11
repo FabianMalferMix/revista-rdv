@@ -16,7 +16,13 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from apps.site.views import SEARCH_MAX_QUERY
-from tests.factories import make_article, make_published_article, make_published_poem, soup
+from tests.factories import (
+    SEARCH_PANEL_HEADERS,
+    make_article,
+    make_published_article,
+    make_published_poem,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 BUSCAR = reverse("site:search")
@@ -71,7 +77,7 @@ def test_a_long_verse_finds_its_poem_although_the_cap_splits_a_word(client, pane
     article = make_published_article(
         title="Notas de lectura", body=f"<p>Leímos «{VERSE}» en voz alta.</p>"
     )
-    headers = {"HX-Request": "true"} if panel else {}
+    headers = SEARCH_PANEL_HEADERS if panel else {}
     with CaptureQueriesContext(connection) as queries:
         response = client.get(BUSCAR, {"q": VERSE}, headers=headers)
     assert response.status_code == 200
@@ -185,19 +191,22 @@ def test_el_buscador_limita_por_ip(client, frozen_rate_limit_window):
     ultima = None
     for i in range(65):
         ultima = client.get(BUSCAR, {"q": f"umbral {i}"})
-    assert ultima.status_code == 200
+    assert ultima.status_code == 429
     assert "Demasiadas búsquedas".encode() in ultima.content
 
 
 @override_settings(RATELIMIT_ENABLE=True)
 def test_the_panel_announces_the_limit_as_well(client, frozen_rate_limit_window):
     """En el panel de la lupa, el aviso llega también a la región que se anuncia: los
-    resultados ya no son una región viva."""
+    resultados ya no son una región viva. Llega con un 200, porque htmx no pinta una
+    respuesta de error."""
     from bs4 import BeautifulSoup
 
     make_article(title="Umbral", status="published")
     for i in range(65):
-        ultima = client.get(BUSCAR, {"q": f"umbral {i}"}, headers={"HX-Request": "true"})
+        ultima = client.get(BUSCAR, {"q": f"umbral {i}"}, headers=SEARCH_PANEL_HEADERS)
+    assert ultima.status_code == 200
+    assert "Retry-After" not in ultima
     estado = BeautifulSoup(ultima.content, "html.parser").select_one("#search-status")
     assert estado.get_text() == (
         "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
@@ -216,10 +225,10 @@ def test_el_limite_no_estorba_al_uso_normal(client, frozen_rate_limit_window):
     assert f'href="{article.get_absolute_url()}"'.encode() in resp.content
 
 
-def _search_queries(client, method):
+def _search_queries(client, method, status=200):
     with CaptureQueriesContext(connection) as consultas:
         respuesta = getattr(client, method)(BUSCAR, {"q": "umbral"})
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == status
     return [c["sql"] for c in consultas.captured_queries if "plainto_tsquery" in c["sql"]]
 
 
@@ -231,9 +240,31 @@ def test_head_counts_towards_the_search_limit(client, frozen_rate_limit_window):
     assert _search_queries(client, "head")
     for i in range(61):
         client.get(BUSCAR, {"q": f"umbral {i}"})
-    assert _search_queries(client, "head") == []
+    assert _search_queries(client, "head", status=429) == []
 
 
 def test_search_only_answers_safe_methods(client):
     assert client.get(BUSCAR, {"q": "umbral"}).status_code == 200
     assert client.post(BUSCAR, {"q": "umbral"}).status_code == 405
+
+
+def test_a_search_that_fails_midway_shows_no_half_results_and_the_page_whole(client, monkeypatch):
+    """Si la consulta por nombre se cancela por su plazo cuando los textos y los poemas ya se
+    leyeron, la página dice «sin resultados», sin la mitad de ellos, y se pinta entera: el
+    fallo deshace solo el bloque de la búsqueda, y la página sigue consultando la base para
+    pintar el resto. Control: sin el fallo, el texto aparece."""
+    article = make_published_article(title="Umbral del verso")
+    found = soup(client, BUSCAR, data={"q": "umbral"})
+    assert [a["href"] for a in found.select(".search-list a")] == [article.get_absolute_url()]
+
+    def cancelled_by_its_timeout(*args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("SET LOCAL statement_timeout = 1")
+            cursor.execute("SELECT pg_sleep(1)")
+        return []
+
+    monkeypatch.setattr("apps.site.views.coincidencias_por_nombre", cancelled_by_its_timeout)
+    page = soup(client, BUSCAR, data={"q": "umbral"})
+    assert page.select(".search-list a") == []
+    assert page.select_one(".empty").get_text() == "Sin resultados para “umbral”."
+    assert page.select_one("footer") is not None

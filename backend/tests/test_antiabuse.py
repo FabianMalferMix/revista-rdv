@@ -1,5 +1,7 @@
 """Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit) — F2-5."""
 
+import time
+
 import pytest
 from bs4 import BeautifulSoup
 from django.test import Client, override_settings
@@ -64,6 +66,55 @@ def test_submit_is_rate_limited_by_ip(client, frozen_rate_limit_window):
         client.post(url, {})
     resp = client.post(url, {})
     assert b"demasiadas propuestas" in resp.content
+
+
+# ── Pasado el límite: la página de siempre, con un 429 ─────────────────────
+
+
+def _search(client):
+    return client.get(reverse("site:search"), {"q": "umbral"})
+
+
+def _subscribe(client):
+    return client.post(reverse("community:subscribe"), {"email": "ana@example.org", "next": "/"})
+
+
+def _submit(client):
+    return client.post(reverse("submissions:submit"), {"title": "Un título"})
+
+
+# Cada vista con límite: la petición, cuántas pasan en una ventana y con qué respuesta, el
+# título de su página y dónde va el aviso, con su comienzo.
+LIMITED = {
+    "search": (_search, 60, 200, "Búsqueda", "main .empty", "Demasiadas búsquedas"),
+    "subscribe": (
+        _subscribe,
+        5,
+        302,
+        "Suscripción a las novedades",
+        "main .news-error",
+        "Demasiados intentos",
+    ),
+    "submit": (_submit, 10, 200, "Enviar una propuesta", ".flash-error", "Has enviado demasiadas"),
+}
+
+
+@pytest.mark.parametrize("view", sorted(LIMITED))
+def test_past_the_limit_the_usual_page_answers_429(client, frozen_rate_limit_window, view):
+    """Pasado el límite responde la página de siempre, con su aviso, y un 429 que dice en
+    Retry-After cuántos segundos faltan para que la ventana del contador se renueve. Control:
+    la última petición dentro del cupo pasa como siempre."""
+    send, allowed, status, title, where, notice = LIMITED[view]
+    for _ in range(allowed):
+        response = send(client)
+    assert response.status_code == status
+    response = send(client)
+    left = frozen_rate_limit_window - int(time.time())
+    assert response.status_code == 429
+    assert left <= int(response["Retry-After"]) <= left + 1
+    page = BeautifulSoup(response.content, "html.parser")
+    assert page.select_one("main h1").get_text(strip=True) == title
+    assert page.select_one(where).get_text(strip=True).startswith(notice)
 
 
 # ── Resolución de IP tras el proxy (hallazgo #01: cubo global) ──────────────

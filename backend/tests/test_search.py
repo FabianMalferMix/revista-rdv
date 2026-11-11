@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import Article, EditorialStatus, Poem
-from tests.factories import make_article, make_poem
+from tests.factories import SEARCH_PANEL_HEADERS, make_article, make_poem, soup
 from tests.factories import publish as _publish
 
 pytestmark = pytest.mark.django_db
@@ -108,13 +108,45 @@ def test_search_without_js_returns_full_page(client):
 
 
 def test_search_with_htmx_returns_fragment_only(client):
-    """Con htmx (HX-Request) se devuelve solo el fragmento, sin el layout."""
+    """Con htmx, para el panel de la lupa, se devuelve solo el fragmento, sin el layout."""
     _publish(make_article(slug="fts-frag", title="Reseña fragmento"))
-    resp = client.get(reverse("site:search"), {"q": "fragmento"}, headers={"HX-Request": "true"})
+    resp = client.get(reverse("site:search"), {"q": "fragmento"}, headers=SEARCH_PANEL_HEADERS)
     html = resp.content.decode()
     assert "Reseña fragmento" in html
     assert "<h1>Búsqueda</h1>" not in html  # sin cabecera de página
     assert "</html>" not in html  # sin layout
+
+
+def test_only_the_panel_of_the_magnifier_gets_the_fragment(client):
+    """La lupa pide sus resultados como los pide htmx: a su `hx-get`, con HX-Request y, en
+    HX-Target, el id del destino que nombra su `hx-target`. Esa petición recibe el fragmento.
+    Otra de htmx sin ese destino (como la que rehace una página del historial), o una cabecera
+    suelta, recibe la página completa."""
+    _publish(make_article(slug="fts-destino", title="Reseña con destino"))
+    home = soup(client, reverse("site:home"))
+    field = home.select_one('form[role="search"] input[name="q"]')
+    target = field["hx-target"].removeprefix("#")
+    assert home.select_one(f"#{target}") is not None  # el destino está en la página
+
+    panel = {"HX-Request": "true", "HX-Target": target}
+    fragment = client.get(field["hx-get"], {"q": "destino"}, headers=panel).content.decode()
+    assert "Reseña con destino" in fragment
+    assert "</html>" not in fragment
+    for headers in ({"HX-Request": "true"}, {**panel, "HX-Target": "otro"}, {"HX-Target": target}):
+        page = client.get(field["hx-get"], {"q": "destino"}, headers=headers).content.decode()
+        assert "Reseña con destino" in page, headers
+        assert "</html>" in page, headers
+
+
+def test_the_search_says_which_headers_its_answer_depends_on(client):
+    """El fragmento y la página comparten la URL: la respuesta declara las cabeceras que las
+    distinguen, para que ninguna caché, tampoco la del navegador al volver atrás, sirva la una
+    por la otra."""
+    for headers in ({}, SEARCH_PANEL_HEADERS):
+        response = client.get(reverse("site:search"), {"q": "umbral"}, headers=headers)
+        assert response.status_code == 200
+        vary = {name.strip() for name in response["Vary"].split(",")}
+        assert {"HX-Request", "HX-Target"} <= vary, headers
 
 
 # ── Panel en vivo y página de búsqueda (backlog UX, ticket 1.5) ─────────────
@@ -128,7 +160,7 @@ def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client):
     """
     _publish(make_article(slug="fts-salida", title="Reseña con salida"))
     url = reverse("site:search")
-    html = client.get(url, {"q": "salida"}, headers={"HX-Request": "true"}).content.decode()
+    html = client.get(url, {"q": "salida"}, headers=SEARCH_PANEL_HEADERS).content.decode()
     assert 'class="search-all"' in html
     assert f'href="{url}?q=salida"' in html
     lista = html[html.index('<ul class="search-list">') : html.index("</ul>")]
@@ -158,7 +190,7 @@ def _grupos(client, q, panel=False):
     """{cejilla: [(título, dato), …]} de los resultados, en su orden."""
     from bs4 import BeautifulSoup
 
-    cabeceras = {"HX-Request": "true"} if panel else {}
+    cabeceras = SEARCH_PANEL_HEADERS if panel else {}
     sopa = BeautifulSoup(client.get(BUSCAR, {"q": q}, headers=cabeceras).content, "html.parser")
     grupos = {}
     for grupo in sopa.select(".search-grupo"):
@@ -348,7 +380,7 @@ def test_search_puts_the_most_relevant_poem_first(client):
 
 def _announced(client, q):
     """Lo que el panel manda, fuera de banda, a la región de estado de la lupa (base.html)."""
-    respuesta = client.get(BUSCAR, {"q": q}, headers={"HX-Request": "true"})
+    respuesta = client.get(BUSCAR, {"q": q}, headers=SEARCH_PANEL_HEADERS)
     sopa = BeautifulSoup(respuesta.content, "html.parser")
     estado = sopa.select_one("#search-status")
     assert estado["hx-swap-oob"] == "innerHTML"
