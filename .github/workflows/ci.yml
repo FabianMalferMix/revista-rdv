@@ -206,17 +206,23 @@ jobs:
             resenas-prod manage.py collectstatic --noinput
           docker cp prod-static:/app/staticfiles/staticfiles.json staticfiles.json
           docker rm -f prod-static
+          # Las hojas del sitio, de su fuente (STYLESHEETS, en config/staticfiles.py) en la imagen.
+          docker run --rm --entrypoint python resenas-prod \
+            -c "from config.staticfiles import STYLESHEETS; print(*STYLESHEETS, sep='\n')" > hojas.txt
           python3 - <<'PY'
           import json
           m = json.load(open("staticfiles.json"))["paths"]
-          # 1) Un estático propio queda hasheado (el manifiesto lo mapea a otro nombre).
-          site = [k for k in m if k.endswith("css/site.css")]
-          assert site and m[site[0]] != site[0], "css/site.css no quedó hasheado"
+          # 1) Cada hoja del sitio queda hasheada (el manifiesto la mapea a otro nombre).
+          hojas = open("hojas.txt").read().split()
+          assert hojas, "la lista de las hojas (STYLESHEETS) salió vacía"
+          sin_hash = [h for h in hojas if m.get(h, h) == h]
+          assert not sin_hash, f"estas hojas no quedaron hasheadas: {sin_hash}"
           # 2) TinyMCE queda SIN hash: su carga perezosa relativa se rompería si no.
           tiny = [k for k in m if k.startswith("vendor/tinymce-")]
           assert tiny, "no hay entradas de vendor/tinymce-<versión>/ en el manifiesto"
           assert all(m[k] == k for k in tiny), "la carpeta de TinyMCE fue hasheada (no debería)"
-          print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, site.css -> {m[site[0]]}")
+          print(f"OK: {len(m)} entradas, {len(tiny)} de tinymce sin hash, {len(hojas)} hojas hasheadas:")
+          print("\n".join(f"  {h} -> {m[h]}" for h in hojas))
           PY
 
       - name: Escaneo de vulnerabilidades de la imagen prod (trivy)
@@ -415,13 +421,17 @@ jobs:
             echo "$H" | grep -qi "^$cabecera:" || { echo "FALLO: / se sirve sin $cabecera"; exit 1; }
           done
           echo "OK: / con las cabeceras de seguridad (DEBUG=0)"
-          CSS=$(docker compose exec -T web python -c "import json; print(json.load(open('/app/staticfiles/staticfiles.json'))['paths']['css/site.css'])")
-          [ "$(curl -s -o /dev/null -w '%{http_code}' "$P/static/$CSS")" = 200 ] \
-            || { echo "FALLO: Caddy no sirve el estático hasheado"; exit 1; }
-          echo "OK: Caddy sirve el estático hasheado"
-          # Lo hasheado se cachea como inmutable; TinyMCE, que va sin hash, se revalida.
-          curl -fsS -D - -o /dev/null "$P/static/$CSS" | grep -qi '^cache-control: public, max-age=31536000, immutable' \
-            || { echo "FALLO: el estático hasheado no se cachea como inmutable"; exit 1; }
+          # Cada hoja del sitio (STYLESHEETS, de config/staticfiles.py), por su nombre hasheado. Lo
+          # hasheado se cachea como inmutable; TinyMCE, que va sin hash, se revalida.
+          HOJAS=$(docker compose exec -T web python -c "import json; from config.staticfiles import STYLESHEETS; m = json.load(open('/app/staticfiles/staticfiles.json'))['paths']; print(*(m[h] for h in STYLESHEETS))")
+          [ -n "$HOJAS" ] || { echo "FALLO: no salió ninguna hoja de STYLESHEETS"; exit 1; }
+          for CSS in $HOJAS; do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' "$P/static/$CSS")" = 200 ] \
+              || { echo "FALLO: Caddy no sirve la hoja hasheada $CSS"; exit 1; }
+            curl -fsS -D - -o /dev/null "$P/static/$CSS" | grep -qi '^cache-control: public, max-age=31536000, immutable' \
+              || { echo "FALLO: la hoja hasheada $CSS no se cachea como inmutable"; exit 1; }
+          done
+          echo "OK: Caddy sirve cada hoja hasheada, con caché inmutable: $HOJAS"
           TINY="$(docker compose exec -T web python -c 'from config.staticfiles import TINYMCE_DIR; print(TINYMCE_DIR)')tinymce.min.js"
           HT=$(curl -fsS -D - -o /dev/null "$P/static/$TINY")
           if echo "$HT" | grep -qi immutable || ! echo "$HT" | grep -qi '^cache-control: no-cache'; then

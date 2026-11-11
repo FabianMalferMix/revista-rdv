@@ -1146,7 +1146,7 @@ def test_en_el_telefono_el_boton_del_dossier_se_guarda_en_el_menu():
     assert boton["display"] == "none"
     (receta,) = [r for r in css.rules_with((), ".btn") if "display" in r]
     assert receta["display"] == "inline-flex"
-    assert boton.layer == receta.layer and boton.line > receta.line
+    assert boton.layer == receta.layer and boton.position > receta.position
 
 
 def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
@@ -1175,7 +1175,7 @@ def test_en_el_telefono_menu_va_en_tinta_como_la_lupa():
         r for r in css.rules_with((), ".nav-disclosure summary") if ".rotulo" in r.selectors
     ]
     assert receta["color"] != menu["color"]
-    assert menu.layer == receta.layer and menu.line > receta.line
+    assert menu.layer == receta.layer and menu.position > receta.position
     estado = css.rule(PHONE, ".nav-disclosure summary:hover, .nav-disclosure[open] summary")
     assert estado["color"] == "var(--accent)"
 
@@ -1301,13 +1301,11 @@ def test_every_z_index_comes_from_the_scale():
     alturas = [(bloque, d.value) for bloque, d in css.declarations() if d.name == "z-index"]
     assert alturas, "la prueba dejó de encontrar los z-index"
     sueltas = [
-        f"línea {bloque.line}: {valor}"
-        for bloque, valor in alturas
-        if _token_de(valor) not in escala
+        f"{bloque.place}: {valor}" for bloque, valor in alturas if _token_de(valor) not in escala
     ]
     assert sueltas == []
     fuera = [
-        f"línea {bloque.line}: {d.name}"
+        f"{bloque.place}: {d.name}"
         for bloque, d in css.declarations()
         if d.name.startswith("--z-")
         and not (getattr(bloque, "selector", None) == ":root" and bloque.context == ())

@@ -1,4 +1,4 @@
-{% load joined newsletter social static %}
+{% load joined newsletter social static stylesheets %}
 <!doctype html>
 <html lang="es">
 <head>
@@ -47,16 +47,16 @@
      Las dos fuentes que pinta la primera pantalla se piden ya, sin esperar a que el
      navegador lea la hoja de estilos y descubra que las necesita: Bricolage Grotesque (nombre del sitio
      y títulos) y la redonda de la serif (todo el texto). La cursiva no: rara vez está en
-     la primera pantalla. La URL debe ser EXACTAMENTE la que resuelve el url() del CSS
-     (sin parámetro de versión), o el archivo se descargaría dos veces. `crossorigin` es
-     obligatorio en una precarga de fuente aunque sea del mismo origen.
+     la primera pantalla. La URL debe ser EXACTAMENTE la que resuelve el url() de su
+     @font-face en base.css (sin parámetro de versión), o el archivo se descargaría dos veces.
+     `crossorigin` es obligatorio en una precarga de fuente aunque sea del mismo origen.
   {% endcomment %}
   <link rel="preload" href="{% static 'fonts/bricolage-grotesque.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/rdv-serif.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'css/site.css' %}{{ version_estaticos }}">
+  {% stylesheet_links version_estaticos %}
   {% comment %}
      htmx auto-hospedado (sin CDN): la CSP restrictiva permite solo 'self'. Sin sus estilos de
-     indicador, que mete en un estilo en línea que la CSP bloquea: viven en site.css.
+     indicador, que mete en un estilo en línea que la CSP bloquea: viven en componentes.css.
   {% endcomment %}
   <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
@@ -65,7 +65,7 @@
   {# La lupa de la cabecera: foco al campo al abrir y Escape para cerrar. #}
   <script src="{% static 'js/buscador.js' %}{{ version_estaticos }}" defer></script>
   {% comment %}
-     La cabecera al bajar: pone la cápsula al pasar la cabecera (el aspecto, en site.css). Sin
+     La cabecera al bajar: pone la cápsula al pasar la cabecera (el aspecto, en estados.css). Sin
      defer: su primera línea pone la marca de la que depende la hoja antes de la primera pintura.
   {% endcomment %}
   <script src="{% static 'js/cabecera.js' %}{{ version_estaticos }}"></script>
@@ -138,7 +138,7 @@
   </header>
 
   {% if messages %}
-    {# `mensajes`: con un aviso, la obra de la portada empieza debajo de él (site.css). #}
+    {# `mensajes`: con un aviso, la obra de la portada empieza debajo de él (componentes.css). #}
     <div class="wrap-wide mensajes">
       {% for message in messages %}
         <p class="flash flash-{{ message.tags }}">{{ message }}</p>
@@ -150,7 +150,7 @@
      El lienzo tiene tres carriles: lectura (el ancho de siempre), ancho y a sangre.
      Cada hijo directo de <main> cae en el de lectura salvo que la página pida otra
      cosa con el bloque `lienzo` (los índices y la portada piden «lienzo--ancho»).
-     Ver «Lienzo» en site.css.
+     Ver lienzo.css.
   {% endcomment %}
   <main id="main" class="lienzo {% block lienzo %}{% endblock %}">
     {% block content %}{% endblock %}

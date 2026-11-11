@@ -6,7 +6,7 @@
 // prisa (D32): con la curva de la tirada el libro arranca suave, viaja por el medio y se asienta
 // despacio; con la de antes, casi todo el recorrido pasaba en los primeros 90 ms. Aquí solo
 // se cambian clases y atributos y se anima con la API de animaciones; el aspecto vive en
-// site.css (la CSP no admite estilos en línea). Nada se mueve solo.
+// componentes.css (la CSP no admite estilos en línea). Nada se mueve solo.
 (() => {
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
   const DESLIZA = 800;

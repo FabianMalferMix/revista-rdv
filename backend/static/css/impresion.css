@@ -1,0 +1,25 @@
+/* La capa impresion (el orden de las capas, en tokens.css): lo que cambia al imprimir. */
+@layer impresion{
+/* Al imprimir. Es la última capa: le gana a todo lo de pantalla sin `!important`. */
+
+@media print{
+  .masthead, .site-foot, .busqueda-resultados, .no-print{display:none}
+  body{display:block; min-height:0; background:#fff; color:#000; font-size:12pt}
+  .wrap{max-width:none; padding:0}
+  .lienzo{display:block; padding:0}
+  /* El duotono se pinta mezclando la foto con un fondo azul, y el navegador no imprime los
+     fondos: la foto, aclarada sobre el blanco de la hoja, salía en blanco. En papel, la
+     foto tal cual, como al señalarla. */
+  .riso-duo img{filter:none; mix-blend-mode:normal}
+  .riso-duo::after{content:none}
+  .dossier-head{padding-top:0}
+  .dossier-contact{border:1px solid #999; background:#fff}
+  /* Ni un título al pie de una hoja ni una entrada partida entre dos. Una sección
+     entera sin partir dejaba media hoja en blanco: la de integrantes no cabe en una. */
+  .dossier-doc .subhead{break-after:avoid}
+  .dossier-intro > section, .dossier-integrante, .cronologia-anio, .dossier-publicacion,
+  .press-quote, .dossier-aliados li, .dossier-contact{break-inside:avoid}
+  .stats-strip{border-bottom:1px solid #999}
+  .press-quote{border-left-color:#000}
+}
+}

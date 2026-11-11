@@ -1,13 +1,15 @@
-"""El analizador de la hoja de estilos con el que las pruebas leen site.css (tests/css.py).
+"""El analizador de la hoja de estilos con el que las pruebas leen la del sitio (tests/css.py).
 
 Una regla se encuentra por su contexto y su selector, y el formato de la hoja (los espacios, los
-saltos de línea, los comentarios) no cambia lo que el analizador lee en ella.
+saltos de línea, los comentarios) no cambia lo que el analizador lee en ella. Una hoja de varios
+archivos se lee como el navegador lee los que enlaza una página: uno tras otro.
 """
 
 import re
 
 import pytest
 
+from config.staticfiles import STYLESHEETS
 from tests import css
 
 COMPACT = """
@@ -97,10 +99,11 @@ def test_formatting_does_not_change_what_the_sheet_says():
 
 def test_reformatting_the_site_sheet_changes_nothing():
     """Toda la hoja del sitio, con otros blancos en cada sitio donde caben, se lee igual."""
-    original = css.SITE_CSS.read_text(encoding="utf-8")
-    reformateada = _reformat(original)
-    assert reformateada != original
-    antes, despues = css.Stylesheet(original), css.Stylesheet(reformateada)
+    originales = [(path, (css.STATIC / path).read_text(encoding="utf-8")) for path in STYLESHEETS]
+    reformateadas = [(path, _reformat(text)) for path, text in originales]
+    assert all(a != b for (_, a), (_, b) in zip(reformateadas, originales, strict=True))
+    antes, despues = css.Stylesheet(*originales), css.Stylesheet(*reformateadas)
+    assert antes.rules == css.rules() and antes.layers == css.layers()
     assert len(antes.rules) > 100 and antes.at_rules("font-face")
     assert despues.rules == antes.rules
     assert despues.at_rules() == antes.at_rules()
@@ -182,6 +185,34 @@ def test_outside_the_layers_a_rule_wins_unless_it_is_important():
     assert x.layer == ("a", "b", None)
 
 
+def test_several_files_read_one_after_another():
+    """Las capas se ordenan por su primera mención en cualquiera de los archivos y, en una
+    misma capa, gana la regla del archivo posterior aunque su línea vaya antes: es el orden en
+    que el navegador lee los archivos que enlaza la página. Cada regla sabe de qué archivo es,
+    y los mensajes lo dicen."""
+    hoja = css.Stylesheet(
+        ("primera.css", "@layer a, b;\n\n\n@layer a{.x{color:red}}"),
+        ("segunda.css", "@layer b{.y{color:blue}}"),
+        ("tercera.css", "@layer a{.x{color:green; margin:0}}"),
+    )
+    assert hoja.layers == ("a", "b")
+    x = hoja.rule((), ".x")
+    assert x["color"] == "green" and x.values("color") == ("red", "green")
+    assert [(r.selector, r.sheet, r.line) for r in hoja.rules] == [
+        (".x", "primera.css", 4),
+        (".y", "segunda.css", 1),
+        (".x", "tercera.css", 1),
+    ]
+    assert hoja.rules[2].position > hoja.rules[0].position
+    assert x.place == "primera.css, línea 4"
+    with pytest.raises(KeyError, match=r"\(primera\.css, línea 4\) no declara «padding»"):
+        x["padding"]
+    with pytest.raises(AssertionError, match=r"mal formado en segunda\.css, línea 2"):
+        css.Stylesheet(("primera.css", ".a{color:red}"), ("segunda.css", "\n.b{color}"))
+    # Control: sin nombre, la línea sola, como en una hoja de un archivo.
+    assert css.Stylesheet(".a{color:red}").rules[0].place == "línea 1"
+
+
 def test_the_layers_are_ordered_by_their_first_mention():
     hoja = css.Stylesheet("@layer b{.x{color:blue}} @layer a{.x{color:red}} @layer a, b;")
     assert hoja.layers == ("b", "a")
@@ -245,3 +276,14 @@ def test_the_site_sheet_is_read_once():
     assert css.rules() is css.site().rules
     assert css.layers() is css.site().layers
     assert css.rule((), ":root")["color-scheme"] == "light"
+
+
+def test_the_site_sheet_is_its_files_in_the_order_of_the_list():
+    """Lo que leen las pruebas son los archivos de la lista, en su orden, y cada regla sabe de
+    cuál viene."""
+    assert css.SITE_SHEETS == tuple(css.STATIC / path for path in STYLESHEETS)
+    seen = list(dict.fromkeys(rule.sheet for rule in css.rules()))
+    assert seen == list(STYLESHEETS)
+    assert [rule.sheet_index for rule in css.rules()] == sorted(
+        STYLESHEETS.index(rule.sheet) for rule in css.rules()
+    )

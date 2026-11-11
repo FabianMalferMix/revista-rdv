@@ -204,7 +204,7 @@ vigente más cercano y no se agrava la deuda.
     - Los permisos se prueban por HTTP, con los grupos reales.
 
     Bien: `tests/test_contraste_paleta.py` calcula el contraste desde los tokens. Mal: afirmar que
-    `site.css` contiene `repeat(5, minmax(0, 1fr))`, porque un cambio cosmético la rompe y una
+    la hoja contiene `repeat(5, minmax(0, 1fr))`, porque un cambio cosmético la rompe y una
     regresión real la pasa. Si una prueba falla tras un cambio de diseño, no se copia el valor
     nuevo sin preguntarse qué vigilaba.
 11. **Herramientas de desarrollo.** No viven en las apps de producción ni se protegen con

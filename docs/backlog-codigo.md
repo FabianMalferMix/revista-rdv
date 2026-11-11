@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04, y C34, el 2026-11-05. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 77 de 88 tickets cerrados (39 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B88 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla, y B88, por lo que se vio en B72.
+> **Avance:** 78 de 90 tickets cerrados (39 S, 45 M y 5 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B90 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72, y B89 y B90, por la ronda de vistos buenos.
 
 ## Cómo se usa
 
@@ -172,7 +172,7 @@
 | B69 | La composición visual sale de las vistas | B26 | M | no | hecho (#265) |
 | B70 | Parciales con contrato y filas sin N+1 | B13 | M | no | hecho (#267) |
 | B71 | Recetas de plantilla compartidas | B25, B29 | M | no | hecho (#268) |
-| B72 | La cascada de site.css en capas | B11, B58 | L | no | en curso (etapa 1: #269; etapa 2: #271) |
+| B72 | La cascada de site.css en capas | B11, B58 | L | no | hecho (#269, #271, #272) |
 | B73 | Navegación de una sola fuente | — | S | no | pendiente |
 | B74 | Guiones con un módulo común | B11 | S | no | pendiente |
 | B75 | Convenciones HTTP | — | S | no | pendiente |
@@ -185,6 +185,8 @@
 | B86 | Las imágenes de otro sitio se copian al guardar | B68 | M | no | pendiente |
 | B87 | Los enlaces de YouTube en todas sus formas | B68 | S | no | pendiente |
 | B88 | La cápsula que se abre con el teclado busca con todo su ancho | B72 (etapa 1) | S | no | hecho (#270) |
+| B89 | Cuatro detalles a la vista | B72 | S | no | pendiente |
+| B90 | La vista previa no enlaza a lo que no se ve | B71 | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1410,7 +1412,7 @@ La poda de comentarios va en B78.
 
 - De REN-5: el perfil se lee una vez por petición, de forma perezosa y con sus relaciones precargadas, con un ayudante para las vistas y los feeds; fuera la copia `profile` del contexto del dossier.
 - De REN-6: la galería precarga tres fotos por evento, con un `Count` aparte, y la tirada, una; la galería se pagina como los demás índices (C21); `only()` en los sitemaps; `cache_page` de una hora en el sitemap y en los feeds; respuestas 304 con `ConditionalGetMiddleware`.
-- De REN-7: `site.css` se sirve sin comentarios ni espacios, quitados en `post_process` antes del hash, comprobando los `url()` de las fuentes y las precargas.
+- De REN-7: las hojas del sitio (`STYLESHEETS`, en `config/staticfiles.py`) se sirven sin comentarios ni espacios, quitados en `post_process` antes del hash, comprobando los `url()` de las fuentes y las precargas.
 - De REN-2, lo opcional que B52 no hizo: Caddy sirve los `.gz` que ya escribe el almacenamiento (`precompressed gzip` en el `file_server` de `/static/`), o el almacenamiento deja de escribirlos.
 - Los `sizes` que no coinciden con lo que se pinta, medidos en B69 a 951 px: la galería pide 294 px y pinta 579, y las tapas del catálogo, 240 y 273 (salen borrosas); el pliego, el retrato de «Las voces», la cubierta del texto y el mosaico piden de más; en el teléfono, la hoja de contactos pide 96 y pinta 64; y `MOSAIC_WIDTH` (1320) no sigue al carril de 1440 desde 1600 px. Cambia la imagen que se descarga: se le enseña al dueño.
 - La ficha de una editorial hace una consulta por publicación, vista en B70: `publisher_detail` trae las publicaciones solo con su tapa (`select_related("cover")`), y `_publication_card` pinta `pub.publisher.name`.
@@ -1418,7 +1420,7 @@ La poda de comentarios va en B78.
 
 Medir el LCP en la vista previa de producción antes y después, como pide §4 del registro.
 
-**Hecho cuando.** La portada y el dossier leen el perfil una vez; la galería con 30 eventos cuesta las mismas consultas que con 3; el `site.css` servido no tiene comentarios; un estático pedido a Caddy con `Accept-Encoding: gzip` sale del `.gz` ya escrito, o en `staticfiles/` no queda ningún `.gz`.
+**Hecho cuando.** La portada y el dossier leen el perfil una vez; la galería con 30 eventos cuesta las mismas consultas que con 3; ninguna hoja servida tiene comentarios; un estático pedido a Caddy con `Accept-Encoding: gzip` sale del `.gz` ya escrito, o en `staticfiles/` no queda ningún `.gz`.
 
 #### B77 · Nombres trampa y rótulos completos
 
@@ -1439,7 +1441,7 @@ Las anotaciones de tipo del punto 4 de MAN-1 no entran: siguen diferidas («mypy
 
 **Hallazgos:** AGE-3 (la pasada), ARQ-7 (docstrings de módulo), OPE-8 (identificadores externos), SEG-2 (referencias «S-NN») · **Depende de:** B03 · **Tamaño:** L · **Lanzamiento:** no · **Decisiones:** —
 
-**Alcance.** El punto 2 de AGE-3, área por área, con un PR por app y otro para `site.css`:
+**Alcance.** El punto 2 de AGE-3, área por área, con un PR por app y otro para las hojas del sitio:
 
 - fuera los «Antes…», «Medía…» y «el dueño…», y los identificadores de decisión y de sesión;
 - queda, en una frase, la restricción vigente que explica el código;
@@ -1447,7 +1449,7 @@ Las anotaciones de tipo del punto 4 de MAN-1 no entran: siguen diferidas («mypy
 
 Cada PR baja la línea base de B03.
 
-**Hecho cuando.** La línea base de identificadores queda en cero fuera de las migraciones (o en una lista corta de excepciones justificadas), y los comentarios de `site.css` solo explican restricciones.
+**Hecho cuando.** La línea base de identificadores queda en cero fuera de las migraciones (o en una lista corta de excepciones justificadas), y los comentarios de las hojas solo explican restricciones.
 
 #### B79 · La suite, por componente
 
@@ -1531,6 +1533,39 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** Arriba de la portada, abrir la lupa con el teclado y buscar se ve igual que en la cápsula al bajar.
 
+#### B89 · Cuatro detalles a la vista
+
+**Hallazgos:** fuera de la auditoría: vistos en la tanda 7 y aprobados por el dueño en la ronda de vistos buenos (2026-11-11) · **Depende de:** B72 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.**
+
+- En la página de quien colabora (`/colaborador/<slug>/`), los poemas no repiten su firma y los textos sí: `contributor_detail.html` no le pasa `sin_firma_de` a la lista de textos. La ficha de integrante sí se lo pasa.
+- En las fichas de obra, editorial y autor quedan unos 96 px entre el filete y el título de la sección, más que en las demás fichas.
+- El borde de error del campo del boletín no se ve nunca: `.newsletter input[type=email]` le gana a `.newsletter [aria-invalid="true"]`, que va después. La prueba de las reglas que ganan por una parte de su selector que no elige nada lo tolera (`TOLERATED`, en `test_css_selectors_match.py`).
+- Con el foco, un `.btn` cambia sus esquinas de 3 a 2 px, porque le gana el anillo de foco. El botón del formulario conserva las suyas (`--r-1`).
+
+**Alcance.**
+
+- en la página de quien colabora, los textos no repiten su firma, como los poemas;
+- en esas tres fichas, entre el filete y el título, el mismo aire que en las demás;
+- el campo del boletín con un error lleva su borde de error, y sale la tolerancia de la prueba;
+- con el foco, cada botón conserva sus esquinas.
+
+**Hecho cuando.** Cada caso tiene capturas de antes y después a 951 y 390 px, y la prueba de especificidad no tolera nada.
+
+#### B90 · La vista previa no enlaza a lo que no se ve
+
+**Hallazgos:** fuera de la auditoría: visto en la tanda 7 y aprobado por el dueño en la ronda de vistos buenos (2026-11-11) · **Depende de:** B71 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C35
+
+**Qué pasa.** En la vista previa de un texto o de un poema sin publicar, el nombre de quien firma sin nada publicado enlaza a su página, que da 404. Pasa en `_firmas_lectura` y en el «Más de» de `article_pie` y de `poem_pie`. En la vista previa de una publicación sin publicar pasa lo mismo con su editorial.
+
+**Alcance.**
+
+- en una vista previa, lo que no tiene página pública se nombra sin enlace (C35), y lo que la tiene sigue enlazado;
+- pruebas por HTTP con los grupos reales del equipo, cada una con su control positivo.
+
+**Hecho cuando.** Ningún enlace de una vista previa lleva a un 404.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1550,7 +1585,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90
 
 ## 5. Lo diferido
 

@@ -4,11 +4,13 @@ Entre reglas de capas distintas gana la de la capa posterior, sea cual sea su es
 (con `!important`, al revés: la anterior), y una regla fuera de las capas les gana a todas. Así
 el orden de la cascada lo dan la capa y el lugar de la regla dentro de ella, y un selector no
 necesita más especificidad que la de lo que elige: los estados de la cabecera van en una capa
-posterior a las piezas, y lo de imprimir, en la última.
+posterior a las piezas, y lo de imprimir, en la última. Cada capa va en su archivo, y las
+páginas los enlazan en el orden de la lista (`STYLESHEETS`).
 """
 
 import re
 
+from config.staticfiles import STYLESHEETS
 from tests import css
 
 # Lo que cambia la cabecera según una marca de la página o de su estado: la barra
@@ -46,13 +48,32 @@ def _selectors(sheet):
     ]
 
 
+def _declares_the_order(block):
+    """Si es una declaración `@layer a, b;`, que solo nombra capas."""
+    return isinstance(block, css.AtRule) and block.name == "layer"
+
+
+def _name(block):
+    return f"«{block.selector}»" if isinstance(block, css.Rule) else f"@{block.name}"
+
+
 def _outside_layers(sheet):
     return [
-        f"«{block.selector}» (línea {block.line})"
-        if isinstance(block, css.Rule)
-        else f"@{block.name} (línea {block.line})"
+        f"{_name(block)} ({block.place})"
         for block in (*sheet.rules, *sheet.at_rules())
-        if block.layer is None and not (isinstance(block, css.AtRule) and block.name == "layer")
+        if block.layer is None and not _declares_the_order(block)
+    ]
+
+
+def _misfiled(sheet, paths):
+    """Lo que va en un archivo que no es el de su capa. El de cada capa es el de su lugar en la
+    lista, que es el de la capa en el orden de la cascada; una capa de más o de menos falla."""
+    own = dict(zip(paths, sheet.layers, strict=True))
+    return [
+        f"{_name(block)} ({block.place}, "
+        + (f"en la capa {block.layer})" if block.layer else "fuera de las capas)")
+        for block in (*sheet.rules, *sheet.at_rules())
+        if not _declares_the_order(block) and block.layer != own[block.sheet]
     ]
 
 
@@ -60,25 +81,43 @@ def _misplaced_states(sheet):
     """Los selectores de un estado de la cabecera fuera de su capa, y los de su capa que no son
     un estado de la cabecera."""
     return [
-        f"«{selector}» (línea {rule.line}, en {rule.layer})"
+        f"«{selector}» ({rule.place}, en {rule.layer})"
         for selector, rule in _selectors(sheet)
         if bool(HEADER_STATE.search(selector)) != (rule.layer == "estados")
     ]
 
 
 def test_the_layer_order_is_declared_once_before_anything_else():
-    """Una sola declaración `@layer`, la primera de la hoja, con todas las capas: el orden de la
-    cascada se lee ahí, y no cambia si un bloque se mueve."""
+    """Una sola declaración `@layer`, la primera de la hoja, en su primer archivo, con todas las
+    capas: el orden de la cascada se lee ahí, y no cambia si un bloque se mueve."""
     statements = css.at_rules("layer")
-    assert len(statements) == 1, [statement.line for statement in statements]
+    assert len(statements) == 1, [statement.place for statement in statements]
     (statement,) = statements
+    assert statement.sheet == STYLESHEETS[0]
     assert css.split_commas(statement.prelude) == css.layers()
     others = [*css.rules(), *(a for a in css.at_rules() if a is not statement)]
-    assert statement.line < min(block.line for block in others)
+    assert statement.position < min(block.position for block in others)
     # Control: con un bloque antes de la declaración, la cascada sigue al bloque.
     moved = css.Stylesheet("@layer b{.x{color:red}}\n@layer a, b;")
     (late,) = moved.at_rules("layer")
-    assert css.split_commas(late.prelude) != moved.layers and late.line > moved.rules[0].line
+    assert css.split_commas(late.prelude) != moved.layers
+    assert late.position > moved.rules[0].position
+
+
+def test_each_file_of_the_list_holds_its_layer_and_only_it():
+    """Un archivo por capa, en la lista en el orden de la cascada: así el orden de los `<link>`
+    es el de las capas, y si el primero no llegara, las demás seguirían en orden."""
+    assert _misfiled(css.site(), STYLESHEETS) == []
+    assert {rule.sheet for rule in css.rules()} == set(STYLESHEETS)
+    # Control: lo de otra capa y lo de fuera de las capas se informan, en su archivo.
+    sheet = css.Stylesheet(
+        ("a.css", "@layer a, b; @layer a{.x{color:red}}"),
+        ("b.css", "@layer b{.y{color:blue}}\n@layer a{.z{color:green}} .w{color:black}"),
+    )
+    assert _misfiled(sheet, ("a.css", "b.css")) == [
+        "«.z» (b.css, línea 2, en la capa a)",
+        "«.w» (b.css, línea 2, fuera de las capas)",
+    ]
 
 
 def test_every_rule_is_inside_a_layer():
@@ -115,9 +154,9 @@ def test_print_lives_in_the_last_layer():
     assert css.layers()[-1] == "impresion"
     printed = [rule for rule in css.rules() if rule.layer == "impresion"]
     assert printed
-    assert [rule.line for rule in printed if PRINT not in rule.context] == []
+    assert [rule.place for rule in printed if PRINT not in rule.context] == []
     elsewhere = [
-        f"«{selector}» (línea {rule.line}, en {rule.layer})"
+        f"«{selector}» ({rule.place}, en {rule.layer})"
         for selector, rule in _selectors(css.site())
         if PRINT in rule.context
         and rule.layer != "impresion"

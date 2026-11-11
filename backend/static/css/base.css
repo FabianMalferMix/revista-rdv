@@ -1,0 +1,137 @@
+/* La capa base (el orden de las capas, en tokens.css): las fuentes, los elementos sin clase y
+   lo que vale para todo: `hidden` y el movimiento. */
+@layer base{
+/* `hidden` oculta siempre. Sin esta regla, cualquier `display` del autor (flex, grid, el de
+   `.btn`) le gana al del navegador y el elemento queda a la vista. Con `!important`, porque ese
+   `display` va en una capa posterior, que sin él le ganaría. */
+[hidden]{display:none !important}
+
+/* Serif de lectura (ver --serif). Dos archivos: redonda y cursiva, cada uno con el eje
+   de peso de 400 a 700; 87 KB entre los dos. */
+@font-face{
+  font-family:"RdV Serif";
+  src:url("../fonts/rdv-serif.woff2") format("woff2");
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
+  font-family:"RdV Serif";
+  src:url("../fonts/rdv-serif-italic.woff2") format("woff2");
+  font-weight:400 700;
+  font-style:italic;
+  font-display:swap;
+}
+/* Reserva mientras llega el archivo: Times New Roman, o su equivalente métrico en Linux
+   (Liberation Serif) y en Android (Tinos), escalada hasta ocupar lo mismo. Las tres miden
+   igual, así que un solo ajuste vale en Windows, macOS y Linux; Georgia no tiene gemela y
+   no sirve de base. Porcentajes MEDIDOS en el navegador sobre 22 textos del sitio: la
+   serif ocupa el 111 % de Times en redonda, el 107,5 % en negrita y el 101,2 % en cursiva.
+   ascent/descent trasladan la línea de base de la serif (103,6 % y 33,5 % del cuerpo)
+   divididos por ese ajuste. */
+@font-face{
+  font-family:"RdV Serif Fallback"; font-style:normal; font-weight:400 500;
+  src:local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"),
+    local("LiberationSerif"), local("Tinos");
+  size-adjust:111%; ascent-override:93.3%; descent-override:30.2%; line-gap-override:0%;
+}
+@font-face{
+  font-family:"RdV Serif Fallback"; font-style:normal; font-weight:600 700;
+  src:local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"),
+    local("LiberationSerif-Bold"), local("Tinos Bold");
+  size-adjust:107.5%; ascent-override:96.4%; descent-override:31.2%; line-gap-override:0%;
+}
+@font-face{
+  font-family:"RdV Serif Fallback"; font-style:italic; font-weight:400 700;
+  src:local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT"), local("Liberation Serif Italic"),
+    local("LiberationSerif-Italic"), local("Tinos Italic");
+  size-adjust:101.2%; ascent-override:102.4%; descent-override:33.1%; line-gap-override:0%;
+}
+
+/* Display auto-hospedada: Bricolage Grotesque (OFL), elegida por el dueño el 2026-10-20 en
+   lugar de Syne. Variable en dos ejes: peso (recortado a 400-700, lo que usa el sitio) y
+   tamaño óptico (12-96), que el navegador ajusta solo: en el nombre grande de la portada
+   se compacta y gana fuerza; en la barra y los botones se abre. Autoalojada por
+   obligación: la CSP declara font-src 'self', así que un CDN de fuentes quedaría bloqueado.
+   La url() es RELATIVA: CompressedManifestStaticFilesStorage la reescribe con
+   hash en collectstatic (no usar {% static %}: el CSS no es plantilla). */
+@font-face{
+  font-family:"Bricolage Grotesque";
+  src:url("../fonts/bricolage-grotesque.woff2") format("woff2");
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+}
+/* Reserva mientras llega el archivo (y si no llega): Arial —o su equivalente métrico,
+   Liberation Sans— escalada hasta ocupar lo mismo, para que nada salte al cargar. Los
+   porcentajes están MEDIDOS en el navegador sobre diez títulos del sitio, a 28 px (el
+   tamaño típico de un título; el tamaño óptico angosta la letra al crecer: a 60 px mide
+   un 4 % menos): Bricolage mide el 102,5 % de Arial en peso normal, el 97,9 % de Arial
+   Bold en seminegra y el 99,2 % en negrita. ascent/descent trasladan su línea de base
+   (93 % y 27 % del cuerpo). */
+@font-face{
+  font-family:"Bricolage Fallback"; font-weight:400 500;
+  src:local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Roboto");
+  size-adjust:102.5%; ascent-override:90.7%; descent-override:26.3%; line-gap-override:0%;
+}
+@font-face{
+  font-family:"Bricolage Fallback"; font-weight:600;
+  src:local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Roboto Bold");
+  size-adjust:97.9%; ascent-override:95%; descent-override:27.6%; line-gap-override:0%;
+}
+@font-face{
+  font-family:"Bricolage Fallback"; font-weight:700;
+  src:local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Roboto Bold");
+  size-adjust:99.2%; ascent-override:93.8%; descent-override:27.2%; line-gap-override:0%;
+}
+
+*{box-sizing:border-box}
+/* Las imágenes llevan width y height en el HTML: reservan su hueco y evitan que la
+   página salte al cargar. Pero esos atributos son solo una PISTA de proporción. Sin
+   `height:auto` el alto del atributo se aplica literal y gana a `aspect-ratio`: una
+   cubierta de 1000×1400 se dibujaba a 180×1400, y una foto apaisada de la galería
+   como una tira vertical. Con el alto en auto manda la proporción —la que fije el
+   CSS o, si no fija ninguna, la del archivo—. Las reglas que dan alto explícito
+   (.partner-logo) no cambian: son de una capa posterior. */
+img, video{max-width:100%; height:auto}
+audio, video{width:100%; margin:6px 0}
+video{border:1px solid var(--border); border-radius:4px; background:#000}
+/* El texto base crece con el monitor: 16 px hasta los 800 de ancho, 17,6 a 1440 y
+   18,8 a 1920, con tope en 19. La parte en rem respeta el tamaño que la persona tenga
+   configurado en su navegador; la parte en vw añade el crecimiento. */
+html{font-size:clamp(100%, .875rem + .25vw, 118.75%)}
+/* `overflow-wrap`: una dirección de correo o un enlace largo no caben en 320 px y no
+   tienen dónde partirse; sin esto empujaban la página hacia los lados (el correo del
+   dossier lo hizo al llegar la serif, un 11 % más ancha que Times). */
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--serif); line-height:var(--lh-lectura); -webkit-font-smoothing:antialiased;
+  overflow-wrap:break-word;
+  /* La página mide al menos el alto de la ventana y el lienzo crece: el pie queda siempre
+     abajo. En una página corta terminaba a media altura y dejaba una franja de papel
+     debajo, que con el pie en tinta se veía como un hueco. */
+  display:flex; flex-direction:column; min-height:100vh; min-height:100dvh}
+/* La interlínea del cuerpo es de lectura. Un título que la hereda queda con las líneas
+   sueltas, como dos frases distintas: nueve la heredaban (el del dossier, a 44px,
+   medía 70px de línea). Las reglas que fijan la suya la conservan. */
+h1, h2, h3{line-height:var(--lh-titulo); text-wrap:balance}
+p{text-wrap:pretty}
+a{color:var(--ink); text-decoration-color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
+
+/* Movimiento: lo justo para que un cambio de estado se note. Solo color, fondo y
+   borde; nada que cambie de sitio o de tamaño. */
+a, button, summary, input, textarea, select, .btn, .tag{
+  transition:color var(--dur-fast) var(--ease), background-color var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease), text-decoration-color var(--dur-fast) var(--ease)}
+/* Quien pide menos movimiento en su sistema no recibe ninguno, tampoco el que se
+   añada mañana: la regla alcanza a todo, no a una lista. Con `!important`, porque el
+   movimiento de cada pieza va en una capa posterior, que sin él le ganaría. */
+@media (prefers-reduced-motion:reduce){
+  *, *::before, *::after{transition-duration:.01ms !important; animation-duration:.01ms !important;
+    animation-iteration-count:1 !important; scroll-behavior:auto !important}
+}
+/* Al imprimir, el enlace sin clase va en negro y sin subrayado. En la base y no en la
+   impresión: el enlace de una pieza conserva en papel el color que le da su pieza. */
+@media print{
+  a{color:#000; text-decoration:none}
+}
+}

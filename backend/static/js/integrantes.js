@@ -11,7 +11,7 @@
 // recorre siempre entera y igual, aunque los retratos cambien mientras lee. Las que esperan
 // quedan fuera de la fila (sr-only) y del tabulador, y el lugar de cada retrato en la fila es su
 // `order`, la única propiedad que escribe el guion: la CSP bloquea el atributo style, no el
-// CSSOM. La tinta es una capa con su clase en site.css.
+// CSSOM. La tinta es una capa con su clase en componentes.css.
 (() => {
   const CADA = 1800;
   const CUBRE = 240;
@@ -160,7 +160,7 @@
 
     // Deslizar con el dedo (o el lápiz) sobre los retratos trae a otras, con la tinta en el
     // sentido del gesto. Solo un gesto claramente horizontal: el vertical sigue bajando la página
-    // (touch-action en site.css). Un deslizamiento no abre la ficha de debajo.
+    // (touch-action en componentes.css). Un deslizamiento no abre la ficha de debajo.
     let x0 = null;
     let y0 = 0;
     let deslizado = 0;

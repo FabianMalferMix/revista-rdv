@@ -5,7 +5,8 @@ ahí un 404 silencioso del recurso. En producción, el manifiesto de WhiteNoise 
 la página entera responde 500. Estas pruebas buscan cada referencia —en las plantillas y en los
 Media de los formularios y del panel— y pintan una página de cada tipo con el almacenamiento de
 producción, también las que solo piden un guion cuando hay datos, y las que lo nombran desde
-Python (`static()`: el icono y la lámina de la portada).
+Python (`static()`: el icono, la lámina de la portada y las hojas del sitio, que enlaza
+`{% stylesheet_links %}` desde la lista de config/staticfiles.py).
 """
 
 import importlib
@@ -26,6 +27,7 @@ from django.urls import reverse
 
 from apps.content.models import Collection, EditorialStatus
 from apps.people.models import Contributor
+from config.staticfiles import STYLESHEETS
 from tests.factories import (
     make_event,
     make_publication,
@@ -63,6 +65,14 @@ def test_every_static_tag_in_the_templates_points_to_a_file():
     assert len(referencias) >= 10, "la expresión dejó de encontrar las referencias"
     faltan = _missing(referencias)
     assert not faltan, [f"{ruta} (en {referencias[ruta]})" for ruta in faltan]
+
+
+def test_every_sheet_of_the_list_points_to_a_file():
+    """Las hojas del sitio no se nombran con `{% static %}` en las plantillas, sino en la lista
+    que pinta `{% stylesheet_links %}`: cada una la encuentra el buscador de estáticos."""
+    assert STYLESHEETS and not _missing(STYLESHEETS)
+    # Control: una hoja que no existe se informa.
+    assert _missing([*STYLESHEETS, "css/no-existe.css"]) == ["css/no-existe.css"]
 
 
 def _project_forms():
@@ -140,6 +150,9 @@ def test_every_kind_of_page_renders_with_the_production_static_storage(
     portada = client.get(reverse("site:home")).content.decode()
     for guion in ("registros", "integrantes", "estante"):
         assert re.search(rf"/static/js/{guion}\.[0-9a-f]{{12}}\.js", portada), guion
+    hojas = re.findall(r'<link rel="stylesheet" href="/static/([^"]+)">', portada)
+    assert [re.sub(r"\.[0-9a-f]{12}(?=\.css$)", "", hoja) for hoja in hojas] == list(STYLESHEETS)
+    assert all(hoja not in STYLESHEETS for hoja in hojas), "las hojas se piden sin su hash"
     assert re.search(r"/static/img/portada/lamina-ancha-1440\.[0-9a-f]{12}\.jpg", portada)
     paginas = [
         *one_of_each.values(),

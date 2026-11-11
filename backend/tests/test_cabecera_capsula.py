@@ -3,7 +3,7 @@
 Arriba, la cabecera de siempre sin el filete; en la portada, nada (el nombre grande es la
 cabecera, como en brikken.co). Al bajar lo que mide la cabecera, una cápsula centrada.
 static/js/cabecera.js se carga en el <head> y pone data-barra="arriba" antes de la primera
-pintura, sin parpadeo, y "pildora" al bajar. site.css solo cambia la cabecera con esa marca: sin
+pintura, sin parpadeo, y "pildora" al bajar. estados.css solo cambia la cabecera con esa marca: sin
 JavaScript, o si el guion no llega o falla al montarse, queda la cabecera fija de siempre.
 """
 
