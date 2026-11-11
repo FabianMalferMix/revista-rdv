@@ -65,9 +65,24 @@ def test_el_mapa_del_pie_no_repite_el_correo_ni_el_instagram(client, perfil):
         assert ("https://www.instagram.com/repitentesdelverso/" in hrefs) is los_lleva
 
 
+def test_the_phone_menu_ends_press_and_management_with_the_contact_address(client, perfil):
+    """En el menú del teléfono, el correo del colectivo cierra «Prensa y gestión», el grupo de
+    quien gestiona, y no se repite en los demás."""
+    menu = soup(client, reverse("content:poem_index")).select_one("header .menu-mapa .foot-groups")
+    groups = {
+        group.select_one(".foot-group-titulo").get_text(strip=True): [
+            a["href"] for a in group.select("a")
+        ]
+        for group in menu.select(".foot-group")
+    }
+    mail = "mailto:hola@example.com"
+    assert {title for title, hrefs in groups.items() if mail in hrefs} == {"Prensa y gestión"}
+    assert groups["Prensa y gestión"][-1] == mail
+
+
 def test_aliados_se_titula_como_el_enlace_que_lleva_a_ella(client):
-    """El pie, la barra del colectivo y el cierre de la portada la llaman «Aliados»; su
-    título decía «Aliados y financiamiento» (la bajada ya habla de los fondos)."""
+    """El pie, la sub-fila de «Prensa y gestión» y el cierre de la portada la llaman
+    «Aliados»; su título decía «Aliados y financiamiento» (la bajada ya habla de los fondos)."""
     assert soup(client, reverse("showcase:partner_index")).h1.get_text(strip=True) == "Aliados"
 
 

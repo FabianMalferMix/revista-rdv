@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo=collection.title territorio="obra" cuenta=items|length singular="pieza" plural="piezas" cejilla="Colección" dek=collection.intro subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo=collection.title territorio="obra" cuenta=items|length singular="pieza" plural="piezas" cejilla="Colección" dek=collection.intro subnav=subnav only %}
   <ul class="filas">
     {% for item in items %}
       {% if item.kind == "poem" %}

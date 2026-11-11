@@ -6,6 +6,6 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Textos" territorio="obra" cuenta=articles.paginator.count singular="texto" plural="textos" dek="Reseñas, ensayos y entrevistas del colectivo." subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo="Textos" territorio="obra" cuenta=articles.paginator.count singular="texto" plural="textos" dek="Reseñas, ensayos y entrevistas del colectivo." subnav=subnav only %}
   {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=2 only %}
 {% endblock %}

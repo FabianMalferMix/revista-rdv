@@ -6,7 +6,7 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Agenda" territorio="colectivo" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo="Agenda" territorio="colectivo" cuenta=events|length singular="actividad anunciada" plural="actividades anunciadas" dek="Próximos recitales, lanzamientos y talleres." subnav=subnav only %}
   {% if events %}
     <ul class="event-list">
       {% for e in events %}

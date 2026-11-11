@@ -3,8 +3,8 @@ que marca lo obligatorio, y se incluye con `only`, con todo lo obligatorio y nad
 
 Sin `only`, una parcial hereda el contexto entero de la página que la incluye: una variable de la
 vista con el nombre de uno de sus parámetros opcionales (una `cejilla`) se pinta donde nadie la
-pidió. Lo que hoy da un procesador de contexto (`site_profile`, las redes, la sub-fila del
-colectivo) también se le pasa por su nombre. Aquí se lee el bloque de cada parcial y se comprueba
+pidió. Lo que hoy da un procesador de contexto (`site_profile`, las redes, la sub-fila, el mapa)
+también se le pasa por su nombre. Aquí se lee el bloque de cada parcial y se comprueba
 con el motor de Django cada `{% include %}` del sitio, también los que van dentro de bloques,
 bucles y condiciones. Y cada parcial se pinta con lo que declara y nada más: la suite usa
 `string_if_invalid`, así que una variable que la parcial lee sin declararla hace fallar la prueba.
@@ -32,6 +32,7 @@ from apps.reviews.models import Publisher, Work
 from apps.showcase.models import SiteProfile
 from apps.showcase.templatetags.publications import cover
 from apps.site import portada
+from apps.site.navigation import site_map, subnav
 from apps.site.templatetags.pie import cierre_pie
 from apps.site.templatetags.portada import portada_img
 from tests.factories import (
@@ -224,7 +225,7 @@ SAMPLES = {
     "partials/_pagination.html": lambda x: {"pagina": x["articles"], "unidad": "textos"},
     "partials/_index_head.html": lambda x: {
         "titulo": "Integrantes",
-        "subnav_colectivo": [{"rotulo": "Integrantes", "url": "/integrantes/", "actual": "page"}],
+        "subnav": subnav("people:member_index"),
         "cuenta": 2,
         "singular": "integrante",
         "plural": "integrantes",
@@ -250,6 +251,7 @@ SAMPLES = {
     "media/partials/_caratula.html": lambda x: {"r": x["recording"]},
     "media/partials/_player.html": lambda x: {"r": x["recording"], "titulo_id": "registro"},
     "partials/_mapa.html": lambda x: {
+        "mapa": site_map(),
         "en_menu": True,
         "site_profile": x["profile"],
         "redes_del_colectivo": [{"platform": "Instagram", "url": "https://instagram.com/rdv"}],

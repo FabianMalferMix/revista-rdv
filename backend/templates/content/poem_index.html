@@ -6,6 +6,6 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Poemas" territorio="obra" cuenta=poems.paginator.count singular="poema" plural="poemas" dek="Poemas de quienes integran el colectivo." subnav_colectivo=subnav_colectivo only %}
+  {% include "partials/_index_head.html" with titulo="Poemas" territorio="obra" cuenta=poems.paginator.count singular="poema" plural="poemas" dek="Poemas de quienes integran el colectivo." subnav=subnav only %}
   {% include "content/partials/_poem_list.html" with poems=poems pagina=poems only %}
 {% endblock %}

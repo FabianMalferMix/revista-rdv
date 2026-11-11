@@ -98,13 +98,13 @@
       {% include "partials/_sello.html" with site_name=site_name only %}
       {% comment %}
          La barra: en escritorio, en línea; en el teléfono se pliega en «Menú», que enseña
-         el mapa del sitio entero. La página o el territorio actual llevan `aria-current`
-         (ver apps/content/context_processors.py).
+         el mapa del sitio entero. La página o el territorio actual llevan `aria-current`.
+         La barra y el mapa salen de la navegación del sitio (apps/site/navigation.py).
       {% endcomment %}
       <details class="nav-disclosure">
         <summary>Menú</summary>
         <nav class="nav" aria-label="Principal">{% for enlace in nav_principal %}<a href="{{ enlace.url }}"{% if enlace.actual %} aria-current="{{ enlace.actual }}"{% endif %}>{{ enlace.rotulo }}</a>{% endfor %}</nav>
-        <div class="menu-mapa">{% include "partials/_mapa.html" with etiqueta="Menú del sitio" en_menu=True site_profile=site_profile redes_del_colectivo=redes_del_colectivo only %}</div>
+        <div class="menu-mapa">{% include "partials/_mapa.html" with etiqueta="Menú del sitio" en_menu=True mapa=mapa site_profile=site_profile redes_del_colectivo=redes_del_colectivo only %}</div>
       </details>
       {% comment %}
          La lupa abre el campo en la fila, en el lugar de los enlaces. Sin JavaScript, el
@@ -177,7 +177,7 @@
          Se repiten aquí los cinco de la barra: quien llega al final de una página larga no
          debería tener que volver arriba. El mismo mapa va en el menú del teléfono.
       {% endcomment %}
-      {% include "partials/_mapa.html" with en_menu=False sin_contacto=True site_profile=site_profile redes_del_colectivo=redes_del_colectivo only %}
+      {% include "partials/_mapa.html" with en_menu=False sin_contacto=True mapa=mapa site_profile=site_profile redes_del_colectivo=redes_del_colectivo only %}
       {# La página del boletín lo pinta en su contenido, con el error junto al campo: ahí no se repite. #}
       {% block boletin %}{% newsletter_form %}{% endblock %}
       <p class="foot-legal">

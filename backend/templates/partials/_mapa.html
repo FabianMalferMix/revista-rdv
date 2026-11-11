@@ -1,9 +1,12 @@
 {% comment %}
-   Mapa del sitio agrupado: el pie y el menú del teléfono. Antes era una sola fila de
-   once enlaces separados por puntos. Los rótulos dan a cada enlace un lugar donde
-   buscarlo en vez de obligar a leerlos todos.
+   Mapa del sitio agrupado: el pie y el menú del teléfono. Los rótulos dan a cada enlace un lugar
+   donde buscarlo en vez de obligar a leerlos todos. Los grupos y sus páginas salen de la
+   navegación del sitio (apps/site/navigation.py); lo que no es una página se escribe aquí: el
+   correo, las redes, RSS y Podcast.
 
    Parámetros (se incluye con `only`):
+     mapa                  los grupos con sus enlaces, del procesador de contexto `nav`
+                           (obligatorio)
      en_menu               en el menú de la cabecera los rótulos no son encabezados: irían
                            antes del título de la página. Hay que darlo siempre, True o False
                            (obligatorio)
@@ -17,37 +20,19 @@
 {% endcomment %}
 {% with t=en_menu|yesno:"p,h2" %}
 <nav class="foot-groups" aria-label="{% firstof etiqueta 'Mapa del sitio' %}">
+  {% for grupo in mapa %}
   <div class="foot-group">
-    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>El colectivo</{{ t }}>
+    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>{{ grupo.titulo }}</{{ t }}>
     <ul>
-      <li><a href="{% url 'people:member_index' %}">Integrantes</a></li>
-      <li><a href="{% url 'agenda:agenda' %}">Agenda</a></li>
-      <li><a href="{% url 'agenda:trayectoria' %}">Trayectoria</a></li>
-      <li><a href="{% url 'agenda:gallery' %}">Galería</a></li>
-    </ul>
-  </div>
-  <div class="foot-group">
-    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>La obra</{{ t }}>
-    <ul>
-      <li><a href="{% url 'content:poem_index' %}">Poemas</a></li>
-      <li><a href="{% url 'content:text_archive' %}">Textos</a></li>
-      <li><a href="{% url 'content:collection_index' %}">Colecciones</a></li>
-      <li><a href="{% url 'showcase:publication_index' %}">Publicaciones</a></li>
-      <li><a href="{% url 'media:recording_index' %}">Registros</a></li>
-    </ul>
-  </div>
-  <div class="foot-group">
-    <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>Prensa y gestión</{{ t }}>
-    <ul>
-      <li><a href="{% url 'showcase:dossier' %}">Dossier</a></li>
-      <li><a href="{% url 'showcase:press_index' %}">Prensa</a></li>
-      <li><a href="{% url 'showcase:partner_index' %}">Aliados</a></li>
-      <li><a href="{% url 'submissions:submit' %}">Enviar una propuesta</a></li>
-      {% if site_profile.correo_de_contacto and not sin_contacto %}
+      {% for enlace in grupo.enlaces %}
+      <li><a href="{{ enlace.url }}">{{ enlace.rotulo }}</a></li>
+      {% endfor %}
+      {% if grupo.contacto and site_profile.correo_de_contacto and not sin_contacto %}
         <li><a href="mailto:{{ site_profile.correo_de_contacto }}">{{ site_profile.correo_de_contacto }}</a></li>
       {% endif %}
     </ul>
   </div>
+  {% endfor %}
   <div class="foot-group">
     <{{ t }}{% if en_menu %} class="foot-group-titulo"{% endif %}>Seguir</{{ t }}>
     <ul>

@@ -132,7 +132,7 @@ vigente más cercano y no se agrava la deuda.
      de su app (`tests/test_partial_folders.py`).
    - Cada parcial dice en su cabecera qué recibe, en un bloque «Parámetros» que marca lo
      obligatorio, y se incluye con `only` y sus parámetros por nombre, también lo que da un
-     procesador de contexto: `partials/_mapa.html` declara `en_menu`, `site_profile` y
+     procesador de contexto: `partials/_mapa.html` declara `mapa`, `site_profile` y
      `redes_del_colectivo`, y `base.html` se los pasa. Un parámetro opcional se lee con
      `{% if %}` o `{% firstof %}`, nunca con `|default`, que con `string_if_invalid` hace fallar
      la suite (`tests/test_partial_contracts.py`).
