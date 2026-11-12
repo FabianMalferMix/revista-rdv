@@ -6,10 +6,16 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.agenda.models import Milestone
+from apps.agenda.models import EventPhoto, Milestone
 from apps.media.models import Recording
 from apps.reviews.models import Publisher
-from tests.factories import make_event, make_photo, make_publication, soup  # noqa: E402
+from tests.factories import (  # noqa: E402
+    instances_built,
+    make_event,
+    make_photo,
+    make_publication,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -96,12 +102,13 @@ def test_event_absolute_url(client):
 def test_stats_service_shape_and_counts():
     # `stats` vive en la capa de servicios (no en views): lo importan portada y dossier.
     from apps.agenda.services import stats
+    from apps.showcase.models import SiteProfile
 
     make_event(slug="pasado-1", starts_at=timezone.now() - timedelta(days=10))
     make_event(slug="pasado-2", starts_at=timezone.now() - timedelta(days=20))
     make_event(slug="festival", type="festival", starts_at=timezone.now() - timedelta(days=30))
     make_event(slug="feria", type="feria", starts_at=timezone.now() - timedelta(days=40))
-    result = stats()
+    result = stats(SiteProfile.load())
     assert set(result) == {"years", "events", "festivals", "festivales", "ferias", "publications"}
     assert result["events"] == 4
     # La trayectoria y el dossier rotulan «festivales/ferias»: `festivals` suma los dos. La
@@ -243,6 +250,45 @@ def test_la_hoja_de_contactos_no_anade_consultas_por_album(client):
         for i in range(4):
             make_photo(evento, position=i)
     assert consultas() == con_uno, "la galería hace una consulta más por cada álbum"
+
+
+def test_the_gallery_costs_the_same_with_three_albums_or_thirty(client):
+    """Cada página enseña doce álbumes, cada uno con su hoja y su cuenta de fotos: con treinta
+    álbumes, las mismas consultas que con tres."""
+    url = reverse("agenda:gallery")
+
+    def album(n):
+        event = make_event(slug=f"album-{n}", title=f"Álbum {n}")
+        for position in range(2):
+            make_photo(event, position=position)
+
+    for n in range(3):
+        album(n)
+    client.get(url)  # en caliente: el perfil ya existe
+    with CaptureQueriesContext(connection) as three:
+        assert client.get(url).status_code == 200
+    for n in range(3, 30):
+        album(n)
+    with CaptureQueriesContext(connection) as thirty:
+        page = soup(client, url)
+    # Control: la página está llena y la paginación cuenta los treinta.
+    assert len(page.select("li.album-card")) == 12
+    assert " ".join(page.select_one(".pagination-count").get_text().split()) == "1–12 de 30 álbumes"
+    assert len(thirty) == len(three), "una consulta más por álbum"
+
+
+def test_the_gallery_brings_only_the_photos_its_sheets_show(client):
+    """Un álbum de ocho fotos enseña tres y dice que son ocho: las otras cinco no se traen."""
+    big = make_event(slug="grande", title="Álbum Grande")
+    for position in range(8):
+        make_photo(big, position=position)
+    make_photo(make_event(slug="chico", title="Álbum Chico"))
+    with instances_built(EventPhoto) as photos:
+        sheets = _hojas(client)
+    assert len(sheets["Álbum Grande"].select(".hoja img")) == 3
+    assert "8 fotos" in sheets["Álbum Grande"].get_text()  # control: la cuenta es la real
+    assert "1 foto" in sheets["Álbum Chico"].get_text()
+    assert len(photos) == 3 + 1
 
 
 def test_la_trayectoria_nombra_cada_editorial_sin_una_consulta_por_libro(client):

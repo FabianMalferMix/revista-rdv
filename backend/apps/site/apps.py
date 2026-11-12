@@ -8,3 +8,8 @@ class SiteConfig(AppConfig):
     name = "apps.site"
     label = "site"
     verbose_name = "Sitio"
+
+    def ready(self):
+        from . import signals
+
+        signals.connect()

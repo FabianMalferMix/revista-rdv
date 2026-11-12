@@ -267,8 +267,8 @@ jobs:
   # Los guiones del sitio, ejecutados en un navegador: la suite de Python solo lee su texto.
   # Levanta el stack de desarrollo, lo puebla con `datos_de_desarrollo cargar` (el único camino
   # para poblar desarrollo, el mismo del README y de tools/ux/preparar-entorno.sh) y corre
-  # tools/ux/browser-smoke.js y el contraste de axe (tools/ux/contraste.js) a 951 y a 375 px,
-  # con el Chrome que trae el runner.
+  # tools/ux/browser-smoke.js (a 951 y a 375 px, y lo que pide cada imagen a 951 y a 390) y el
+  # contraste de axe (tools/ux/contraste.js) a 951 y a 375 px, con el Chrome que trae el runner.
   navegador:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -299,7 +299,7 @@ jobs:
           done
           curl -fsS -o /dev/null http://127.0.0.1:8000/
 
-      - name: Prueba de humo en navegador (951 y 375 px)
+      - name: Prueba de humo en navegador (951, 390 y 375 px)
         run: |
           google-chrome --version
           node tools/ux/browser-smoke.js --base http://127.0.0.1:8000
@@ -430,8 +430,14 @@ jobs:
               || { echo "FALLO: Caddy no sirve la hoja hasheada $CSS"; exit 1; }
             curl -fsS -D - -o /dev/null "$P/static/$CSS" | grep -qi '^cache-control: public, max-age=31536000, immutable' \
               || { echo "FALLO: la hoja hasheada $CSS no se cachea como inmutable"; exit 1; }
+            # Con gzip llega, byte a byte, el .gz que escribió collectstatic: Caddy no la comprime.
+            curl -fsS -H 'Accept-Encoding: gzip' -D gz-cabeceras.txt -o gz-servida "$P/static/$CSS"
+            grep -qi '^content-encoding: gzip' gz-cabeceras.txt \
+              || { echo "FALLO: la hoja $CSS no llega con gzip"; cat gz-cabeceras.txt; exit 1; }
+            [ "$(sha256sum < gz-servida)" = "$(docker compose exec -T web sh -c "sha256sum < /app/staticfiles/$CSS.gz")" ] \
+              || { echo "FALLO: la hoja $CSS con gzip no es el .gz de collectstatic"; exit 1; }
           done
-          echo "OK: Caddy sirve cada hoja hasheada, con caché inmutable: $HOJAS"
+          echo "OK: Caddy sirve cada hoja hasheada, con caché inmutable y su .gz a quien acepta gzip: $HOJAS"
           TINY="$(docker compose exec -T web python -c 'from config.staticfiles import TINYMCE_DIR; print(TINYMCE_DIR)')tinymce.min.js"
           HT=$(curl -fsS -D - -o /dev/null "$P/static/$TINY")
           if echo "$HT" | grep -qi immutable || ! echo "$HT" | grep -qi '^cache-control: no-cache'; then

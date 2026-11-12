@@ -41,7 +41,7 @@
     {% else %}
       {% comment %} Un audio con póster lo enseña al lado, cuadrado, como una portada de disco. {% endcomment %}
       <div class="player-audio">
-        {% if r.poster %}<span class="riso-duo">{% responsive_img r.poster css_class="player-audio-poster" sizes="160px" decorativa=True %}</span>{% endif %}
+        {% if r.poster %}<span class="riso-duo">{% sizes "poster-audio" as sizes %}{% responsive_img r.poster css_class="player-audio-poster" sizes=sizes decorativa=True %}</span>{% endif %}
         <audio controls preload="none" {% if titulo_id %}aria-labelledby="{{ titulo_id }}" {% endif %}src="{{ r.file_url }}"></audio>
       </div>
     {% endif %}

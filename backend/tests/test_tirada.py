@@ -17,12 +17,13 @@ from bs4 import BeautifulSoup
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.agenda.models import EventPhoto
 from apps.content.models import EditorialStatus
 from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.showcase.models import SiteProfile
 from tests import css
-from tests.factories import make_event, make_image, make_photo, make_poem
+from tests.factories import instances_built, make_event, make_image, make_photo, make_poem
 from tests.scripts import taken_from_common
 
 pytestmark = pytest.mark.django_db
@@ -102,6 +103,21 @@ def test_la_imagen_es_el_poster_o_la_primera_foto_del_evento(client):
     assert all(
         img["alt"] == "" and img["loading"] == "lazy" for img in tirada.select(".pliego-placa img")
     )
+
+
+def test_the_tirada_brings_only_the_photo_each_pliego_shows(client):
+    """Un pliego sin póster lleva la primera foto de su evento: las demás no se traen."""
+    for n in range(2):
+        evento = make_event(slug=f"recital-{n}", title=f"Recital {n}")
+        for position in range(4):
+            make_photo(evento, position=position)
+        _registro(f"registro-{n}", event=evento, position=n)
+    with instances_built(EventPhoto) as photos:
+        _, tirada = _tirada(client)
+    # Control: cada pliego lleva la primera foto de su evento.
+    srcs = [placa.img["src"] for placa in tirada.select(".pliego-placa")]
+    assert [f"foto-recital-{n}-0" in src for n, src in enumerate(srcs)] == [True, True]
+    assert len(photos) == 2
 
 
 def test_el_pliego_cita_el_primer_verso_del_poema_que_se_lee(client):

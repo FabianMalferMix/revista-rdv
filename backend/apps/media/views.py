@@ -16,9 +16,8 @@ def _published():
 
 @require_safe
 def recording_index(request):
-    recordings = _published().prefetch_related("participants")
     return render(
-        request, "media/recording_index.html", {"recordings": paginate(request, recordings)}
+        request, "media/recording_index.html", {"recordings": paginate(request, _published())}
     )
 
 

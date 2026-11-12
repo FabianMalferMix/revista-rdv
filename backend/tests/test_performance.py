@@ -8,14 +8,29 @@ superaría de inmediato. Los techos llevan holgura sobre lo medido hoy.
 
 import pytest
 from django.db import connection
+from django.db.models import QuerySet, TextField
 from django.test import Client
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from apps.content.models import ArticleContributor, PoemContributor
+from apps.content.models import (
+    Article,
+    ArticleContributor,
+    Collection,
+    Page,
+    PoemContributor,
+    PublishStatus,
+    ReviewedWork,
+    Section,
+)
+from apps.media.models import Recording
 from apps.people.models import Contributor
-from apps.reviews.models import Publisher
+from apps.reviews.models import BookAuthor, Publisher, Work
+from apps.showcase.models import SiteProfile
+from apps.site.feeds import FEEDS
+from apps.site.sitemaps import SITEMAPS
 from tests.factories import (
+    SEARCH_PANEL_HEADERS,
     make_article,
     make_event,
     make_image,
@@ -122,3 +137,168 @@ def test_the_home_costs_the_same_with_one_piece_of_each_or_four(client):
     # Control: la portada enseña lo sembrado de la última tanda.
     assert "Editorial 3" in page and "Voz 3" in page and "Libro 3" in page
     assert len(four) == len(one), "una consulta más por pieza"
+
+
+def _profile_reads(queries):
+    return sum('FROM "showcase_siteprofile"' in query["sql"] for query in queries)
+
+
+@pytest.mark.parametrize(
+    "view_name", ["site:home", "showcase:dossier", "agenda:trayectoria", "feed", "recordings_feed"]
+)
+def test_a_page_reads_the_profile_once(client, view_name):
+    """La vista, las plantillas y el feed leen el mismo perfil: una consulta por petición."""
+    SiteProfile.load()  # en caliente: el perfil ya existe
+    with CaptureQueriesContext(connection) as queries:
+        assert client.get(reverse(view_name)).status_code == 200
+    assert _profile_reads(queries) == 1
+
+
+def test_the_search_panel_does_not_read_the_profile(client):
+    """El fragmento que pide la lupa no lleva cabecera ni pie: no paga el perfil."""
+    SiteProfile.load()
+    make_published_article(title="La zarzamora")
+    url = reverse("site:search") + "?q=zarzamora"
+    with CaptureQueriesContext(connection) as panel:
+        found = client.get(url, headers=SEARCH_PANEL_HEADERS).content.decode()
+    assert "La zarzamora" in found  # control: la búsqueda corrió
+    # Control: la página entera de la búsqueda sí lo lee, una vez.
+    with CaptureQueriesContext(connection) as page:
+        assert client.get(url).status_code == 200
+    assert (_profile_reads(panel), _profile_reads(page)) == (0, 1)
+
+
+def _seed_listed(n):
+    """Una pieza de cada cosa que listan el sitemap y los feeds, firmada y reseñada. Devuelve
+    las direcciones que el sitemap tiene que enseñar."""
+    section = Section.objects.create(slug=f"seccion-{n}", name=f"Sección {n}")
+    guest = Contributor.objects.create(slug=f"firma-{n}", display_name=f"Firma {n}")
+    member = Contributor.objects.create(
+        slug=f"integrante-{n}", display_name=f"Integrante {n}", is_member=True
+    )
+    article = make_published_article(slug=f"texto-{n}", section=section)
+    ArticleContributor.objects.create(article=article, contributor=guest)
+    poem = make_published_poem(slug=f"poema-{n}")
+    PoemContributor.objects.create(poem=poem, contributor=member, position=1)
+    publisher = Publisher.objects.create(slug=f"editorial-{n}", name=f"Editorial {n}")
+    author = BookAuthor.objects.create(slug=f"autora-{n}", name=f"Autora {n}")
+    work = Work.objects.create(slug=f"obra-{n}", title=f"Obra {n}", publisher=publisher)
+    work.authors.add(author)
+    ReviewedWork.objects.create(article=article, work=work)
+    pieces = [
+        section,
+        guest,
+        member,
+        article,
+        poem,
+        publisher,
+        author,
+        work,
+        Collection.objects.create(
+            slug=f"coleccion-{n}", title=f"Colección {n}", status=PublishStatus.PUBLISHED
+        ),
+        Page.objects.create(
+            slug=f"pagina-{n}", title=f"Página {n}", body="<p>x</p>", status=PublishStatus.PUBLISHED
+        ),
+        make_event(slug=f"actividad-{n}"),
+        make_publication(slug=f"libro-{n}"),
+        make_recording(slug=f"lectura-{n}", kind=Recording.Kind.AUDIO),
+    ]
+    return [piece.get_absolute_url() for piece in pieces]
+
+
+def _listed_models(name):
+    """Los modelos de lo que lista el sitemap o un feed."""
+    listings = (
+        [s().items() for s in SITEMAPS.values()] if name == "sitemap" else [FEEDS[name].items()]
+    )
+    return {items.model for items in listings if isinstance(items, QuerySet)}
+
+
+# Lo largo que escribe cada feed: la entradilla de cada texto y la descripción de cada registro.
+WRITTEN_TEXT = {"feed": {(Article, "excerpt")}, "recordings_feed": {(Recording, "description")}}
+
+
+@pytest.mark.parametrize("name", ["sitemap", "feed", "recordings_feed"])
+def test_a_listing_does_not_read_the_long_text_of_what_it_lists(client, name):
+    """El sitemap y los feeds leen de cada pieza solo lo que escriben: las filas enteras llevan
+    el cuerpo de cada texto, la transcripción de cada registro y la biografía de cada firma."""
+    article_url = _seed_listed(0)[3]
+    SiteProfile.load()
+    models = _listed_models(name)
+    long_columns = {
+        f'"{model._meta.db_table}"."{field.column}"'
+        for model in models
+        for field in model._meta.concrete_fields
+        if isinstance(field, TextField) and (model, field.name) not in WRITTEN_TEXT.get(name, ())
+    }
+    with CaptureQueriesContext(connection) as queries:
+        assert client.get(reverse(name)).status_code == 200
+    sql = " ".join(query["sql"] for query in queries)
+    # Control: el listado consultó la tabla de cada cosa que lista.
+    assert all(f'FROM "{model._meta.db_table}"' in sql for model in models)
+    assert {column for column in long_columns if column in sql} == set()
+    # Control: la ficha de un texto sí lee su cuerpo, y así se escribe en la consulta.
+    with CaptureQueriesContext(connection) as page:
+        assert client.get(article_url).status_code == 200
+    assert '"content_article"."body"' in " ".join(query["sql"] for query in page)
+
+
+@pytest.mark.parametrize("name", ["sitemap", "feed", "recordings_feed"])
+def test_a_listing_costs_the_same_with_one_piece_of_each_or_three(
+    client, name, django_capture_on_commit_callbacks
+):
+    """Lo que la dirección de cada pieza pide viene en la consulta de su lista: un campo que
+    faltara costaría una consulta por pieza. Cada siembra se confirma, como en el panel, para que
+    el listado no salga de su caché."""
+    SiteProfile.load()
+    with django_capture_on_commit_callbacks(execute=True):
+        _seed_listed(0)
+    with CaptureQueriesContext(connection) as one:
+        assert client.get(reverse(name)).status_code == 200
+    with django_capture_on_commit_callbacks(execute=True):
+        _seed_listed(1)
+        last = _seed_listed(2)
+    with CaptureQueriesContext(connection) as three:
+        body = client.get(reverse(name)).content.decode()
+    # Control: el listado enseña lo de la última siembra (el feed, el texto; el pódcast, el registro).
+    expected = {"sitemap": last, "feed": [last[3]], "recordings_feed": [last[-1]]}[name]
+    assert [url for url in expected if url not in body] == []
+    assert len(three) == len(one), "una consulta más por pieza"
+
+
+def test_a_publisher_page_costs_the_same_with_one_publication_or_ten(client):
+    """Cada tarjeta nombra la editorial de su publicación, que llega en la consulta de la lista."""
+    publisher = Publisher.objects.create(slug="editorial-z", name="Editorial Z")
+    url = publisher.get_absolute_url()
+    make_publication(slug="libro-0", title="Libro 0", publisher=publisher)
+    SiteProfile.load()
+    with CaptureQueriesContext(connection) as one:
+        assert client.get(url).status_code == 200
+    for n in range(1, 10):
+        make_publication(slug=f"libro-{n}", title=f"Libro {n}", publisher=publisher)
+    with CaptureQueriesContext(connection) as ten:
+        page = client.get(url).content.decode()
+    assert "Libro 9" in page  # control: la ficha enseña las diez
+    assert len(ten) == len(one), "una consulta más por publicación"
+
+
+@pytest.mark.parametrize("model", ["publication", "recording"])
+def test_an_index_does_not_read_who_takes_part_and_the_page_does(client, model):
+    """Las tarjetas de los índices no dicen quién participa; la ficha, sí."""
+    voice = Contributor.objects.create(slug="voz", display_name="Voz Participante", is_member=True)
+    if model == "publication":
+        piece, index = make_publication(slug="libro"), reverse("showcase:publication_index")
+    else:
+        piece, index = make_recording(slug="lectura"), reverse("media:recording_index")
+    piece.participants.add(voice)
+    table = f'"{piece.participants.through._meta.db_table}"'
+    with CaptureQueriesContext(connection) as listing:
+        assert piece.get_absolute_url() in client.get(index).content.decode()
+    with CaptureQueriesContext(connection) as page:
+        assert "Voz Participante" in client.get(piece.get_absolute_url()).content.decode()
+
+    def reads(queries):
+        return any(table in query["sql"] for query in queries)
+
+    assert (reads(listing), reads(page)) == (False, True)

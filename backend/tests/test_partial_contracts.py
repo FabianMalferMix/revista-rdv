@@ -259,7 +259,10 @@ SAMPLES = {
         "sin_contacto": True,
     },
     "partials/_newsletter_form.html": lambda x: newsletter_form({"csrf_token": "ficha"}),
-    "partials/_publication_card.html": lambda x: {"pub": x["publication"]},
+    "partials/_publication_card.html": lambda x: {
+        "pub": x["publication"],
+        "tapas": "tapa-editorial",
+    },
     "partials/_responsive_img.html": lambda x: responsive_img(
         x["member"].photo, sizes="96px", css_class="retrato"
     ),

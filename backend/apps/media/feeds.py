@@ -13,7 +13,7 @@ from django.db.models import F
 from django.urls import reverse
 from django.utils.feedgenerator import Rss201rev2Feed
 
-from apps.showcase.models import SiteProfile
+from apps.showcase.profile import request_profile
 from config.feeds import stable_guid
 from config.origin import absolute_url
 
@@ -56,11 +56,13 @@ class RecordingsFeed(Feed):
     feed_type = PodcastFeed
     description = "Registros en audio de lecturas y recitales."
 
-    def _perfil(self):
-        return SiteProfile.load()
+    def get_object(self, request):
+        # El perfil llega a cada método como `obj`: la instancia se comparte entre hilos y no
+        # guarda nada de la petición.
+        return request_profile(request)
 
-    def title(self):
-        return f"{self._perfil().site_name} — Registros"
+    def title(self, perfil):
+        return f"{perfil.site_name} — Registros"
 
     def link(self):
         return absolute_url(reverse("media:recording_index"))
@@ -68,11 +70,10 @@ class RecordingsFeed(Feed):
     def feed_url(self):
         return absolute_url(reverse("recordings_feed"))
 
-    def feed_extra_kwargs(self, obj):
-        p = self._perfil()
+    def feed_extra_kwargs(self, perfil):
         return {
-            "itunes_author": p.site_name,
-            "itunes_summary": p.tagline or self.description,
+            "itunes_author": perfil.site_name,
+            "itunes_summary": perfil.tagline or self.description,
             "itunes_explicit": "false",
             "itunes_category": "Arts",
         }
@@ -84,6 +85,8 @@ class RecordingsFeed(Feed):
         return (
             Recording.objects.published()
             .filter(kind=Recording.Kind.AUDIO)
+            # Solo lo que escribe cada ítem, con el archivo del enclosure.
+            .only("slug", "title", "description", "kind", "published_at", "file")
             .order_by(F("published_at").desc(nulls_last=True), "-created_at")[:20]
         )
 

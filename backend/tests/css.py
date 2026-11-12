@@ -35,6 +35,9 @@ hoja no cambia ningún resultado:
 
 Las cadenas y los números se escriben como en la hoja. Las consultas (el contexto y el selector
 que se piden) se normalizan igual.
+
+`sizes_at` lee un atributo `sizes` como el navegador: lo que pide la imagen en una ventana de
+un ancho dado.
 """
 
 import re
@@ -61,6 +64,13 @@ _VALUE_OPERATORS = frozenset({"/", "*"})
 _TOKEN = re.compile(r"var\((--[\w-]+)\)")
 _PX = re.compile(r"(-?[\d.]+)px")
 _CLAMP = re.compile(r"clamp\((-?[\d.]+)px, [^,]+, (-?[\d.]+)px\)")
+_SIZES_TRAMO = re.compile(r"\((max|min)-width:\s*(\d+)px\)\s+(.+)")
+_MATH = {
+    "calc": lambda args: args[0],
+    "min": min,
+    "max": max,
+    "clamp": lambda args: max(args[0], min(args[1], args[2])),
+}
 
 
 @dataclass(frozen=True)
@@ -510,3 +520,54 @@ def resolve(value, context=()):
 
 def px_range(value, context=()):
     return site().px_range(value, context)
+
+
+def sizes_at(sizes, viewport):
+    """Lo que pide un atributo `sizes` en una ventana de `viewport` px de ancho, en px: la
+    longitud del primer tramo cuya consulta se cumple o, si no se cumple ninguna, la última."""
+    for entry in split_commas(sizes):
+        if not (tramo := _SIZES_TRAMO.fullmatch(entry)):
+            return length_at(entry, viewport)
+        kind, cut, length = tramo.groups()
+        if viewport <= int(cut) if kind == "max" else viewport >= int(cut):
+            return length_at(length, viewport)
+    raise AssertionError(f"«{sizes}» no dice qué pide a {viewport} px")
+
+
+def length_at(length, viewport):
+    """Una longitud en px y vw, con calc(), min(), max() y clamp(), en una ventana de `viewport`
+    px de ancho."""
+    return _sum(tinycss2.parse_component_value_list(length, skip_comments=True), viewport)
+
+
+def _sum(nodes, viewport):
+    # Una suma de productos, como en calc(): `*` y `/` antes que `+` y `-`.
+    total, sign, product, operator = 0.0, 1, None, "*"
+    for node in nodes:
+        if node.type == "whitespace":
+            continue
+        if node.type == "literal" and node.value in "+-":
+            total, sign, product = total + sign * product, 1 if node.value == "+" else -1, None
+        elif node.type == "literal" and node.value in "*/":
+            operator = node.value
+        else:
+            value = _operand(node, viewport)
+            if product is None:
+                product = value
+            else:
+                product = product * value if operator == "*" else product / value
+    return total + sign * product
+
+
+def _operand(node, viewport):
+    if node.type == "dimension":
+        return node.value * {"px": 1, "vw": viewport / 100}[node.lower_unit]
+    if node.type == "number":
+        return node.value
+    if node.type == "() block":
+        return _sum(node.content, viewport)
+    if node.type == "function" and node.lower_name in _MATH:
+        return _MATH[node.lower_name](
+            [_sum(part, viewport) for part in _split_at_commas(node.arguments)]
+        )
+    raise AssertionError(f"no sé medir «{tinycss2.serialize([node])}»")

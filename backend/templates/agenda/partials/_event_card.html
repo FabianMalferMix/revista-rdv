@@ -12,7 +12,7 @@
     <span class="event-day">{{ e.starts_at|date:"j" }}</span>
     <span class="event-month">{{ e.starts_at|date:"b Y" }}</span>
   </div>
-  {% if e.poster %}<span class="event-afiche riso-duo">{% responsive_img e.poster sizes="128px" decorativa=True %}</span>{% endif %}
+  {% if e.poster %}<span class="event-afiche riso-duo">{% sizes "afiche-agenda" as sizes %}{% responsive_img e.poster sizes=sizes decorativa=True %}</span>{% endif %}
   <div class="event-info">
     <span class="kicker">{% joined %}{{ e.get_type_display }}{% part %}{% if e.is_external %}{{ e.host }}{% endif %}{% endjoined %}</span>
     <h2><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>

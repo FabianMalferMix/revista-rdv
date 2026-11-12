@@ -13,6 +13,7 @@ import importlib
 import re
 from importlib.util import find_spec
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 import pytest
 from django.apps import apps
@@ -168,3 +169,37 @@ def test_every_kind_of_page_renders_with_the_production_static_storage(
     assert "</html>" in loader.render_to_string("500.html")
     client.force_login(django_user_model.objects.create_superuser("panel", "p@example.com", "x"))
     assert client.get(reverse("admin:content_article_add")).status_code == 200
+
+
+def _served(client, url):
+    response = client.get(url)
+    assert response.status_code == 200, url
+    return b"".join(response.streaming_content)
+
+
+@pytest.mark.django_db
+def test_the_sheets_are_served_without_comments_and_preload_the_fonts_they_ask_for(
+    client, production_statics
+):
+    """Cada hoja se sirve sin los comentarios ni los saltos de línea de su fuente. Cada `url()`
+    lleva a un archivo servido, y cada fuente que precarga base.html es una de esas URL: con
+    otra, el navegador bajaría la fuente dos veces."""
+    portada = client.get(reverse("site:home")).content.decode()
+    hojas = re.findall(r'<link rel="stylesheet" href="(/static/[^"]+)">', portada)
+    assert len(hojas) == len(STYLESHEETS)
+    pedidas = set()
+    for hoja, nombre in zip(hojas, STYLESHEETS, strict=True):
+        servida = _served(client, hoja).decode("utf-8")
+        fuente = Path(finders.find(nombre)).read_text("utf-8")
+        assert "/*" in fuente and "\n" in fuente  # control: la fuente los tiene
+        assert servida.startswith("@layer"), nombre  # control: es la hoja, con sus reglas
+        assert "/*" not in servida and "\n" not in servida, nombre
+        for url in re.findall(r"""url\((['"]?)(.*?)\1\)""", servida):
+            if not url[1].startswith("data:"):
+                pedidas.add(urljoin(hoja, url[1]))
+    fuentes = {url for url in pedidas if urlsplit(url).path.endswith(".woff2")}
+    assert len(fuentes) == 3, pedidas  # control: las tres fuentes del sitio
+    for url in pedidas:
+        _served(client, url)
+    precargas = re.findall(r'<link rel="preload" href="([^"]+)" as="font"', portada)
+    assert precargas and set(precargas) <= fuentes, (precargas, fuentes)

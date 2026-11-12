@@ -97,12 +97,15 @@ def build_tirada(profile):
         .select_related("poster", "event")
         .prefetch_related(
             "participants",
-            # Solo las fotos de eventos publicados: las de uno oculto nunca llegan al pliego.
+            # La primera foto de cada evento publicado, la que hace de imagen del pliego sin
+            # póster: las de uno oculto nunca llegan al pliego. Un corte solo se precarga en
+            # un atributo propio.
             Prefetch(
                 "event__photos",
                 queryset=EventPhoto.objects.filter(
                     event__in=Event.objects.published()
-                ).select_related("asset"),
+                ).select_related("asset")[:1],
+                to_attr="first_photos",
             ),
         )
     )
@@ -125,7 +128,7 @@ def build_tirada(profile):
 
 def _pliego(registro, poema):
     evento = registro.public_event
-    fotos = list(evento.photos.all()) if evento else []
+    fotos = evento.first_photos if evento else []
     if evento and evento.starts_at:
         cuando = registro.recorded_on or timezone.localtime(evento.starts_at).date()
     else:

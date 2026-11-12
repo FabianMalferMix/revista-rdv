@@ -4,10 +4,11 @@
    caja, y debajo qué es, de qué año y de qué editorial. Toda la tapa es el enlace.
 
    Parámetros (se incluye con `only`):
-     pub   la publicación (obligatorio)
+     pub    la publicación (obligatorio)
+     tapas  el nombre de lo que mide la tapa en `{% sizes %}`, si no es el índice del catálogo
 {% endcomment %}<li class="pub-card">
   <a href="{{ pub.get_absolute_url }}">
-    {% sizes "tapa-catalogo" as sizes %}{% cover pub sizes %}
+    {% firstof tapas "tapa-catalogo" as tapa %}{% sizes tapa as sizes %}{% cover pub sizes %}
     <span class="pub-title">{{ pub.title }}</span>
   </a>
   <span class="muted">{% joined %}{{ pub.get_kind_display }}{% part %}{% if pub.year %}{{ pub.year }}{% endif %}{% part %}{% if pub.publisher %}{{ pub.publisher.name }}{% endif %}{% endjoined %}</span>

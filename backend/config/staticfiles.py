@@ -3,7 +3,9 @@
 `STYLESHEETS` es la lista de las hojas del sitio, una por capa, en el orden de la cascada: de
 ella salen sus `<link>` (`{% stylesheet_links %}`, en apps/site), el sufijo que rompe la caché
 en desarrollo (config/context_processors.py), lo que leen las pruebas (tests/css.py) y lo que
-comprueba el CI en producción.
+comprueba el CI en producción. Se sirven sin comentarios ni espacios: `post_process` las minifica
+(rcssmin) en STATIC_ROOT antes de calcular su hash, así que el hash, la reescritura de sus `url()`
+y su `.gz` salen de la copia minificada. La fuente, con sus comentarios, no cambia.
 
 En runtime TinyMCE se auto-carga pidiendo `themes/silver/theme.min.js`,
 `skins/ui/oxide/skin.min.css`, `plugins/lists/plugin.min.js`, etc. relativos a
@@ -18,6 +20,8 @@ cambia y ningún navegador sigue con la copia vieja en caché.
 import json
 from pathlib import Path
 
+import rcssmin
+from django.core.files.base import ContentFile
 from whitenoise.storage import CompressedManifestStaticFilesStorage
 
 _VENDOR = json.loads(
@@ -54,6 +58,7 @@ class VendoredStaticFilesStorage(CompressedManifestStaticFilesStorage):
 
         vendored = {k: v for k, v in paths.items() if self._is_vendored(k)}
         others = {k: v for k, v in paths.items() if not self._is_vendored(k)}
+        others.update(self._minify_stylesheets(others))
 
         # Procesa (hash + reescritura de refs + compresión + manifiesto) todo lo demás.
         yield from super().post_process(others, dry_run=dry_run, **options)
@@ -66,3 +71,20 @@ class VendoredStaticFilesStorage(CompressedManifestStaticFilesStorage):
             yield name, clean, True
         if vendored:
             self.save_manifest()
+
+    def _minify_stylesheets(self, paths):
+        """Escribe en STATIC_ROOT cada hoja de `STYLESHEETS` minificada, y la devuelve como su
+        origen: el hash y la reescritura de las `url()` leen el origen de cada archivo, no la copia
+        que dejó collectstatic."""
+        minified = {}
+        for name in STYLESHEETS:
+            if name not in paths:
+                continue
+            storage, path = paths[name]
+            with storage.open(path) as source:
+                css = rcssmin.cssmin(source.read().decode("utf-8"))
+            if self.exists(name):
+                self.delete(name)
+            self._save(name, ContentFile(css.encode("utf-8")))
+            minified[name] = (self, name)
+        return minified

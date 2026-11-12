@@ -73,6 +73,9 @@ la recorre. La ficha que nombra tiene que estar en los datos de desarrollo:
 guiones ejecutándose de verdad. Comprueba que:
 
 - las páginas de `pages.txt` no desbordan a lo ancho;
+- a 951 y a 390 px, cada imagen pide con su `sizes` el ancho al que se pinta, o al que se dibuja
+  si desborda su caja, con un 5 % y 2 px de margen: en `pages.txt`, en la ficha de una editorial y
+  en un registro de audio;
 - los controles de la cabecera miden 44 px o más;
 - «Menú» abre y cierra, también al salir el foco, sin moverlo ni dejar lo enfocado tapado;
 - la lupa busca en vivo, no busca con una letra y anuncia una sola vez el recuento, sin leer los

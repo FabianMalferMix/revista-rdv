@@ -16,6 +16,8 @@ from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from tests.factories import (
     make_article,
+    make_event,
+    make_photo,
     make_poem,
     make_published_article,
     make_published_poem,
@@ -183,6 +185,12 @@ def _recording_index():
     return reverse("media:recording_index")
 
 
+def _gallery():
+    for _ in range(13):
+        make_photo(make_event())
+    return reverse("agenda:gallery")
+
+
 def _reviewed(owner):
     publisher = Publisher.objects.create(slug="editorial", name="Editorial")
     author = BookAuthor.objects.create(slug="autora", name="Autora")
@@ -202,6 +210,7 @@ PAGINATED = {
     "content:poem_index": _poem_index,
     "people:member_detail": _member_detail,
     "media:recording_index": _recording_index,
+    "agenda:gallery": _gallery,
     "reviews:work_detail": lambda: _reviewed("work"),
     "reviews:publisher_detail": lambda: _reviewed("publisher"),
     "reviews:bookauthor_detail": lambda: _reviewed("author"),

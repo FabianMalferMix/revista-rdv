@@ -21,30 +21,30 @@
     <div>
       <p class="kicker">Dossier · kit de prensa</p>
       <h1>{{ site_name }}</h1>
-      {% if profile.tagline %}<p class="dek">{{ profile.tagline }}</p>{% endif %}
+      {% if site_profile.tagline %}<p class="dek">{{ site_profile.tagline }}</p>{% endif %}
     </div>
     {# Sin JavaScript el botón no haría nada: dossier.js lo enseña al enlazarlo. #}
     <div class="no-print dossier-toolbar">
       <button class="btn" type="button" data-print hidden>Imprimir / guardar como PDF</button>
-      {% if profile.dossier_pdf %}
+      {% if site_profile.dossier_pdf %}
         <a class="btn" href="{% url 'showcase:dossier_pdf' %}">Descargar PDF maquetado</a>
       {% endif %}
     </div>
   </header>
 
   <div class="dossier-intro">
-    {% if profile.manifesto %}
+    {% if site_profile.manifesto %}
       <section class="dossier-section dossier-quienes">
         <h2 class="subhead">Quiénes somos</h2>
-        {{ profile.manifesto|linebreaks }}
+        {{ site_profile.manifesto|linebreaks }}
       </section>
     {% endif %}
     <section class="dossier-section dossier-ficha">
       <h2 class="subhead">Ficha</h2>
       <dl class="dossier-datos">
-        {% if profile.founded_year %}<div><dt class="rotulo">Fundado</dt><dd>{{ profile.founded_year }}</dd></div>{% endif %}
-        {% if profile.location %}<div><dt class="rotulo">Lugar</dt><dd>{{ profile.location }}</dd></div>{% endif %}
-        {% if profile.correo_de_contacto %}<div><dt class="rotulo">Contacto</dt><dd><a href="mailto:{{ profile.correo_de_contacto }}">{{ profile.correo_de_contacto }}</a></dd></div>{% endif %}
+        {% if site_profile.founded_year %}<div><dt class="rotulo">Fundado</dt><dd>{{ site_profile.founded_year }}</dd></div>{% endif %}
+        {% if site_profile.location %}<div><dt class="rotulo">Lugar</dt><dd>{{ site_profile.location }}</dd></div>{% endif %}
+        {% if site_profile.correo_de_contacto %}<div><dt class="rotulo">Contacto</dt><dd><a href="mailto:{{ site_profile.correo_de_contacto }}">{{ site_profile.correo_de_contacto }}</a></dd></div>{% endif %}
         {% if instagram_del_colectivo %}<div><dt class="rotulo">Instagram</dt><dd><a href="{{ instagram_del_colectivo.url }}">{{ instagram_del_colectivo.usuario }}</a></dd></div>{% endif %}
         <div><dt class="rotulo">Sitio</dt><dd>{{ site_host }}</dd></div>
         {% if ultima_publicacion %}<div><dt class="rotulo">Actualizado</dt><dd>el {{ ultima_publicacion|date:"j \d\e F \d\e Y" }}</dd></div>{% endif %}
@@ -164,9 +164,9 @@
   <section class="dossier-section dossier-contact" id="contacto">
     <h2 class="subhead">Contacto</h2>
     <dl class="dossier-datos">
-      {% if profile.booking_email %}<div><dt class="rotulo">Gestión y contrataciones</dt><dd><a href="mailto:{{ profile.booking_email }}">{{ profile.booking_email }}</a></dd></div>{% endif %}
-      {% if profile.general_email %}<div><dt class="rotulo">General</dt><dd><a href="mailto:{{ profile.general_email }}">{{ profile.general_email }}</a></dd></div>{% endif %}
-      {% if profile.phone %}<div><dt class="rotulo">Teléfono</dt><dd>{{ profile.phone }}</dd></div>{% endif %}
+      {% if site_profile.booking_email %}<div><dt class="rotulo">Gestión y contrataciones</dt><dd><a href="mailto:{{ site_profile.booking_email }}">{{ site_profile.booking_email }}</a></dd></div>{% endif %}
+      {% if site_profile.general_email %}<div><dt class="rotulo">General</dt><dd><a href="mailto:{{ site_profile.general_email }}">{{ site_profile.general_email }}</a></dd></div>{% endif %}
+      {% if site_profile.phone %}<div><dt class="rotulo">Teléfono</dt><dd>{{ site_profile.phone }}</dd></div>{% endif %}
       {% for link in redes_del_colectivo %}<div><dt class="rotulo">{{ link.platform }}</dt><dd><a href="{{ link.url }}">{{ link.usuario|default:link.url }}</a></dd></div>{% endfor %}
     </dl>
   </section>

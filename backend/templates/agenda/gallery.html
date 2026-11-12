@@ -7,32 +7,31 @@
 {% block lienzo %}lienzo--ancho{% endblock %}
 
 {% block content %}
-  {% include "partials/_index_head.html" with titulo="Galería" territorio="colectivo" cuenta=events|length singular="álbum" plural="álbumes" dek="Fotos de los recitales y actividades del colectivo." subnav=subnav only %}
+  {% include "partials/_index_head.html" with titulo="Galería" territorio="colectivo" cuenta=events.paginator.count singular="álbum" plural="álbumes" dek="Fotos de los recitales y actividades del colectivo." subnav=subnav only %}
   <ul class="album-grid">
     {% for e in events %}
-      {# photos.all usa la caché del prefetch (photos__asset); .first/.count la saltarían. #}
-      {% with photos=e.photos.all %}
-        <li class="album-card">
-          <a href="{{ e.get_absolute_url }}">
-            {% comment %}
-               Hoja de contactos: hasta tres fotos del álbum, la primera a doble tamaño.
-               Una sola miniatura no decía si detrás había una foto o treinta. El recorte
-               de la lista sale de la caché del prefetch: no añade consultas. Solo la
-               primera lleva texto alternativo; las otras dos acompañan, y el enlace ya
-               se llama como el álbum. Cada foto va a una tinta hasta que se señala el
-               álbum (dentro del álbum se ven tal cual); la tinta va por foto para que los
-               huecos de la hoja queden en papel.
-            {% endcomment %}
-            <span class="hoja">
-              {% for ph in photos|slice:":3" %}<span class="riso-duo">{% if forloop.first %}{% sizes "galeria-primera" as sizes %}{% responsive_img ph.asset sizes=sizes %}{% else %}{% sizes "galeria-resto" as sizes %}{% responsive_img ph.asset sizes=sizes decorativa=True %}{% endif %}</span>{% endfor %}
-            </span>
-            <span class="album-title">{{ e.title }}</span>
-            <span class="muted">{{ e.starts_at|date:"M Y" }} · {{ photos|length }} foto{{ photos|length|pluralize }}</span>
-          </a>
-        </li>
-      {% endwith %}
+      <li class="album-card">
+        <a href="{{ e.get_absolute_url }}">
+          {% comment %}
+             Hoja de contactos: hasta tres fotos del álbum, la primera a doble tamaño.
+             Una sola miniatura no decía si detrás había una foto o treinta. La vista trae
+             solo esas fotos (`sheet_photos`) y cuenta todas (`photo_count`): ninguna
+             consulta por álbum. Solo la primera lleva texto alternativo; las otras dos
+             acompañan, y el enlace ya se llama como el álbum. Cada foto va a una tinta
+             hasta que se señala el álbum (dentro del álbum se ven tal cual); la tinta va
+             por foto para que los huecos de la hoja queden en papel.
+          {% endcomment %}
+          <span class="hoja">
+            {% for ph in e.sheet_photos %}<span class="riso-duo">{% if forloop.first %}{% if forloop.last %}{% sizes "galeria-sola" as sizes %}{% else %}{% sizes "galeria-primera" as sizes %}{% endif %}{% responsive_img ph.asset sizes=sizes %}{% else %}{% sizes "galeria-resto" as sizes %}{% responsive_img ph.asset sizes=sizes decorativa=True %}{% endif %}</span>{% endfor %}
+          </span>
+          <span class="album-title">{{ e.title }}</span>
+          <span class="muted">{{ e.starts_at|date:"M Y" }} · {{ e.photo_count }} foto{{ e.photo_count|pluralize }}</span>
+        </a>
+      </li>
     {% empty %}
       <li class="empty">Aún no hay álbumes publicados. La <a href="{% url 'agenda:trayectoria' %}">trayectoria</a> reúne las actividades del colectivo.</li>
     {% endfor %}
   </ul>
+
+  {% include "partials/_pagination.html" with pagina=events unidad="álbumes" only %}
 {% endblock %}
