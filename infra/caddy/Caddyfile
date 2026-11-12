@@ -104,7 +104,12 @@ www.{$SITE_ADDRESS::80} {
 		@unhashed not path_regexp [.][0-9a-f]{12}[.][a-z0-9]+$
 		header @unhashed Cache-Control "no-cache"
 		header X-Content-Type-Options nosniff
-		file_server
+		# collectstatic deja junto a cada estático que se comprime bien su `.gz`, con la
+		# compresión máxima y una sola vez: a quien acepta gzip se le sirve ese archivo, y
+		# `encode` no vuelve a comprimir una respuesta que ya llega comprimida.
+		file_server {
+			precompressed gzip
+		}
 	}
 
 	# Todo lo demás va a gunicorn. Cuando Django responde con X-Accel-Redirect (el archivo de

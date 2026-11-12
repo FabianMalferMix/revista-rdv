@@ -1,13 +1,20 @@
+from django.db.models import Count, Prefetch
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
 from apps.showcase.models import Publication
+from apps.showcase.profile import request_profile
 from apps.site.pie import vecinos
 from apps.site.services import participants_prefetch
 from config import publishing
+from config.pagination import paginate
 
-from .models import Event, Milestone
+from .models import Event, EventPhoto, Milestone
 from .services import cronologia, stats
+
+# Las fotos de la hoja de contactos de cada álbum en la galería: la primera a doble tamaño y dos
+# a su lado (agenda/gallery.html y `.hoja` en componentes.css).
+ALBUM_SHEET_PHOTOS = 3
 
 
 @require_safe
@@ -30,7 +37,11 @@ def trayectoria(request):
         Milestone.objects.all(),
         Publication.objects.published().filter(year__isnull=False).select_related("publisher"),
     )
-    return render(request, "agenda/trayectoria.html", {"timeline": timeline, "stats": stats()})
+    return render(
+        request,
+        "agenda/trayectoria.html",
+        {"timeline": timeline, "stats": stats(request_profile(request))},
+    )
 
 
 @require_safe
@@ -67,11 +78,19 @@ def event_detail(request, slug):
 
 @require_safe
 def gallery(request):
+    # De cada álbum llegan solo las fotos de su hoja (el corte va en la consulta de la precarga),
+    # y cuántas tiene en total, contadas en la consulta de la lista.
     events = (
         Event.objects.published()
-        .filter(photos__isnull=False)
-        .distinct()
-        .prefetch_related("photos__asset")
-        .order_by("-starts_at")
+        .annotate(photo_count=Count("photos"))
+        .filter(photo_count__gt=0)
+        .prefetch_related(
+            Prefetch(
+                "photos",
+                queryset=EventPhoto.objects.select_related("asset")[:ALBUM_SHEET_PHOTOS],
+                to_attr="sheet_photos",
+            )
+        )
+        .order_by("-starts_at", "-pk")
     )
-    return render(request, "agenda/gallery.html", {"events": events})
+    return render(request, "agenda/gallery.html", {"events": paginate(request, events)})

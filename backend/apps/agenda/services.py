@@ -7,22 +7,21 @@ Los usan /trayectoria/ y el dossier de `showcase`, que los importa de aquí y no
 from django.db.models import Count, Q
 from django.utils import timezone
 
-from apps.showcase.models import Publication, SiteProfile
+from apps.showcase.models import Publication
 
 from .models import Event, year_anchor
 
 
-def stats(perfil=None):
+def stats(perfil):
     """Números de trayectoria, para /trayectoria/ y el dossier.
 
     Actividades, festivales y ferias salen de una sola consulta. `festivals` suma
     festivales y ferias, como los rotula la trayectoria; el dossier los nombra por
     separado (`festivales`, `ferias`), porque «1 festival» no puede ser una feria.
-    `perfil`: el que la vista ya cargó, para no pedirlo dos veces."""
-    profile = perfil or SiteProfile.load()
+    `perfil`: el de la petición, que la vista ya pidió (`request_profile`)."""
     years = None
-    if profile.founded_year:
-        years = max(timezone.now().year - profile.founded_year, 1)
+    if perfil.founded_year:
+        years = max(timezone.now().year - perfil.founded_year, 1)
     cuentas = Event.objects.past().aggregate(
         events=Count("pk"),
         festivales=Count("pk", filter=Q(type=Event.Type.FESTIVAL)),

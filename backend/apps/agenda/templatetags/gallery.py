@@ -2,14 +2,14 @@
 
 from django import template
 
-from config.breakpoints import PHONE, below
+from config.breakpoints import CARRIL_WIDE, WIDE_FROM_CARRIL, from_cut, lane
 
 register = template.Library()
 
-# El mosaico (`.photo-grid` en componentes.css): seis columnas, como mucho el ancho del carril,
-# y hasta seis fotos; las demás van a tercios en «Ver las N fotos».
-MOSAIC_WIDTH = 1320
+# El mosaico (`.photo-grid` en componentes.css): seis columnas a todo el carril ancho, con 6 px
+# entre cada dos, y hasta seis fotos; las demás van a tercios en «Ver las N fotos».
 MOSAIC_COLUMNS = 6
+MOSAIC_GAP = 6
 MOSAIC_TILES = 6
 
 
@@ -28,8 +28,18 @@ def _columns(numero, total):
     return 2
 
 
+def _tile(columnas, carril):
+    """Lo que mide una foto de `columnas` columnas del mosaico en un carril de `carril`: su
+    parte del carril y de los huecos, menos el que la separa de la siguiente."""
+    return f"calc(({carril} + {MOSAIC_GAP}px) * {columnas} / {MOSAIC_COLUMNS} - {MOSAIC_GAP}px)"
+
+
 @register.simple_tag
 def photo_sizes(numero, total):
+    """El `sizes` de la foto `numero` de `total`: su parte del carril ancho, que desde
+    CARRIL_WIDE tiene otro tope."""
     columnas = _columns(numero, total)
-    vw = 100 * columnas // MOSAIC_COLUMNS
-    return f"{below(PHONE)} {vw}vw, {MOSAIC_WIDTH * columnas // MOSAIC_COLUMNS}px"
+    return (
+        f"{from_cut(CARRIL_WIDE)} {_tile(columnas, lane(WIDE_FROM_CARRIL))}, "
+        f"{_tile(columnas, lane())}"
+    )

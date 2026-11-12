@@ -29,18 +29,19 @@ def test_delete_is_noop():
     assert SiteProfile.objects.filter(pk=1).exists()
 
 
-def test_context_processor_returns_profile():
+def test_context_processor_returns_profile(rf):
     profile = SiteProfile.load()
-    assert site_profile_cp(None)["site_profile"] == profile
+    assert site_profile_cp(rf.get("/"))["site_profile"] == profile
 
 
-def test_context_processor_never_none_even_on_empty_db():
+def test_context_processor_never_none_even_on_empty_db(rf):
     # Fix 'sitio vacío': aunque no exista la fila (QuerySet.delete elude el no-op),
     # load() la recrea → el context_processor global nunca entrega None.
     SiteProfile.objects.all().delete()
     assert SiteProfile.objects.count() == 0
-    profile = site_profile_cp(None)["site_profile"]
-    assert profile is not None
+    profile = site_profile_cp(rf.get("/"))["site_profile"]
+    # El perfil es perezoso: preguntar qué es lo carga.
+    assert isinstance(profile, SiteProfile)
     assert SiteProfile.objects.count() == 1
 
 

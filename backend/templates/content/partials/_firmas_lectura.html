@@ -10,7 +10,7 @@
   <ul class="lectura-firmas">
     {% for c in personas %}
       <li>
-        {% portrait c "48px" byline=True decorative=True %}
+        {% portrait c "40px" byline=True decorative=True %}
         <a href="{{ c.get_absolute_url }}">{{ c.display_name }}</a>
       </li>
     {% endfor %}

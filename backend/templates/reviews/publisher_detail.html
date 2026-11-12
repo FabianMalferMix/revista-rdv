@@ -22,7 +22,7 @@
     <h2 class="subhead">Publicaciones del colectivo</h2>
     <ul class="pub-grid">
       {% for pub in publications %}
-        {% include "partials/_publication_card.html" with pub=pub only %}
+        {% include "partials/_publication_card.html" with pub=pub tapas="tapa-editorial" only %}
       {% endfor %}
     </ul>
   {% endif %}

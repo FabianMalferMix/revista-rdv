@@ -12,6 +12,7 @@ from apps.site.services import participants_prefetch, ultima_publicacion
 from config import protected_media, publishing
 
 from .models import Partner, PressMention, Publication, SiteProfile
+from .profile import request_profile
 
 
 def _published():
@@ -23,7 +24,7 @@ def publication_index(request):
     return render(
         request,
         "showcase/publication_index.html",
-        {"publications": _published().prefetch_related("participants")},
+        {"publications": _published()},
     )
 
 
@@ -89,14 +90,12 @@ def dossier(request):
     publicaciones y los ocho últimos eventos. Eran dos listas seguidas, y los años salían
     desordenados. Retratos, cubiertas y logos vienen en la consulta de su lista.
     """
-    profile = SiteProfile.load()
     publicaciones = list(_published())
     return render(
         request,
         "showcase/dossier.html",
         {
-            "profile": profile,
-            "stats": stats(profile),
+            "stats": stats(request_profile(request)),
             "members": list(Contributor.objects.members()),
             "cronologia": cronologia(
                 Event.objects.past()[:8], Milestone.objects.all(), publicaciones

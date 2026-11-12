@@ -5,11 +5,13 @@ la prueba que las llama lleva su marca `django_db`.
 """
 
 import itertools
+from contextlib import contextmanager
 from datetime import timedelta
 from io import BytesIO
 
 from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
+from django.db.models.signals import post_init
 from django.utils import timezone
 from PIL import Image
 
@@ -134,6 +136,22 @@ def publish(article):
     article.published_at = timezone.now()
     article.save()
     return article
+
+
+@contextmanager
+def instances_built(model):
+    """Los objetos de `model` que se construyen dentro del bloque, en una lista que se va llenando:
+    en una petición, las filas que traen sus consultas."""
+    built = []
+
+    def collect(sender, instance, **kwargs):
+        built.append(instance)
+
+    post_init.connect(collect, sender=model, weak=False)
+    try:
+        yield built
+    finally:
+        post_init.disconnect(collect, sender=model)
 
 
 def soup(client, url, **kwargs):

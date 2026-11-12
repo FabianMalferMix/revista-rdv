@@ -52,7 +52,7 @@
             <h2>Obra reseñada</h2>
             {% for w in reviewed %}
               <div class="obra">
-                {% if w.cover_image %}{% responsive_img w.cover_image css_class="obra-cubierta" sizes="96px" decorativa=True %}{% endif %}
+                {% if w.cover_image %}{% responsive_img w.cover_image css_class="obra-cubierta" sizes="64px" decorativa=True %}{% endif %}
                 {% comment %}
                    La obra y su editorial enlazan a su ficha solo si la tienen: en la vista previa
                    de un texto sin publicar, la obra puede no tenerla todavía.

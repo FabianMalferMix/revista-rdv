@@ -52,7 +52,8 @@ class TimestampedSitemap(Sitemap):
 
 
 # Las secciones de fichas no redefinen `location`: la dirección de cada pieza es la de su
-# `get_absolute_url`.
+# `get_absolute_url`. Cada una trae solo lo que leen esa dirección y `lastmod` (`only`): las filas
+# enteras llevan el cuerpo de cada texto.
 
 
 class ArticleSitemap(TimestampedSitemap):
@@ -60,7 +61,7 @@ class ArticleSitemap(TimestampedSitemap):
     priority = 0.8
 
     def items(self):
-        return Article.objects.published()
+        return Article.objects.published().only("slug", "updated_at")
 
 
 class SectionSitemap(Sitemap):
@@ -68,7 +69,7 @@ class SectionSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Section.objects.all()
+        return Section.objects.only("slug")
 
 
 class PoemSitemap(TimestampedSitemap):
@@ -76,7 +77,7 @@ class PoemSitemap(TimestampedSitemap):
     priority = 0.8
 
     def items(self):
-        return Poem.objects.published()
+        return Poem.objects.published().only("slug", "updated_at")
 
 
 class CollectionSitemap(Sitemap):
@@ -84,7 +85,7 @@ class CollectionSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Collection.objects.published()
+        return Collection.objects.published().only("slug")
 
 
 class PageSitemap(Sitemap):
@@ -92,7 +93,7 @@ class PageSitemap(Sitemap):
     priority = 0.3
 
     def items(self):
-        return Page.objects.published()
+        return Page.objects.published().only("slug")
 
 
 class EventSitemap(TimestampedSitemap):
@@ -100,7 +101,7 @@ class EventSitemap(TimestampedSitemap):
     priority = 0.6
 
     def items(self):
-        return Event.objects.published()
+        return Event.objects.published().only("slug", "updated_at")
 
 
 class PublicationSitemap(TimestampedSitemap):
@@ -108,7 +109,7 @@ class PublicationSitemap(TimestampedSitemap):
     priority = 0.7
 
     def items(self):
-        return Publication.objects.published()
+        return Publication.objects.published().only("slug", "updated_at")
 
 
 class RecordingSitemap(TimestampedSitemap):
@@ -116,7 +117,7 @@ class RecordingSitemap(TimestampedSitemap):
     priority = 0.5
 
     def items(self):
-        return Recording.objects.published()
+        return Recording.objects.published().only("slug", "updated_at")
 
 
 class MemberSitemap(Sitemap):
@@ -124,7 +125,7 @@ class MemberSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Contributor.objects.members()
+        return Contributor.objects.members().select_related(None).only("slug", "is_member")
 
 
 class CollaboratorSitemap(Sitemap):
@@ -134,7 +135,12 @@ class CollaboratorSitemap(Sitemap):
     priority = 0.4
 
     def items(self):
-        return Contributor.objects.visible().filter(is_member=False).order_by("display_name")
+        return (
+            Contributor.objects.visible()
+            .filter(is_member=False)
+            .order_by("display_name")
+            .only("slug", "is_member")
+        )
 
 
 class _ReviewsSitemap(Sitemap):
@@ -144,17 +150,17 @@ class _ReviewsSitemap(Sitemap):
 
 class WorkSitemap(_ReviewsSitemap):
     def items(self):
-        return Work.objects.visible()
+        return Work.objects.visible().only("slug")
 
 
 class PublisherSitemap(_ReviewsSitemap):
     def items(self):
-        return Publisher.objects.visible()
+        return Publisher.objects.visible().only("slug")
 
 
 class BookAuthorSitemap(_ReviewsSitemap):
     def items(self):
-        return BookAuthor.objects.visible()
+        return BookAuthor.objects.visible().only("slug")
 
 
 SITEMAPS = {

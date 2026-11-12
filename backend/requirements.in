@@ -10,6 +10,8 @@ redis>=8.1.0,<9
 Pillow>=13,<14
 nh3>=0.3.7,<1
 whitenoise>=6,<7
+# Quita comentarios y espacios de las hojas del sitio en collectstatic (config/staticfiles.py).
+rcssmin>=1.3.0,<2
 sentry-sdk>=2.74.0,<3
 django-axes>=9.0.0,<10
 django-ratelimit>=4,<5

@@ -11,7 +11,17 @@ from pathlib import Path
 import pytest
 
 from apps.media.templatetags.images import SIZES, sizes
-from config.breakpoints import CUTS, ESTANTE_WIDE, PHONE, below, from_cut
+from config.breakpoints import (
+    CARRIL_WIDE,
+    CUTS,
+    ESTANTE_WIDE,
+    MEASURE,
+    PHONE,
+    WIDE_FROM_CARRIL,
+    below,
+    from_cut,
+    lane,
+)
 from tests import css
 
 BACKEND = Path(__file__).resolve().parent.parent
@@ -75,6 +85,43 @@ def test_every_sizes_slot_cuts_at_a_named_cut():
         f"{below(PHONE)} 160px",
         f"{from_cut(ESTANTE_WIDE)} 270px",
     ]
+
+
+@pytest.mark.parametrize(
+    "viewport,wide,content",
+    [
+        (390, 350, 350),
+        (951, 874.92, 780),
+        (1280, 1177.6, 780),
+        (1500, 1320, 780),
+        (1700, 1440, 780),
+    ],
+)
+def test_the_lanes_of_the_sizes_are_the_lanes_of_the_sheet(viewport, wide, content):
+    """Casi cada imagen mide una parte de un carril: el ancho (`--wide`, y el de los monitores
+    grandes desde CARRIL_WIDE) o el de lectura (`--measure`), o lo que deja la ventana entre los
+    dos `--gutter` cuando no cabe. `sizes` no puede leer la hoja y lo repite (`lane()`): a cada
+    ancho mide lo mismo que el carril de la hoja, el de `.band-in` y el de `--carriles`."""
+    large = viewport >= CARRIL_WIDE
+    context = (f"@media {from_cut(CARRIL_WIDE)}",) if large else ()
+    reading = re.search(r"\[content-start\]\s*(.+?)\s*\[content-end\]", css.tokens()["--carriles"])
+    lanes = {
+        "ancho": (
+            css.rule((), ".band-in")["width"],
+            lane(WIDE_FROM_CARRIL) if large else lane(),
+            wide,
+        ),
+        "lectura": (reading.group(1), lane(MEASURE), content),
+    }
+    for name, (sheet, copy, measured) in lanes.items():
+        # Primero el `--wide` de ese tramo; después, lo que la hoja declara para todos los anchos.
+        # Los dos carriles van de borde a borde de la ventana: su 100 % es el de ella.
+        resolved = css.resolve(css.resolve(sheet, context)).replace("100%", "100vw")
+        assert css.length_at(copy, viewport) == pytest.approx(css.length_at(resolved, viewport)), (
+            name
+        )
+        # Control: lo que mide el carril en Chrome a ese ancho.
+        assert css.length_at(resolved, viewport) == pytest.approx(measured), name
 
 
 def test_an_unknown_sizes_name_is_an_error():

@@ -11,7 +11,8 @@ from apps.agenda.models import Event, url_for_event
 from apps.content.models import SEARCH_CONFIG, Article, Poem
 from apps.media.models import Recording, url_for_recording
 from apps.people.models import url_for_person
-from apps.showcase.models import Publication, SiteProfile, url_for_publication
+from apps.showcase.models import Publication, url_for_publication
+from apps.showcase.profile import request_profile
 from config.ratelimit import rate_limited
 
 from . import portada
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 def home(request):
     """La portada: junta sus bloques, cada uno desde su constructor (`portada.py`)."""
     # Con el poema destacado y la obra de la primera vista en la misma consulta.
-    profile = SiteProfile.load("featured_poem", "hero_image", "hero_image_phone")
+    profile = request_profile(request, "featured_poem", "hero_image", "hero_image_phone")
     tirada = portada.build_tirada(profile)
     voces = portada.build_voces()
     return render(

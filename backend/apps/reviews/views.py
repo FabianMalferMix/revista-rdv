@@ -36,7 +36,9 @@ def publisher_detail(request, slug):
     # Las publicaciones del colectivo con esta editorial, y aparte las demás obras visibles: la
     # obra que es una publicación del colectivo ya sale con ella.
     publications = list(
-        Publication.objects.published().filter(publisher=publisher).select_related("cover")
+        Publication.objects.published()
+        .filter(publisher=publisher)
+        .select_related("cover", "publisher")
     )
     works = publisher.works.visible()
     return render(

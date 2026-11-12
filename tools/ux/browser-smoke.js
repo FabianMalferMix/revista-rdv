@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Prueba de humo en navegador: el sitio en Chrome a 951 px (la ventana del dueño) y a 375 px (un
-// teléfono), con los guiones de backend/static/js/ ejecutándose de verdad. Una comprobación falla
-// si lo que mide no se cumple, y también ante un error de página o de consola, un recurso propio
-// que no carga o una petición a un tercero que nadie pidió. La corre el job `navegador` del CI.
+// teléfono), y lo que pide cada imagen a 951 y a 390 px, con los guiones de backend/static/js/
+// ejecutándose de verdad. Una comprobación falla si lo que mide no se cumple, y también ante un
+// error de página o de consola, un recurso propio que no carga o una petición a un tercero que
+// nadie pidió. La corre el job `navegador` del CI.
 //
 //   node tools/ux/browser-smoke.js [--base URL]
 //
@@ -21,10 +22,20 @@ const SETTLE_MS = 1000;
 
 const WINDOWS = {
   951: { viewport: { width: 951, height: 900 } },
+  390: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
   375: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
 };
+// Lo que pide una imagen (`sizes`) vale si cae entre lo que mide su caja y lo que mide dibujada
+// (con object-fit puede desbordarla), con un 5 % y 2 px de margen. El navegador elige la copia más
+// cercana por encima de lo que pide, así que un 5 % solo cambia de copia cerca del límite entre
+// dos; los 2 px son el redondeo de los subpíxeles en las imágenes de pocos píxeles.
+const SIZES_MARGIN = 0.05;
+const SIZES_SLACK = 2;
 
 const PAGES = readPages().map((page) => page.route);
+// Para lo que pide cada imagen, también lo que pages.txt no enseña: las tapas en la ficha de una
+// editorial y el afiche de un registro de audio, en el carril de lectura.
+const IMAGE_PAGES = [...PAGES, '/editorial/ediciones-ceniza/', '/registro/umbral-lectura/'];
 
 const routeOf = (url) => (url.startsWith(ORIGIN) ? url.slice(ORIGIN.length) : url);
 
@@ -127,6 +138,73 @@ const portraitsInView = async (section) =>
     .filter((card) => card.shown)
     .sort((a, b) => a.left - b.left);
 
+// En la página: cada imagen con copias (`srcset` en `w`) que ocupa sitio, con lo que pide su
+// `sizes` (o el de la <source> que elige su <picture>), lo que mide su caja sin transformar
+// (`width` calculado: los pliegos de la tirada van girados) y lo que mide dibujada. `natural` es
+// lo que pidió según Chrome, si ya cargó: el ancho de la imagen corregido por su densidad.
+function measureImages() {
+  // Las comas o los blancos de primer nivel: los de dentro de min() o calc() no parten.
+  const split = (text, separator) => {
+    const parts = [''];
+    let depth = 0;
+    for (const char of text) {
+      if (char === '(') depth += 1;
+      if (char === ')') depth -= 1;
+      if (depth === 0 && (separator === ' ' ? /\s/.test(char) : char === separator)) parts.push('');
+      else parts[parts.length - 1] += char;
+    }
+    return parts.map((part) => part.trim()).filter(Boolean);
+  };
+  const ruler = document.createElement('div');
+  ruler.style.cssText = 'position:absolute; left:0; top:0; height:0; padding:0; border:0; visibility:hidden';
+  document.body.append(ruler);
+  const measure = (length) => {
+    ruler.style.width = length;
+    return ruler.getBoundingClientRect().width;
+  };
+  const requested = (sizes) => {
+    for (const entry of split(sizes, ',')) {
+      const words = split(entry, ' ');
+      const length = words.pop();
+      if (!words.length || matchMedia(words.join(' ')).matches) return measure(length);
+    }
+    return measure('100vw');
+  };
+  const px = (value) => parseFloat(value) || 0;
+  const found = [];
+  for (const img of document.querySelectorAll('img[srcset]')) {
+    if (!img.getClientRects().length) continue;
+    const picture = img.parentElement.tagName === 'PICTURE' ? img.parentElement : null;
+    const sources = picture ? [...picture.querySelectorAll('source')] : [];
+    const source = sources.find((s) => !s.media || matchMedia(s.media).matches) || img;
+    if (!/\s\d+w(,|$)/.test(source.getAttribute('srcset'))) continue;
+    const style = getComputedStyle(img);
+    const border = style.boxSizing === 'border-box';
+    const box = px(style.width) - (border ? px(style.paddingLeft) + px(style.paddingRight)
+      + px(style.borderLeftWidth) + px(style.borderRightWidth) : 0);
+    const height = px(style.height) - (border ? px(style.paddingTop) + px(style.paddingBottom)
+      + px(style.borderTopWidth) + px(style.borderBottomWidth) : 0);
+    // Lo que mide un píxel no se pinta: se oculta a la vista y no al lector (`sr-only`), como las
+    // voces que esperan su relevo.
+    if (box <= 1) continue;
+    const [w, h] = [Number(source.getAttribute('width')), Number(source.getAttribute('height'))];
+    const ratio = w > 0 && h > 0 ? w / h : img.naturalWidth / img.naturalHeight || box / height;
+    let drawn = box;
+    if (style.objectFit === 'cover') drawn = Math.max(box, height * ratio);
+    if (style.objectFit === 'contain') drawn = Math.min(box, height * ratio);
+    const holder = img.closest('[class]:not(.riso-duo)');
+    found.push({
+      name: holder ? `.${holder.className.split(' ')[0]}` : 'img',
+      requested: requested(source.getAttribute('sizes') || '100vw'),
+      box,
+      drawn,
+      natural: img.complete && img.naturalWidth ? img.naturalWidth : null,
+    });
+  }
+  ruler.remove();
+  return found;
+}
+
 const CHECKS = [
   {
     name: 'Las páginas de pages.txt cargan sin errores y sin desbordar a lo ancho',
@@ -143,6 +221,45 @@ const CHECKS = [
       }
       expect(PAGES.length >= 10, `pages.txt solo tiene ${PAGES.length} páginas`);
       expect(!overflowing.length, `desbordan: ${overflowing.join(', ')}`);
+    },
+  },
+  {
+    name: 'Cada imagen pide con su sizes el ancho al que se pinta',
+    widths: [951, 390],
+    async run({ page }) {
+      const wrong = new Map();
+      let measured = 0;
+      let confirmed = 0;
+      const round = (value) => Math.round(value);
+      for (const route of IMAGE_PAGES) {
+        await visit(page, route);
+        await page.evaluate(() => document.fonts.ready);
+        for (const image of await page.evaluate(measureImages)) {
+          measured += 1;
+          const problems = [];
+          if (image.natural !== null) {
+            confirmed += 1;
+            // Si Chrome no pidió lo que lee esta prueba, la prueba no sabe leer ese `sizes`.
+            if (Math.abs(image.natural - image.requested) > 1) {
+              problems.push(`Chrome pidió ${image.natural} px y la prueba leyó ${round(image.requested)}`);
+            }
+          }
+          const low = Math.min(image.box, image.drawn) * (1 - SIZES_MARGIN) - SIZES_SLACK;
+          const high = Math.max(image.box, image.drawn) * (1 + SIZES_MARGIN) + SIZES_SLACK;
+          if (image.requested < low || image.requested > high) {
+            const drawn = round(image.drawn) === round(image.box) ? '' : ` (dibujada, ${round(image.drawn)})`;
+            problems.push(`pide ${round(image.requested)} px y se pinta a ${round(image.box)}${drawn}`);
+          }
+          for (const problem of problems) {
+            const key = `${route} ${image.name}: ${problem}`;
+            wrong.set(key, (wrong.get(key) || 0) + 1);
+          }
+        }
+      }
+      // Control: hay imágenes que medir, y en las que ya cargaron Chrome dice lo mismo que la prueba.
+      expect(measured >= IMAGE_PAGES.length && confirmed > 0, `solo se midieron ${measured} imágenes (${confirmed} cargadas)`);
+      const listed = [...wrong].map(([key, count]) => (count > 1 ? `${key} (×${count})` : key));
+      expect(!listed.length, `no piden lo que pintan: ${listed.join('; ')}`);
     },
   },
   {

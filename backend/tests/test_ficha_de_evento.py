@@ -6,6 +6,7 @@ afiche va a 420 px como un objeto, con su pie, y a su lado quiénes participan y
 registros; las fotos, en un mosaico de seis, y las demás en «Ver las N fotos».
 """
 
+import re
 from datetime import timedelta
 
 import pytest
@@ -15,11 +16,13 @@ from django.utils import timezone
 
 from apps.agenda.models import EventPhoto
 from apps.people.models import Contributor
-from config.breakpoints import PHONE, below
 from tests import css
 from tests.factories import make_event, make_image, make_recording, soup
 
 pytestmark = pytest.mark.django_db
+
+# El contexto de un `--wide` que manda desde un ancho: «@media (min-width:1600px)».
+_MIN_WIDTH = re.compile(r"@media \(min-width:(\d+)px\)")
 
 
 def _evento(**extra):
@@ -138,32 +141,69 @@ def test_la_ficha_cuesta_lo_mismo_con_dos_fotos_que_con_ocho(client):
 @pytest.mark.parametrize(
     "total,first,rest",
     [
-        (1, "100vw, 1320px", None),
-        (2, "50vw, 660px", "50vw, 660px"),
-        (3, "66vw, 880px", "33vw, 440px"),
-        (4, "50vw, 660px", "50vw, 660px"),
-        (5, "50vw, 660px", "33vw, 440px"),
-        (6, "66vw, 880px", "33vw, 440px"),
-        (8, "66vw, 880px", "33vw, 440px"),
+        (1, 1440, None),
+        (2, 717, 717),
+        (3, 958, 476),
+        (4, 717, 717),
+        (5, 717, 476),
+        (6, 958, 476),
+        (8, 958, 476),
     ],
 )
 def test_each_photo_asks_for_the_size_it_takes_in_the_mosaic(total, first, rest):
-    """Cada miniatura pide el ancho que ocupa en el mosaico: con una foto, todo; con dos,
-    cuatro o cinco, la primera va a medias; con tres o seis, a doble tamaño. Antes la
-    primera pedía siempre 880 px, aunque ocupara todo el ancho o la mitad. En el teléfono,
-    desde el corte de la hoja."""
+    """Cada miniatura pide el ancho que ocupa en el mosaico, aquí en una ventana de 1700 px: con
+    una foto, todo el carril; con dos, cuatro o cinco, la primera va a medias; con tres o seis,
+    a doble tamaño."""
     from apps.agenda.templatetags.gallery import photo_sizes
 
-    assert photo_sizes(1, total) == f"{below(PHONE)} {first}"
+    assert round(css.sizes_at(photo_sizes(1, total), 1700)) == first
     if rest:
-        assert photo_sizes(total, total) == f"{below(PHONE)} {rest}"
+        assert round(css.sizes_at(photo_sizes(total, total), 1700)) == rest
 
 
-def test_the_mosaic_sizes_split_the_lane_of_the_sheet_into_its_columns():
-    """Cada miniatura pide su parte del carril (`--wide`) en las columnas del mosaico: los dos
-    números los decide la hoja, y la etiqueta los repite porque no puede leerla."""
-    from apps.agenda.templatetags.gallery import MOSAIC_COLUMNS, MOSAIC_WIDTH
+@pytest.mark.parametrize("viewport,width", [(390, 231), (951, 581), (1280, 783), (1700, 958)])
+def test_the_first_of_six_photos_asks_for_what_it_paints_at_every_width(viewport, width):
+    """El carril encoge con la ventana, menos sus dos medianiles: la primera de seis fotos pide
+    sus cuatro columnas de lo que mide el carril a ese ancho, del teléfono al monitor grande."""
+    from apps.agenda.templatetags.gallery import photo_sizes
+
+    assert round(css.sizes_at(photo_sizes(1, 6), viewport)) == width
+
+
+def _wide_lanes():
+    """Cada valor de `--wide` en la hoja, en px, con el ancho de ventana desde el que manda."""
+    lanes = []
+    for block, declaration in css.declarations():
+        if declaration.name != "--wide":
+            continue
+        if not block.context:
+            since = 0
+        elif len(block.context) == 1 and (cut := _MIN_WIDTH.fullmatch(block.context[0])):
+            since = int(cut.group(1))
+        else:
+            raise AssertionError(f"--wide en un contexto que no sé leer: {block.context}")
+        lanes.append((since, int(declaration.value.removesuffix("px"))))
+    return sorted(lanes)
+
+
+def test_the_mosaic_sizes_split_each_lane_of_the_sheet_into_its_columns():
+    """Cada miniatura pide su parte del carril (`--wide`) en las columnas del mosaico. Las
+    columnas, el hueco y cada valor del carril los decide la hoja, y la etiqueta los repite
+    porque no puede leerla: una foto sola pide el carril entero en cada tramo de `--wide`,
+    desde que la ventana deja que lo llene hasta el último píxel antes del tramo siguiente."""
+    from apps.agenda.templatetags.gallery import MOSAIC_COLUMNS, MOSAIC_GAP, photo_sizes
 
     rejilla = css.rule((), ".photo-grid, .photo-grid-resto")
     assert rejilla["grid-template-columns"] == f"repeat({MOSAIC_COLUMNS}, minmax(0, 1fr))"
-    assert css.tokens()["--wide"] == f"{MOSAIC_WIDTH}px"
+    assert rejilla["gap"] == f"{MOSAIC_GAP}px"
+    lanes = _wide_lanes()
+    # Control: el valor de siempre y, al menos, el de los monitores grandes.
+    assert lanes[0][0] == 0 and len(lanes) > 1, lanes
+    widest_gutter = css.px_range(css.tokens()["--gutter"])[1]
+    until = [since for since, _ in lanes[1:]] + [None]
+    for (since, wide), next_since in zip(lanes, until, strict=True):
+        viewport = max(since, wide + 2 * widest_gutter)
+        assert next_since is None or viewport < next_since, f"{wide}px no llena el carril"
+        widths = [viewport] if next_since is None else [viewport, next_since - 1]
+        for width in widths:
+            assert css.sizes_at(photo_sizes(1, 1), width) == wide, f"--wide {wide}px a {width}px"

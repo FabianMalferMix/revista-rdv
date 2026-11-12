@@ -74,6 +74,9 @@ if (DEBUG or _DEV_TOOLS_REQUESTED) and find_spec("apps.devtools") is not None:
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # 304 cuando el cuerpo no cambió: la ETag es su hash, así que una página HTML, con su nonce,
+    # no lo da nunca; el sitemap y los feeds, sí. Tras WhiteNoise, que responde por su cuenta.
+    "django.middleware.http.ConditionalGetMiddleware",
     # CSP restrictiva con nonce por petición (tras WhiteNoise: no aplica a estáticos).
     "config.csp.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

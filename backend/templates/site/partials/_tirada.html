@@ -60,7 +60,7 @@
     <div class="tirada-pie">
       <ul class="tirada-contactos" aria-label="Ir a un registro" hidden>
         {% for r in tirada.registros %}
-          <li><button type="button" class="tirada-contacto" data-marcador="{{ forloop.counter0 }}" aria-controls="tirada-pista">{% if r.imagen %}<span class="riso-duo">{% responsive_img r.imagen sizes="96px" decorativa=True %}</span>{% else %}<span class="tirada-contacto-vacia" aria-hidden="true"></span>{% endif %}<span class="meta tirada-contacto-titulo">{{ r.titulo }}</span></button></li>
+          <li><button type="button" class="tirada-contacto" data-marcador="{{ forloop.counter0 }}" aria-controls="tirada-pista">{% if r.imagen %}<span class="riso-duo">{% sizes "contacto-tirada" as sizes %}{% responsive_img r.imagen sizes=sizes decorativa=True %}</span>{% else %}<span class="tirada-contacto-vacia" aria-hidden="true"></span>{% endif %}<span class="meta tirada-contacto-titulo">{{ r.titulo }}</span></button></li>
         {% endfor %}
       </ul>
     </div>

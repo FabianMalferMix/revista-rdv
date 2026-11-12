@@ -497,7 +497,7 @@ def test_the_trajectory_numbers_count_only_what_is_published():
     """Las cifras de /trayectoria/ y del dossier: actividades pasadas y publicaciones."""
     events = _event_world()
     _publication_world()
-    numbers = stats()
+    numbers = stats(SiteProfile.load())
     assert numbers["events"] == 2, events.hidden_past
     assert numbers["publications"] == 2
 
