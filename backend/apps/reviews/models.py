@@ -43,10 +43,10 @@ class WorkQuerySet(models.QuerySet):
 class Publisher(models.Model):
     """Editorial. Extraída de Work (3NF): habilita 'reseñas por editorial'."""
 
-    slug = models.SlugField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    country = models.CharField(max_length=100, blank=True)
-    website = models.URLField(blank=True)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    name = models.CharField(max_length=255, verbose_name="nombre")
+    country = models.CharField(max_length=100, blank=True, verbose_name="país")
+    website = models.URLField(blank=True, verbose_name="sitio web")
 
     objects = PublisherQuerySet.as_manager()
 
@@ -65,9 +65,9 @@ class Publisher(models.Model):
 class BookAuthor(models.Model):
     """Autor de la obra reseñada. Distinto del Contributor de la revista."""
 
-    slug = models.SlugField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    bio = models.TextField(blank=True)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    name = models.CharField(max_length=255, verbose_name="nombre")
+    bio = models.TextField(blank=True, verbose_name="biografía")
 
     objects = BookAuthorQuerySet.as_manager()
 
@@ -93,31 +93,39 @@ class Work(models.Model):
         ANTOLOGIA = "antologia", "Antología"
         OTRO = "otro", "Otro"
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.LIBRO)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    kind = models.CharField(
+        max_length=20, choices=Kind.choices, default=Kind.LIBRO, verbose_name="tipo"
+    )
     publisher = models.ForeignKey(
         Publisher,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="works",
+        verbose_name="editorial",
     )
-    publication_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    publication_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="año de publicación"
+    )
     # ISBN es clave candidata OPCIONAL: se guarda NULL (no "") cuando falta —save() lo
     # coacciona— para permitir varias obras sin ISBN; la unicidad se aplica solo sobre
     # ISBN reales vía UniqueConstraint parcial (ver Meta), no con unique=True plano
     # (que hacía chocar dos "" en el admin: IntegrityError/500).
-    isbn = models.CharField(max_length=20, null=True, blank=True)
+    isbn = models.CharField(max_length=20, null=True, blank=True, verbose_name="ISBN")
     cover_image = models.ForeignKey(
         "media.MediaAsset",
         null=True,
         blank=True,
         on_delete=models.PROTECT,
         related_name="+",
+        verbose_name="cubierta",
     )
-    description = models.TextField(blank=True)
-    authors = models.ManyToManyField(BookAuthor, blank=True, related_name="works")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    authors = models.ManyToManyField(
+        BookAuthor, blank=True, related_name="works", verbose_name="autores"
+    )
     # Cuando la obra reseñada es una publicación del colectivo: su ficha enseña entonces
     # las reseñas que tiene, y la obra lleva a ella. Una publicación es una sola obra (todas
     # sus reseñas apuntan a la misma); la mayoría de las obras no tienen ninguna.

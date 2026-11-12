@@ -100,20 +100,44 @@ def test_event_absolute_url(client):
 
 
 def test_stats_service_shape_and_counts():
-    # `stats` vive en la capa de servicios (no en views): lo importan portada y dossier.
+    # `stats` vive en la capa de servicios (no en views): lo importan /trayectoria/ y el
+    # dossier, que está en otra app.
     from apps.agenda.services import stats
     from apps.showcase.models import SiteProfile
 
     make_event(slug="pasado-1", starts_at=timezone.now() - timedelta(days=10))
     make_event(slug="pasado-2", starts_at=timezone.now() - timedelta(days=20))
     make_event(slug="festival", type="festival", starts_at=timezone.now() - timedelta(days=30))
+    make_event(slug="festival-2", type="festival", starts_at=timezone.now() - timedelta(days=35))
     make_event(slug="feria", type="feria", starts_at=timezone.now() - timedelta(days=40))
     result = stats(SiteProfile.load())
-    assert set(result) == {"years", "events", "festivals", "festivales", "ferias", "publications"}
-    assert result["events"] == 4
-    # La trayectoria y el dossier rotulan «festivales/ferias»: `festivals` suma los dos. La
-    # portada los nombra por separado.
-    assert (result["festivals"], result["festivales"], result["ferias"]) == (2, 1, 1)
+    assert set(result) == {
+        "years",
+        "events",
+        "festivals_and_fairs",
+        "festivals",
+        "fairs",
+        "publications",
+    }
+    assert result["events"] == 5
+    # La trayectoria rotula «festivales/ferias»: `festivals_and_fairs` suma los dos. El
+    # dossier los nombra por separado: `festivals` y `fairs`. Dos festivales y una feria,
+    # para que una cuenta no pase por la otra.
+    assert (result["festivals_and_fairs"], result["festivals"], result["fairs"]) == (3, 2, 1)
+
+
+def test_each_page_counts_festivals_and_fairs_as_it_names_them(client):
+    """Con dos festivales y una feria ya hechos, la trayectoria los cuenta juntos y el
+    dossier, cada uno con su nombre. Son cuentas distintas para que una no pase por la otra."""
+    make_event(slug="festival", type="festival", starts_at=timezone.now() - timedelta(days=30))
+    make_event(slug="festival-2", type="festival", starts_at=timezone.now() - timedelta(days=35))
+    make_event(slug="feria", type="feria", starts_at=timezone.now() - timedelta(days=40))
+    trayectoria = soup(client, reverse("agenda:trayectoria"))
+    tira = {" ".join(li.get_text().split()) for li in trayectoria.select(".stats-strip li")}
+    assert "3 festivales/ferias" in tira, tira
+    dossier = soup(client, reverse("showcase:dossier"))
+    cifras = {" ".join(li.get_text().split()) for li in dossier.select(".dossier-cifras li")}
+    assert {"2 festivales", "1 feria"} <= cifras, cifras
 
 
 # ── Agenda sin fechas (backlog UX, ticket 1.13) ─────────────────────────────

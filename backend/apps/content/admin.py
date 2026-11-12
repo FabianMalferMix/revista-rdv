@@ -425,11 +425,21 @@ class CollectionArticleInline(admin.TabularInline):
     extra = 1
     autocomplete_fields = ["article"]
 
+    def get_queryset(self, request):
+        # Cada fila se nombra con el título de su artículo: llega en la misma consulta, no
+        # en una por fila.
+        return super().get_queryset(request).select_related("article")
+
 
 class CollectionPoemInline(admin.TabularInline):
     model = CollectionPoem
     extra = 1
     autocomplete_fields = ["poem"]
+
+    def get_queryset(self, request):
+        # Cada fila se nombra con el título de su poema: llega en la misma consulta, no en
+        # una por fila.
+        return super().get_queryset(request).select_related("poem")
 
 
 @admin.register(Collection)

@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.formats import date_format
 
 from config import publishing
 from config.content_policy import AUTHORED_HTML_HELP
@@ -21,10 +22,10 @@ from .sanitize import clean_html
 
 
 class Section(models.Model):
-    slug = models.SlugField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    position = models.PositiveSmallIntegerField(default=0)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    name = models.CharField(max_length=255, verbose_name="nombre")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         ordering = ["position", "name"]
@@ -39,8 +40,8 @@ class Section(models.Model):
 
 
 class Tag(models.Model):
-    slug = models.SlugField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    name = models.CharField(max_length=255, verbose_name="nombre")
 
     class Meta:
         ordering = ["name"]
@@ -113,6 +114,7 @@ class EditorialItem(TimestampedModel):
         choices=EditorialStatus.choices,
         default=EditorialStatus.DRAFT,
         db_index=True,
+        verbose_name="estado",
     )
     # Dueño de la pieza en el sistema (para permisos "mis borradores").
     # Distinto de los autores del byline (Contributor).
@@ -203,42 +205,76 @@ class ArticleQuerySet(publishing.EditorialQuerySet):
 
 
 class Article(EditorialItem):
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    subtitle = models.CharField(max_length=255, blank=True, help_text="Bajada")
-    body = models.TextField(help_text=AUTHORED_HTML_HELP)
-    excerpt = models.TextField(blank=True, help_text="Extracto autoral (opcional)")
-    type = models.CharField(max_length=20, choices=ArticleType.choices, default=ArticleType.RESENA)
-    section = models.ForeignKey(
-        Section, null=True, blank=True, on_delete=models.SET_NULL, related_name="articles"
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    subtitle = models.CharField(
+        max_length=255, blank=True, verbose_name="subtítulo", help_text="Bajada"
     )
-    tags = models.ManyToManyField(Tag, blank=True, related_name="articles")
+    body = models.TextField(verbose_name="cuerpo", help_text=AUTHORED_HTML_HELP)
+    excerpt = models.TextField(
+        blank=True, verbose_name="extracto", help_text="Extracto autoral (opcional)"
+    )
+    type = models.CharField(
+        max_length=20,
+        choices=ArticleType.choices,
+        default=ArticleType.RESENA,
+        verbose_name="tipo",
+    )
+    section = models.ForeignKey(
+        Section,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="articles",
+        verbose_name="sección",
+    )
+    tags = models.ManyToManyField(
+        Tag, blank=True, related_name="articles", verbose_name="etiquetas"
+    )
     authors = models.ManyToManyField(
         "people.Contributor",
         through="content.ArticleContributor",
         related_name="articles",
+        verbose_name="autoría",
     )
     reviewed_works = models.ManyToManyField(
         "reviews.Work",
         through="content.ReviewedWork",
         blank=True,
         related_name="reviews",
+        verbose_name="obras reseñadas",
     )
     cover_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="cubierta",
     )
     og_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="imagen para compartir",
     )
     reading_time = models.PositiveIntegerField(
-        default=0, editable=False, help_text="Minutos estimados (derivado del cuerpo)"
+        default=0,
+        editable=False,
+        verbose_name="tiempo de lectura",
+        help_text="Minutos estimados (derivado del cuerpo)",
     )
-    seo_title = models.CharField(max_length=255, blank=True)
-    seo_description = models.CharField(max_length=320, blank=True)
+    seo_title = models.CharField(max_length=255, blank=True, verbose_name="título para buscadores")
+    seo_description = models.CharField(
+        max_length=320, blank=True, verbose_name="descripción para buscadores"
+    )
     search_vector = models.GeneratedField(
         expression=search_vector(("title", "A"), ("subtitle", "B"), ("body", "D")),
         output_field=SearchVectorField(),
         db_persist=True,
+        verbose_name="índice de búsqueda",
     )
 
     objects = ArticleQuerySet.as_manager()
@@ -300,10 +336,12 @@ class Article(EditorialItem):
 class ArticleContributor(models.Model):
     """Puente Artículo ↔ Colaborador. `position` = orden de firma (coautoría)."""
 
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, verbose_name="artículo")
     # Una persona que firma algo no se borra: antes hay que reasignar sus textos.
-    contributor = models.ForeignKey("people.Contributor", on_delete=models.PROTECT)
-    position = models.PositiveSmallIntegerField(default=0)
+    contributor = models.ForeignKey(
+        "people.Contributor", on_delete=models.PROTECT, verbose_name="colaborador"
+    )
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         verbose_name = "autoría de artículo"
@@ -323,10 +361,18 @@ class ReviewedWork(models.Model):
     """Puente Reseña ↔ Obra."""
 
     article = models.ForeignKey(
-        Article, on_delete=models.CASCADE, related_name="reviewed_work_links"
+        Article,
+        on_delete=models.CASCADE,
+        related_name="reviewed_work_links",
+        verbose_name="reseña",
     )
     # Una obra reseñada no se borra: sus reseñas quedarían sin la obra de la que hablan.
-    work = models.ForeignKey("reviews.Work", on_delete=models.PROTECT, related_name="review_links")
+    work = models.ForeignKey(
+        "reviews.Work",
+        on_delete=models.PROTECT,
+        related_name="review_links",
+        verbose_name="obra",
+    )
 
     class Meta:
         verbose_name = "obra reseñada"
@@ -357,14 +403,20 @@ class Poem(EditorialItem):
     cuando no hay registros destacados.
     """
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    epigraph = models.TextField(blank=True, help_text="Epígrafe o dedicatoria (opcional).")
-    body = models.TextField(help_text="Texto plano: se preservan saltos de línea y sangrías.")
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    epigraph = models.TextField(
+        blank=True, verbose_name="epígrafe", help_text="Epígrafe o dedicatoria (opcional)."
+    )
+    body = models.TextField(
+        verbose_name="cuerpo",
+        help_text="Texto plano: se preservan saltos de línea y sangrías.",
+    )
     authors = models.ManyToManyField(
         "people.Contributor",
         through="content.PoemContributor",
         related_name="poems",
+        verbose_name="autoría",
     )
     recording = models.ForeignKey(
         "media.Recording",
@@ -372,19 +424,28 @@ class Poem(EditorialItem):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="poems",
+        verbose_name="registro",
         help_text="Registro del poema leído por su autor/a (opcional).",
     )
     og_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="imagen para compartir",
     )
-    seo_title = models.CharField(max_length=255, blank=True)
-    seo_description = models.CharField(max_length=320, blank=True)
+    seo_title = models.CharField(max_length=255, blank=True, verbose_name="título para buscadores")
+    seo_description = models.CharField(
+        max_length=320, blank=True, verbose_name="descripción para buscadores"
+    )
     # El epígrafe lleva también la dedicatoria: un poema se encuentra por el nombre de a quien
     # está dedicado, con el peso del cuerpo.
     search_vector = models.GeneratedField(
         expression=search_vector(("title", "A"), ("epigraph", "D"), ("body", "D")),
         output_field=SearchVectorField(),
         db_persist=True,
+        verbose_name="índice de búsqueda",
     )
 
     objects = PoemQuerySet.as_manager()
@@ -430,10 +491,12 @@ class Poem(EditorialItem):
 class PoemContributor(models.Model):
     """Puente Poema ↔ Colaborador. `position` = orden de firma (coautoría)."""
 
-    poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
+    poem = models.ForeignKey(Poem, on_delete=models.CASCADE, verbose_name="poema")
     # Una persona que firma algo no se borra: antes hay que reasignar sus poemas.
-    contributor = models.ForeignKey("people.Contributor", on_delete=models.PROTECT)
-    position = models.PositiveSmallIntegerField(default=0)
+    contributor = models.ForeignKey(
+        "people.Contributor", on_delete=models.PROTECT, verbose_name="colaborador"
+    )
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         verbose_name = "autoría de poema"
@@ -459,22 +522,37 @@ class Collection(models.Model):
     agrupa contenido editorial (artículos y, desde el lote de obra, poemas).
     """
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    intro = models.TextField(blank=True)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    intro = models.TextField(blank=True, verbose_name="introducción")
     cover_image = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="cubierta",
     )
     status = models.CharField(
-        max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT
+        max_length=20,
+        choices=PublishStatus.choices,
+        default=PublishStatus.DRAFT,
+        verbose_name="estado",
     )
-    published_at = models.DateTimeField(null=True, blank=True)
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name="fecha de publicación")
     articles = models.ManyToManyField(
-        Article, through="content.CollectionArticle", related_name="collections"
+        Article,
+        through="content.CollectionArticle",
+        related_name="collections",
+        verbose_name="artículos",
     )
     poems = models.ManyToManyField(
-        Poem, through="content.CollectionPoem", blank=True, related_name="collections"
+        Poem,
+        through="content.CollectionPoem",
+        blank=True,
+        related_name="collections",
+        verbose_name="poemas",
     )
 
     objects = publishing.EditorialQuerySet.as_manager()
@@ -501,9 +579,9 @@ class Collection(models.Model):
 class CollectionArticle(models.Model):
     """Puente Colección ↔ Artículo. `position` = secuencia curada."""
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
-    position = models.PositiveSmallIntegerField(default=0)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name="colección")
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, verbose_name="artículo")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         verbose_name = "artículo de la colección"
@@ -515,13 +593,16 @@ class CollectionArticle(models.Model):
             )
         ]
 
+    def __str__(self):
+        return f"{self.position}. {self.article.title}"
+
 
 class CollectionPoem(models.Model):
     """Puente Colección ↔ Poema. `position` comparte la secuencia curada con artículos."""
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
-    position = models.PositiveSmallIntegerField(default=0)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name="colección")
+    poem = models.ForeignKey(Poem, on_delete=models.CASCADE, verbose_name="poema")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         verbose_name = "poema de la colección"
@@ -530,6 +611,9 @@ class CollectionPoem(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["collection", "poem"], name="uniq_collection_poem")
         ]
+
+    def __str__(self):
+        return f"{self.position}. {self.poem.title}"
 
 
 # Las páginas de sistema: el pie de todas las páginas y el consentimiento del boletín y de
@@ -541,14 +625,19 @@ LEGAL_PAGES = tuple(legal.pages())
 class Page(models.Model):
     """Página estática: Quiénes somos, Bases, Contacto, y las legales (LEGAL_PAGES)."""
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    body = models.TextField(help_text=AUTHORED_HTML_HELP)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    body = models.TextField(verbose_name="cuerpo", help_text=AUTHORED_HTML_HELP)
     status = models.CharField(
-        max_length=20, choices=PublishStatus.choices, default=PublishStatus.DRAFT
+        max_length=20,
+        choices=PublishStatus.choices,
+        default=PublishStatus.DRAFT,
+        verbose_name="estado",
     )
-    seo_title = models.CharField(max_length=255, blank=True)
-    seo_description = models.CharField(max_length=320, blank=True)
+    seo_title = models.CharField(max_length=255, blank=True, verbose_name="título para buscadores")
+    seo_description = models.CharField(
+        max_length=320, blank=True, verbose_name="descripción para buscadores"
+    )
 
     objects = publishing.EditorialQuerySet.as_manager()
 
@@ -605,8 +694,10 @@ class EditorialTransition(models.Model):
     también para `update()` y `delete()` sobre consultas (migración content 0017).
     """
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
-    object_id = models.PositiveBigIntegerField()
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, related_name="+", verbose_name="tipo de pieza"
+    )
+    object_id = models.PositiveBigIntegerField(verbose_name="identificador de la pieza")
     item = GenericForeignKey("content_type", "object_id")
     from_status = models.CharField("estado de origen", max_length=20)
     to_status = models.CharField("estado de destino", max_length=20)
@@ -646,17 +737,31 @@ class EditorialTransition(models.Model):
 class EditorialNote(models.Model):
     """Discusión interna editor ↔ autor, separada de los comentarios públicos."""
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
-    object_id = models.PositiveBigIntegerField()
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, related_name="+", verbose_name="tipo de pieza"
+    )
+    object_id = models.PositiveBigIntegerField(verbose_name="identificador de la pieza")
     item = GenericForeignKey("content_type", "object_id")
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="autor",
     )
-    body = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    body = models.TextField(verbose_name="nota")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="fecha")
 
     class Meta:
         verbose_name = "nota editorial"
         verbose_name_plural = "notas editoriales"
         ordering = ["created_at"]
         indexes = [models.Index(fields=["content_type", "object_id"], name="ednote_item_idx")]
+
+    def __str__(self):
+        # Las notas solo se escriben desde el panel, con la cuenta que entró: si no hay
+        # autor, es que su cuenta se borró.
+        author = self.author.get_username() if self.author else "una cuenta borrada"
+        if self.created_at is None:
+            return f"Nota de {author}"
+        return f"Nota de {author}, {date_format(timezone.localtime(self.created_at))}"
