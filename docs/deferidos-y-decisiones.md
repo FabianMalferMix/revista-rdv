@@ -331,8 +331,12 @@ Los cuatro primeros son decisiones del dueño del sitio: no se «arreglan» sin 
   la lista, así que el lector la recorre entera y siempre igual (C22). Lo que se probó, en la
   prueba de humo, es el árbol de accesibilidad de Playwright y lo que se escribe en las regiones
   vivas.
-- **LCP y CLS medidos en desarrollo**, con la red y la CPU estranguladas (2,1 s y 0). Repetir en
-  la vista previa de producción, que comprime y cachea los estáticos.
+- **LCP y CLS medidos en desarrollo**, con la red y la CPU estranguladas (2,1 s y 0). Medidos
+  también en la vista previa de producción, que comprime y cachea los estáticos, el 2026-11-12
+  (B76): con 1,6 Mbit/s, 150 ms, la CPU ×4, la caché vacía y la mediana de cinco, la portada da
+  entre 2,4 y 2,6 s y la ficha de un evento entre 1,4 y 1,9 s, a 951 y a 390 px, con CLS 0. La
+  máquina tenía carga ajena: las cifras sirven para comparar dos versiones medidas en la misma
+  sesión, no como valor absoluto.
 - **Fotos, afiches y cubiertas reales**: el material es genérico hasta que el colectivo aporte el
   suyo (`docs/contenido-visual.md`).
 - **El poema en prosa se compone como versos.** El dueño aprobó el cierre sin pedir otra cosa
