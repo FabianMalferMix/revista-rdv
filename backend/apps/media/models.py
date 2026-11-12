@@ -64,35 +64,44 @@ class MediaAsset(models.Model):
         width_field="width",
         height_field="height",
         validators=[validate_image_size, validate_image],
+        verbose_name="imagen",
         help_text=f"JPEG, PNG o WebP, hasta 40 megapíxeles y {MAX_IMAGE_MB} MB.",
     )
     alt_text = models.CharField(
         max_length=255,
+        verbose_name="texto alternativo",
         help_text="Texto alternativo. Obligatorio por accesibilidad y SEO.",
     )
-    caption = models.TextField(blank=True)
-    credit = models.CharField(max_length=255, blank=True)
+    caption = models.TextField(blank=True, verbose_name="pie de foto")
+    credit = models.CharField(max_length=255, blank=True, verbose_name="crédito")
     # Derivados: los rellena Django desde el archivo. Fuente única, no editables a mano.
-    width = models.PositiveIntegerField(null=True, blank=True, editable=False)
-    height = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    width = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name="ancho")
+    height = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name="alto")
     # Cuándo se comprobó que el original no lleva metadatos, o se reescribió sin ellos. Vacío: aún
     # no se comprobó (el comando de derivados lo hace con las imágenes anteriores).
-    metadata_stripped_at = models.DateTimeField(null=True, blank=True, editable=False)
+    metadata_stripped_at = models.DateTimeField(
+        null=True, blank=True, editable=False, verbose_name="sin metadatos desde"
+    )
     # El color del borde de la imagen, en «#rrggbb», con el que el estante pinta el lomo de una
     # publicación. Lo mide el servicio de imágenes; vacío si aún no se midió o no se puede leer.
-    border_color = models.CharField(max_length=7, blank=True, editable=False)
+    border_color = models.CharField(
+        max_length=7, blank=True, editable=False, verbose_name="color del borde"
+    )
     # Las copias que generó el servicio de imágenes, por clase («srcset», o la extensión de las de
     # portada) y ancho: {"srcset": {"480": "assets/…/foto__480w.jpg"}, "avif": {…}}. De aquí salen
     # el `srcset`, sin preguntar al almacenamiento en cada página, y lo que se borra con la imagen.
-    derivatives = models.JSONField(default=dict, blank=True, editable=False)
+    derivatives = models.JSONField(
+        default=dict, blank=True, editable=False, verbose_name="copias generadas"
+    )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="uploads",
+        verbose_name="subido por",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="subido el")
 
     class Meta:
         ordering = ["-created_at"]

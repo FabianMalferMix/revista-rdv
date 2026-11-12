@@ -32,11 +32,11 @@ class CallQuerySet(models.QuerySet):
 class Call(models.Model):
     """Convocatoria. `is_open` es derivado (se calcula, no se almacena)."""
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    opens_at = models.DateTimeField()
-    closes_at = models.DateTimeField()
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    opens_at = models.DateTimeField(verbose_name="abre el")
+    closes_at = models.DateTimeField(verbose_name="cierra el")
 
     objects = CallQuerySet.as_manager()
 
@@ -86,14 +86,23 @@ class Submission(models.Model):
     # Fuera de la clase, porque la restricción de Meta también la nombra.
     Type = SubmissionType
 
-    author_name = models.CharField(max_length=255)
-    author_email = models.EmailField()
-    type = models.CharField(max_length=50, choices=Type.choices)
-    title = models.CharField(max_length=255)
-    body = models.TextField()
-    file = models.FileField(upload_to="submissions/%Y/%m/", blank=True, storage=private_storage)
+    author_name = models.CharField(max_length=255, verbose_name="remitente")
+    author_email = models.EmailField(verbose_name="correo de contacto")
+    type = models.CharField(max_length=50, choices=Type.choices, verbose_name="tipo de propuesta")
+    title = models.CharField(max_length=255, verbose_name="título")
+    body = models.TextField(verbose_name="descripción o texto")
+    file = models.FileField(
+        upload_to="submissions/%Y/%m/",
+        blank=True,
+        storage=private_storage,
+        verbose_name="adjunto",
+    )
     status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.RECEIVED, db_index=True
+        max_length=20,
+        choices=Status.choices,
+        default=Status.RECEIVED,
+        db_index=True,
+        verbose_name="estado",
     )
     reviewer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -101,19 +110,23 @@ class Submission(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="submissions_reviewed",
+        verbose_name="revisado por",
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, verbose_name="notas internas")
     call = models.ForeignKey(
         Call,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="submissions",
+        verbose_name="convocatoria",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="recibido el")
     # Cuándo se rechazó o se retiró: la purga cuenta desde aquí, como promete la política de
     # privacidad («pasado un tiempo desde su resolución»), y no desde que llegó.
-    resolved_at = models.DateTimeField(null=True, blank=True, editable=False)
+    resolved_at = models.DateTimeField(
+        null=True, blank=True, editable=False, verbose_name="resuelto el"
+    )
 
     class Meta:
         ordering = ["-created_at"]

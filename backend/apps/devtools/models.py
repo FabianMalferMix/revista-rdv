@@ -16,7 +16,7 @@ class DevelopmentMarker(models.Model):
     público. Y `cargar` deja como está una base marcada que ya tiene contenido.
     """
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="marcada el")
 
     class Meta:
         verbose_name = "marca de base de desarrollo"

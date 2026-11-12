@@ -15,9 +15,10 @@ from .models import Event, year_anchor
 def stats(perfil):
     """Números de trayectoria, para /trayectoria/ y el dossier.
 
-    Actividades, festivales y ferias salen de una sola consulta. `festivals` suma
-    festivales y ferias, como los rotula la trayectoria; el dossier los nombra por
-    separado (`festivales`, `ferias`), porque «1 festival» no puede ser una feria.
+    Actividades, festivales y ferias salen de una sola consulta. La trayectoria los
+    rotula juntos («festivales/ferias») y lee la suma, `festivals_and_fairs`. El dossier
+    los nombra por separado, porque «1 festival» no puede ser una feria: `festivals`
+    cuenta solo los festivales, y `fairs`, solo las ferias.
     `perfil`: el de la petición, que la vista ya pidió (`request_profile`)."""
     years = None
     if perfil.founded_year:
@@ -30,9 +31,9 @@ def stats(perfil):
     return {
         "years": years,
         "events": cuentas["events"],
-        "festivals": cuentas["festivales"] + cuentas["ferias"],
-        "festivales": cuentas["festivales"],
-        "ferias": cuentas["ferias"],
+        "festivals_and_fairs": cuentas["festivales"] + cuentas["ferias"],
+        "festivals": cuentas["festivales"],
+        "fairs": cuentas["ferias"],
         "publications": Publication.objects.published().count(),
     }
 

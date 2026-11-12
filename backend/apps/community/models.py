@@ -26,19 +26,27 @@ class NewsletterSubscriber(models.Model):
         UNSUBSCRIBED = "unsubscribed", "Dado de baja"
 
     # Normalizado (minúsculas, sin espacios): «Ana@X.cl» y «ana@x.cl» son la misma persona.
-    email = models.EmailField()
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    email = models.EmailField(verbose_name="correo")
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING, verbose_name="estado"
+    )
     # Token de BAJA: permanente y estable, para que el enlace de cualquier correo ya
     # enviado siga funcionando siempre.
-    token = models.CharField(max_length=64, blank=True, db_index=True)
+    token = models.CharField(max_length=64, blank=True, db_index=True, verbose_name="clave de baja")
     # Token de CONFIRMACIÓN: de un solo uso y con caducidad. Se separa del de baja
     # porque tenían el mismo ciclo de vida y ninguno caducaba (S-15).
-    confirm_token = models.CharField(max_length=64, blank=True, db_index=True)
-    confirm_token_at = models.DateTimeField(null=True, blank=True)
-    confirmed_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    confirm_token = models.CharField(
+        max_length=64, blank=True, db_index=True, verbose_name="clave de confirmación"
+    )
+    confirm_token_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="confirmación pedida"
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name="confirmación recibida")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="alta")
     # El último cambio de estado: desde aquí mide la purga, no desde el alta original.
-    status_changed_at = models.DateTimeField(default=timezone.now)
+    status_changed_at = models.DateTimeField(
+        default=timezone.now, verbose_name="último cambio de estado"
+    )
     # El rastro del correo de confirmación, que el panel enseña: cuándo salió y, si no
     # salió, el último error (sin direcciones).
     confirmation_sent_at = models.DateTimeField(

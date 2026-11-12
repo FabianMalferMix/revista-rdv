@@ -57,27 +57,45 @@ class Event(TimestampedModel):
         FERIA = "feria", "Feria"
         OTRO = "otro", "Otro"
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    type = models.CharField(max_length=20, choices=Type.choices, default=Type.RECITAL)
-    starts_at = models.DateTimeField(db_index=True)
-    ends_at = models.DateTimeField(null=True, blank=True)
-    venue_name = models.CharField(max_length=255, blank=True, help_text="Lugar (sala, café…).")
-    address = models.CharField(max_length=255, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    description = models.TextField(blank=True)
-    poster = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    type = models.CharField(
+        max_length=20, choices=Type.choices, default=Type.RECITAL, verbose_name="tipo"
     )
-    participants = models.ManyToManyField("people.Contributor", blank=True, related_name="events")
+    starts_at = models.DateTimeField(db_index=True, verbose_name="empieza el")
+    ends_at = models.DateTimeField(null=True, blank=True, verbose_name="termina el")
+    venue_name = models.CharField(
+        max_length=255, blank=True, verbose_name="lugar", help_text="Lugar (sala, café…)."
+    )
+    address = models.CharField(max_length=255, blank=True, verbose_name="dirección del lugar")
+    city = models.CharField(max_length=100, blank=True, verbose_name="ciudad")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    poster = models.ForeignKey(
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="afiche",
+    )
+    participants = models.ManyToManyField(
+        "people.Contributor", blank=True, related_name="events", verbose_name="participantes"
+    )
     is_external = models.BooleanField(
-        default=False, help_text="Participación en un evento organizado por terceros."
+        default=False,
+        verbose_name="organizado por terceros",
+        help_text="Participación en un evento organizado por terceros.",
     )
     host = models.CharField(
-        max_length=255, blank=True, help_text="Organizador externo (si aplica)."
+        max_length=255,
+        blank=True,
+        verbose_name="organizador",
+        help_text="Organizador externo (si aplica).",
     )
-    registration_url = models.URLField(blank=True, help_text="Inscripción o entradas.")
-    published = models.BooleanField(default=False)
+    registration_url = models.URLField(
+        blank=True, verbose_name="enlace de inscripción", help_text="Inscripción o entradas."
+    )
+    published = models.BooleanField(default=False, verbose_name="publicado")
 
     objects = EventQuerySet.as_manager()
 
@@ -112,12 +130,19 @@ class Event(TimestampedModel):
 class EventPhoto(models.Model):
     """Foto del álbum de un evento: la Galería pública se arma por evento."""
 
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="photos")
-    asset = models.ForeignKey("media.MediaAsset", on_delete=models.PROTECT, related_name="+")
-    caption = models.CharField(
-        max_length=255, blank=True, help_text="Pie de foto (si difiere del recurso)."
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="photos", verbose_name="evento"
     )
-    position = models.PositiveSmallIntegerField(default=0)
+    asset = models.ForeignKey(
+        "media.MediaAsset", on_delete=models.PROTECT, related_name="+", verbose_name="recurso"
+    )
+    caption = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="pie de foto",
+        help_text="Pie de foto (si difiere del recurso).",
+    )
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         ordering = ["position", "id"]
@@ -132,9 +157,9 @@ class EventPhoto(models.Model):
 class Milestone(models.Model):
     """Hito de la línea de tiempo que no es un evento (fundación, premio, publicación)."""
 
-    year = models.PositiveSmallIntegerField(db_index=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    year = models.PositiveSmallIntegerField(db_index=True, verbose_name="año")
+    title = models.CharField(max_length=255, verbose_name="título")
+    description = models.TextField(blank=True, verbose_name="descripción")
 
     class Meta:
         ordering = ["-year", "id"]

@@ -13,7 +13,7 @@
     {% if stats.years %}<li><strong>{{ stats.years }}</strong> año{{ stats.years|pluralize }} de trabajo</li>{% endif %}
     <li><strong>{{ stats.events }}</strong> evento{{ stats.events|pluralize }} realizados</li>
     {% if stats.publications %}<li><strong>{{ stats.publications }}</strong> publicaci{{ stats.publications|pluralize:"ón,ones" }}</li>{% endif %}
-    {% if stats.festivals %}<li><strong>{{ stats.festivals }}</strong> festival{{ stats.festivals|pluralize:"es" }}/ferias</li>{% endif %}
+    {% if stats.festivals_and_fairs %}<li><strong>{{ stats.festivals_and_fairs }}</strong> festival{{ stats.festivals_and_fairs|pluralize:"es" }}/ferias</li>{% endif %}
   </ul>
 
   {% comment %}

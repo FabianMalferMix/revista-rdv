@@ -236,28 +236,46 @@ class Publication(TimestampedModel):
         REVISTA = "revista", "Revista"
         DISCO = "disco", "Disco"
 
-    slug = models.SlugField(max_length=255, unique=True)
-    title = models.CharField(max_length=255)
-    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.PLAQUETTE)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    title = models.CharField(max_length=255, verbose_name="título")
+    kind = models.CharField(
+        max_length=20, choices=Kind.choices, default=Kind.PLAQUETTE, verbose_name="tipo"
+    )
     publisher = models.ForeignKey(
-        "reviews.Publisher", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "reviews.Publisher",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="editorial",
     )
-    year = models.PositiveSmallIntegerField(null=True, blank=True)
-    isbn = models.CharField(max_length=20, blank=True)
+    year = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name="año")
+    isbn = models.CharField(max_length=20, blank=True, verbose_name="ISBN")
     cover = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="cubierta",
     )
-    synopsis = models.TextField(blank=True)
+    synopsis = models.TextField(blank=True, verbose_name="sinopsis")
     participants = models.ManyToManyField(
-        "people.Contributor", blank=True, related_name="publications"
+        "people.Contributor",
+        blank=True,
+        related_name="publications",
+        verbose_name="participantes",
     )
     is_own = models.BooleanField(
-        default=True, help_text="Editada por el colectivo (vs participación en obra ajena)."
+        default=True,
+        verbose_name="edición propia",
+        help_text="Editada por el colectivo (vs participación en obra ajena).",
     )
     pdf = models.FileField(
         upload_to=publication_upload_to,
         blank=True,
         validators=[validate_pdf_extension, validate_pdf_size],
+        verbose_name="PDF",
         help_text=f"PDF de descarga gratuita (plaquettes/fanzines digitales), de hasta {MAX_PDF_MB} MB.",
     )
     featured = models.BooleanField(
@@ -265,8 +283,8 @@ class Publication(TimestampedModel):
         verbose_name="destacada",
         help_text="Va primero en el estante de la portada; entre las destacadas manda «Posición».",
     )
-    published = models.BooleanField(default=False)
-    position = models.PositiveSmallIntegerField(default=0)
+    published = models.BooleanField(default=False, verbose_name="publicada")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     objects = publishing.PublishableQuerySet.as_manager()
 
@@ -312,11 +330,16 @@ class WhereToBuy(models.Model):
     """Dónde conseguir una publicación: solo enlaces externos (editorial, feria, librería)."""
 
     publication = models.ForeignKey(
-        Publication, on_delete=models.CASCADE, related_name="where_to_buy"
+        Publication,
+        on_delete=models.CASCADE,
+        related_name="where_to_buy",
+        verbose_name="publicación",
     )
-    label = models.CharField(max_length=120, help_text="Editorial / feria / librería.")
-    url = models.URLField()
-    position = models.PositiveSmallIntegerField(default=0)
+    label = models.CharField(
+        max_length=120, verbose_name="nombre", help_text="Editorial / feria / librería."
+    )
+    url = models.URLField(verbose_name="enlace")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     class Meta:
         ordering = ["position", "label"]
@@ -337,20 +360,33 @@ class PressMention(TimestampedModel):
         PERFIL = "perfil", "Perfil"
         MENCION = "mencion", "Mención"
 
-    title = models.CharField(max_length=255)
-    outlet = models.CharField(max_length=255, help_text="Medio (diario, revista, radio…).")
-    author = models.CharField(max_length=255, blank=True, help_text="Periodista (opcional).")
-    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.NOTA)
-    published_on = models.DateField(null=True, blank=True)
-    url = models.URLField(blank=True)
+    title = models.CharField(max_length=255, verbose_name="título")
+    outlet = models.CharField(
+        max_length=255, verbose_name="medio", help_text="Medio (diario, revista, radio…)."
+    )
+    author = models.CharField(
+        max_length=255, blank=True, verbose_name="periodista", help_text="Periodista (opcional)."
+    )
+    kind = models.CharField(
+        max_length=20, choices=Kind.choices, default=Kind.NOTA, verbose_name="tipo"
+    )
+    published_on = models.DateField(null=True, blank=True, verbose_name="fecha")
+    url = models.URLField(blank=True, verbose_name="enlace")
     quote = models.TextField(
-        blank=True, help_text="Cita destacada para la página de prensa y el dossier."
+        blank=True,
+        verbose_name="cita",
+        help_text="Cita destacada para la página de prensa y el dossier.",
     )
     logo = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="logo",
     )
-    published = models.BooleanField(default=True)
-    position = models.PositiveSmallIntegerField(default=0)
+    published = models.BooleanField(default=True, verbose_name="publicada")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     objects = publishing.PublishableQuerySet.as_manager()
 
@@ -374,15 +410,22 @@ class Partner(TimestampedModel):
         ESPACIO = "espacio", "Espacio"
         OTRO = "otro", "Otro"
 
-    name = models.CharField(max_length=255)
-    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.OTRO)
-    logo = models.ForeignKey(
-        "media.MediaAsset", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    name = models.CharField(max_length=255, verbose_name="nombre")
+    kind = models.CharField(
+        max_length=20, choices=Kind.choices, default=Kind.OTRO, verbose_name="tipo"
     )
-    url = models.URLField(blank=True)
-    description = models.TextField(blank=True)
-    active = models.BooleanField(default=True)
-    position = models.PositiveSmallIntegerField(default=0)
+    logo = models.ForeignKey(
+        "media.MediaAsset",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        verbose_name="logo",
+    )
+    url = models.URLField(blank=True, verbose_name="sitio web")
+    description = models.TextField(blank=True, verbose_name="descripción")
+    active = models.BooleanField(default=True, verbose_name="activo")
+    position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
 
     objects = PartnerQuerySet.as_manager()
 
