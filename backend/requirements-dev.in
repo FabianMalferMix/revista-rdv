@@ -7,12 +7,12 @@
 pytest>=9.2.0,<10
 pytest-django>=4.14.0,<5
 pytest-cov>=5,<8
-pytest-randomly>=5.0.0,<6
+pytest-randomly>=5.1.0,<6
 pytest-xdist>=3.6,<4
 beautifulsoup4>=4.12,<5
 # Las pruebas leen las hojas del sitio con un analizador de CSS real (tests/css.py).
 tinycss2>=1.4,<2
-ruff>=0.17.4,<1
+ruff>=0.17.5,<1
 # Las aristas entre apps: `lint-imports`, con el contrato de pyproject.toml.
 import-linter>=2.16,<3
 # Compila los lockfiles (CONTRIBUTING.md, «Dependencias»).
