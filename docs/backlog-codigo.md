@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 85 de 91 tickets cerrados (de los 91: 42 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B91 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos, y B91, por lo que se vio en B77.
+> **Avance:** 86 de 91 tickets cerrados (de los 91: 42 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B91 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos, y B91, por lo que se vio en B77.
 
 ## Cómo se usa
 
@@ -188,7 +188,7 @@
 | B88 | La cápsula que se abre con el teclado busca con todo su ancho | B72 (etapa 1) | S | no | hecho (#270) |
 | B89 | Cuatro detalles a la vista | B72 | S | no | hecho (#283) |
 | B90 | La vista previa no enlaza a lo que no se ve | B71 | S | no | hecho (#284) |
-| B91 | Cuatro detalles del panel | B77 | S | no | pendiente |
+| B91 | Cuatro detalles del panel | B77 | S | no | hecho (#285) |
 
 ## 3. Tickets
 
