@@ -28,6 +28,6 @@
 
   {% if articles %}
     <h2 class="subhead">Textos</h2>
-    {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=3 only %}
+    {% include "partials/_article_list.html" with articles=articles pagina=articles nivel=3 sin_firma_de=contributor only %}
   {% endif %}
 {% endblock %}

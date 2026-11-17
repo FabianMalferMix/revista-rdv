@@ -1044,13 +1044,8 @@ def test_what_the_server_sends_stays(selector):
     assert server_selector(selector) == selector
 
 
-# Lo que hoy gana así y se queda como está, con su motivo.
-TOLERATED = {
-    (".newsletter input[type=email]", '.newsletter [aria-invalid="true"]'): (
-        "El campo con error del boletín conserva su borde: la etiqueta le gana al borde del "
-        "error, que va después. Corregirlo cambia lo que se ve."
-    ),
-}
+# Lo que hoy gana así y se queda como está, con su motivo: nada.
+TOLERATED = {}
 
 
 @pytest.mark.django_db

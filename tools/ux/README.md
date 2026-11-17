@@ -80,7 +80,8 @@ guiones ejecutándose de verdad. Comprueba que:
 - «Menú» abre y cierra, también al salir el foco, sin moverlo ni dejar lo enfocado tapado;
 - la lupa busca en vivo, no busca con una letra y anuncia una sola vez el recuento, sin leer los
   resultados;
-- un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado y el foco, y
+- un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado, el borde del
+  error (más grueso que sin error y del color del mensaje; sin error, el de los campos) y el foco, y
   los campos trampa de los formularios no se ven;
 - la cabecera pasa a cápsula al bajar, y la portada se reconoce por su marca: arriba no tiene
   cabecera, y la cápsula le llega sin transición de vista;
@@ -102,7 +103,13 @@ guiones ejecutándose de verdad. Comprueba que:
 - «Las voces» van en una fila; el relevo no cambia el árbol de accesibilidad de la lista, trae a
   la que más esperaba al lugar de la que se va, y el tabulador recorre la fila en el orden en que
   se ve;
-- lo que lleva `hidden` no se ve, con los guiones y sin ellos.
+- lo que lleva `hidden` no se ve, con los guiones y sin ellos;
+- a 951 y a 390 px, en las fichas de una obra, una editorial, un autor y quien colabora, entre el
+  filete de la cabecera y el título de la primera sección queda el aire que hay en la ficha de una
+  integrante entre su cabecera y su primera sección;
+- con el foco, cada botón y cada pieza con caja propia (el salto al contenido, las etiquetas, los
+  campos, el campo de la lupa, los lomos del estante, las miniaturas de la tirada, el botón del
+  reproductor) conserva sus esquinas, y el anillo de foco se ve.
 
 Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
 no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre
