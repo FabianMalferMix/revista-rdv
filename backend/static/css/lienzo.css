@@ -15,18 +15,14 @@
 .lienzo--ancho > *{grid-column:wide}
 /* Dentro de una banda a sangre, su contenido vuelve al carril ancho. */
 .band-in{width:min(var(--wide), 100% - 2*var(--gutter)); margin-inline:auto}
-/* Ritmo de portada: bloques con bandas alternadas a ancho completo.
-   box-shadow + clip-path pintan el fondo hasta los bordes del viewport sin
-   provocar scroll horizontal (no usan 100vw ni overflow-x:hidden). */
-/* El aire entre bloques: era de hasta 112 px arriba y abajo, y con seis bloques sumaba más
-   de una pantalla de papel vacío a 1440. */
+/* Ritmo de portada: bloques con bandas alternadas a ancho completo. El aire entre bloques
+   tiene tope: con 112 px arriba y abajo, seis bloques sumarían más de una pantalla de papel
+   vacío a 1440. */
 .home-block{padding-block:clamp(48px, 5vw, 80px)}
-/* La banda ocupa el carril a sangre del lienzo. Antes vivía dentro de la caja de 820 px
-   y pintaba su fondo hacia fuera con una sombra de 100vmax recortada con clip-path.
-   Es la hoja clara. Las bandas eran blancas, el mismo blanco de los campos y las
-   cubiertas: no se distinguía la página de los objetos que lleva. Hubo también una
-   banda de tinta para el registro destacado; el dueño del sitio la descartó porque
-   rompía la portada, y la tinta quedó para el pie. */
+/* La banda va en el carril a sangre (lo pone el telón de la portada, en componentes.css). Es
+   la hoja clara y no el blanco de los campos y las cubiertas: así la página se distingue de
+   los objetos que lleva. La tinta queda para el pie (ver «Bandas de tinta, dos por página
+   como mucho» en docs/deferidos-y-decisiones.md). */
 .band{background:var(--paper-2)}
 /* Dos bandas seguidas son una sola superficie: sin esto el aire entre ellas se duplica. */
 .band + .band{padding-top:0}

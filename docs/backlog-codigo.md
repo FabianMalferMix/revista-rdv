@@ -179,7 +179,7 @@
 | B75 | Convenciones HTTP | — | S | no | hecho (#275) |
 | B76 | Rendimiento menor | — | M | no | hecho (#276) |
 | B77 | Nombres trampa y rótulos completos | — | S | no | hecho (#277) |
-| B78 | Comentarios que dicen el presente | B03 | L | no | pendiente |
+| B78 | Comentarios que dicen el presente | B03 | L | no | en curso (etapa 1: #286) |
 | B79 | La suite, por componente | B61 | L | no | pendiente |
 | B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |

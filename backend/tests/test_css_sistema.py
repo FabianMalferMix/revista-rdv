@@ -1,9 +1,9 @@
 """Reglas del sistema visual que solo fallan al pintar.
 
 La suite no tiene navegador. Estas pruebas fijan sobre la hoja de estilos las decisiones
-del rediseño UX (docs/deferidos-y-decisiones.md) cuyo incumplimiento no rompe nada salvo lo
-que se ve: una cubierta deformada, un título con las líneas sueltas, una columna de lectura de
-cien letras. Las cifras en pantalla se miden aparte, con tools/ux.
+del sistema visual (docs/deferidos-y-decisiones.md) cuyo incumplimiento no rompe nada salvo
+lo que se ve: una cubierta deformada, un título con las líneas sueltas, una columna de lectura
+de cien letras. Las cifras en pantalla se miden aparte, con tools/ux.
 
 La hoja se lee con tests/css.py: cada regla se busca por su contexto (`()` es el nivel de
 arriba; `("@media (min-width:900px)",)`, dentro de ese bloque) y por su selector.
@@ -45,11 +45,12 @@ def _header_breakpoint():
 
 
 def test_las_imagenes_no_heredan_el_alto_del_atributo_html():
-    """`_responsive_img.html` emite width y height para reservar el hueco de la imagen.
+    """`_responsive_img.html` emite width y height para reservar el hueco de la imagen, y la
+    imagen se dibuja con su proporción.
 
-    Sin `height:auto` ese alto se aplica literal y gana a `aspect-ratio`: las cubiertas
-    se dibujaban a 180×780 y las fotos apaisadas de la galería como tiras verticales.
-    Ninguna otra prueba lo veía porque el HTML era correcto.
+    Sin `height:auto` ese alto se aplica literal y gana a `aspect-ratio`: una cubierta o una
+    foto apaisada de la galería saldrían estiradas a lo alto. El HTML es correcto: solo la
+    hoja lo evita.
     """
     regla = css.rule((), "img, video")
     assert regla["height"] == "auto", "sin height:auto el alto del atributo HTML se aplica literal"
@@ -73,8 +74,8 @@ EXENTOS_DEL_MINIMO = {".nav-disclosure summary::after"}
 
 
 def test_ningun_texto_baja_de_12px():
-    """Nueve reglas pintaban texto a 11px; el mínimo legible del sistema es 12. Los tamaños
-    son tokens: se resuelven antes de comparar."""
+    """Ningún texto baja de 12 px, el mínimo legible del sistema (el glifo del desplegable es
+    un adorno). Los tamaños son tokens: se resuelven antes de comparar."""
     tamanos = [
         (r.selector, tam)
         for r in css.rules()
@@ -88,11 +89,10 @@ def test_ningun_texto_baja_de_12px():
 
 
 def test_la_escala_es_la_unica_fuente_de_tamanos():
-    """Había 25 tamaños escritos a mano: 17, 18, 19 y 20 px convivían sin que ninguno
-    significara nada. Ahora cada `font-size` es un paso de la escala. Quedan fuera el
-    cuerpo base de `html`, que crece con el monitor y del que cuelgan los `rem`, y la hoja
-    de impresión, que mide en puntos. Son diez pasos: --t7, que era el nombre de la portada
-    hasta que pasó a ser el logo (D18), volvió como el título de los pliegos de la tirada (D19)."""
+    """Cada `font-size` es un paso de la escala: con tamaños escritos a mano, 17, 18, 19 y
+    20 px convivirían sin que ninguno significara nada. Quedan fuera el cuerpo base de
+    `html`, que crece con el monitor y del que cuelgan los `rem`, y la hoja de impresión, que
+    mide en puntos. Son diez pasos, de menor a mayor."""
     sueltos = [
         (r.selector, tam)
         for r in css.rules()
@@ -110,8 +110,8 @@ def test_la_escala_es_la_unica_fuente_de_tamanos():
 
 
 def test_un_titulo_de_seccion_no_mide_menos_que_el_texto_que_encabeza():
-    """Los títulos de sección eran rótulos de 12 px sobre párrafos de 17. El cuerpo crece
-    hasta 19 px (119 % del tamaño del navegador): el título de sección empieza por encima."""
+    """El cuerpo crece hasta 19 px (119 % del tamaño del navegador): el título de sección
+    empieza por encima, en la tipografía de titulares."""
     minimo, _ = css.px_range(css.rule((), ".subhead")["font-size"])
     assert minimo > 19, f"el título de sección arranca en {minimo}px, por debajo del cuerpo"
     familias = {r.get("font-family") for r in css.rules_with((), ".subhead")} - {None}
@@ -119,7 +119,7 @@ def test_un_titulo_de_seccion_no_mide_menos_que_el_texto_que_encabeza():
 
 
 def test_los_titulos_no_heredan_la_interlinea_de_lectura():
-    """El 1.6 del cuerpo es para leer párrafos; en un título separa sus líneas."""
+    """La interlínea de lectura del cuerpo es para párrafos; en un título separa sus líneas."""
     interlinea = css.rule((), "h1, h2, h3")["line-height"]
     assert re.fullmatch(r"var\(--[\w-]+\)", interlinea), (
         "los títulos fijan su interlínea con un token"
@@ -128,7 +128,8 @@ def test_los_titulos_no_heredan_la_interlinea_de_lectura():
 
 
 def test_el_cuerpo_de_lectura_tiene_medida():
-    """A 18px en 780px el artículo corría a 102 letras por línea; lo legible es 45–75."""
+    """El cuerpo de lectura se queda en la medida, en ch: sin ella correría a todo el ancho de
+    su columna, y lo legible son 45–75 letras por línea."""
     medida = re.fullmatch(r"(\d+)ch", css.tokens().get("--medida", ""))
     assert medida, "falta el token --medida"
     assert 45 <= int(medida.group(1)) <= 66, "la medida en ch quedó fuera del rango de lectura"
@@ -150,8 +151,8 @@ def test_el_poema_no_se_parte_con_guiones():
 
 
 def test_ningun_estado_hover_se_marca_bajando_la_opacidad():
-    """Tres botones se atenuaban al pasar el ratón: el texto perdía contraste justo al ir
-    a pulsarlo. El estado se marca con color sólido."""
+    """Un estado :hover no baja la opacidad: el texto perdería contraste justo al ir a
+    pulsarlo. El estado se marca con color sólido."""
     estados = [r for r in css.rules() if ":hover" in r.selector]
     assert estados, "la hoja ya no tiene estados :hover"
     atenuados = [r.selector for r in estados if "opacity" in r]
@@ -159,8 +160,8 @@ def test_ningun_estado_hover_se_marca_bajando_la_opacidad():
 
 
 def test_todo_boton_comparte_una_receta():
-    """Había cinco botones con cinco recetas. El del formulario y el del reproductor
-    heredan ahora la de `.btn`; ninguno vuelve a fijar su tipografía por su cuenta."""
+    """Todos los botones comparten la receta de `.btn` (44 px de alto mínimo, sin mayúsculas),
+    también el del formulario y el del reproductor; ninguno fija su tipografía por su cuenta."""
     recetas = [r for r in css.rules_with((), ".btn") if "font-family" in r]
     assert len(recetas) == 1, "desapareció la regla común de los botones"
     receta = recetas[0]
@@ -178,15 +179,16 @@ def test_todo_boton_comparte_una_receta():
     assert not sueltos, f"botones con tipografía propia: {sueltos}"
 
 
-# Reglas que pintan texto en mayúsculas fuera de la receta de rótulo. Estaba la navegación,
-# como deuda con fecha: salió en el ticket 2.3, al pasar a la tipografía de titulares.
+# Reglas que pintan texto en mayúsculas fuera de la receta de rótulo, como deuda: ninguna.
 MAYUSCULAS_PENDIENTES = set()
-# Excepciones con motivo, no deudas: un timbre de goma va en mayúsculas (D31, tablero aprobado).
+# Excepciones con motivo, no deudas: un timbre de goma va en mayúsculas (ver «“Prensa y
+# gestión”, sellos en risografía» en docs/deferidos-y-decisiones.md).
 MAYUSCULAS_PERMITIDAS = {".home-cierre .pie-entidad a"}
 
 
 def test_las_mayusculas_son_una_sola_receta():
-    """Quince reglas ponían texto en mayúsculas, con seis espaciados distintos."""
+    """Las mayúsculas son la receta del rótulo, con un solo espaciado; fuera de ella, solo las
+    excepciones con motivo."""
     con_mayusculas = {r.selector for r in css.rules() if r.get("text-transform") == "uppercase"}
     receta = {sel for sel in con_mayusculas if sel.startswith(".rotulo")}
     assert len(receta) == 1, f"debe haber exactamente una receta de rótulo: {receta}"
@@ -233,9 +235,8 @@ def test_el_panel_de_busqueda_se_cierra_al_dejar_de_usarlo():
 
 
 def test_la_fuente_de_titulares_tiene_reserva_metrica_y_no_cae_a_la_serif():
-    """La reserva era la serif de lectura, un 24 % más estrecha: al cargar la fuente de
-    titulares (entonces Syne) el nombre del sitio pasaba de 231 a 292 px y todo lo de
-    alrededor saltaba. Hoy es Bricolage Grotesque, con su reserva medida."""
+    """La fuente de titulares lleva su propia reserva, medida para ocupar lo mismo, y nunca la
+    serif de lectura, que no mide igual: al cargar la fuente, todo lo de alrededor saltaría."""
     pila = css.tokens()["--display"]
     assert css.split_commas(pila)[:2] == ('"Bricolage Grotesque"', '"Bricolage Fallback"'), pila
     assert "var(--serif)" not in pila
@@ -249,8 +250,8 @@ def test_la_fuente_de_titulares_tiene_reserva_metrica_y_no_cae_a_la_serif():
 
 
 def test_el_lienzo_declara_sus_tres_carriles():
-    """El sitio tenía un solo contenedor de 820 px para todo, y el texto ocupaba el 54 %
-    de una pantalla de 1440. Los carriles son líneas con nombre de una rejilla."""
+    """El lienzo tiene tres carriles (lectura, ancho y sangre), líneas con nombre de una
+    rejilla; por defecto, una pieza cae en el de lectura."""
     carriles = css.tokens().get("--carriles")
     assert carriles, "falta la plantilla de columnas del lienzo"
     for linea in (
@@ -267,14 +268,16 @@ def test_el_lienzo_declara_sus_tres_carriles():
         "por defecto se cae en el carril de lectura"
     )
     assert css.rule((), ".lienzo--ancho > *")["grid-column"] == "wide"
-    # Lo que va a sangre son las bandas de la portada: viven en el telón, que repite los carriles.
+    # Lo que va a sangre en la portada (las bandas y las piezas `.sangre`) vive en el telón,
+    # que repite los carriles.
     telon = css.rule((), ".portada-telon > .sangre, .portada-telon > .band")
     assert telon["grid-column"] == "full"
 
 
 def test_la_columna_de_lectura_no_se_ensancha():
     """Lo que crece es el lienzo, no la línea: lo legible son 45–75 letras, en cualquier
-    monitor. El carril de lectura mide lo que medía el contenido de la caja de 820 px."""
+    monitor. El carril de lectura mide 780 px, lo mismo que el contenido de la caja de 820
+    (`.wrap`, con 20 px a cada lado)."""
     tokens = css.tokens()
     assert tokens["--measure"] == "780px"
     ancho = re.fullmatch(r"(\d+)px", tokens["--wide"])
@@ -298,7 +301,7 @@ def test_el_carril_ancho_de_cabecera_y_pie_coincide_con_el_del_lienzo():
     assert regla["padding-inline"] == "var(--gutter)"
 
 
-# ── Filas, miniaturas y cubiertas (ticket 2.2) ────────────────────────────
+# ── Filas, miniaturas y cubiertas ─────────────────────────────────────────
 
 
 def _enlace_total():
@@ -314,8 +317,8 @@ def _enlace_total():
 
 
 def test_la_fila_entera_es_el_enlace_de_su_titulo():
-    """Solo era pulsable el texto del título. Una capa del propio enlace cubre la fila;
-    los enlaces secundarios (sección, firmas) quedan por encima y siguen siendo propios."""
+    """Una capa del enlace del título cubre la fila entera; los enlaces secundarios (sección,
+    firmas) quedan por encima y siguen siendo propios."""
     assert css.rule((), ".fila")["position"] == "relative"
     _enlace_total()
     # Lo que se pulsa es lo que se ilumina: la hoja clara del estado de la fila.
@@ -352,9 +355,10 @@ def test_las_filas_se_disponen_segun_el_ancho_de_su_lista():
 
 
 def test_en_el_carril_ancho_el_poema_ocupa_una_sola_linea():
-    """Con el primer verso bajo el título cabían siete poemas por pantalla; en su propia
-    columna caben diez. La última columna es fija: si dependiera del largo de cada firma,
-    los versos empezarían en una vertical distinta en cada fila."""
+    """Con la lista de 1000 px o más, el primer verso va en su propia columna, junto al
+    título: con un título corto, la fila mide una línea. La última columna es fija: si
+    dependiera del largo de cada firma, los versos empezarían en una vertical distinta en
+    cada fila."""
     ancho = ("@container filas (min-width:1000px)",)
     assert css.rule(ancho, ".fila--poema .fila-cuerpo")["display"] == "grid"
     assert css.rule(ancho, ".fila--poema")["grid-template-columns"].endswith(" 15rem"), (
@@ -377,7 +381,7 @@ def test_el_filete_y_la_hoja_clara_son_tokens():
 
 def test_la_cubierta_se_ensena_como_un_objeto():
     """Sin esquinas redondeadas y con sombra plana; al señalarla la sombra pasa al color
-    de estado. Nada se mueve: el sitio solo anima color, fondo y borde."""
+    de estado. Nada se mueve: la cubierta cambia de sombra, no de sitio."""
     cubierta = css.rule((), ".pub-card img, .pub-cover-fallback")
     assert cubierta["box-shadow"] == "8px 8px 0 var(--line)"
     assert "border-radius" not in cubierta
@@ -392,8 +396,9 @@ def test_la_cubierta_se_ensena_como_un_objeto():
 
 
 def test_un_catalogo_corto_no_se_arrincona():
-    """Con tres títulos en una rejilla de cinco columnas, el 40 % de la pantalla quedaba
-    vacío a la derecha. Es una mejora: sin :has() queda la rejilla general."""
+    """Un catálogo corto no se arrincona a la izquierda: con cuatro títulos o menos, cuatro
+    columnas; en el índice, con tres o menos, tres. Es una mejora: sin :has() queda la
+    rejilla general."""
     cuatro = css.rule(DESKTOP, ".pub-grid:not(:has(> :nth-child(5)))")
     assert cuatro["grid-template-columns"] == "repeat(4, minmax(0, 1fr))"
     tres = css.rule(DESKTOP, ".lienzo > .pub-grid:not(:has(> :nth-child(4)))")
@@ -435,12 +440,12 @@ def test_la_hoja_de_contactos_fija_la_proporcion_en_la_hoja_no_en_cada_foto():
     assert "aspect-ratio" not in fotos
 
 
-# ── Serif de lectura y monoespaciada (ticket 2.3) ─────────────────────────
+# ── Serif de lectura y monoespaciada ──────────────────────────────────────
 
 
 def test_la_serif_de_lectura_es_propia_y_tiene_reserva_metrica():
-    """La pila de sistema daba Palatino en un Mac, Times en Linux y Georgia en Windows: el
-    sitio tenía tres voces. Ahora la serif viaja con el sitio, y mientras llega la ocupa una
+    """La serif de lectura viaja con el sitio, en redonda y cursiva: con la del sistema, el
+    sitio tendría una voz distinta según quién lo abriera. Mientras llega, la ocupa una
     reserva escalada para que el texto no salte al cambiar."""
     pila = css.split_commas(css.tokens()["--serif"])
     assert pila[:2] == ('"RdV Serif"', '"RdV Serif Fallback"'), pila
@@ -475,8 +480,9 @@ def test_ninguna_familia_lleva_el_nombre_reservado_de_la_fuente():
     assert not [f for f in familias if "source" in f.lower()], familias
 
 
-# Reglas que pueden pintar en monoespaciada, cada una por su papel. Decisión D3: la mono
-# queda para rótulos y datos; lo demás se lee en la serif o en la de titulares.
+# Reglas que pueden pintar en monoespaciada, cada una por su papel: la mono queda para
+# rótulos y datos, y lo demás se lee en la serif o en la de titulares (ver «La
+# monoespaciada, solo para rótulos y datos» en docs/deferidos-y-decisiones.md).
 MONO_PERMITIDA = {
     ".rotulo, .kicker, .foot-group h2, .reviewed h2, .event-month, .tag, "
     ".nav-disclosure summary, .member-role, .foot-group-titulo": (
@@ -494,9 +500,9 @@ MONO_PERMITIDA = {
 
 
 def test_la_monoespaciada_queda_en_rotulos_y_datos():
-    """La navegación, el pie, los botones y las cifras iban en monoespaciada: la voz del
-    sitio era la de un panel de control. Una regla nueva que la use tiene que justificarse
-    aquí."""
+    """La monoespaciada es para rótulos y datos: en la navegación, el pie, los botones o las
+    cifras, la voz del sitio sería la de un panel de control. Una regla nueva que la use se
+    justifica en MONO_PERMITIDA."""
     con_mono = {r.selector for r in css.rules() if r.get("font-family") == "var(--mono)"}
     assert con_mono, "la monoespaciada ya no está en ninguna regla"
     sobrantes = con_mono - set(MONO_PERMITIDA)
@@ -509,7 +515,7 @@ def test_la_monoespaciada_queda_en_rotulos_y_datos():
     assert "font-family" not in css.rule((), ".site-foot"), "el pie hereda la serif del cuerpo"
 
 
-# ── Sala de lectura, fichas y pie (ticket 2.4) ────────────────────────────
+# ── Sala de lectura, fichas y pie ─────────────────────────────────────────
 
 
 def test_la_sala_de_lectura_pone_la_ancla_al_lado_solo_si_cabe():
@@ -528,23 +534,27 @@ def test_la_sala_de_lectura_pone_la_ancla_al_lado_solo_si_cabe():
 
 
 def test_un_bloque_preformateado_no_empuja_la_pagina():
-    """Con sus líneas enteras, la partitura de un ensayo de prueba empujaba la página hacia
-    los lados a cualquier ancho: el bloque se desplaza dentro de su caja."""
+    """Un bloque preformateado (una partitura, una tabla hecha con espacios) conserva sus
+    líneas enteras y se desplaza dentro de su caja: si no, empujaría la página hacia los
+    lados a cualquier ancho."""
     bloque = css.rule((), ".article .body pre")
     assert bloque["max-width"] == "100%" and bloque["overflow-x"] == "auto"
 
 
 def test_la_columna_ancla_que_no_cabe_se_desplaza_por_dentro():
     """Una columna ancla más alta que la pantalla (un título de doscientas letras, cuatro
-    firmas, ocho etiquetas) dejaba su final fuera de la vista durante toda la lectura."""
+    firmas, ocho etiquetas) se desplaza por dentro: si no, su final quedaría fuera de la
+    vista durante toda la lectura."""
     ancla = css.rule(FIXED_ANCHOR, ".lectura-ancla")
     assert ancla["max-height"] == "calc(100dvh - var(--alto-cabecera) - 2 * var(--s3))"
     assert ancla["overflow-y"] == "auto"
 
 
 def test_un_titulo_larguisimo_baja_un_paso_y_se_divide_con_guion():
-    """Unas diez letras caben por línea en la columna ancla: una palabra más larga se partía
-    por la mitad y sin guion. Donde el navegador sabe dividir en español, divide."""
+    """A 951 px, en la columna ancla caben unas trece letras por línea del título de un poema
+    y unas veinte del de un texto: sin guion, una palabra más larga se partiría por la mitad.
+    Donde el navegador sabe dividir en español, divide, y un título largo baja además un
+    paso."""
     assert css.rule((), ".lectura-ancla h1")["hyphens"] == "auto"
     assert css.rule((), ".poem .lectura-ancla h1.titulo-largo")["font-size"] == "var(--t5)"
     assert css.rule((), ".article .lectura-ancla h1.titulo-largo")["font-size"] == "var(--t4)"
@@ -572,8 +582,8 @@ def test_cada_salida_del_pie_se_pulsa_entera():
 
 
 def test_los_retratos_nuevos_no_son_circulos():
-    """El retrato es 4:5, como el del colectivo; el círculo es el avatar de una app de
-    mensajería (ticket 3.6). En los listados era un círculo de 72 px."""
+    """El retrato es 4:5, y ningún retrato ni monograma es un círculo: el círculo es el
+    avatar de una app de mensajería."""
     for selector in (
         ".firma-retrato",
         ".firma-monograma",
@@ -588,11 +598,11 @@ def test_los_retratos_nuevos_no_son_circulos():
     assert not circulos, "queda un círculo en la hoja"
 
 
-# ── Superficies, tinta y amarillo (tickets 3.1 y 3.2) ─────────────────────
+# ── Superficies, tinta y amarillo ─────────────────────────────────────────
 
-# Lo único que puede ir en blanco: los campos de formulario, lo que flota sobre la página
-# y los objetos (retratos, cubiertas, logotipos), más el botón y la marca de reproducción
-# que se apoyan en la placa azul del reproductor.
+# Lo único que puede ir en blanco: los campos de formulario y las cubiertas (un objeto sobre
+# la página), más el botón y la marca de reproducción, que se apoyan en el azul de la placa
+# del reproductor y de la miniatura de un registro.
 BLANCO_PERMITIDO = {
     ".search input",
     ".search-page input",
@@ -617,8 +627,8 @@ def _backgrounds(reglas):
 
 
 def test_el_blanco_es_para_campos_y_objetos():
-    """Las bandas y cinco avisos eran cajas blancas: el mismo blanco que los campos y las
-    cubiertas, así que la página no se distinguía de las cosas que lleva encima (D6)."""
+    """El blanco es para los campos y los objetos: si las bandas o los avisos fueran blancos,
+    la página no se distinguiría de las cosas que lleva encima."""
     blancas = {
         selector
         for selector, fondo in _backgrounds(_screen_rules())
@@ -630,8 +640,9 @@ def test_el_blanco_es_para_campos_y_objetos():
 
 def test_los_avisos_son_hoja_clara_sin_borde():
     """La fecha de la agenda, la próxima actividad, el contacto del dossier, la obra reseñada
-    y los mensajes eran cajas blancas con borde de 1 px. Pasan a la hoja clara; los que
-    llevan filete a la izquierda lo conservan, porque marca, no encierra."""
+    y los mensajes van en la hoja clara, sin borde que los encierre; los que llevan filete a
+    la izquierda (la próxima actividad y los mensajes) lo conservan, porque marca, no
+    encierra."""
     for selector in (".event-date", ".next-event", ".dossier-contact", ".reviewed", ".flash"):
         aviso = css.rule((), selector)
         assert aviso["background"] == "var(--paper-2)", f"«{selector}» no está en la hoja clara"
@@ -661,8 +672,8 @@ TINTA_PERMITIDA = {
 
 
 def test_la_tinta_como_superficie_es_solo_del_pie():
-    """El registro destacado fue una banda de tinta de borde a borde. El dueño del sitio la
-    descartó porque rompía la portada: la tinta como superficie queda para el pie."""
+    """La tinta como superficie queda para el pie: ninguna banda de tinta de borde a borde (ver
+    «Bandas de tinta, dos por página como mucho» en docs/deferidos-y-decisiones.md)."""
     con_tinta = {
         selector
         for selector, fondo in _backgrounds(_screen_rules())
@@ -691,22 +702,20 @@ def test_el_pie_es_de_tinta():
 
 def test_al_imprimir_las_fotos_a_una_tinta_no_salen_en_blanco():
     """El duotono aclara la foto en gris sobre un fondo azul (`screen`), y el navegador no
-    imprime los fondos: sobre el blanco de la hoja, la foto aclarada salía en blanco. Lo
-    medido: los doce retratos de /integrantes/ impresos eran doce cajas vacías."""
+    imprime los fondos: sobre el blanco de la hoja, la foto aclarada saldría en blanco. Al
+    imprimir, la foto va tal cual."""
     foto = css.rule(PRINT, ".riso-duo img")
     assert foto["filter"] == "none" and foto["mix-blend-mode"] == "normal"
     assert css.rule(PRINT, ".riso-duo::after")["content"] == "none"
 
 
 def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
-    """El amarillo del cartel da 1,03:1 sobre el papel: solo puede entrar como fondo. Fue un
-    plano de lado a lado del carril, que el dueño del sitio encontró invasivo, y después un
-    trazo de marcador bajo las cifras de la portada (D5). Las quitó de la portada
-    (2026-10-14) y el trazo pasó a las cifras del dossier (ticket 5.1): la mitad baja del
-    número y no un plano. Los lomos del estante de la portada llevan el color de su tapa
-    (D28): si es amarilla, el lomo también, pero no por el CSS. Y desde D31, la segunda tinta
-    corrida de dos sellos de «Prensa y gestión»: un trazo fino de desregistro, no un plano (el
-    dueño lo aprobó con el tablero)."""
+    """El amarillo del cartel da 1,03:1 sobre el papel: solo entra como fondo, nunca como
+    texto (ver «El amarillo del cartel, solo como fondo» en docs/deferidos-y-decisiones.md).
+    Es el trazo de marcador de las cifras del dossier, la mitad baja del número y no un
+    plano, y la segunda pasada corrida de dos sellos de «Prensa y gestión», un trazo de
+    desregistro. Los lomos del estante llevan el color de su tapa: si es amarilla, el lomo
+    también, pero no por el CSS."""
     con_amarillo = {
         r.selector
         for r in _screen_rules()
@@ -729,8 +738,8 @@ def test_el_amarillo_es_el_trazo_de_las_cifras_del_dossier_y_nunca_texto():
 
 
 def test_la_firma_de_territorio_es_un_filete_de_tres_pixeles():
-    """La misma en las cabeceras de índice y en las secciones de la portada (ticket 4.3):
-    un solo selector por color, para que no se separen."""
+    """La misma en las cabeceras de índice y en las secciones de la portada: un solo selector
+    por color, para que no se separen."""
     firma = css.rule(
         (), ".index-head[data-territorio] h1::after, .seccion-cabeza[data-territorio] h2::after"
     )
@@ -757,12 +766,12 @@ def test_el_sello_de_convocatoria_esta_quieto():
         assert not [d for d in sello.declarations if "riso-amarillo" in d.value]
 
 
-# ── Ajustes tras la revisión del paso 13 ──────────────────────────────────
+# ── El pie y la tirada ────────────────────────────────────────────────────
 
 
 def test_el_pie_queda_abajo_en_una_pagina_corta():
-    """En una página corta el pie terminaba a media altura y dejaba papel debajo: con el
-    pie en tinta, un hueco. La página mide al menos la ventana y el lienzo crece."""
+    """La página mide al menos la ventana y el lienzo crece: en una página corta, el pie
+    terminaría a media altura y dejaría papel debajo, que con el pie en tinta es un hueco."""
     cuerpo = css.rule((), "body")
     for propiedad, valor in (
         ("display", "flex"),
@@ -779,10 +788,11 @@ def test_el_pie_queda_abajo_en_una_pagina_corta():
 
 
 def test_el_pie_usa_el_ancho_para_medir_menos_de_alto():
-    """Medía 435 px a 951 de ancho. El orden es el del ticket 4.4 (la identidad, el mapa, el
-    boletín y lo legal) sin volver a subir el alto: desde 900 px la identidad va al lado de
-    los grupos y el boletín comparte línea con lo legal; desde 1100, todo en una fila. Entre
-    720 y 899 la identidad va sola en su línea: al lado de los grupos, se salían."""
+    """El orden del pie: la identidad, el mapa, el boletín y lo legal. Desde 900 px la
+    identidad va al lado de los grupos y el boletín comparte línea con lo legal; desde 1100,
+    tres columnas, con el boletín sobre lo legal. Entre 720 y 899 la identidad va sola en
+    su línea; por debajo de unos 780 px, con ella al lado, los grupos se saldrían de su
+    columna."""
     rejillas = {
         (): '"identidad" "mapa" "news" "legal"',
         ("@media (min-width:720px)",): '"identidad identidad" "mapa mapa" "news legal"',
@@ -799,17 +809,18 @@ def test_el_pie_usa_el_ancho_para_medir_menos_de_alto():
 
 def test_el_sello_del_pie_va_en_blanco_como_el_de_la_cabecera():
     """La regla de los enlaces del pie pinta los enlaces en el color del papel: el sello es
-    un enlace y quedaba en ese azul claro sobre el magenta."""
+    un enlace y quedaría en ese azul claro sobre el magenta."""
     assert css.rule((), ".site-foot .brand")["color"] == "#fff"
 
 
 def test_la_tirada_sin_js_es_una_fila_y_con_js_una_pila_que_se_mueve_si_se_puede():
-    """La tirada (D19): sin JavaScript, un carril nativo con imán y la barra a la vista. Con
-    JavaScript, la pila (D20): todos los pliegos en la misma celda, corridos desde el de
-    arriba, y el gesto horizontal para el guion. Al cambiar de registro cambian las tintas
-    (registradas con @property) y los pliegos se corren a su lugar (la excepción a «solo
-    color» que se aprobó con la pila), solo para quien no pidió menos movimiento. El magenta es
-    un estado: lo lleva el pliego de arriba, nunca uno en reposo."""
+    """La tirada: sin JavaScript, un carril nativo con imán y la barra a la vista. Con
+    JavaScript, la pila: todos los pliegos en la misma celda, corridos desde el de arriba, y
+    el gesto horizontal para el guion (ver «La tirada apilada» en
+    docs/deferidos-y-decisiones.md). Al cambiar de registro cambian las tintas (registradas
+    con @property) y los pliegos se corren a su lugar, la excepción a «solo color» del
+    movimiento del sitio, solo para quien no pidió menos movimiento. El magenta es un
+    estado: lo lleva el pliego de arriba, nunca uno en reposo."""
     carril = css.rule((), ".tirada-carril")
     for propiedad, valor in (
         ("overflow-x", "auto"),
@@ -853,15 +864,15 @@ def test_la_tirada_sin_js_es_una_fila_y_con_js_una_pila_que_se_mueve_si_se_puede
 
 
 def test_en_la_portada_el_poster_de_la_tirada_se_queda_a_una_tinta():
-    """Decisión 3 del tablero de los registros: al señalar o enfocar un pliego, el póster no
-    pasa al original a color (eso queda para la ficha)."""
+    """Al señalar o enfocar un pliego, el póster no pasa al original a color: eso queda para
+    la ficha (ver «La tirada de registros» en docs/deferidos-y-decisiones.md)."""
     senalan = [
         r.selector for r in css.rules() if ".riso-duo" in r.selector and r.get("filter") == "none"
     ]
     assert senalan and not any("pliego" in sel or "tirada" in sel for sel in senalan)
 
 
-# ── Duotono y retratos (tickets 3.3 y 3.6) ────────────────────────────────
+# ── Duotono y retratos ────────────────────────────────────────────────────
 
 
 def test_el_duotono_es_una_tinta_sobre_el_papel():
@@ -889,8 +900,7 @@ def test_el_duotono_es_una_tinta_sobre_el_papel():
 def test_al_senalar_o_enfocar_se_ve_el_original():
     """Hay que quitar a la vez el filtro y la mezcla: si solo se quita uno, el original sale
     teñido. Y la capa del papel se vuelve transparente. Una sola regla con `:is()` dice
-    dónde se señala: un enlace, las tarjetas, la placa, una fila. Solo la imagen señalada:
-    la cinta (retirada en D22) las pintaba todas a la vez."""
+    dónde se señala: un enlace, las tarjetas, la placa, una fila."""
     lugares = {"a", ".recording-card", ".event-card", ".player-consent", ".fila", ".next-event"}
     estado = ":is(:hover, :focus-within)"
     for capa, propiedad, valor in (
@@ -909,10 +919,9 @@ def test_al_senalar_o_enfocar_se_ve_el_original():
 
 
 # El duotono va en las imágenes de los listados: tarjetas de integrante (también las de la
-# portada, D23), hoja de
-# contactos, pósters de los registros (índice y placa, D10), imágenes de los textos y afiches
-# de la agenda, la trayectoria y la próxima actividad de la portada. Las cubiertas de las
-# publicaciones, los logos y las fichas se ven tal cual.
+# portada), hoja de contactos, pósters de los registros (índice y placa), imágenes de los
+# textos y afiches de la agenda, la trayectoria y la próxima actividad de la portada. Las
+# cubiertas de las publicaciones, los logos y las demás imágenes de las fichas se ven tal cual.
 CON_DUOTONO = {
     # El retrato, a una tinta cuando la tarjeta lo pide (`{% portrait … duotone=True %}`).
     "_retrato.html",
@@ -925,7 +934,7 @@ CON_DUOTONO = {
     "_event_card.html",
     "trayectoria.html",
     "home.html",
-    # La placa y la hoja de contactos de la tirada de registros (D19).
+    # La placa y la hoja de contactos de la tirada de registros.
     "_tirada.html",
 }
 
@@ -941,12 +950,12 @@ def test_el_duotono_solo_va_en_los_listados():
 
 
 def test_toda_la_tarjeta_de_integrante_es_el_enlace():
-    """El rol y la reseña quedaban fuera del enlace: la capa del enlace cubre la tarjeta."""
+    """La capa del enlace cubre la tarjeta entera, también el rol y la reseña."""
     assert css.rule((), ".member-card")["position"] == "relative"
     _enlace_total()
 
 
-# ── Reproductor: póster o carátula (ticket 3.4, D10) ──────────────────────
+# ── Reproductor: póster o carátula ────────────────────────────────────────
 
 
 def test_el_mando_de_la_placa_es_un_panel_solido_con_la_marca_del_indice():
@@ -974,7 +983,7 @@ def test_la_placa_no_tiene_marco_ni_esquinas():
     )
 
 
-# ── Las imágenes del modelo en los listados (ticket 3.5) ──────────────────
+# ── Las imágenes del modelo en los listados ───────────────────────────────
 
 
 def test_la_miniatura_de_una_fila_es_un_area_de_su_rejilla():
@@ -1009,7 +1018,7 @@ def test_los_logos_se_imprimen_en_gris_y_toman_color_al_senalar():
 
 
 def test_un_aliado_sin_logo_no_se_oscurece_al_mezclarse_con_el_papel():
-    """La caja sin logo es la hoja clara: multiplicada con el papel, quedaba más oscura que
+    """La caja sin logo es la hoja clara: multiplicada con el papel, quedaría más oscura que
     él. Va sin mezcla ni filtro, y con su nombre en la tipografía de titulares."""
     caja = css.rule((), ".partner-logo--texto")
     for propiedad, valor in (
@@ -1021,7 +1030,7 @@ def test_un_aliado_sin_logo_no_se_oscurece_al_mezclarse_con_el_papel():
     assert caja["font-family"] == "var(--display)"
 
 
-# ── La ficha de un evento y sus fotos (ticket 5.2) ────────────────────────
+# ── La ficha de un evento y sus fotos ─────────────────────────────────────
 
 
 def test_el_afiche_llega_a_420_px_si_al_texto_le_quedan_360():
@@ -1057,8 +1066,8 @@ def test_el_mosaico_no_deja_huecos_con_ninguna_cantidad_de_fotos():
 
 
 def test_la_regla_de_las_miniaturas_no_alcanza_a_la_vista_ampliada():
-    """`.photo-grid img` también recortaba a 8:5 la foto ampliada, que está dentro de la
-    misma lista: no se veía entera. Las reglas del mosaico van por hijos directos."""
+    """Las reglas del mosaico van por hijos directos: la foto ampliada está dentro de la misma
+    lista, y una regla como `.photo-grid img` también la recortaría."""
     selectores = {s for r in css.rules() for s in r.selectors}
     assert ".photo-grid img" not in selectores and ".photo-grid a" not in selectores
     miniatura = css.rule((), ".photo-grid > li > a img, .photo-grid-resto > li > a img")
@@ -1066,22 +1075,23 @@ def test_la_regla_de_las_miniaturas_no_alcanza_a_la_vista_ampliada():
 
 
 def test_la_vista_ampliada_cubre_toda_la_pantalla():
-    """Una <figure> trae márgenes (40 px a los lados): la capa no llegaba a los bordes y la
-    foto quedaba corrida."""
+    """Una <figure> trae márgenes del navegador (40 px a los lados): sin `margin:0`, la capa
+    no llegaría a los bordes y la foto quedaría corrida."""
     capa = css.rule((), ".lightbox")
     assert capa["position"] == "fixed" and capa["inset"] == "0" and capa["margin"] == "0"
 
 
 def test_el_pie_de_la_vista_ampliada_se_lee():
-    """Contador, pie y crédito a 13 px: a 12 era la letra más pequeña del sitio."""
+    """Contador, pie y crédito van a 13 px: a 12 irían en la letra más pequeña del sitio."""
     assert css.rule((), ".lightbox figcaption")["font-size"] == "var(--t-1)"
 
 
-# ── La marca (ticket 3.7, con lo que eligió el dueño) ─────────────────────
+# ── La marca ──────────────────────────────────────────────────────────────
 
 
 def test_el_sello_de_la_cabecera_sigue_siendo_magenta_con_su_monograma():
-    """El dueño se quedó con el sello magenta y le añadió el monograma RV dentro."""
+    """El sello de la cabecera es magenta, con el monograma RV dentro: la R en blanco y la V
+    en celeste."""
     sello = css.rule((), ".brand")
     assert sello["background"] == "var(--accent)" and sello["color"] == "#fff"
     assert sello["display"] == "inline-flex", "el monograma y el nombre van en una fila"
@@ -1089,7 +1099,7 @@ def test_el_sello_de_la_cabecera_sigue_siendo_magenta_con_su_monograma():
     assert css.rule((), ".brand-mono-v")["fill"] == "var(--celeste)"
 
 
-# ── Cabecera de una fila (ticket 4.1) ─────────────────────────────────────
+# ── Cabecera de una fila ──────────────────────────────────────────────────
 
 
 def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
@@ -1104,8 +1114,8 @@ def test_la_cabecera_es_fija_y_lo_fijo_queda_debajo_de_ella():
     assert {r.selector for r in fijos} >= {".masthead", ".lectura-ancla", ".year-mark"}
     for regla in fijos:
         if regla.selector == ".portada-arte":
-            # La obra de la portada (D18) va bajo la franja a propósito: arriba de la portada
-            # la franja está vacía. Lo que no debe quedar tapado es la hoja, que no es fija.
+            # La obra de la portada va bajo la franja a propósito: arriba de la portada la
+            # franja está vacía. Lo que no debe quedar tapado es la hoja, que no es fija.
             assert regla["top"] == "0"
         elif regla.selector != ".masthead":
             assert regla.get("top", "").startswith("calc(var(--alto-cabecera)"), (
@@ -1151,9 +1161,9 @@ def test_en_el_telefono_el_boton_del_dossier_se_guarda_en_el_menu():
 
 def test_la_cabecera_del_telefono_llega_hasta_donde_cabe_la_fila_entera():
     """La fila entera (sello, cinco enlaces, lupa y «Dossier») pide unos 880 px de ventana:
-    con el corte en 720, a 768 y a 820 el botón quedaba fuera de la pantalla. Los dos cortes
-    se tocan, para que ningún ancho se quede con las dos cabeceras o sin ninguna. En el
-    teléfono los huecos son de 8 px: con los de 24, a 320 px «Menú» no cabía."""
+    más estrecha, el botón quedaría fuera de la pantalla. Los dos cortes se tocan, para que
+    ningún ancho se quede con las dos cabeceras o sin ninguna. En el teléfono los huecos son
+    de 8 px: con los de 24, a 320 px «Menú» no cabría."""
     telefonos = _contexts_where(".masthead-cta", "display", "none")
     assert len(telefonos) == 1, f"el botón se guarda en más de un corte: {telefonos}"
     (telefono,) = telefonos
@@ -1181,18 +1191,19 @@ def test_en_el_telefono_menu_va_en_tinta_como_la_lupa():
 
 
 def test_the_htmx_indicator_takes_no_room_from_the_field():
-    """El «…» de htmx, invisible mientras no se busca, le quitaría al campo 35 px si fuera en
+    """El «…» de htmx, invisible mientras no se busca, le quitaría al campo 18 px si fuera en
     el flujo: va fuera de él, sobre el extremo del campo."""
     assert css.rule((), ".search input")["flex"] == "1"
     assert css.rule((), ".busqueda .htmx-indicator")["position"] == "absolute"
 
 
-# ── Titular de la portada (ticket 4.2, la opción A del dueño) ─────────────
+# ── Titular de la portada ─────────────────────────────────────────────────
 
 
 def test_la_obra_de_la_portada_llega_a_lo_alto_y_deja_asomar_la_hoja():
-    """La portada como obra (D18): la obra sube bajo la franja vacía de la cabecera y se
-    detiene antes del borde, donde asoma la hoja. Alto mínimo y no fijo: con el zoom al
+    """La obra de la portada sube bajo la franja vacía de la cabecera y se detiene antes del
+    borde de la ventana, donde asoma la hoja (ver «La portada como obra: mancheta de afiche
+    con telón» en docs/deferidos-y-decisiones.md). Alto mínimo y no fijo: con el zoom al
     400 % nada se recorta. svh, con vh para quien no lo conoce."""
     obra = css.rule((), ".portada-arte")
     assert obra["margin-top"] == "calc(-1 * var(--alto-cabecera))"
@@ -1255,17 +1266,17 @@ def test_el_boton_del_titular_se_oculta_donde_aparece_el_de_la_cabecera():
     assert css.rule(_header_breakpoint(), ".hero-dossier")["display"] == "none"
 
 
-# ── La portada completa (ticket 4.3) ──────────────────────────────────────
+# ── La portada completa ───────────────────────────────────────────────────
 
 
 def test_la_obra_va_a_dos_columnas_solo_con_poemas_y_textos():
-    """Con una sola de las dos listas va a todo el ancho: en media columna quedaba un hueco."""
+    """Con una sola de las dos listas va a todo el ancho: en media columna dejaría un hueco."""
     assert css.rule(DESKTOP, ".home-obra-columnas:has(> :nth-child(2))")["display"] == "grid"
 
 
 def test_las_puertas_del_cierre_van_en_una_fila_sin_huecos():
-    """Una columna por puerta desde 900 px, tres o cuatro según haya correo: en la rejilla de
-    tres, «Escríbenos» quedaba sola en la segunda fila. En el teléfono, de dos en dos."""
+    """Una columna por puerta desde 900 px, tres o cuatro según haya correo: en una rejilla
+    de tres, «Escríbenos» quedaría sola en la segunda fila. En el teléfono, de dos en dos."""
     assert css.rule(DESKTOP, ".home-cierre .pie-entidad ul")["grid-auto-flow"] == "column"
     puertas = css.rule((), ".home-cierre .pie-entidad ul")
     assert puertas["grid-template-columns"] == "repeat(2, minmax(0, 1fr))"

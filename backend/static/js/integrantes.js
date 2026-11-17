@@ -2,7 +2,7 @@
 // lo dicen `data-a-la-vista` y `data-a-la-vista-telefono`, que la plantilla pone desde A_LA_VISTA
 // (apps/site/portada.py), y desde qué ancho es el teléfono, `data-telefono`, el corte de
 // config/breakpoints.py. Cada 1,8 s llega otra a uno de los lugares, bajo una pasada de tinta
-// azul con el filo magenta, como el tambor de una risógrafo. Corre solo donde hay un puntero que
+// azul con el filo magenta, como el tambor de un risógrafo. Corre solo donde hay un puntero que
 // pueda posarse y no se pidió menos movimiento, y se detiene con el puntero encima o el foco
 // dentro, fuera de la vista y con la pestaña oculta. En el teléfono, deslizar el dedo trae a
 // otras. Sin este guion se ven las primeras y el botón a /integrantes/.
@@ -133,7 +133,7 @@
       turno += 1;
     }, CADA);
 
-    // El tabulador recorre la fila en el orden en que se ve, que con el relevo ya no es el de la
+    // El tabulador recorre la fila en el orden en que se ve, que con el relevo no es el de la
     // lista: entra por el primer lugar (por el último si viene de abajo), pasa al de al lado y
     // sale de la fila por los extremos.
     lista.addEventListener('focusin', (e) => {

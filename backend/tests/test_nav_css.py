@@ -1,18 +1,14 @@
 """La navegación principal es visible en escritorio.
 
-La nav vive dentro de un `<details>` que en móvil funciona como desplegable y en
-escritorio debe mostrarse en línea. Eso se conseguía forzando `display:flex` sobre el
-hijo del `<details>` cerrado — un truco que funcionó durante años y que **Chrome 131
-rompió**: desde esa versión el contenido de un `<details>` cerrado vive en el
-pseudo-elemento `::details-content` con `content-visibility:hidden`, que gana a
-cualquier `display` del hijo.
+La nav vive dentro de un `<details>`: en el teléfono, su summary («Menú») despliega el mapa
+del sitio; en escritorio, el summary se oculta y la nav va en línea. No basta con forzar el
+`display` del hijo del `<details>` cerrado: desde Chrome 131, ese contenido vive en el
+pseudo-elemento `::details-content` con `content-visibility:hidden`, que gana a cualquier
+`display` del hijo, y la navegación no se pintaría. El marcado no cambia: la nav está en el
+HTML y el fallo solo se ve al pintar, así que una prueba del marcado no lo detecta.
 
-Resultado: la navegación principal desapareció por completo en escritorio para todos los
-usuarios de Chrome. Ninguna prueba lo detectó porque el marcado seguía intacto —la nav
-está en el HTML— y el fallo solo existe al pintar.
-
-Este test no puede pintar, así que fija el requisito sobre la hoja de estilos: si alguien
-reescribe ese bloque y vuelve a depender solo del `display` del hijo, falla.
+Estas pruebas no pintan, así que fijan el requisito sobre la hoja de estilos: si el bloque
+de escritorio depende solo del `display` del hijo, fallan.
 """
 
 from tests import css
@@ -30,7 +26,8 @@ def test_en_escritorio_se_oculta_el_desplegable():
 
 
 def test_se_abre_el_pseudo_elemento_de_details():
-    """Sin esto, Chrome 131+ deja la navegación invisible aunque el hijo tenga display."""
+    """En escritorio se abre `::details-content`: sin eso, desde Chrome 131 la navegación no se
+    ve aunque el hijo tenga display."""
     assert css.rules_with(DESKTOP, ".nav-disclosure::details-content"), (
         "falta abrir ::details-content: en Chrome 131+ el contenido de un <details> "
         "cerrado queda oculto por content-visibility y la navegación desaparece"
@@ -40,10 +37,12 @@ def test_se_abre_el_pseudo_elemento_de_details():
 
 
 def test_se_conserva_el_display_para_navegadores_antiguos():
-    """La regla de siempre sigue haciendo falta donde ::details-content no existe."""
+    """En escritorio, el hijo lleva también `display:flex`: es la regla que usan los
+    navegadores sin ::details-content."""
     assert css.rule(DESKTOP, ".nav-disclosure > .nav")["display"] == "flex"
 
 
 def test_en_movil_el_desplegable_sigue_siendo_visible():
-    """Fuera del @media, el summary debe verse: es el único acceso a la nav en móvil."""
+    """Fuera del bloque de escritorio, el summary («Menú») se ve: en el teléfono es el único
+    camino de la cabecera a las secciones, por el mapa del sitio."""
     assert css.rule((), ".nav-disclosure summary")["display"] == "inline-flex"

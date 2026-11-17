@@ -17,30 +17,30 @@
      barras de desplazamiento— sobre un fondo claro. */
   color-scheme: light;
   /* Paleta del colectivo, tomada de sus carteles risográficos. El papel es el celeste
-     del afiche: MISMO tono que el gris azulado anterior (210°) pero con 65% de
-     saturación en vez de 20%. Esa era toda la diferencia entre «corporativo» y
-     «impreso» — el azul nunca fue el problema, lo era su palidez.
+     del afiche: tono 210° con 65 % de saturación; con la de un gris azulado (20 %) se
+     leería como una interfaz corporativa, no como un impreso.
      El magenta #B8086B es el del cartel oscurecido hasta superar el mínimo de 4,5:1
      sobre el papel; el magenta literal (#E40C9C) solo alcanza para texto grande.
      Los contrastes de esta paleta los calcula test_contraste_de_la_paleta desde estos
      mismos valores; si cambias un color y baja de AA, esa prueba falla. Por eso aquí no
      se escriben cifras.
 
-     REPARTO. El magenta era «el color de los enlaces»: 27 reglas lo usaban como color
-     de texto, y en la primera pantalla de la portada había nueve piezas magenta. Un
-     color que está en todas partes no señala nada. Ahora:
+     REPARTO. Un color que está en todas partes no señala nada:
        · --ink     el texto, los enlaces (con el subrayado en magenta) y los botones.
        · --accent  la marca, las cejillas (.kicker) y los ESTADOS: al pasar el
-                   puntero, el foco, lo activo. Nada más lleva texto magenta.
+                   puntero, el foco, lo activo. En reposo, el texto magenta queda para
+                   las cejillas, el rótulo en acento (.rotulo--acento: los datos de cada
+                   libro del estante), el asterisco de los campos obligatorios y los
+                   sellos del cierre de la portada.
        · --muted   los datos y los rótulos. */
   --paper:#d9e8f7; --surface:#ffffff; --ink:#121823; --muted:#556175;
   --accent:#b8086b; --border:#c2d8ee;
   /* El amarillo del cartel. Como TEXTO no sirve: sobre el papel casi no se distingue.
      Pero el contraste se mide por pares: como FONDO, con tinta o con magenta encima,
-     cumple AA. Entra solo como superficie. */
+     cumple AA. Va de fondo o de segunda pasada en un sello, nunca como texto que se lee. */
   --riso-amarillo:#fce43c;
   /* El grano de la risografía: una máscara de ruido, para que la tinta no cubra pareja. La
-     usan los sellos del cierre (D31) y el manifiesto de la hoja (D33). */
+     usan los sellos del cierre y el manifiesto de la hoja. */
   --grano:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.6'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
   /* El magenta sobre la tinta del pie no llega a AA: ahí el acento es este rosa. Sobre
      el papel no se lee: es solo para fondo oscuro. */
@@ -55,26 +55,25 @@
      Es el texto secundario del pie. */
   --muted-on-ink:#9fadbf;
   /* Carátula del reproductor: el azul del cartel (tono 210°, el de --paper, y
-     saturación 73%) hundido a luminosidad 45%. A la luminosidad original del
-     cartel, 61%, el blanco encima no llegaba a AA; a 45%, sí. */
+     saturación 73%) hundido a luminosidad 45%. A la luminosidad del cartel, 61%,
+     el blanco encima no llega a AA; a 45%, sí. */
   --caratula:#1f73c7; --caratula-rotulo:#0e3358;
   /* Serif de lectura: Source Serif 4 de Adobe, autoalojada. Es una versión recortada (solo
      el alfabeto latino, tamaño óptico fijo, pesos de 400 a 700) y la licencia OFL reserva
-     el nombre «Source» para el original: por eso la familia se llama «RdV Serif». Antes
-     la pila de sistema daba Palatino en un Mac, Times en Linux y Georgia en Windows: el
-     sitio tenía tres voces según quién lo abriera. Ver fonts/NOTICE.txt. */
+     el nombre «Source» para el original: por eso la familia se llama «RdV Serif». Sin
+     ella, cada sistema pondría su serif: el sitio tendría una voz distinta según quién lo
+     abriera. Ver fonts/NOTICE.txt. */
   --serif:"RdV Serif","RdV Serif Fallback",Georgia,"Times New Roman",serif;
   --display:"Bricolage Grotesque","Bricolage Fallback",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   /* Medida de lectura: el largo de línea, en anchos del «0» de la fuente en uso.
-     Medido en la página: 58ch dan unas 74 letras por línea en una serif estrecha
-     (Times, Liberation Serif) y unas 65 en una de ancho normal. El rango legible es
-     45–75 (Bringhurst), con 66 como ideal. */
+     Medido en un texto largo: en la serif del sitio, 58ch dan unos 60 caracteres por
+     línea (de 55 a 68). El rango legible es 45–75 (Bringhurst), con 66 como ideal. */
   --medida:58ch;
-  /* Forma y movimiento: un radio, dos duraciones y una curva para todo el sitio.
-     Había cuatro transiciones sueltas para treinta estados :hover. Los guiones leen las
-     curvas de aquí (getComputedStyle): --ease-tirada es la del reparto de la tirada y la del
-     estante, que arranca suave, viaja por el medio y se asienta despacio. */
+  /* Forma y movimiento: un radio, dos duraciones y la curva de las transiciones del sitio
+     (--ease). --ease-tirada es la del reparto de la tirada y la del estante, que arranca
+     suave, viaja por el medio y se asienta despacio. common.js las lee de aquí
+     (getComputedStyle): la tirada usa --ease-tirada; el estante, las dos. */
   --r-1:3px;
   --dur-fast:140ms; --dur-base:220ms; --ease:cubic-bezier(.22,.61,.36,1);
   --ease-tirada:cubic-bezier(.45,.05,.25,1);
@@ -83,11 +82,10 @@
      papel y sobre el blanco del campo: para eso está --edge. */
   --edge:#5e7ea7;
   /* Una hoja más clara que el papel. Es la segunda superficie del sitio: las
-     bandas claras de la portada y los avisos que antes eran cajas blancas con borde
-     (la fecha de la agenda, la próxima actividad, el contacto del dossier, la obra
-     reseñada, los mensajes). El blanco (--surface) queda para los campos de formulario
-     y los objetos: cubiertas y retratos. Sobre el papel es
-     también el fondo de la fila que se está señalando. */
+     bandas claras de la portada y los avisos (la fecha de la agenda, la próxima
+     actividad, el contacto del dossier, la obra reseñada, los mensajes). El blanco
+     (--surface) queda para los campos de formulario y los objetos: cubiertas y
+     retratos. Sobre el papel es también el fondo de la fila que se está señalando. */
   --paper-2:#eef4fb;
   /* Filete decorativo: SEPARA, no delimita (para eso está --edge). Es tinta al 22 %, y
      por eso se adapta a lo que tenga debajo: papel, hoja clara o amarillo. Este valor
@@ -96,18 +94,16 @@
      que verse. */
   --line:#adbac8;
 
-  /* LIENZO. El sitio tenía un solo contenedor de 820 px para todo: cabecera, pie,
-     rejillas, índices y lectura. El texto ocupaba el 54 % de una pantalla de 1440 y el
-     41 % de una de 1920, y nada cambiaba al crecer el monitor. Ahora hay tres carriles:
-       · lectura  --measure  el ancho de siempre: lo que se lee de corrido.
+  /* LIENZO. Tres carriles:
+       · lectura  --measure  lo que se lee de corrido.
        · ancho    --wide     cabecera, pie, portada, índices y rejillas.
-       · sangre              de borde a borde: las bandas de color y «El colectivo».
+       · sangre              de borde a borde: las bandas claras, la tirada y «El colectivo».
      La columna de lectura NO se ensancha: lo legible son 45–75 letras por línea, y eso
      no depende del monitor. Lo que usa el ancho es todo lo demás.
      --carriles es la plantilla de columnas, con las líneas nombradas. Se declara una
      vez y la usan <main> y lo que haga falta alinear con él.
-     Sin unidades vw en los anchos: incluyen la barra de desplazamiento y provocan
-     scroll horizontal. Los márgenes laterales salen de pistas 1fr. */
+     Sin unidades vw en los anchos de los carriles: incluyen la barra de desplazamiento y
+     provocan scroll horizontal. Los márgenes laterales salen de pistas 1fr. */
   --measure:780px;
   --wide:1320px;
   --gutter:clamp(20px, 4vw, 64px);
@@ -120,8 +116,7 @@
   /* Espacio: una escala, para que el aire entre secciones sea una decisión y no la
      suma de los márgenes que casualmente se tocan. */
   --s1:8px; --s2:16px; --s3:24px; --s4:40px; --s5:64px; --s6:96px; --s7:144px;
-  /* TIPOGRAFÍA. Una escala de diez pasos, donde había 25 tamaños escritos a mano. Cada
-     paso tiene un papel:
+  /* TIPOGRAFÍA. Una escala de diez pasos. Cada paso tiene un papel:
        --t-2 12   rótulo (mayúsculas espaciadas)
        --t-1 13   dato: fecha, firma, lugar
        --t0  15   interfaz: navegación, botones, etiquetas, pie
@@ -130,11 +125,11 @@
        --t2  19   lectura: artículo, poema, cita, bajada de índice
        --t3  22   título de tarjeta y de fila estrecha; bajada de artículo
        --t4  26   título de fila; día de la agenda
-       --t5  28-40   título de sección, año, cifra
-       --t6  34-56   título de página
-       --t7  34-72   el título de un pliego de la tirada de registros (D19). En cqi: crece con
-                     el pliego, no con la ventana. El nombre del colectivo ya no es un tamaño: es
-                     el logo (D18).
+       --t5  28-40   título de sección, año
+       --t6  34-56   título de página; las cifras del dossier
+       --t7  34-72   el título de un pliego de la tirada de registros. En cqi: crece con el
+                     pliego, no con la ventana. El nombre del colectivo en la portada no es un
+                     tamaño: es el logo.
      El cuerpo base no es un paso: crece con el monitor (ver `html`). */
   --t-2:12px; --t-1:13px; --t0:15px; --t1:16px; --t2:19px; --t3:22px; --t4:26px;
   --t5:clamp(28px, 3vw, 40px); --t6:clamp(34px, 4.6vw, 56px); --t7:clamp(34px, 9cqi, 72px);
@@ -176,8 +171,9 @@
 @media (max-width:899px){
   :root{--capsula-alto:44px; --capsula-relleno:0px; --capsula-arriba:6px}
 }
-/* --asomo: lo que la obra le deja a la hoja en la primera vista. Con el aire de arriba de la
-   hoja se leen la cejilla y la primera línea del manifiesto: 88 px a 951 y 72 en el teléfono. */
+/* --asomo: lo que la obra le deja a la hoja en la primera vista. Tras el aire de arriba de la
+   hoja quedan 48 px a 951 (se lee la cejilla) y 72 en el teléfono (la cejilla y casi toda la
+   primera línea del manifiesto). */
 :root{--asomo:112px}
 @media (max-width:719px){
   :root{--asomo:96px}

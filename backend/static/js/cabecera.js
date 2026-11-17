@@ -1,4 +1,4 @@
-// La cabecera al bajar. Arriba, la cabecera de siempre (en la portada, nada: la hoja de estilos
+// La cabecera al bajar. Arriba, la cabecera completa (en la portada, nada: la hoja de estilos
 // la esconde); al pasar lo que mide, una cápsula pequeña y centrada. Este archivo solo pone la
 // marca data-barra en <html>, «arriba» o «pildora»: el aspecto está en estados.css («La cabecera
 // al bajar»), que sin la marca deja la cabecera fija. Se carga en el <head>, sin defer, para que
