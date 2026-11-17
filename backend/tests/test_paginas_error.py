@@ -33,7 +33,7 @@ def test_el_404_responde_y_no_es_el_de_django():
 
 
 def test_el_404_ofrece_salida():
-    """Lo que de verdad arregla el deferido: que se pueda volver a alguna parte."""
+    """Lo que importa: que se pueda volver a alguna parte."""
     cuerpo = Client().get("/una-ruta-que-no-existe/").content.decode()
     for destino in ("/", "/textos/", "/poemas/", "/buscar/"):
         assert f'href="{destino}"' in cuerpo, f"falta la salida a {destino}"

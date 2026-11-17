@@ -51,7 +51,7 @@ def _pintada(proporcion, asomo):
     """Lo que mide pintada una obra de esa proporción (ancho / alto). La obra mide el ancho de
     la ventana y de alto max(MIN_HEIGHT, 100svh - asomo), y con object-fit: cover la imagen
     crece hasta cubrirla: se pinta al ancho de la ventana o al alto de la obra por su
-    proporción, lo que sea mayor. Con «100vw» el navegador elegía una copia más chica que lo
+    proporción, lo que sea mayor. Con «100vw» el navegador elegiría una copia más chica que lo
     pintado: a 951 px, la de 960 para una lámina pintada a 1261. vh y no svh: en `sizes` es
     lo que entienden todos los navegadores."""
     minimo = round(MIN_HEIGHT * proporcion)
@@ -115,9 +115,10 @@ def _lamina():
 @register.inclusion_tag("site/partials/_portada_img.html")
 def portada_img(imagen=None, telefono=None):
     """La obra de la portada: un <picture> con AVIF y WebP, el recorte vertical para el
-    teléfono si lo hay, y prioridad alta, porque es lo primero que se pinta. Nunca sirve el
-    archivo subido: las copias de portada llegan a su ancho, y el <img> de reserva usa las
-    copias de siempre sin el original. Sin imagen elegida, la lámina del colectivo.
+    teléfono si lo hay, y prioridad alta, porque es lo primero que se pinta. Las <source>
+    llevan solo las copias de portada, a su ancho, y el <img> de reserva las copias de `srcset`
+    sin el original: el archivo subido se sirve solo si el recurso no tiene copias (es más chico
+    que todas o aún no se procesó). Sin imagen elegida, la lámina del colectivo.
 
     El texto alternativo es el del recurso: la imagen que elige el colectivo es suya y dice
     algo. La lámina es ambiente y va con `alt=""`."""
@@ -127,9 +128,9 @@ def portada_img(imagen=None, telefono=None):
     if telefono is not None:
         fuentes += _fuentes_del_recurso(telefono, PORTADA_TELEFONO)
     fuentes += _fuentes_del_recurso(imagen, "")
-    # La reserva, para el navegador que no conoce AVIF ni WebP: las copias de `srcset` de
-    # siempre, sin el original. Una imagen más chica que todas ellas no tiene copias, y
-    # entonces el original es chico.
+    # La reserva, para el navegador que no conoce AVIF ni WebP: las copias de `srcset`, sin el
+    # original. Sin copias (una imagen más chica que todas ellas, o una que aún no se procesó),
+    # va el original.
     copias = [
         parte
         for parte in imagen.srcset().split(", ")

@@ -1,4 +1,4 @@
-"""El buscador en la barra: el estilo 4 del tablero del buscador, elegido por el dueño el 2026-10-15.
+"""El buscador en la barra (ver «El buscador en la barra» en docs/deferidos-y-decisiones.md).
 
 La lupa abre el campo dentro de la misma fila, en el lugar de los cinco enlaces (vuelven al
 cerrar); en la cápsula, la cápsula se vuelve el buscador. Los resultados cuelgan debajo como
@@ -44,16 +44,16 @@ def test_los_resultados_cuelgan_como_una_tarjeta_de_la_capsula():
 
 
 def test_buscar_no_desplaza_la_pagina():
-    """El campo está en la cabecera fija: enfocarlo, o escribir en él, desplazaba la página
-    hasta 670 px, porque el navegador lo creía tapado por el margen de arriba."""
+    """El campo está en la cabecera fija: enfocarlo, o escribir en él, no desplaza la página.
+    Con el margen de arriba, el navegador lo creería tapado y la desplazaría hasta 670 px."""
     assert css.rule((), "html:has(.busqueda[open])")["scroll-padding-top"] == "0"
     assert "campo.focus({ preventScroll: true })" in BUSCADOR_JS
 
 
 def test_solo_cambia_la_cabecera():
-    """Cada regla del estilo nuevo cuelga de la lupa abierta (la de la cabecera, la única
+    """Cada regla del buscador en la barra cuelga de la lupa abierta (la de la cabecera, la única
     `.busqueda`), de la fila que la tiene o de <html>, y delante solo puede llevar el estado
-    de la cápsula: el formulario de /buscar/, fuera de la cabecera, queda como estaba."""
+    de la cápsula: el formulario de /buscar/, fuera de la cabecera, no cambia."""
     selectores = [s for r in css.rules() for s in r.selectors if ".busqueda[open]" in s]
     assert selectores
     for selector in selectores:

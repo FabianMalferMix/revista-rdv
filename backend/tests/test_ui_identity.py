@@ -1,4 +1,4 @@
-"""Identidad tipográfica y nav responsive (Lote UI-2)."""
+"""Identidad tipográfica y nav responsive."""
 
 import re
 
@@ -30,7 +30,7 @@ def test_nav_links_intact_in_disclosure(client):
     content = client.get(reverse("site:home")).content
     assert b"nav-disclosure" in content
     assert b"<summary>Men\xc3\xba</summary>" in content
-    # El disclosure no quita enlaces del DOM: los 9 siguen presentes.
+    # El disclosure no quita enlaces del DOM: los 9 están en la página.
     for name in NAV_URLS:
         assert reverse(name).encode() in content
 
@@ -46,8 +46,9 @@ def test_font_file_is_bundled(archivo):
 
 
 def test_las_fuentes_caben_en_su_presupuesto():
-    """Decisión D4: la serif de lectura entra si el total de fuentes no pasa de 200 KB. Con
-    los dos ejes completos la serif sola pesaba 302 KB."""
+    """La serif de lectura entra si el total de fuentes no pasa de 200 KB (ver «Serif de
+    lectura autoalojada» en docs/deferidos-y-decisiones.md). Con los dos ejes completos, la
+    serif sola pesaría 302 KB."""
     total = sum((settings.BASE_DIR / "static" / "fonts" / f).stat().st_size for f in FUENTES)
     assert total <= 200 * 1024, f"las fuentes pesan {total / 1024:.0f} KB"
 
@@ -115,9 +116,8 @@ def test_no_hay_fuentes_huerfanas():
     """Toda fuente empaquetada debe estar referenciada por el CSS.
 
     Un .woff2 que ya nadie pide no rompe nada visible: simplemente viaja en la
-    imagen y en el manifiesto de estáticos. Fraunces pesaba 67 KB y se quedó
-    sin empleo al cambiar la tipografía de titular; esta prueba evita que la
-    próxima sustitución deje otro archivo muerto detrás.
+    imagen y en el manifiesto de estáticos. Al cambiar una tipografía, esta prueba
+    evita que la anterior quede detrás como archivo muerto.
     """
     fuentes = sorted((settings.BASE_DIR / "static" / "fonts").glob("*.woff2"))
     assert fuentes, "no hay ninguna fuente empaquetada"
@@ -172,15 +172,14 @@ def test_titulo_de_tarjeta_usa_la_tipografia_de_titular(client):
 
 
 # `.stats-strip` es la tira de cifras de la trayectoria: cifras de dato, no de cartel. La
-# cifra grande es la del dossier (`.dossier-cifras`, ticket 5.1): la portada tuvo una
-# (`.hero-stats`) hasta que el dueño la quitó, el 2026-10-14.
+# cifra grande es la del dossier (`.dossier-cifras`); la portada no lleva cifras.
 
 
 def test_la_cifra_grande_solo_esta_en_el_dossier():
     """Ninguna regla puede agrandar el <strong> de una tira de cifras fuera del dossier. Si
     la regla del número grande pasara a `.stats-strip strong`, /trayectoria/ mostraría
     cifras de cartel sin que nadie lo hubiera pedido. En el dossier sí: es lo primero que
-    busca un jurado (D11).
+    busca un jurado.
     """
     grandes = [
         regla.selector

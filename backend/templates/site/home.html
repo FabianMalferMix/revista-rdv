@@ -14,20 +14,18 @@
 
 {% block content %}
   {% comment %}
-     La portada como obra (D18). En el tablero de la portada (2026-10-20) el dueño del sitio
-     eligió la «mancheta de afiche» con telón: la primera vista es una obra a sangre y, al
-     pie, el logo de lado a lado, sobreimpreso en tinta como una plancha más de riso. Lo que
-     era el titular (la cejilla, el manifiesto, los botones y el sello de la convocatoria)
-     pasa a la hoja que sigue, y su primera línea asoma: así se ve que hay más. La cubierta
-     que acompañaba al nombre ya no va; el catálogo sigue más abajo. La obra la elige el
-     colectivo en el perfil del sitio; sin ella, va la lámina del estreno.
+     La portada como obra: la primera vista es una obra a sangre y, al pie, el logo de lado a
+     lado, sobreimpreso en tinta como una plancha más de riso. La hoja que sigue asoma su
+     primera línea: así se ve que hay más. La obra la elige el colectivo en el perfil del
+     sitio; sin ella, va la lámina del estreno (ver «La portada como obra: mancheta de afiche
+     con telón» en docs/deferidos-y-decisiones.md).
   {% endcomment %}
   <section class="portada-arte" aria-labelledby="portada-nombre">
     {% portada_img arte.portada_imagen arte.portada_telefono %}
     <div class="portada-mancheta">
       {% comment %}
-         El nombre sigue siendo el único h1. Se ve el logo, y los lectores de pantalla y los
-         buscadores leen el nombre.
+         El nombre es el único h1: se ve el logo, y los lectores de pantalla y los buscadores
+         leen el nombre.
       {% endcomment %}
       <h1 class="portada-logo" id="portada-nombre"><span class="sr-only">{{ site_name }}</span>{% include "site/partials/_logo_horizontal.html" only %}{% include "site/partials/_logo_apilado.html" only %}</h1>
     </div>
@@ -35,13 +33,15 @@
 
   {% comment %}
      El telón: la hoja y todo lo que sigue suben sobre la obra, que se queda quieta (con
-     menos movimiento, sube con la página, como siempre). Repite los carriles del lienzo.
+     menos movimiento, o en una ventana más baja que el alto mínimo de la obra, sube con la
+     página). Repite los carriles del lienzo.
   {% endcomment %}
   <div class="portada-telon">
   {% comment %}
-     La hoja: lo que era el titular (ticket 4.2; D8, D9). «Saltar al contenido» lleva aquí.
-     Bajo el titular iban las cifras, los aliados y la cita de prensa: el dueño del sitio
-     los quitó (2026-10-14), porque el colectivo aún es pequeño.
+     La hoja: la cejilla, el manifiesto, los botones y, mientras haya una convocatoria abierta,
+     su sello. «Saltar al contenido» lleva aquí. Sin la franja de cifras ni la línea de respaldo
+     (aliados y cita de prensa): el colectivo aún es pequeño (ver «Sin cifras en la portada» en
+     docs/deferidos-y-decisiones.md).
   {% endcomment %}
   <section class="hero" id="contenido">
     {% if hoja.presentacion or hoja.member_count or instagram_del_colectivo.usuario %}
@@ -71,8 +71,8 @@
       {% if hoja.convocatoria %}
         {% comment %}
            Sello de convocatoria: un timbre impreso, girado y quieto, que solo aparece
-           mientras hay una convocatoria abierta. Lleva al formulario de envío. Va bajo los
-           botones.
+           mientras hay una convocatoria abierta. Lleva al formulario de envío. Por debajo de
+           900 px va bajo los botones; desde 900, sobre la trama de la derecha.
         {% endcomment %}
         <a class="sello-convocatoria" href="{% url 'submissions:submit' %}">
           <span class="rotulo">Convocatoria abierta</span>
@@ -86,9 +86,9 @@
     {% include "site/partials/_tirada.html" with tirada=tirada only %}
   {% elif featured_poem %}
     {% comment %}
-       Sin registros destacados, el poema destacado del perfil, como antes de la tirada (D19).
-       Sobre el papel, a continuación de la hoja: el dueño del sitio descartó la banda de tinta
-       porque rompía la portada.
+       Sin registros destacados, el poema destacado del perfil, sobre el papel, a continuación
+       de la hoja: una banda de tinta rompería la portada (ver «Bandas de tinta, dos por página
+       como mucho» en docs/deferidos-y-decisiones.md).
     {% endcomment %}
     <section class="home-block featured">
       <span class="kicker">Poema destacado</span>
@@ -127,9 +127,9 @@
 
   {% if obra.poemas or obra.articles %}
     {% comment %}
-       La obra (ticket 4.3): los últimos poemas, con sus tres primeros versos, y los
-       últimos textos. Con sitio van lado a lado; apilados, la portada crecía una pantalla.
-       Va antes que las integrantes: lo pidió el dueño del sitio al ver la portada.
+       La obra: los últimos poemas, con sus tres primeros versos, y los últimos textos. Con
+       sitio van lado a lado; apilados, la portada crecería una pantalla. Va antes que las
+       integrantes.
     {% endcomment %}
     <section class="home-block band home-obra">
       <div class="band-in"><p class="rotulo home-obra-cejilla">La obra</p></div>
@@ -156,11 +156,12 @@
 
   {% if voces.members %}
     {% comment %}
-       «Las voces» (D23): la opción 3 del tablero «Las voces en relevo», con la pasada de tinta
-       de la 2. La cabeza a la izquierda, con el botón; a la derecha, una fila de retratos con el
-       nombre debajo: tantos como dicen `a_la_vista` y `a_la_vista_telefono`, que el guion lee
+       «Las voces» (ver «“Las voces” en relevo» en docs/deferidos-y-decisiones.md). La cabeza a
+       la izquierda, con el botón; a la derecha, una fila de retratos con el nombre debajo:
+       tantos como dicen `a_la_vista` y `a_la_vista_telefono`, que el guion lee
        de los atributos data-, con el corte del teléfono. Las demás vienen escondidas y el relevo las
-       trae de a una (static/js/integrantes.js). Sin JavaScript, las primeras y el botón.
+       trae de a una, bajo una pasada de tinta (static/js/integrantes.js). Sin JavaScript, las
+       primeras y el botón.
     {% endcomment %}
     <section class="home-block sangre home-integrantes" data-integrantes data-a-la-vista="{{ voces.a_la_vista }}" data-a-la-vista-telefono="{{ voces.a_la_vista_telefono }}" data-telefono="{{ voces.phone_media }}">
       <div class="band-in integrantes-fila">
@@ -179,10 +180,10 @@
 
   {% if publications %}
     {% comment %}
-       El estante (D24, la opción 3 del tablero «El catálogo en portada»): como en una
-       librería, una publicación de frente y las demás de lomo, de pie sobre la tabla, y al
-       lado la ficha de la de frente. Va de frente la primera (la vista pone primero las
-       marcadas «Featured»). Sin JavaScript cada lomo lleva a su ficha; con
+       El estante (ver «El estante de publicaciones» en docs/deferidos-y-decisiones.md): como
+       en una librería, una publicación de frente y las demás de lomo, de pie sobre la tabla, y
+       al lado la ficha de la de frente. Va de frente la primera (la vista pone primero las
+       marcadas «Destacada»). Sin JavaScript cada lomo lleva a su ficha; con
        static/js/estante.js, el lomo saca ese libro al frente.
     {% endcomment %}
     <section class="home-block band home-publicaciones" data-estante>
@@ -195,7 +196,7 @@
             <ul class="estante-tabla">
               {% for pub in publications %}
                 {% comment %}
-                 El lomo y el canto llevan el color del borde de su tapa (D28), como rectángulos de
+                 El lomo y el canto llevan el color del borde de su tapa, como rectángulos de
                  SVG: un `fill` no es un estilo en línea, y la CSP del sitio no admite estilos en línea.
               {% endcomment %}
               <li class="ejemplar ejemplar--{{ pub.kind }}{% if pub.lomo.oscuro %} ejemplar--oscuro{% endif %}{% if forloop.first %} es-frente{% endif %}" data-ficha="ficha-{{ pub.slug }}">
@@ -210,7 +211,7 @@
             </ul>
             {% comment %}
                Bajo la tabla, donde termina la fila de libros: quien busca una publicación que no
-               está en el estante la encuentra aquí (D25). Antes era un enlace discreto en la cabecera.
+               está en el estante la encuentra aquí.
             {% endcomment %}
             <p class="estante-catalogo"><a class="btn btn--primary" href="{% url 'showcase:publication_index' %}">Ver todo el catálogo <span aria-hidden="true">→</span></a></p>
           </div>
@@ -230,9 +231,9 @@
   {% endif %}
 
   {% comment %}
-     Para programadores y jurados (ticket 4.3): las puertas a lo que piden, lo último que
-     hizo el colectivo y cuándo publicó por última vez. Sobre el papel: el dueño del sitio
-     descartó la tinta en el cuerpo de la portada.
+     Para programadores y jurados: las puertas a lo que piden, lo último que hizo el colectivo
+     y cuándo publicó por última vez. Sobre el papel: en la portada, el único fondo de tinta es
+     el pie (ver «Bandas de tinta, dos por página como mucho» en docs/deferidos-y-decisiones.md).
   {% endcomment %}
   <section class="home-block home-cierre">
     {% include "site/partials/_cabeza_de_seccion.html" with cejilla="Prensa y gestión" titulo="Para programadores y jurados" territorio="prensa" only %}

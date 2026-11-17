@@ -26,7 +26,7 @@ A_LA_VISTA_TELEFONO = 3
 
 # El estante: una publicación de frente y hasta siete de lomo, lo que cabe a 951 px junto a la
 # ficha. Al frente va la marcada «Destacada» en el panel y, si no hay, la primera según su orden
-# («Position»).
+# («Posición»).
 ESTANTE = 8
 
 # La tirada: como mucho TIRADA_SIZE registros, el tope que valida el panel.

@@ -1,4 +1,4 @@
-"""Pruebas de la arquitectura de información final (Lote H)."""
+"""La arquitectura de información del sitio."""
 
 import re
 
@@ -16,12 +16,11 @@ def _nav(content):
     return re.search(rb"<nav[^>]*>.*?</nav>", content, re.S).group(0)
 
 
-# La barra principal lleva CINCO enlaces (D9, decidido por el dueño del sitio el
-# 2026-10-13, en quien el colectivo delegó las decisiones de diseño). Fueron nueve, luego
-# cuatro; con nueve una barra solo puede verse como una lista. Entra «Textos», que solo
-# estaba en el pie, y el dossier va en el botón de la cabecera, fuera de la barra. La
-# lista se fija aquí para que ampliarla vuelva a ser una decisión explícita y no una
-# acumulación.
+# La barra principal lleva CINCO enlaces (ver «Barra de cinco enlaces y “Dossier”; prensa y
+# aliados como línea de respaldo» en docs/deferidos-y-decisiones.md): con nueve, una barra
+# solo puede verse como una lista. El dossier va en el botón de la cabecera, fuera de la
+# barra. La lista se fija aquí para que ampliarla vuelva a ser una decisión explícita y no
+# una acumulación.
 NAV_PRINCIPAL = [
     "content:poem_index",
     "content:text_archive",
@@ -30,9 +29,8 @@ NAV_PRINCIPAL = [
     "people:member_index",
 ]
 
-# Lo que salió de la barra. Ninguno puede quedar huérfano: `Dossier` solo era alcanzable
-# además desde el botón de la portada, así que perderlo del pie lo dejaría sin camino
-# para quien entre por cualquier otra página.
+# Lo que no va en la barra. Ninguno puede quedar huérfano: el mapa del pie los enlaza en
+# todas las páginas.
 NAV_DEGRADADOS = [
     "showcase:dossier",
     "agenda:agenda",
@@ -51,7 +49,7 @@ def test_nav_curated_for_managers(client):
     assert nav.count(b"<a ") == len(NAV_PRINCIPAL), (
         f"la barra tiene {nav.count(b'<a ')} enlaces y debería tener {len(NAV_PRINCIPAL)}"
     )
-    # Lo editorial fino y las convocatorias siguen fuera de la barra principal.
+    # Lo editorial fino y las convocatorias van fuera de la barra principal.
     assert reverse("submissions:submit").encode() not in nav
     assert reverse("content:collection_index").encode() not in nav
 
@@ -93,7 +91,7 @@ def test_subscribe_honeypot_drops_bots(client):
     resp = client.post(
         reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"}, follow=True
     )
-    assert ALTA_NEUTRA in resp.content.decode()  # control: el bot recibe la respuesta de siempre
+    assert ALTA_NEUTRA in resp.content.decode()  # control: el bot recibe la respuesta neutra
     assert not NewsletterSubscriber.objects.filter(email="bot@spam.com").exists()
 
 

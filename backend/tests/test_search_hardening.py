@@ -1,9 +1,7 @@
-"""Endurecimiento del buscador FTS (hallazgo S-04).
+"""Endurecimiento del buscador FTS, el endpoint público más caro del sitio.
 
-Era el endpoint público más caro del sitio y el único sin control anti-abuso: sin
-`LIMIT` en SQL (el recorte a 10 se hacía en Python tras materializar todas las filas
-que casaban, con el cuerpo entero de cada pieza), sin rate limit y con un 500 público
-alcanzable con `?q=%00`.
+El `LIMIT` viaja al SQL, la consulta se corta a SEARCH_MAX_QUERY caracteres, cada IP tiene
+su cupo y un byte NUL en la consulta no da un 500.
 """
 
 import re
@@ -29,8 +27,8 @@ BUSCAR = reverse("site:search")
 
 
 def test_byte_nul_no_provoca_un_500(client):
-    """`GET /buscar/?q=%00` reventaba con DataError de psycopg (PostgreSQL no admite
-    NUL en campos de texto): 500 público alcanzable por cualquier anónimo."""
+    """`GET /buscar/?q=%00` responde con la página, no con un 500: PostgreSQL no admite NUL
+    en campos de texto, así que la búsqueda lo quita antes de consultar."""
     resp = client.get(BUSCAR, {"q": "\x00"})
     assert resp.status_code == 200
 
@@ -134,8 +132,8 @@ def test_the_search_field_shows_what_was_searched(client, written, searched):
 
 
 def test_el_limit_viaja_al_sql(client):
-    """El recorte a 10 se hacía en Python DESPUÉS de materializar todas las filas: el
-    SQL salía sin LIMIT. Se comprueba en el SQL emitido, que es donde importa."""
+    """El recorte a 10 va en el SQL (LIMIT), no en Python después de materializar todas las
+    filas. Se comprueba en el SQL emitido, que es donde importa."""
     from django.db import connection
     from django.test.utils import CaptureQueriesContext
 
@@ -149,9 +147,8 @@ def test_el_limit_viaja_al_sql(client):
     assert consultas_fts, "no se emitió ninguna consulta de búsqueda"
     for sql in consultas_fts:
         assert "LIMIT 10" in sql, f"consulta FTS sin LIMIT: {sql[:200]}"
-    # Acotado a la lista de resultados: contar <li> en toda la página medía también el
-    # mapa del sitio del pie, que tiene los suyos. La aserción parecía sobre la búsqueda
-    # y era sobre la plantilla entera.
+    # Acotado a la lista de resultados: contar <li> en toda la página mediría también el
+    # mapa del sitio del pie, que tiene los suyos.
     import re
 
     lista = re.search(rb'<ul class="search-list">.*?</ul>', resp.content, re.S)
@@ -198,7 +195,7 @@ def test_el_buscador_limita_por_ip(client, frozen_rate_limit_window):
 @override_settings(RATELIMIT_ENABLE=True)
 def test_the_panel_announces_the_limit_as_well(client, frozen_rate_limit_window):
     """En el panel de la lupa, el aviso llega también a la región que se anuncia: los
-    resultados ya no son una región viva. Llega con un 200, porque htmx no pinta una
+    resultados no son una región viva. Llega con un 200, porque htmx no pinta una
     respuesta de error."""
     from bs4 import BeautifulSoup
 
@@ -234,7 +231,7 @@ def _search_queries(client, method, status=200):
 
 def test_head_counts_towards_the_search_limit(client, frozen_rate_limit_window):
     """Tras 61 GET, un HEAD no ejecuta ninguna búsqueda: Django corre la vista entera también
-    en HEAD, y antes el límite solo contaba los GET. Control: antes del límite, el mismo
+    en HEAD, así que el límite cuenta todos los métodos. Control: antes del límite, el mismo
     HEAD sí busca."""
     make_article(title="Umbral", status="published")
     assert _search_queries(client, "head")

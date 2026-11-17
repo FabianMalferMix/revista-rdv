@@ -1,9 +1,9 @@
-"""Índices como filas tipográficas (backlog UX, ticket 2.2).
+"""Índices como filas tipográficas.
 
-Textos, poemas, trayectoria y prensa eran tarjetas apiladas con todo pegado a la
-izquierda: en el carril ancho dejaban dos tercios de la pantalla vacíos. Ahora son filas
-con un dato a cada lado del título, y la fila entera es el enlace. Lo que solo se ve al
-pintar (anchos, estados) se comprueba aparte, sobre la hoja de estilos y con tools/ux.
+Textos, poemas, trayectoria y prensa son filas con un dato a cada lado del título, y la fila
+entera es el enlace: tarjetas apiladas con todo pegado a la izquierda dejarían, en el carril
+ancho, dos tercios de la pantalla vacíos. Lo que solo se ve al pintar (anchos, estados) se
+comprueba aparte, sobre la hoja de estilos y con tools/ux.
 """
 
 import pytest
@@ -71,8 +71,8 @@ def test_primer_verso():
 
 
 def test_la_fila_del_poema_cita_su_primer_verso(client):
-    """Es lo que permite reconocer un poema sin abrirlo, como en el índice de primeros
-    versos de una antología. Antes la tarjeta enseñaba solo título, autoría y fecha."""
+    """La fila cita el primer verso: es lo que permite reconocer un poema sin abrirlo, como
+    en el índice de primeros versos de una antología."""
     make_published_poem(slug="patio", body="\n   Llueve sobre el patio\nsegundo verso\n")
     fila = _sopa(client, "content:poem_index").select_one("li.fila--poema")
     assert fila.select_one("p.fila-verso").get_text() == "Llueve sobre el patio"

@@ -1,6 +1,6 @@
 {% load images joined portada titles versos %}
 {% comment %}
-   La tirada (D19, elegida por el dueño en el tablero de los registros destacados, 2026-10-21).
+   La tirada (ver «La tirada de registros» en docs/deferidos-y-decisiones.md).
    Cada registro que el colectivo marca como destacado es un pliego de una tirada numerada,
    apoyado junto a los demás en un carril que sangra por la derecha. Cada pliego lleva a su
    ficha, donde se reproduce: en la portada no hay reproductor. El título es el único enlace
@@ -26,8 +26,8 @@
             <p class="pliego-fechador">{% if r.event.city %}<span class="rotulo">{{ r.event.city }}</span>{% endif %}<b>{{ r.fecha|date:"j M Y"|lower }}</b></p>
           {% endif %}
           {% comment %}
-             El póster a una tinta, también al señalarlo: en la portada no se enseña el original
-             (decisión 3 del tablero; a color se ve en la ficha). Sin imagen, una plancha en trama.
+             El póster a una tinta, también al señalarlo: en la portada no se enseña el original,
+             que a color se ve en la ficha. Sin imagen, una plancha en trama.
           {% endcomment %}
           {% if r.imagen %}
             <span class="pliego-placa riso-duo">{% sizes "placa-pliego" as sizes %}{% responsive_img r.imagen sizes=sizes decorativa=True %}</span>

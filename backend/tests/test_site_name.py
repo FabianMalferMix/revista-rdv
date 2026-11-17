@@ -2,9 +2,8 @@
 
 Las páginas firman con el nombre del perfil del sitio (que se cambia en el panel) o, si está en
 blanco, con el fijo, `SITE_NAME`: los dos los resuelve una vez el procesador de contexto, en
-`site_name`. El 500, que se pinta sin procesadores ni base, y la cabecera del panel llevan el
-fijo. Antes había tres respaldos distintos en las plantillas («Reseñas», el nombre del proyecto
-anterior, y «Colectivo») y el 500 decía «Reseñas» escrito a mano.
+`site_name`. El 500, que se pinta sin procesadores ni base, y la cabecera del panel llevan
+el fijo.
 """
 
 import json

@@ -1,9 +1,9 @@
-"""La tirada de registros de la portada (D19): la opción que eligió el dueño del sitio en el
-tablero de los registros destacados (2026-10-21).
+"""La tirada de registros de la portada (ver «La tirada de registros» en
+docs/deferidos-y-decisiones.md).
 
 Cada registro que el colectivo marca como destacado (con su número de orden) es un pliego que
 lleva a su ficha: en la portada no se reproduce nada. Hasta cinco; sin ninguno marcado, el
-registro destacado del perfil hace de respaldo, y sin registros vuelve el poema destacado.
+registro destacado del perfil hace de respaldo, y sin registros va el poema destacado.
 Nada avanza solo: static/js/registros.js solo cambia atributos. El aspecto está en
 test_css_sistema.py.
 """
@@ -166,7 +166,7 @@ def test_sin_javascript_estan_todos_y_la_hoja_de_contactos_espera_al_guion(clien
     assert tirada["aria-labelledby"] == "tirada-titulo"
     assert tirada.select_one("#tirada-titulo").get_text() == "Registros"
     assert tirada.select_one(".tirada-todos a")["href"] == reverse("media:recording_index")
-    # La hoja de contactos llega escondida: sin el guion no haría nada. Flechas no hay (D29): se
+    # La hoja de contactos llega escondida: sin el guion no haría nada. Flechas no hay: se
     # navega con la hoja de contactos, que desde 1100 px es un índice al lado de la pila.
     assert tirada.select_one(".tirada-contactos").has_attr("hidden")
     assert tirada.select(".tirada-mandos, [data-siguiente], [data-anterior], .tirada-flecha") == []
@@ -194,7 +194,7 @@ def test_el_guion_no_avanza_solo_ni_escribe_estilos():
 
 
 def test_la_pila_se_reparte_solo_si_se_puede_mover_y_responde_al_dedo():
-    """El reparto (D20) se anima solo para quien no pidió menos movimiento. En el teléfono,
+    """El reparto se anima solo para quien no pidió menos movimiento. En el teléfono,
     deslizar sobre la pila pasa de registro (a la izquierda, el siguiente). El gesto, y si se
     puede animar, se los da common.js, como a los demás guiones (test_common_js.py); que el gesto
     sea solo del dedo o del lápiz y que un deslizamiento no abra la ficha que quedó debajo lo
@@ -212,7 +212,7 @@ def test_la_duracion_se_lee_en_minutos_y_horas(minutos, texto):
 
 
 def test_el_sello_dice_el_tipo_y_la_duracion(client):
-    """D21: con la duración cargada, el sello dice «Video · 42 min»; sin ella, solo el tipo. La
+    """Con la duración cargada, el sello dice «Video · 42 min»; sin ella, solo el tipo. La
     ficha y el índice la enseñan también."""
     con = _registro("con", title="Con duración", duration_minutes=42)
     _registro("sin", title="Sin duración", kind=Recording.Kind.AUDIO, position=1)
@@ -226,8 +226,8 @@ def test_el_sello_dice_el_tipo_y_la_duracion(client):
 
 
 def test_el_panel_nombra_los_campos_en_castellano(client, django_user_model):
-    """D21: los rótulos del registro y del perfil del sitio estaban en inglés («Featured»,
-    «Position», «Featured recording»)."""
+    """Los rótulos del registro y del perfil del sitio van en castellano, como el resto del
+    panel: «Destacado» y «Posición», no «Featured» y «Position»."""
     registro = _registro("rotulos")
     client.force_login(django_user_model.objects.create_superuser("admin", "a@example.com", "x"))
     paginas = {
@@ -251,8 +251,8 @@ def test_el_panel_nombra_los_campos_en_castellano(client, django_user_model):
 
 
 def test_desde_1100_px_la_hoja_de_contactos_es_un_indice_al_lado():
-    """D29: la pila sola dejaba unos 360 px vacíos a 1900; la hoja de contactos va a la derecha,
-    en columna, y el abanico se ajusta al hueco que deja."""
+    """Desde 1100 px la hoja de contactos va a la derecha, en columna, y el abanico se ajusta
+    al hueco que deja: la pila sola dejaría unos 360 px vacíos a 1900."""
     indice = ("@media (min-width:1100px)",)
     pie = css.rule(indice, ".tirada.con-js .tirada-pie")
     assert (pie["grid-column"], pie["grid-row"]) == ("3", "2")

@@ -1,4 +1,4 @@
-"""Portada reordenada y archivo de textos (Lote UI-1)."""
+"""La portada y el archivo de textos."""
 
 import re
 
@@ -21,8 +21,7 @@ def test_home_caps_articles_and_links_to_archive(client):
         make_published_article(slug=f"t{i}", title=f"Texto {i}")
     resp = client.get(reverse("site:home"))
     assert resp.status_code == 200
-    # Portada curada: los tres últimos textos (ticket 4.3; eran cinco). El resto vive en el
-    # archivo, a un enlace.
+    # Portada curada: los tres últimos textos. El resto vive en el archivo, a un enlace.
     sopa = BeautifulSoup(resp.content, "html.parser")
     assert len(sopa.select(".home-obra li.article-card:not(.fila--poema)")) == 3
     assert sopa.select_one(f'.home-obra a[href="{reverse("content:text_archive")}"]') is not None
@@ -56,8 +55,8 @@ def test_con_un_registro_destacado_no_sale_el_poema_destacado(client):
     )
     profile.save()
     resp = client.get(reverse("site:home"))
-    # Con los dos, el registro manda: va en la tirada (D19; el del perfil es el respaldo
-    # cuando no hay ninguno marcado) y el poema no sale como un segundo destacado.
+    # Con los dos, el registro manda: va en la tirada (el del perfil es el respaldo cuando
+    # no hay ninguno marcado) y el poema no sale como un segundo destacado.
     sopa = BeautifulSoup(resp.content, "html.parser")
     assert sopa.select_one(".featured") is None
     assert [p["data-titulo"] for p in sopa.select(".tirada .pliego")] == ["Registro Destacado"]
@@ -119,9 +118,7 @@ def test_featured_poem_long_first_stanza_stops_at_six_verses(client):
 
 
 def test_home_texts_appear_before_members(client):
-    """La obra (poemas y textos) va antes que las integrantes. Desde julio iba al revés,
-    porque las integrantes son lo primero que buscan los programadores; el 2026-10-14 el
-    dueño del sitio, al ver la portada completa, pidió la obra primero (paso 20)."""
+    """La obra (poemas y textos) va antes que las integrantes."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     make_published_article(slug="tx", title="Texto Portada")
     content = client.get(reverse("site:home")).content
@@ -129,8 +126,8 @@ def test_home_texts_appear_before_members(client):
 
 
 def test_home_hero_has_manifesto_and_name(client):
-    """El manifiesto y el nombre como titular (ticket 4.2). «Desde 2019» va en la cejilla,
-    con el lema. Las cifras las quitó el dueño (ver `test_titular.py`)."""
+    """La hoja lleva el manifiesto, y el nombre es el h1. «desde 2019» va en la cejilla, con
+    el lema. Sin la franja de cifras (ver `test_titular.py`)."""
     profile = SiteProfile.load()
     profile.name = "Colectivo Norte"
     profile.tagline = "Poesía en voz alta."
@@ -148,7 +145,7 @@ def test_home_hero_has_manifesto_and_name(client):
     assert " ".join(sopa.h1.get_text().split()) == "Colectivo Norte"
 
 
-# ── Sello de convocatoria (backlog UX, ticket 3.2) ────────────────────────
+# ── Sello de convocatoria ─────────────────────────────────────────────────
 
 
 def _convocatoria(abre, cierra, slug="conv"):

@@ -1,7 +1,6 @@
-"""Cabecera de los índices, cejillas y títulos de pestaña (backlog UX, tickets 1.2 y 1.12).
+"""Cabecera de los índices, cejillas y títulos de pestaña.
 
-Los once índices abrían con su nombre a 12 px en gris, el texto más pequeño de la
-página. Ahora comparten una cabecera con cejilla de dato vivo, título y una frase.
+Los índices comparten una cabecera con cejilla de dato vivo, título y una frase.
 """
 
 import re
@@ -99,7 +98,7 @@ def test_a_section_a_tag_and_a_collection_count_what_they_hold(client):
     assert cabecera.select_one(".kicker").get_text(strip=True) == "Sección"
 
 
-# ── Firma por territorio (backlog UX, ticket 3.1) ─────────────────────────
+# ── Firma por territorio ──────────────────────────────────────────────────
 
 # El rótulo de cada grupo del pie y la firma que llevan sus páginas.
 GRUPOS_DEL_PIE = {"El colectivo": "colectivo", "La obra": "obra", "Prensa y gestión": "prensa"}
@@ -169,7 +168,7 @@ def _cejilla(html):
 
 
 def test_la_cejilla_no_repite_la_seccion_cuando_dice_lo_mismo_que_el_tipo(client):
-    """«Reseñas · Reseña» repetía la palabra en cada tarjeta del archivo."""
+    """La cejilla no dice «Reseñas · Reseña»: repetiría la palabra en cada tarjeta del archivo."""
     resenas = Section.objects.create(slug="resenas", name="Reseñas")
     articulo = make_published_article(slug="r1", section=resenas, type=ArticleType.RESENA)
     assert articulo.seccion_aporta is False
@@ -199,8 +198,8 @@ def test_sin_seccion_la_cejilla_es_solo_el_tipo(client):
 
 
 def test_ningun_titulo_de_pestana_lleva_el_nombre_del_proyecto_anterior():
-    """Diez plantillas cerraban el <title> con «— Reseñas» escrito a fuego: la pestaña de
-    un artículo decía el nombre del proyecto del que este sitio heredó el código."""
+    """Ninguna plantilla escribe a fuego en su <title> «Reseñas», el nombre del repositorio: la
+    pestaña termina en el nombre del sitio."""
     fijos = []
     titles = 0
     for plantilla in PLANTILLAS.rglob("*.html"):
@@ -222,7 +221,7 @@ def test_el_titulo_de_un_articulo_termina_en_el_nombre_del_sitio(client):
     assert "<title>Un texto — Repitentes del Verso</title>" in html
 
 
-# ── Qué páginas usan el carril ancho (backlog UX, ticket 2.1) ──────────────
+# ── Qué páginas usan el carril ancho ───────────────────────────────────────
 
 LISTADOS_ANCHOS = INDICES + ["site:home", "site:search"]
 
@@ -238,9 +237,9 @@ def test_la_portada_y_los_indices_usan_el_carril_ancho(client, nombre):
 def test_las_paginas_de_lectura_se_quedan_en_su_carril(client):
     """El formulario y el dossier se leen en una columna.
 
-    Artículo y poema pasaron al carril ancho en el ticket 2.4, pero para montar su sala
-    de lectura: la columna ancla al lado del texto. El texto no se ensancha: sigue
-    limitado por la medida (ver `test_el_cuerpo_de_lectura_tiene_medida`)."""
+    Artículo y poema van en el carril ancho para montar su sala de lectura: la columna ancla
+    al lado del texto. El texto no se ensancha: sigue limitado por la medida (ver
+    `test_el_cuerpo_de_lectura_tiene_medida`)."""
     make_published_article(slug="lectura", title="Para leer")
     make_poem(slug="verso", status=EditorialStatus.PUBLISHED, published_at=timezone.now())
     for url in (reverse("submissions:submit"), reverse("showcase:dossier")):
