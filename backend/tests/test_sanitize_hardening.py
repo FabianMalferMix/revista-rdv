@@ -1,9 +1,9 @@
-"""Contrato del saneo de HTML autoral (hallazgo S-31 de XSS).
+"""El contrato del saneo de HTML de autor.
 
-`clean_html` es lo único que separa el HTML que escribe un editor del `|safe` de las
-plantillas de artículo y página. Funcionaba, pero NINGÚN test lo afirmaba: la protección
-dependía por completo de los valores por defecto de nh3, que podrían cambiar con una
-actualización sin que nada avisara. Estos tests fijan el contrato.
+`clean_html` es lo único que separa el HTML que escribe un editor de la página: lo aplican el
+guardado y el filtro `authored_html`, que pinta los textos y las páginas. Estas pruebas fijan el
+contrato, para que no dependa de los valores por defecto de nh3, que podrían cambiar con una
+actualización sin que nada avisara.
 """
 
 import pytest
@@ -76,8 +76,7 @@ def test_los_enlaces_salen_con_rel_defensivo():
 
 @pytest.mark.django_db
 def test_el_formulario_del_panel_tambien_sanea():
-    """Defensa en profundidad: el saneo real vive en Model.save(), pero repetirlo en el
-    formulario hace que el editor vea el resultado ya depurado al guardar."""
+    """El formulario del panel sanea el cuerpo al validarlo, como `Model.save()` al guardarlo."""
     from apps.content.admin import ArticleAdminForm
 
     form = ArticleAdminForm(
@@ -96,7 +95,7 @@ def test_el_formulario_del_panel_tambien_sanea():
 
 @pytest.mark.django_db
 def test_el_saneo_se_aplica_al_guardar_el_modelo():
-    """La garantía de fondo: aunque se escriba por fuera del formulario."""
+    """El modelo sanea el cuerpo al guardarlo, aunque se escriba por fuera del formulario."""
     from apps.content.models import Article
 
     art = Article.objects.create(

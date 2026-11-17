@@ -70,12 +70,11 @@ class RichTextWidget(forms.Textarea):
 
 
 class SanitizedBodyMixin:
-    """Sanea el cuerpo también en la capa de FORMULARIO.
+    """Sanea el cuerpo al validar el formulario del panel, como `Model.save()` al guardarlo.
 
-    El saneo vive en `Model.save()`, que es la garantía real. Pero eso lo convierte en una
-    convención de la capa Python: quien escriba por otro camino —una migración de datos,
-    un `bulk_create`, un import— la esquiva. Repetirlo aquí hace que el editor vea el
-    resultado ya depurado al guardar desde el panel, en vez de descubrirlo al releer.
+    Ninguno de los dos es la garantía, porque una migración de datos, un `bulk_create` o
+    `loaddata` no pasan por ellos: la garantía está en la salida, en el filtro `authored_html`
+    (templatetags/authored.py), que sanea el cuerpo al pintarlo.
     """
 
     def clean_body(self):
@@ -269,10 +268,9 @@ class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
             return qs
         return qs.filter(owner=request.user)  # el autor solo ve lo suyo
 
-    # Las comprobaciones por rol/estado COMPONEN con el permiso de modelo de Django, no
-    # lo sustituyen: antes, retirar `content.change_article` a alguien del grupo editor
-    # no surtía efecto, porque la respuesta se decidía solo por pertenencia al grupo. Con
-    # el `and super()...` delante, revocar el permiso en el admin vuelve a bastar.
+    # Las comprobaciones por rol y estado se suman al permiso de modelo de Django, que se mira
+    # primero (`super()`): a quien se le retira `content.change_article` deja de poder cambiar
+    # textos aunque siga en el grupo editor.
     def has_change_permission(self, request, obj=None):
         if not super().has_change_permission(request, obj):
             return False

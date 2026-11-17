@@ -1,8 +1,9 @@
 """El panel respeta el consentimiento del boletín y el estado de los envíos.
 
-El doble opt-in es la única prueba del consentimiento, y el panel dejaba saltárselo: marcar
-a alguien como confirmado a mano, con una fecha inventada. En los envíos, se podía reescribir
-lo que mandó la autora y cambiar el estado sin fecha, del que depende la purga.
+El doble opt-in es la única prueba del consentimiento: el panel no deja marcar a nadie como
+confirmado a mano, y un alta desde el panel manda el correo de confirmación. En los envíos, el
+panel no reescribe lo que mandó la autora, y resolver uno le pone la fecha de la que depende la
+purga.
 """
 
 import pytest

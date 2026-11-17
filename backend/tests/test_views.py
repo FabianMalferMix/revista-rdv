@@ -114,7 +114,7 @@ def test_submission_file_only_for_editors(client, editor, autor):
 
 
 def test_a_submission_file_missing_from_disk_is_a_404(client, editor, caplog):
-    """Si el adjunto ya no está en el disco, quien puede ver los envíos recibe un 404, no un
+    """Si el adjunto falta en el disco, quien puede ver los envíos recibe un 404, no un
     500, y el log lo dice con el número del envío y sin el nombre del archivo, que lo puso
     quien envió la propuesta. Control: con el archivo en su sitio, la descarga sale."""
     from django.core.files.uploadedfile import SimpleUploadedFile

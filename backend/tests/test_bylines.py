@@ -106,7 +106,7 @@ def test_poem_page_and_card_sign_in_order(client, poema):
 
 
 def test_same_position_keeps_the_order_they_were_added(client):
-    """El inline del panel crea todas las filas en la posición 0: desempata el alta."""
+    """A igual posición, desempata el alta: el inline del panel propone la 0 en cada fila."""
     zoe, ana = _firmantes()
     articulo = make_article(
         slug="empate", status=EditorialStatus.PUBLISHED, published_at=timezone.now()

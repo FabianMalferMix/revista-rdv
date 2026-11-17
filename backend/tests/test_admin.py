@@ -86,7 +86,7 @@ def test_publish_action_transitions_and_logs(editor, autor):
     ma.do_publish(_request(editor, with_messages=True), Article.objects.filter(pk=article.pk))
     article.refresh_from_db()
     assert article.status == S.PUBLISHED
-    # La acción pasó por perform_transition → dejó rastro en la bitácora inmutable.
+    # La acción pasa por perform_transition, que deja rastro en la bitácora inmutable.
     assert article.transitions.filter(to_status=S.PUBLISHED).exists()
 
 

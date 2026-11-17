@@ -42,7 +42,7 @@ def test_poem_transitions_have_generic_audit_trail(editor, autor):
     entry = poem.transitions.latest("created_at")
     assert entry.item == poem
     assert (entry.from_status, entry.to_status) == (S.IN_REVIEW, S.APPROVED)
-    # El filtro por related_query_name distingue piezas del mismo id.
+    # Cada pieza ve solo sus entradas: `for_item` filtra por tipo de pieza y por id.
     assert EditorialTransition.objects.for_item(poem).count() == 1
     assert EditorialTransition.objects.for_item(article).count() == 1
 
@@ -89,7 +89,7 @@ def test_poem_detail_renders_prewrap_body(client):
     assert resp.status_code == 200
     assert b'<div class="poem-body">' in resp.content
     # El cuerpo va escapado pero íntegro: cada verso con su sangría y las estrofas
-    # separadas donde el autor dejó la línea en blanco (filtro `versos`, ticket 2.4).
+    # separadas donde el autor dejó la línea en blanco (filtro `versos`).
     assert (
         '<p class="estrofa"><span class="verso">Verso uno</span>'
         '<span class="verso">    verso con sangría</span></p>'

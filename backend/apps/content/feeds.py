@@ -11,11 +11,8 @@ from .models import Article
 class LatestArticlesFeed(Feed):
     """RSS de textos publicados.
 
-    El título y la descripción salían escritos a fuego y decían «Reseñas — Revista
-    literaria», identidad anterior al giro a colectivo de poesía. Como no consultaban
-    `SiteProfile`, configurar la identidad en el panel —tarea pendiente— no habría
-    cambiado el feed: el desajuste habría sobrevivido en silencio a lo que debía
-    arreglarlo. Ahora lee del perfil, como ya hacía el feed de podcast.
+    El título y la descripción salen del perfil del sitio (`SiteProfile`): cambiar en el
+    panel el nombre o el lema cambia también el feed.
     """
 
     # Respaldo si el perfil no tiene lema: el feed nunca debe quedarse sin descripción.
