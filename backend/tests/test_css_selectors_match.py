@@ -219,6 +219,13 @@ def server_selector(selector):
     )
 
 
+def _compiled(selector):
+    """El selector, compilado con las reglas del navegador. Sin `NOSTRICT`, soupsieve no admite
+    un combinador dentro de `:has()`, y las hojas lo usan: `.fila:has(.fila-titulo a)`,
+    `.pliego:has(+ .pliego[aria-current])`."""
+    return sv.compile(selector, flags=sv.NOSTRICT)
+
+
 def _compounds(selector):
     """Las piezas de cada compuesto del selector, también de los que van dentro de `:is()`,
     `:where()`, `:has()` y `:not()`."""
@@ -263,7 +270,7 @@ def _unmatched(rules, soups):
         for selector in rule.selectors:
             server = server_selector(selector)
             try:
-                pattern = sv.compile(server)
+                pattern = _compiled(server)
             except sv.SelectorSyntaxError as error:
                 reason = str(error).splitlines()[0]
                 missing.append(f"«{selector}» ({rule.place}, {where}): {reason}")
@@ -491,7 +498,7 @@ def _wins_by_a_part_that_picks_nothing(sheet, pages):
             created = _split(server, " ")[-1] == "*" and any(
                 on is None and mark in subject for on, mark, _, _ in SCRIPT_MARKS
             )
-            pattern, needed = sv.compile(server), _classes_and_ids(server)
+            pattern, needed = _compiled(server), _classes_and_ids(server)
             picked[selector] = tuple(
                 frozenset(map(id, pattern.select(soup)))
                 if not created and needed <= page_names
