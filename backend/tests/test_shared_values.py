@@ -1,8 +1,9 @@
 """Un dato, una fuente: lo que comparten la hoja de estilos, las plantillas y los guiones.
 
 Los cortes de la hoja tienen nombre en `config/breakpoints.py`, y de ahí salen los `sizes` de
-las imágenes (`{% sizes %}`) y el corte que reciben los guiones; las curvas de las animaciones
-están en la hoja, y los guiones las leen. Estas pruebas atan cada copia a su fuente.
+las imágenes (`{% sizes %}`) y el corte que reciben los guiones; las curvas que comparten la
+hoja y los guiones están en la hoja, y los guiones las leen. Estas pruebas atan cada copia a
+su fuente.
 """
 
 import re

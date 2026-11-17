@@ -28,8 +28,7 @@
     if (!abierto) return;
     abierto.open = false;
     const boton = abierto.querySelector("summary");
-    // Sin desplazar la página: la cabecera está a la vista, y enfocar la lupa a mitad de
-    // página la hacía saltar unos 450 px.
+    // Sin desplazar la página: la cabecera está siempre a la vista.
     if (boton) boton.focus({ preventScroll: true });
   });
 

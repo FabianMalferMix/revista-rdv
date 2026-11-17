@@ -1,12 +1,13 @@
-// El estante de la portada (D24): una publicación de frente y las demás de lomo. Sin este guion,
-// o si le falta algo de lo que usa, cada lomo lleva a su ficha. Con él, el lomo es un botón que saca ese libro al frente: el que
-// estaba vuelve a su lugar de lomo y al lado aparece la ficha del nuevo, con el foco en su
-// título. El cambio es suave (D27): cada libro se desliza desde donde estaba hasta su lugar
-// nuevo, el elegido gira desde el lomo hasta quedar de frente y las fichas se funden. Y sin
-// prisa (D32): con la curva de la tirada el libro arranca suave, viaja por el medio y se asienta
-// despacio; con la de antes, casi todo el recorrido pasaba en los primeros 90 ms. Aquí solo
-// se cambian clases y atributos y se anima con la API de animaciones; el aspecto vive en
-// componentes.css (la CSP no admite estilos en línea). Nada se mueve solo.
+// El estante de la portada: una publicación de frente y las demás de lomo (lo decidido, desde
+// «El estante de publicaciones», está en docs/deferidos-y-decisiones.md). Sin este guion, o si
+// le falta algo de lo que usa, cada lomo lleva a su ficha. Con él, el lomo es un botón que saca
+// ese libro al frente: el que estaba vuelve a su lugar de lomo y al lado aparece la ficha del
+// nuevo, con el foco en su título. El cambio es suave: cada libro se desliza desde donde estaba
+// hasta su lugar nuevo, el elegido gira desde el lomo hasta quedar de frente y las fichas se
+// funden. Y sin prisa: con la curva de la tirada el libro arranca suave, viaja por el medio y
+// se asienta despacio. Aquí solo se cambian clases y atributos y se anima con la API de
+// animaciones; el aspecto vive en componentes.css (la CSP no admite estilos en línea). Nada se
+// mueve solo.
 (() => {
   // Lo común llega antes, en common.js; sin él, cada lomo sigue llevando a su ficha.
   const { common } = window;
@@ -65,7 +66,7 @@
       fichas[i].querySelector('.estante-titulo').focus({ preventScroll: true });
     }
 
-    // Con el guion el lomo ya no lleva a la ficha: saca el libro al frente. Por eso deja de ser
+    // Con el guion el lomo no lleva a la ficha: saca el libro al frente. Por eso deja de ser
     // un enlace y pasa a ser un botón, y un lector de pantalla oye «Sacar al frente» antes del
     // título y el año que se ven.
     ejemplares.forEach((li, i) => {

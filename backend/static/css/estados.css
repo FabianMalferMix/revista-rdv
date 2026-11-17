@@ -3,27 +3,26 @@
    lupa abierta. Le gana a la pieza por su capa, así que su selector no lleva más que la
    condición y la pieza. */
 @layer estados{
-/* La cabecera al bajar (opción C del tablero de la barra, elegida por el dueño el
-   2026-10-15). Arriba, la cabecera de siempre sin el filete; en la portada, nada: el nombre
-   grande es la cabecera, como en brikken.co. Al bajar lo que mide la cabecera, una cápsula
+/* La cabecera al bajar (ver «La cabecera al bajar: opción C» en
+   docs/deferidos-y-decisiones.md). Arriba, la cabecera completa sin el filete; en la portada,
+   nada: el logo de la obra hace de cabecera. Al bajar lo que mide la cabecera, una cápsula
    pequeña y centrada, separada del borde, con el monograma, los cinco enlaces, la lupa y el
    «Dossier». static/js/cabecera.js, que se carga en el <head>, pone data-barra="arriba" en
    <html> antes de la primera pintura y la cambia a "pildora" al bajar; estas reglas solo
    cambian la cabecera con esa marca. Si el guion no llega o falla al montarse, no hay marca y
-   queda la cabecera fija de siempre, como sin JavaScript. La franja mide siempre
+   queda la cabecera fija, como sin JavaScript. La franja mide siempre
    --alto-cabecera: lo fijo de la página (la columna ancla, los años) y los saltos a anclas no
    se mueven. */
 /* Arriba de las demás páginas: la cabecera sin el filete de abajo. Alto mínimo, no fijo:
-   con el espaciado de texto ampliado (WCAG 1.4.12) crece, como antes. La fila lleva el
+   con el espaciado de texto ampliado (WCAG 1.4.12) crece. La fila lleva el
    papel para que nada se transparente a través de ella al pasar a la cápsula. */
 [data-barra="arriba"] > :not([data-pagina="portada"]) .masthead{border-bottom-style:none; min-height:var(--alto-cabecera)}
 [data-barra="arriba"] > :not([data-pagina="portada"]) .masthead-fila{background:var(--paper)}
 /* La cápsula: al bajar en cualquier página, y escondida arriba de la portada. La franja
    queda transparente y no recibe el puntero; solo la cápsula: lo que pasa a su altura se
-   sigue leyendo y pulsando a sus lados, en todas las páginas (D34). Antes, fuera de la
-   portada, un velo de papel tapaba la franja de lado a lado y cortaba el contenido. Acabado
-   «Objeto»: la hoja clara con el filete y la sombra plana de las cubiertas, y la esquina
-   de los botones. */
+   sigue leyendo y pulsando a sus lados, en todas las páginas (ver «La cápsula sin velo, en
+   todas las páginas» en docs/deferidos-y-decisiones.md). Acabado «Objeto»: la hoja clara con
+   el filete y la sombra plana de las cubiertas, y la esquina de los botones. */
 :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead{height:var(--alto-cabecera); background:transparent; border-bottom-style:none; pointer-events:none}
 :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila{pointer-events:auto; width:max-content; max-width:calc(100% - 24px);
   margin:var(--capsula-arriba) auto 0; min-height:var(--capsula-alto); padding:var(--capsula-relleno);
@@ -45,15 +44,15 @@
     background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-1); box-shadow:6px 6px 0 var(--line)}
 }
 /* Arriba de la portada la cápsula está escondida: no se ve ni recibe el puntero, pero
-   sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra como en
-   brikken.co: un fundido y 10 px. */
+   sigue en el orden del teclado y aparece al recibir el foco. Al bajar entra con un
+   fundido, bajando 10 px. */
 [data-barra="arriba"] > [data-pagina="portada"] .masthead-fila{opacity:0; translate:0 -10px; pointer-events:none}
 [data-barra="arriba"] > [data-pagina="portada"] .masthead-fila:focus-within{opacity:1; translate:0 0; pointer-events:auto}
 [data-barra] .masthead-fila{transition:opacity var(--dur-base) var(--ease), translate var(--dur-base) var(--ease)}
-/* Sin cabecera arriba de la portada, el botón del dossier vuelve al titular. */
+/* Sin cabecera arriba de la portada, el botón del dossier va en la hoja. */
 [data-barra] > [data-pagina="portada"] .hero-dossier{display:inline-flex}
-/* El buscador en la barra (estilo 4, elegido por el dueño el 2026-10-15). La lupa abre el
-   campo dentro de la misma fila, en el lugar de los cinco enlaces, que vuelven al cerrar
+/* El buscador en la barra (ver «El buscador en la barra» en docs/deferidos-y-decisiones.md).
+   La lupa abre el campo dentro de la misma fila, en el lugar de los cinco enlaces, que vuelven al cerrar
    (con la lupa o con Escape). En la cápsula pasa lo mismo: la cápsula se vuelve el
    buscador. Los resultados cuelgan debajo como una tarjeta con el acabado de la cápsula.
    Solo la cabecera: la página /buscar/ no cambia. */
@@ -71,7 +70,7 @@
    arriba de la portada. */
 :is([data-barra="pildora"], [data-barra="arriba"] > [data-pagina="portada"]) .masthead-fila:has(.busqueda[open]){width:min(var(--capsula-ancho), 100% - 24px)}
 /* Mientras se busca, sin el margen de arriba: el campo está dentro de la cabecera fija y el
-   navegador lo creía tapado por ese margen, así que al escribir desplazaba la página para
+   navegador lo creería tapado por ese margen, así que al escribir desplazaría la página para
    «mostrarlo». */
 html:has(.busqueda[open]){scroll-padding-top:0}
 /* En el teléfono, mientras se busca, el campo ocupa la fila entera (también el sitio del

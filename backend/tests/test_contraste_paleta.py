@@ -64,11 +64,11 @@ PARES = [
     ("enlace magenta sobre el papel", "accent", "paper", AA_NORMAL),
     ("enlace magenta sobre las bandas", "accent", "surface", AA_NORMAL),
     # La carátula del reproductor lleva el aviso de privacidad en blanco encima,
-    # y el botón es blanco sólido. Al azul original del cartel (luminosidad 61%)
-    # ese blanco no llegaba a AA; por eso la carátula va hundida a 45%.
+    # y el botón es blanco sólido. Al azul del cartel (luminosidad 61%) ese blanco
+    # no llegaría a AA; por eso la carátula va hundida a 45%.
     ("aviso en blanco sobre la carátula", "surface", "caratula", AA_NORMAL),
     ("rótulo del botón sobre su fondo blanco", "caratula-rotulo", "surface", AA_NORMAL),
-    # Botón primario y bandas de tinta: el papel como texto sobre la tinta.
+    # Botón primario y pie: el papel como texto sobre la tinta.
     ("papel sobre tinta (botón primario, enlaces del pie)", "paper", "ink", AA_NORMAL),
     (
         "blanco sobre el magenta (botón primario al pasar el puntero)",
@@ -100,8 +100,8 @@ PARES = [
     ("título sobre la fila señalada", "ink", "paper-2", AA_NORMAL),
     ("datos sobre la fila señalada", "muted", "paper-2", AA_NORMAL),
     ("cejilla sobre la fila señalada", "accent", "paper-2", AA_NORMAL),
-    # El manifiesto de la hoja (D33) va en azul, pero en letra de cartel (--t5, 28 px o más,
-    # en negrita): ahí AA pide 3:1. En letra corriente, el par sigue en PROHIBIDOS.
+    # El manifiesto de la hoja va en azul, pero en letra de cartel (--t5, 28 px o más, en
+    # negrita): ahí AA pide 3:1. En letra corriente, el par sigue en PROHIBIDOS.
     ("manifiesto en letra de cartel, azul sobre el papel", "caratula", "paper", AA_GRANDE),
 ]
 
@@ -191,8 +191,9 @@ SIN_FONDO_PROPIO = {
 
 
 def test_text_that_fails_on_the_paper_says_where_it_is_read():
-    """El sello «Prensa» pintaba su palabra pequeña en el azul de la carátula, 3,88:1 sobre el
-    papel, y la prueba de arriba no lo veía: la regla no declara fondo, lo hereda."""
+    """Una regla que pinta texto en un color que no llega a AA sobre el papel sin declarar su
+    fondo (lo hereda) dice en SIN_FONDO_PROPIO por qué se lee: la prueba de arriba solo mira
+    las reglas que declaran los dos."""
     flojos = {frente for _, frente, fondo in PROHIBIDOS if fondo == "paper"}
     assert "caratula" in flojos
     encontradas = {
@@ -212,7 +213,7 @@ def test_text_that_fails_on_the_paper_says_where_it_is_read():
 # El magenta como color de TEXTO en reposo: solo la receta de la cejilla y el asterisco
 # de campo obligatorio. Todo lo demás que se pinta en magenta es un estado: señalar, enfocar,
 # marcar, la página actual o el desplegable abierto (la lupa).
-# Y los sellos de «Prensa y gestión» (D31): objetos en su tinta, no texto magenta suelto.
+# Y los sellos de «Prensa y gestión»: objetos en su tinta, no texto magenta suelto.
 MAGENTA_EN_REPOSO = {
     ".rotulo--acento, .kicker",
     ".kicker a",
@@ -223,8 +224,9 @@ ESTADOS = (":hover", ":focus", ":checked", "[aria-current", "[open]")
 
 
 def test_el_magenta_no_es_el_color_de_reposo_de_nada_mas():
-    """Era «el color de los enlaces»: 27 reglas de texto, nueve piezas en la primera
-    pantalla de la portada. Un color que está en todas partes no señala nada."""
+    """En reposo, el texto magenta queda para la cejilla, el rótulo en acento (los datos de
+    cada libro del estante), el asterisco de los campos obligatorios y los sellos del cierre;
+    lo demás en magenta es un estado. Un color que está en todas partes no señala nada."""
     assert css.rule((), ".rotulo--acento, .kicker")["color"] == "var(--accent)"
     intrusas = [
         regla.selector
@@ -237,15 +239,12 @@ def test_el_magenta_no_es_el_color_de_reposo_de_nada_mas():
 
 
 def test_los_enlaces_se_reconocen_sin_depender_del_color():
-    """Un enlace en tinta necesita su subrayado: es lo único que lo distingue del texto.
+    """Un enlace en tinta necesita su subrayado: es lo único que lo distingue del texto
+    (WCAG 1.4.1: el color no puede ser el único medio de señalar algo). Una lista de enlaces
+    (`.work-list a`) lo conserva.
 
-    Al pasar los enlaces de magenta a tinta, dos listas que quitaban el subrayado
-    (`.work-list a`, `.timeline-items a`) habrían quedado como texto corriente.
-    WCAG 1.4.1: el color no puede ser el único medio de señalar algo.
-
-    La trayectoria ya no es una lista de enlaces en línea sino de filas (ticket 2.2): su
-    enlace es el TÍTULO de la fila, en la tipografía y el cuerpo de un título, que es lo
-    que lo distingue del texto. Solo esas reglas de título pueden quitar el subrayado.
+    Solo el TÍTULO de una fila va sin subrayar: está en la tipografía y el cuerpo de un
+    título, y eso lo distingue del texto.
     """
     enlace = css.rule((), "a")
     assert enlace["color"] == "var(--ink)" and enlace["text-decoration-color"] == "var(--accent)"

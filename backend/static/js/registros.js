@@ -1,10 +1,11 @@
-// La tirada de la portada (D19), apilada (D20): un pliego arriba y los demás debajo, corridos
-// y apenas girados, como impresos sobre la mesa. Sin este guion, o si falla al montarse, la tirada
-// es una fila con imán y todos los pliegos a dos tintas. Se pasa de uno a otro con la hoja de contactos (desde 1100 px,
-// un índice al lado de la pila, D29), el teclado o el dedo: sin flechas. Aquí se cambian clases y
-// atributos (aria-current, hidden) y se anima el reparto; las posiciones de la pila viven en
-// componentes.css (la CSP no admite estilos en línea). Nada avanza solo y no se toca la
-// dirección ni el historial.
+// La tirada de la portada, apilada: un pliego arriba y los demás debajo, corridos y apenas
+// girados, como impresos sobre la mesa (lo decidido, desde «La tirada de registros», está en
+// docs/deferidos-y-decisiones.md). Sin este guion, o si falla al montarse, la tirada es una fila
+// con imán y todos los pliegos a dos tintas. Se pasa de uno a otro con la hoja de contactos
+// (desde 1100 px, un índice al lado de la pila), el teclado o el dedo: sin flechas. Aquí se
+// cambian clases y atributos (aria-current, hidden) y se anima el reparto; las posiciones de la
+// pila viven en componentes.css (la CSP no admite estilos en línea). Nada avanza solo y no se
+// toca la dirección ni el historial.
 (() => {
   // Lo común llega antes, en common.js; sin él, la tirada queda como está: la fila con imán.
   const { common } = window;

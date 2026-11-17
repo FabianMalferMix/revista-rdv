@@ -48,11 +48,12 @@
   size-adjust:101.2%; ascent-override:102.4%; descent-override:33.1%; line-gap-override:0%;
 }
 
-/* Display auto-hospedada: Bricolage Grotesque (OFL), elegida por el dueño el 2026-10-20 en
-   lugar de Syne. Variable en dos ejes: peso (recortado a 400-700, lo que usa el sitio) y
-   tamaño óptico (12-96), que el navegador ajusta solo: en el nombre grande de la portada
-   se compacta y gana fuerza; en la barra y los botones se abre. Autoalojada por
-   obligación: la CSP declara font-src 'self', así que un CDN de fuentes quedaría bloqueado.
+/* Display auto-hospedada: Bricolage Grotesque (OFL; ver «Bricolage Grotesque en lugar de
+   Syne» en docs/deferidos-y-decisiones.md). Variable en dos ejes: peso (recortado a 400-700,
+   lo que usa el sitio) y tamaño óptico (12-96), que el navegador ajusta solo: en los títulos
+   grandes se compacta y gana fuerza; en la barra y los botones se abre. Autoalojada por
+   obligación: la CSP declara font-src 'self' data:, así que un CDN de fuentes quedaría
+   bloqueado.
    La url() es RELATIVA: CompressedManifestStaticFilesStorage la reescribe con
    hash en collectstatic (no usar {% static %}: el CSS no es plantilla). */
 @font-face{
@@ -89,7 +90,7 @@
 /* Las imágenes llevan width y height en el HTML: reservan su hueco y evitan que la
    página salte al cargar. Pero esos atributos son solo una PISTA de proporción. Sin
    `height:auto` el alto del atributo se aplica literal y gana a `aspect-ratio`: una
-   cubierta de 1000×1400 se dibujaba a 180×1400, y una foto apaisada de la galería
+   cubierta de 1000×1400 se dibujaría a 180×1400, y una foto apaisada de la galería
    como una tira vertical. Con el alto en auto manda la proporción —la que fije el
    CSS o, si no fija ninguna, la del archivo—. Las reglas que dan alto explícito
    (.partner-logo) no cambian: son de una capa posterior. */
@@ -101,18 +102,16 @@ video{border:1px solid var(--border); border-radius:4px; background:#000}
    configurado en su navegador; la parte en vw añade el crecimiento. */
 html{font-size:clamp(100%, .875rem + .25vw, 118.75%)}
 /* `overflow-wrap`: una dirección de correo o un enlace largo no caben en 320 px y no
-   tienen dónde partirse; sin esto empujaban la página hacia los lados (el correo del
-   dossier lo hizo al llegar la serif, un 11 % más ancha que Times). */
+   tienen dónde partirse; sin esto empujarían la página hacia los lados. */
 body{margin:0; background:var(--paper); color:var(--ink);
   font-family:var(--serif); line-height:var(--lh-lectura); -webkit-font-smoothing:antialiased;
   overflow-wrap:break-word;
   /* La página mide al menos el alto de la ventana y el lienzo crece: el pie queda siempre
-     abajo. En una página corta terminaba a media altura y dejaba una franja de papel
-     debajo, que con el pie en tinta se veía como un hueco. */
+     abajo. En una página corta terminaría a media altura y dejaría una franja de papel
+     debajo, que con el pie en tinta se vería como un hueco. */
   display:flex; flex-direction:column; min-height:100vh; min-height:100dvh}
-/* La interlínea del cuerpo es de lectura. Un título que la hereda queda con las líneas
-   sueltas, como dos frases distintas: nueve la heredaban (el del dossier, a 44px,
-   medía 70px de línea). Las reglas que fijan la suya la conservan. */
+/* La interlínea del cuerpo es de lectura: heredada, un título quedaría con las líneas
+   sueltas, como dos frases distintas. Las reglas que fijan la suya la conservan. */
 h1, h2, h3{line-height:var(--lh-titulo); text-wrap:balance}
 p{text-wrap:pretty}
 a{color:var(--ink); text-decoration-color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}

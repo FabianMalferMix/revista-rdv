@@ -4,8 +4,9 @@
 @layer componentes{
 a:hover{text-decoration-thickness:2px}
 
-/* Identidad tipográfica: los TÍTULOS usan la display serif; el cuerpo de
-   lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
+/* La fuente de titulares (--display), con su espaciado: los títulos, el sello, la barra, las
+   firmas y las salidas del pie de una ficha. Lo demás hereda la serif de lectura del cuerpo;
+   los rótulos y los datos van en la monoespaciada. */
 .brand,
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .dossier-doc h3, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
 .lectura-firmas .sin-enlace, .pie-entidad .sin-enlace,
@@ -22,10 +23,9 @@ a:hover{text-decoration-thickness:2px}
 :where(a, button, summary, input, [tabindex]):focus-visible{outline:2px solid var(--accent);
   outline-offset:2px; border-radius:2px}
 
-/* Masthead: una fila, fija arriba al bajar (D2, D9). El sello, los cinco enlaces de la
-   barra, la lupa del buscador y el botón «Dossier». Medía 111 px en escritorio y 156 en
-   el teléfono, con el campo de búsqueda siempre abierto. Un salto a un ancla deja su
-   destino debajo de la cabecera, no tapado por ella. */
+/* Masthead: una fila, fija arriba al bajar, con el sello, los cinco enlaces de la barra, la
+   lupa del buscador y el botón «Dossier». Un salto a un ancla deja su destino debajo de la
+   cabecera, no tapado por ella. */
 html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .masthead{position:sticky; top:0; z-index:var(--z-cabecera); background:var(--paper); border-bottom:1px solid var(--line)}
 .masthead-fila{position:relative; display:flex; align-items:center; gap:8px 24px;
@@ -50,9 +50,7 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    «Repitentes / del Verso», no en «Repitentes del / Verso». */
 .brand-nombre{text-wrap:balance}
 /* Por debajo de 1100 px el sello no cabe en una línea junto a la barra: el nombre se
-   reparte en dos, «Repitentes / del Verso». Lo eligió el dueño del sitio entre tres
-   maneras de que la fila cupiera a 951 px (las otras: los enlaces en una segunda fila, o
-   escondidos en «Menú»). Desde 1100 px, el sello vuelve a una línea. */
+   reparte en dos, «Repitentes / del Verso». Desde 1100 px, el sello va en una línea. */
 @media (max-width:1099px){
   .brand{padding:5px 12px}
   .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
@@ -72,7 +70,7 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    hx-indicator, y htmx le pone la clase a él. */
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator{opacity:1}
 /* El «…» de mientras llega la respuesta, sobre el extremo del campo y fuera del flujo: en
-   él, aun invisible, le quitaría al campo 35 px y lo dejaría descentrado. */
+   él, aun invisible, le quitaría al campo 18 px y lo dejaría descentrado. */
 .busqueda .htmx-indicator{position:absolute; right:4px; top:50%; translate:0 -50%}
 
 /* Nav principal: disclosure <details> en móvil, en línea en escritorio.
@@ -84,11 +82,10 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .nav-disclosure[open] summary::after{content:"▴"}
 .nav-disclosure summary:hover{color:var(--accent)}
 .nav{display:flex; flex-wrap:nowrap; align-items:baseline; gap:4px 0; padding:0}
-/* En la tipografía de titulares y en caja de frase: era la monoespaciada en mayúsculas
-   de un panel de control. La familia la da la regla de titulares. */
-/* El relleno vertical da a cada enlace una zona pulsable de 45 px de alto (meta de la
-   auditoría: 44) sin mover nada: la fila mide 64 y la marca de la página actual es un
-   subrayado, que va con el texto y no con la caja. Medía 23 px. */
+/* En la tipografía de titulares, cuya familia da su regla, y en caja de frase. */
+/* El relleno vertical da a cada enlace una zona pulsable de 45 px de alto (WCAG 2.5.5 pide
+   44) sin mover nada: la fila mide 64 y la marca de la página actual es un subrayado, que va
+   con el texto y no con la caja. */
 .nav a{font-size:var(--t0); font-weight:500; text-decoration:none; color:var(--ink); white-space:nowrap;
   padding-block:11px}
 .nav a:hover{color:var(--accent)}
@@ -111,8 +108,8 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   /* En escritorio se oculta el toggle y la nav se muestra siempre en línea.
      OJO: no basta con forzar `display` en el hijo. Desde Chrome 131 el contenido de un
      <details> cerrado vive en el pseudo-elemento ::details-content con
-     content-visibility:hidden, que gana a cualquier display del hijo — la navegación
-     desaparecía por completo en escritorio. Hay que abrir ese pseudo-elemento.
+     content-visibility:hidden, que gana a cualquier display del hijo y escondería la
+     navegación en escritorio: por eso se abre ese pseudo-elemento.
      Los navegadores que no lo soporten ignoran la regla y siguen con la de abajo. */
   .nav-disclosure summary{display:none}
   .nav-disclosure::details-content{content-visibility:visible; block-size:auto}
@@ -123,23 +120,24 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
    que va después, y por eso van aquí: antes de la cabecera del teléfono, que esconde el botón
    del dossier y pone «Menú» en tinta. */
 
-/* Rótulos. UNA receta para todo el texto en mayúsculas: quince reglas tenían la suya,
-   con seis espaciados distintos entre .04 y .14em. La monoespaciada queda para esto
-   y para los datos; lo demás se lee en la serif o en la de titulares. */
+/* Rótulos. UNA receta para el texto en mayúsculas, con un solo espaciado; la excepción son
+   los sellos del cierre de la portada, un timbre de goma (ver «El cierre de la portada», más
+   abajo en esta hoja). La monoespaciada queda para esto y para los datos; lo demás se lee en
+   la serif o en la de titulares. */
 .rotulo, .kicker, .foot-group h2, .reviewed h2, .event-month, .tag,
 .nav-disclosure summary, .member-role, .foot-group-titulo{
   font-family:var(--mono); font-size:var(--t-2); letter-spacing:var(--tr-rotulo); text-transform:uppercase;
   color:var(--muted)}
 .rotulo--acento, .kicker{color:var(--accent)}
-/* Botón. Un componente con dos vestidos, donde había cinco botones distintos (el del
-   formulario, el del reproductor y el de la búsqueda tenían cada uno su receta).
+/* Botón. Un componente con dos vestidos, el normal y el primario, cuya receta comparten
+   el botón del formulario y el del reproductor.
    · En la tipografía de titulares y en caja de frase: un botón dice qué va a pasar,
      no rotula.
    · 44 px de alto, lo cómodo para un dedo (WCAG 2.5.5; el mínimo del 2.5.8 es 24).
-   · El estado se marca con color sólido. Antes bajaba la opacidad, que restaba
-     contraste al texto justo al ir a pulsarlo.
+   · El estado se marca con color sólido, no con opacidad, que le restaría contraste al
+     texto justo al ir a pulsarlo.
    El primario va en tinta, no en magenta: el magenta es la marca, y un botón con su
-   misma receta hacía de la marca un botón más. Uno por pantalla. */
+   misma receta haría de la marca un botón más. Uno por pantalla. */
 .btn, .form button, .embed-play{display:inline-flex; align-items:center; justify-content:center;
   min-height:44px; padding:0 18px; font-family:var(--display); font-weight:600; font-size:var(--t0);
   line-height:1.2; letter-spacing:0; text-transform:none; text-decoration:none; cursor:pointer;
@@ -151,7 +149,7 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 /* En el teléfono y la tableta en vertical: el sello, la lupa y «Menú», en una fila de
    56 px. «Menú» despliega el mapa del sitio entero bajo la cabecera, con enlaces en bloque
    de 44 px de alto; el dossier está en él, así que el botón se guarda. Huecos de 8 px: con
-   los de 24, a 320 px «Menú» quedaba fuera de la pantalla. */
+   los de 24, a 320 px «Menú» quedaría fuera de la pantalla. */
 @media (max-width:899px){
   .brand{padding:3px 10px; gap:8px}
   .masthead-fila{column-gap:8px}
@@ -167,9 +165,9 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   .menu-mapa .foot-group a{display:block; padding:12px 0; font-size:var(--t1); color:var(--ink); text-decoration:none}
 }
 
-/* Solo la cabecera cambia: la página no entra en la transición. La cápsula llega con el
-   fundido de Brikken y la fila se desvanece después, cuando la cápsula ya casi está: el
-   centro nunca queda vacío. Al volver arriba, al revés. */
+/* Solo la cabecera cambia: la página no entra en la transición. La cápsula llega con un
+   fundido, bajando 10 px, y la fila se desvanece después, cuando la cápsula ya casi está:
+   el centro nunca queda vacío. Al volver arriba, al revés. */
 :root{view-transition-name:none}
 ::view-transition-new(cabecera-capsula){animation:capsula-entra var(--dur-base) var(--ease) both}
 ::view-transition-new(cabecera-abierta){animation:forma-entra var(--dur-base) var(--ease) both}
@@ -179,19 +177,19 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 @keyframes forma-entra{from{opacity:0}}
 @keyframes forma-sale{to{opacity:0}}
 /* El centinela de cabecera.js: lo que mide la cabecera. La cápsula aparece al pasarlo, no
-   a los 20 px de Brikken: así no entra y sale con cualquier gesto cerca del borde. */
+   a los pocos píxeles de bajar: así no entra y sale con cualquier gesto cerca del borde. */
 .barra-centinela{position:absolute; top:0; left:0; width:1px; height:var(--alto-cabecera); pointer-events:none}
 /* Colores forzados: el bloque del sello toma el color del lienzo y la R blanca del
-   monograma desaparecía. Con el color del enlace se ven las dos letras. */
+   monograma desaparecería. Con el color del enlace se ven las dos letras. */
 @media (forced-colors: active){
   .brand-mono-r, .brand-mono-v{fill:currentColor}
 }
 /* La cabecera está siempre a la vista: enfocar uno de sus controles a mitad de página no
-   debe desplazar la página. Con el scroll-padding de arriba, saltaba unos 450 px. */
+   debe desplazar la página, como lo haría el scroll-padding de arriba sin este margen. */
 .masthead :is(a, summary, input){scroll-margin-top:calc(-1 * (var(--alto-cabecera) + var(--s2)))}
 .foot-group-titulo{margin:0 0 4px}
 
-/* Accesibilidad: salto al contenido y foco visible global. */
+/* «Saltar al contenido»: fuera de la pantalla, arriba, hasta que recibe el foco. */
 .skip{position:absolute; left:8px; top:-48px; z-index:var(--z-salto); padding:8px 14px;
   background:var(--accent); color:var(--paper); border-radius:3px; text-decoration:none;
   transition:top var(--dur-fast) var(--ease)}
@@ -202,13 +200,13 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 
 /* Buscador: resultados como overlay anclado al campo (no empujan el layout). Se estilan por
    su clase: el id es el destino de htmx. */
-/* Con el zoom al 400 % (320 × 256) la lista con 64vh terminaba fuera de la pantalla, dentro
+/* Con el zoom al 400 % (320 × 256), con 64vh la lista terminaría fuera de la pantalla, dentro
    de una cabecera fija que no se desplaza: el tope descuenta lo que queda encima. */
 .busqueda-resultados{position:absolute; left:0; right:0; z-index:var(--z-resultados);
   max-height:min(64vh, 100dvh - 150px); overflow-y:auto}
-/* La lista se cierra cuando se deja de usar: se quedaba abierta, tapando la navegación,
-   hasta borrar el texto. `:not(:hover)` la mantiene mientras se va a pulsar un
-   resultado; sin eso Safari la cierra al soltar el foco, antes de que llegue el clic. */
+/* La lista se cierra cuando se deja de usar, para no tapar la navegación hasta que se borre
+   el texto. `:not(:hover)` la mantiene mientras se va a pulsar un resultado; sin eso
+   Safari la cierra al soltar el foco, antes de que llegue el clic. */
 .search:not(:focus-within):not(:hover) .busqueda-resultados{display:none}
 .search-all{margin:10px 0 2px; padding-top:10px; border-top:1px solid var(--border); font-size:var(--t0)}
 /* Página de búsqueda: el mismo campo y el mismo botón que el resto del sitio. */
@@ -217,17 +215,16 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
   border:1px solid var(--edge); border-radius:var(--r-1); background:var(--surface); color:var(--ink)}
 .search-summary{margin:0 0 14px}
 .search-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; max-width:var(--measure)}
-/* Los resultados por tipo (ticket 5.4): cada grupo bajo su cejilla, con aire entre uno y
-   otro, y el dato de cada resultado (cargo, fecha, lugar) debajo del título. A la derecha,
-   «Recital · 10 Sep 2026 · Santiago» se partía en dos líneas en el panel de la lupa. */
+/* Los resultados por tipo: cada grupo bajo su cejilla, con aire entre uno y otro, y el
+   dato de cada resultado (cargo, fecha, lugar) debajo del título. A la derecha,
+   «Recital · 10 Sep 2026 · Santiago» se partiría en dos líneas en el panel de la lupa. */
 .search-list li{display:flex; flex-direction:column; gap:2px}
 .search-grupo > .rotulo{margin:0 0 var(--s1)}
 .search-grupo + .search-grupo{margin-top:var(--s3)}
 
 /* Encabezados de índice */
 /* Cabecera de página: cejilla, título y una frase. La comparten los índices y las fichas.
-   Los índices tenían su nombre a 12 px, más pequeño que el título de cualquier tarjeta
-   que encabezaban (26 px): la jerarquía estaba invertida. */
+   El título mide más que el de cualquier tarjeta que encabeza. */
 .index-head{padding:40px 0 20px; border-bottom:1px solid var(--border); margin-bottom:32px}
 .index-head .kicker{display:block; margin:0}
 .index-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0; text-wrap:balance}
@@ -247,8 +244,7 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .index-head[data-territorio="colectivo"] h1::after,
 .seccion-cabeza[data-territorio="colectivo"] h2::after{background-color:var(--caratula)}
 .index-head .meta{margin:12px 0 0}
-/* Título de sección: un encabezado no puede medir menos que el texto que encabeza. Era
-   un rótulo de 12 px sobre párrafos de 17; el del dossier lo fue hasta el ticket 5.1. */
+/* Título de sección: un encabezado no puede medir menos que el texto que encabeza. */
 .subhead{margin:var(--s5) 0 var(--s3); font-size:var(--t5); font-weight:700; line-height:var(--lh-titulo);
   color:var(--ink)}
 /* En la rejilla del lienzo los márgenes no se funden: cuando el título de una sección sigue a
@@ -269,14 +265,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 
 /* Filas. Los índices de textos, poemas, trayectoria y prensa son listas de filas
    tipográficas: un dato a la izquierda (cuándo), el título en el centro y otro dato a
-   la derecha (quién, dónde). Eran tarjetas apiladas con todo pegado a la izquierda: en
-   el carril ancho dejaban dos tercios de la pantalla vacíos y cabían dos por pantalla.
+   la derecha (quién, dónde).
    · La lista es un CONTENEDOR: la fila se dispone según el ancho que tiene, no según
      el de la ventana. La misma parcial vive en el carril ancho (1320 px), en el de
      lectura (780) y en un teléfono.
    · Toda la fila es el enlace de su título (`.enlace-total`). Los enlaces secundarios
-     —sección, firmas— quedan por encima y siguen siendo propios. Antes solo era pulsable
-     el texto del título.
+     —sección, firmas— quedan por encima y siguen siendo propios.
    · El estado se marca con una hoja más clara bajo la fila, que sobresale 16 px del
      texto para que no quede pegado a su borde. La pinta ::before, detrás del contenido;
      `isolation` hace que ese «detrás» sea detrás del texto y no detrás de la página.
@@ -313,7 +307,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .fila-miniatura img{display:block; width:100%; height:auto; aspect-ratio:3/4; object-fit:cover}
 .filas + .pagination{border-top:0; padding-top:0}
 /* Cuando la lista sigue a la cabecera del índice, el filete de la cabecera ES el de la
-   primera fila: dos líneas a 32 px una de otra se leían como un error. */
+   primera fila: dos líneas a 32 px una de otra se leerían como un error. */
 .index-head + .filas > .fila:first-child{border-top:0}
 .index-head:has(+ .filas){margin-bottom:0; border-bottom-color:var(--line)}
 @container filas (min-width:700px){
@@ -325,10 +319,9 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .fila-titulo{font-size:var(--t4)}
   .fila-pie{text-align:right}
 }
-/* En el carril ancho el primer verso deja de ir bajo el título y toma su propia
-   columna: la fila vuelve a medir una línea y caben diez poemas por pantalla. La última
-   columna es de ancho fijo para que los versos de todas las filas arranquen en la misma
-   vertical. */
+/* Cuando la lista mide 1000 px o más, el primer verso deja de ir bajo el título y toma su
+   propia columna: con un título corto, la fila mide una línea. La última columna es de
+   ancho fijo para que los versos de todas las filas arranquen en la misma vertical. */
 @container filas (min-width:1000px){
   .fila--poema{grid-template-columns:6.5rem minmax(0,1fr) 15rem}
   .fila--poema .fila-cuerpo{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,5fr);
@@ -339,8 +332,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .kicker a{color:var(--accent); text-decoration:none}
 .kicker a:hover{text-decoration:underline}
 /* Títulos que son enlaces. En reposo no se subrayan: ya se leen como título. Al pasar
-   el puntero, el mismo subrayado magenta que el resto de los enlaces. Diez reglas
-   :hover hacían lo mismo —pasar a magenta— cada una por su cuenta. */
+   el puntero, el mismo subrayado magenta que el resto de los enlaces. */
 .fila-titulo a:hover, .pie-entidad a:hover, .collection-list h2 a:hover, .event-card h2 a:hover,
 .next-event h2 a:hover, .recording-card h2 a:hover, .featured h2 a:hover,
 .member-card a:hover .member-name, .pub-card a:hover .pub-title, .album-card a:hover .album-title,
@@ -363,10 +355,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .collection-list h2{margin:0 0 4px; font-size:var(--t3)}
 .collection-list h2 a{text-decoration:none; color:var(--ink)}
 
-/* Integrantes. El retrato era un círculo de 72 px: ocupaba el 10 % de la tarjeta y era el
-   avatar por defecto de cualquier aplicación. Ahora es 4:5, como el de la ficha, a todo
-   el ancho de la tarjeta. En un teléfono caben dos por fila; desde 720 px, columnas de
-   220 px o más (tres a 951 de ancho, cinco a 1440). */
+/* Integrantes. El retrato va en 4:5, como el de la ficha, a todo el ancho de la tarjeta, y
+   no en un círculo, que es el avatar por defecto de cualquier aplicación. En un teléfono
+   caben dos por fila; desde 720 px, columnas de 220 px o más (tres a 951 de ancho, cinco
+   a 1440). */
 .member-grid{list-style:none; padding:0; margin:0; align-items:start;
   display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:var(--s4) var(--s3)}
 @media (min-width:720px){
@@ -375,7 +367,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* Toda la tarjeta es el enlace: la capa del enlace cubre también el rol y la reseña. */
 .member-card{position:relative; display:flex; flex-direction:column; gap:6px}
 .member-card a{display:flex; flex-direction:column; gap:12px; text-decoration:none; color:var(--ink)}
-/* En una columna de 163 px, a 22 px los nombres partían en dos líneas. */
+/* En una columna de 163 px, a 22 px los nombres partirían en dos líneas. */
 .member-name{font-size:var(--t2); font-weight:700; line-height:1.2}
 @media (min-width:720px){
   .member-name{font-size:var(--t3)}
@@ -444,8 +436,6 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .event-card h2{margin:6px 0 4px; font-size:var(--t3)}
 .event-card h2 a{text-decoration:none; color:var(--ink)}
 .event-card .btn{margin-top:8px}
-/* Un afiche es vertical: a todo el ancho de la columna ocupaba más de una pantalla
-   y empujaba la descripción y la galería fuera de la vista. */
 .stats-strip{list-style:none; padding:14px 0; margin:0 0 8px; display:flex; flex-wrap:wrap; gap:8px 28px;
   font-family:var(--mono); font-size:var(--t-1); color:var(--muted); border-bottom:1px solid var(--border)}
 /* Las cifras van en la tipografía de titulares, con dígitos de ancho fijo: se comparan
@@ -458,8 +448,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   gap:var(--s3); align-items:center}
 .next-event h2{margin:6px 0 4px; font-size:var(--t3)}
 .next-event h2 a{text-decoration:none; color:var(--ink)}
-/* Trayectoria: cada año es un bloque, con su número a la izquierda y sus filas al lado.
-   El año iba en monoespaciada de 15 px sobre una lista de enlaces sueltos. */
+/* Trayectoria: cada año es un bloque, con su número a la izquierda y sus filas al lado. */
 .timeline-year{margin:var(--s4) 0 0}
 .year-mark{margin:0 0 var(--s2); font-size:var(--t5); font-weight:700; line-height:1;
   letter-spacing:-.02em; font-variant-numeric:tabular-nums}
@@ -488,11 +477,11 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .hoja > :first-child{grid-row:span 2}
 .hoja > :nth-child(2):last-child{grid-row:span 2}
 .hoja > :only-child{grid-column:1 / -1}
-/* Las fotos de un evento (ticket 5.2): un mosaico de hasta seis, en 3:2, sobre una rejilla
-   de seis columnas. Con tres, o con seis o más, la primera va a doble tamaño (cuatro
-   columnas y dos filas); con dos o cuatro, a medias; con cinco, dos a medias y tres a
-   tercios; con una, a todo el ancho. Ninguna cantidad deja un hueco. Eran miniaturas
-   iguales de 207 × 129, cada una con su pie debajo; el pie se lee en la vista ampliada.
+/* Las fotos de un evento: un mosaico de hasta seis, en 3:2, sobre una rejilla de seis
+   columnas. Con tres, o con seis o más, la primera va a doble tamaño (cuatro columnas y
+   dos filas); con dos o cuatro, a medias; con cinco, dos a medias y tres a tercios; con
+   una, a todo el ancho. Ninguna cantidad deja un hueco. Ninguna miniatura lleva pie
+   debajo: el pie se lee en la vista ampliada.
    Cada celda tiene la proporción de la foto y la imagen la llena sin contar para el alto
    de la fila: la grande mide lo que las dos filas que cruza. Las que no caben en el
    mosaico van en «Ver las N fotos», a tercios. Los selectores van por hijos directos: la
@@ -520,7 +509,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* Lightbox de galería sin JS (técnica :target): oculto salvo cuando su id es
    el objetivo del hash; se cierra enlazando de vuelta a la sección. */
 /* Sin margen: una <figure> trae 40 px a los lados y 16 arriba y abajo, y la capa no
-   cubría la pantalla (asomaba la página por los bordes y la foto quedaba corrida). */
+   cubriría la pantalla (asomaría la página por los bordes y la foto quedaría corrida). */
 .lightbox{position:fixed; inset:0; z-index:var(--z-lightbox); display:none; place-items:center; margin:0;
   padding:24px; background:rgba(0,0,0,.9)}
 .lightbox:target{display:grid}
@@ -534,15 +523,16 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .lightbox-back{position:absolute; inset:0}
 
 /* Registros (players y podcast) */
-/* Sin marco ni esquinas, como las demás imágenes (D14): es un objeto de la página. */
+/* Sin marco ni esquinas, como las fotos impresas de los listados: es un objeto de la
+   página. */
 .player-frame{position:relative; aspect-ratio:16/9; overflow:hidden; background:#000;
   container:placa / inline-size}
 .player-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
-/* Estado previo al consentimiento: el iframe aún no existe (click-to-play, S-19).
+/* Estado previo al consentimiento: el iframe aún no existe (se crea al pulsar).
    Mientras no existe, la placa NO es un vídeo: es una carátula, sobre el azul del
-   colectivo. Nunca vacía (D10): lleva el póster del registro, impreso a una tinta como
-   las fotos de los listados, o la carátula tipográfica con su título. Antes era un
-   rectángulo azul con un botón y una frase centrados. */
+   colectivo. Nunca vacía (ver «La placa azul del reproductor, nunca vacía» en
+   docs/deferidos-y-decisiones.md): lleva el póster del registro, impreso a una tinta
+   como las fotos de los listados, o la carátula tipográfica con su título. */
 .player-consent{background:var(--caratula)}
 .player-consent > .riso-duo{position:absolute; inset:0}
 .player-consent > .riso-duo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
@@ -576,13 +566,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* La carátula del registro en la placa: más grande que en la miniatura del índice. */
 .player-consent .rec-caratula{padding:var(--s3) var(--s3) calc(64px + var(--s3))}
 .player-consent .rec-caratula-titulo{font-size:var(--t5)}
-/* La placa de la ficha mide 780 px y la del destacado de la portada, 488: el título crece
-   con la placa, no con la ventana. */
+/* El título crece con la placa, no con la ventana. */
 @container placa (min-width:600px){
   .player-consent .rec-caratula-titulo{font-size:var(--t6)}
 }
 /* Un audio con póster: el póster a la izquierda del reproductor, a su proporción. Los
-   pósters de los registros son 16:9 y un recorte cuadrado les cortaba el título. */
+   pósters de los registros son 16:9 y un recorte cuadrado les cortaría el título. */
 .player-audio{display:flex; align-items:center; gap:var(--s3); margin:6px 0}
 .player-audio > .riso-duo{flex:none; width:clamp(120px, 30%, 240px)}
 .player-audio-poster{display:block; width:100%; height:auto}
@@ -637,7 +626,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .lienzo > .pub-grid:not(:has(> :nth-child(4))){grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 /* `min-width:0` y el corte de palabra: en un teléfono caben dos cubiertas de 165 px, y un
-   título de una sola palabra larga («Correspondencias») ensanchaba su columna hasta
+   título de una sola palabra larga («Correspondencias») ensancharía su columna hasta
    salirse del carril. */
 .pub-card{min-width:0}
 .pub-card a{display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink)}
@@ -648,8 +637,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   box-shadow:8px 8px 0 var(--line); transition:box-shadow var(--dur-base) var(--ease)}
 .pub-card a:hover img, .pub-card a:hover .pub-cover-fallback,
 .pub-card a:focus-visible img, .pub-card a:focus-visible .pub-cover-fallback{box-shadow:8px 8px 0 var(--accent)}
-/* Publicación sin cubierta: una sobrecubierta tipográfica con su título. Antes era una
-   caja blanca con la palabra «LIBRO», que no decía de qué libro. */
+/* Publicación sin cubierta: una sobrecubierta tipográfica con su título, que dice de qué
+   libro se trata. */
 .pub-cover-fallback{display:flex; align-items:flex-start; padding:16px 14px; background:var(--paper);
   border-top:6px solid var(--accent); font-family:var(--display); font-weight:700;
   font-size:var(--t1); line-height:1.15; color:var(--ink); overflow-wrap:anywhere}
@@ -676,21 +665,20 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .partner-item:hover .partner-logo, .partner-item:focus-within .partner-logo{filter:none}
 /* Un aliado sin logo: su nombre en la tipografía de titulares, en la misma caja de 160 × 80
    y sobre la hoja clara, como el monograma de una integrante sin retrato. No se mezcla
-   con el papel: la hoja clara multiplicada quedaba más oscura que él. */
+   con el papel: la hoja clara multiplicada quedaría más oscura que él. */
 .partner-logo--texto{display:flex; align-items:center; justify-content:center; padding:var(--s1);
   background:var(--paper-2); filter:none; mix-blend-mode:normal; text-align:center;
   font-family:var(--display); font-weight:700; font-size:var(--t0); line-height:1.15;
   color:var(--ink); overflow-wrap:anywhere}
 
-/* La portada como obra (D18). En el tablero de la portada (2026-10-20) el dueño del sitio
-   eligió la «mancheta de afiche» con telón. La primera vista es una obra a sangre y, al pie,
-   el logo de lado a lado, sobreimpreso en tinta: sobre la trama se oscurece, como una
-   plancha más de riso. Lo que era el titular pasa a la hoja que sigue, y su primera línea
-   asoma: así se ve que hay más (NN/g, «Illusion of Completeness»). Con el telón, la obra se
-   queda quieta y la hoja sube encima. */
+/* La portada como obra (ver «La portada como obra: mancheta de afiche con telón» en
+   docs/deferidos-y-decisiones.md). La primera vista es una obra a sangre y, al pie, el logo
+   de lado a lado, sobreimpreso en tinta: sobre la trama se oscurece, como una plancha más
+   de riso. La hoja que sigue asoma por debajo: así se ve que hay más (NN/g, «Illusion of
+   Completeness»). Con el telón, la obra se queda quieta y la hoja sube encima. */
 .lienzo > .portada-arte, .lienzo > .portada-telon{grid-column:full}
 /* Con un aviso arriba (el de la suscripción al boletín, un error del formulario), la obra
-   empieza debajo de él: subida bajo la franja de la cabecera, lo tapaba entero. */
+   empieza debajo de él: subida bajo la franja de la cabecera, lo taparía entero. */
 .mensajes + .lienzo > .portada-arte{margin-top:0}
 /* La obra sube bajo la franja de la cabecera, que arriba de la portada está vacía (sin
    JavaScript, la cabecera fija le tapa esa franja). Alto MÍNIMO y no fijo: con el zoom al
@@ -718,7 +706,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .portada-mancheta{mix-blend-mode:normal; background:Canvas; padding:var(--s1)}
 }
 /* El telón: la hoja y lo que sigue llevan el papel y pasan por encima de la obra. Repite los
-   carriles del lienzo, para que cada pieza caiga donde caía. */
+   carriles del lienzo, para que cada pieza caiga en el mismo carril que fuera del telón. */
 .portada-telon{position:relative; z-index:var(--z-telon); display:grid; grid-template-columns:var(--carriles);
   background:var(--paper)}
 .portada-telon > *{grid-column:wide; min-width:0}
@@ -734,11 +722,9 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .portada-arte:focus-within{z-index:var(--z-obra-enfocada)}
 }
 
-/* La hoja: lo que era el titular (ticket 4.2; D8, D9). La cejilla, el manifiesto en letra
-   grande, los botones y el sello de la convocatoria, en una columna. Sin el filete de tinta
-   de abajo, que dejaba una raya a todo el ancho. Debajo iban las cifras, con su trazo de
-   marcador amarillo, y una línea con los aliados y una cita de prensa: el dueño las quitó
-   (2026-10-14), porque el colectivo aún es pequeño. Si vuelven, están en el historial. */
+/* La hoja: la cejilla, el manifiesto en letra grande, los botones y el sello de la
+   convocatoria, en una columna. Sin filete de tinta debajo: dejaría una raya a todo el
+   ancho. */
 .hero{display:grid; grid-template-columns:minmax(0,1fr); padding:var(--s3) 0 var(--s4)}
 .hero-cejilla{margin:0 0 var(--s1)}
 .hero-cejilla a{color:inherit}
@@ -751,9 +737,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .hero-dossier{display:none}
 }
 /* Sello de convocatoria: solo existe mientras hay una abierta. Un timbre en magenta,
-   girado tres grados y quieto, que lleva al formulario de envío. Es magenta y no
-   amarillo: el amarillo es solo el trazo de las cifras del dossier. Va bajo los botones.
-   Sus esquinas son rectas, también con el foco. */
+   girado y quieto, que lleva al formulario de envío. Es magenta y no amarillo: el amarillo
+   va en trazos, no en planos (ver «El amarillo del cartel, solo como fondo» en
+   docs/deferidos-y-decisiones.md). Por debajo de 900 px va bajo los botones. Sus esquinas
+   son rectas, también con el foco. */
 .sello-convocatoria{display:inline-flex; flex-direction:column; gap:4px; margin:var(--s4) 0 0 6px;
   padding:var(--s2) var(--s3); background:var(--accent); color:var(--paper); text-decoration:none;
   border-radius:0; transform:rotate(-3deg)}
@@ -764,13 +751,13 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 @media (min-width:720px){
   .sello-convocatoria-fecha{font-size:var(--t3)}
 }
-/* La hoja como lámina a dos tintas (D33). Desde 900 px: a la izquierda, la cejilla, el
-   manifiesto en letra de cartel y tinta azul, con grano, y los botones; a la derecha, un
-   círculo de trama magenta que recoge el de la obra de arriba, con el sello de la
-   convocatoria estampado encima (sin convocatoria, la trama queda sola). Antes era una
-   columna de 440 px pegada a la izquierda: a 1900 px dejaba más de 900 vacíos y se leía como
-   una nota al pie. El azul como texto sobre el papel no llega a AA en letra corriente; en
-   letra de cartel, sí (pide 3:1). Por debajo de 900 px, la columna de siempre. */
+/* La hoja como lámina a dos tintas (ver «La hoja, lámina a dos tintas» en
+   docs/deferidos-y-decisiones.md). Desde 900 px: a la izquierda, la cejilla, el manifiesto
+   en letra de cartel y tinta azul, con grano, y los botones; a la derecha, un círculo de
+   trama magenta que recoge el de la obra de arriba, con el sello de la convocatoria
+   estampado encima (sin convocatoria, la trama queda sola). El azul como texto sobre el
+   papel no llega a AA en letra corriente; en letra de cartel, sí (pide 3:1). Por debajo de
+   900 px, una sola columna. */
 @media (min-width:900px){
   .hero{grid-template-columns:minmax(0,7fr) minmax(0,5fr); column-gap:var(--s4); padding:var(--s5) 0 var(--s6);
     position:relative; isolation:isolate}
@@ -792,14 +779,14 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 @media (min-width:1600px){
   .hero-manifesto{font-size:var(--t6)}
 }
-/* Cabeza de sección (D13): la cejilla dice a qué parte del sitio pertenece —los grupos del
+/* Cabeza de sección: la cejilla dice a qué parte del sitio pertenece —los grupos del
    pie— y el título lleva el filete de su territorio, como las cabeceras de índice. */
 .seccion-cabeza{margin:0 0 var(--s4)}
 .home-obra-cejilla{margin:0 0 var(--s1)}
 .seccion-cabeza .rotulo{margin:0 0 var(--s1)}
 .seccion-cabeza .subhead{margin:0}
 .home-mas{margin:var(--s3) 0 0}
-/* La obra: poemas y textos, lado a lado desde 900 px. Apilados, cada uno ocupaba su
+/* La obra: poemas y textos, lado a lado desde 900 px; apilados, cada uno ocuparía su
    pantalla. Con una sola de las dos listas, va a todo el ancho. */
 .home-obra-columna + .home-obra-columna{margin-top:var(--s5)}
 @media (min-width:900px){
@@ -807,10 +794,11 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
     column-gap:clamp(32px, 5vw, 96px); align-items:start}
   .home-obra-columnas:has(> :nth-child(2)) > .home-obra-columna + .home-obra-columna{margin-top:0}
 }
-/* ── El estante de la portada (D24; hasta ocho en D25; a la medida en D26; con aire en D27) ──
+/* ── El estante de la portada ──
+   Lo decidido, desde «El estante de publicaciones», está en docs/deferidos-y-decisiones.md.
    Como en una librería: una publicación de frente y las demás de lomo, de pie sobre la tabla
-   y en las tintas del sitio, y bajo el extremo de la tabla «Ver todo el catálogo →», bien a
-   la vista. La tabla mide lo que sus libros más un tramo libre al final, proporcional a la
+   y cada lomo del color de su tapa, y bajo el extremo de la tabla «Ver todo el catálogo →»,
+   bien a la vista. La tabla mide lo que sus libros más un tramo libre al final, proporcional a la
    pantalla: ni medio vacía ni saturada. La ficha de la de frente ocupa el resto del ancho.
    Sin el guion, el lomo es un enlace a la ficha; con static/js/estante.js, un botón que saca
    ese libro al frente. */
@@ -832,7 +820,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   rotate:180deg; width:42px; height:282px; padding:12px 0; border:0; border-radius:0; text-decoration:none; cursor:pointer; font:inherit;
   position:relative; isolation:isolate; background:var(--paper-2); color:var(--ink); outline:1px solid var(--line); outline-offset:-1px;
   transition:translate var(--dur-base) var(--ease)}
-/* Un poco más delgados que en D24: con siete lomos, todos de libro, la tabla cabe a 951 px. */
+/* Con siete lomos, todos de libro, la tabla cabe a 951 px. */
 .ejemplar--libro .ejemplar-lomo{width:50px; height:300px}
 .ejemplar--plaquette .ejemplar-lomo{width:28px; height:246px}
 .ejemplar--fanzine .ejemplar-lomo{width:36px; height:268px}
@@ -841,8 +829,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .ejemplar-lomo-titulo{flex:1 1 auto; min-width:0; min-height:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   font-family:var(--display); font-weight:700; font-size:var(--t0); letter-spacing:var(--tr-meta)}
 .ejemplar-lomo-anio{font-family:var(--mono); font-size:var(--t-2)}
-/* El color del lomo es el del borde de su tapa (D28): un rectángulo de SVG detrás del texto,
-   en su propia capa. Sin tapa legible, la hoja clara. El filete marca el lomo sobre la banda
+/* El color del lomo es el del borde de su tapa (ver «El lomo, del color de su tapa» en
+   docs/deferidos-y-decisiones.md): un rectángulo de SVG detrás del texto, en su propia capa. Sin tapa legible, la hoja clara. El filete marca el lomo sobre la banda
    aunque sea tan claro como ella; el texto va claro si el fondo es oscuro. */
 .ejemplar-lomo-fondo{position:absolute; inset:0; z-index:var(--z-fondo); width:100%; height:100%}
 .ejemplar--oscuro .ejemplar-lomo{color:var(--surface)}
@@ -872,9 +860,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .ejemplar--plaquette .ejemplar-lomo{height:186px}
   .ejemplar--fanzine .ejemplar-lomo{height:202px}
 }
-/* En pantallas anchas, libros más grandes (D30): a 1900 px el estante y su ficha dejaban unos
-   360 px vacíos a la derecha. Los libros crecen y llenan el hueco con lo suyo; el título y la
-   sinopsis de la ficha, un paso más. Por debajo de 1400 px, como antes. */
+/* Desde 1400 px, libros más grandes: llenan con lo suyo el ancho que la ficha dejaría vacío
+   a la derecha. El título y la sinopsis de la ficha crecen un paso. */
 @media (min-width:1400px){
   .ejemplar-frente{width:270px}
   .ejemplar-lomo{width:54px; height:376px}
@@ -887,14 +874,15 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 }
 /* Tres versos, uno por línea: se lee el poema sin abrirlo. */
 .fila-versos span{display:block}
-/* El cierre: las puertas, de dos en dos en el teléfono y desde 900 px todas en una fila (en
-   la rejilla de tres, «Escríbenos» quedaba sola en la segunda). Es el último bloque: abajo,
-   el aire lo pone el lienzo.
-   Cada puerta es un sello en risografía (D31): un marco y una palabra en su tinta y, corrida
-   3 px, una segunda pasada en otra tinta que no calza, multiplicada sobre el papel; todo con
-   grano (una máscara de ruido: la tinta no cubre pareja). Las palabras pequeñas no llevan la
-   segunda pasada, para que se lean. Al señalar, el sello se endereza. Antes eran cuatro
-   enlaces de texto entre filetes: lo único de la portada sin objeto ni gesto. */
+/* El cierre de la portada, «Prensa y gestión»: las puertas, de dos en dos por debajo de
+   900 px y desde ahí todas en una fila (en una rejilla de tres, «Escríbenos» quedaría sola
+   en la segunda). Es el último bloque: abajo, el aire lo pone el lienzo.
+   Cada puerta es un sello en risografía (ver «“Prensa y gestión”, sellos en risografía» en
+   docs/deferidos-y-decisiones.md): un marco y una palabra en su tinta y, corrida, una
+   segunda pasada en otra tinta que no calza, multiplicada sobre el papel; todo con grano
+   (una máscara de ruido: la tinta no cubre pareja). Las palabras pequeñas no llevan la
+   segunda pasada, para que se lean. Al señalarlo, el sello se endereza, salvo para quien
+   pide menos movimiento. */
 .home-cierre{padding-bottom:0}
 .home-cierre .pie-entidad{margin-top:0; border-top:0}
 .home-cierre .pie-entidad ul{grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--s4); padding:var(--s3) var(--s2) var(--s2);
@@ -927,15 +915,15 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .band .fila:has(.fila-titulo a):hover::before,
 .band .fila:focus-within::before{background-color:var(--paper)}
 
-/* El poema destacado: sale solo cuando no hay registros destacados (la tirada, D19). Va
-   sobre el papel, a continuación de la hoja. */
+/* El poema destacado: sale solo cuando la tirada no tiene registros. Va sobre el papel, a
+   continuación de la hoja. */
 .featured h2{margin:8px 0 14px; font-size:var(--t5); line-height:1.15}
 .featured h2 a{text-decoration:none; color:var(--ink)}
 .featured .poem-excerpt{font-size:var(--t2); max-width:var(--medida)}
 
-/* La tirada de registros (D19). En el tablero de los registros destacados (2026-10-21) el dueño
-   del sitio eligió «La tirada»: cada registro que el colectivo marca como destacado se imprime
-   como un pliego de una tirada numerada. Los pliegos se apoyan uno junto a otro sobre el papel,
+/* La tirada de registros (lo decidido, desde «La tirada de registros», está en
+   docs/deferidos-y-decisiones.md): cada registro que el colectivo marca como destacado se
+   imprime como un pliego de una tirada numerada. Los pliegos se apoyan uno junto a otro sobre el papel,
    en un carril que sangra por la derecha. El del frente va a dos tintas (la placa azul y el
    título en tinta con su corrimiento magenta, marcas de corte y fechador de goma); los demás
    esperan como pruebas a una tinta, en trama, y el siguiente asoma. Nada avanza solo: se pasa
@@ -1007,8 +995,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   border:1px solid var(--sello); color:var(--sello)}
 .pliego-tipo .rotulo{color:inherit}
 /* El fechador de goma: montado sobre el borde de arriba de la hoja, girado como cae un sello a
-   mano (quieto). Tinta y filete doble, sin relleno: se ve el papel debajo. El sello magenta
-   girado sigue siendo solo el de la convocatoria. */
+   mano (quieto). Tinta y filete doble, sin relleno: se ve el papel debajo. Girado y relleno
+   de magenta solo va el sello de la convocatoria. */
 .pliego-fechador{position:absolute; z-index:var(--z-sobreimpresion); top:calc(-1 * var(--s2)); right:var(--s3); margin:0;
   display:grid; justify-items:center; gap:2px; padding:7px 12px 8px;
   border:2px solid var(--sello); outline:1px solid var(--sello); outline-offset:-6px;
@@ -1036,9 +1024,9 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .pliego:has(.pliego-titulo a:focus-visible){outline:2px solid var(--accent); outline-offset:6px}
 .pliego:has(.pliego-titulo a:focus-visible) .pliego-titulo a{outline:none}
 /* La placa: el póster a una tinta, en el azul de la casa (.riso-duo), también al señalarlo:
-   en la portada no se enseña el original (decisión 3 del tablero). La trama es una retícula de
-   puntos del color de la hoja: transparente, la placa queda llena. Sin imagen, una plancha
-   en trama azul sobre la hoja. */
+   en la portada no se enseña el original (ver «La tirada de registros» en
+   docs/deferidos-y-decisiones.md). La trama es una retícula de puntos del color de la hoja:
+   transparente, la placa queda llena. Sin imagen, una plancha en trama azul sobre la hoja. */
 .pliego-placa{grid-area:placa; display:block; align-self:start; aspect-ratio:3 / 2; overflow:hidden}
 .pliego-placa img{display:block; width:100%; height:100%; object-fit:cover}
 .pliego-placa::before{content:""; position:absolute; inset:0; z-index:var(--z-sobreimpresion); pointer-events:none;
@@ -1071,10 +1059,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .tirada.con-js .pliego:not([aria-current]):hover{--marca:var(--edge)}
 .tirada.con-js .pliego:not([aria-current]):hover .pliego-titulo a:not(:hover){text-decoration:none}
 .tirada.con-js .pliego[aria-current]{--sobre:var(--accent)}
-/* La pila (D20, elegida por el dueño el 2026-10-22 entre cinco variaciones). Con JavaScript la
+/* La pila (ver «La tirada apilada» en docs/deferidos-y-decisiones.md). Con JavaScript la
    tirada se apila como impresos sobre la mesa: el pliego de arriba (aria-current), derecho; los
    que siguen, debajo, corridos a la derecha y apenas girados; los ya vistos asoman por la
-   izquierda. Se ven los cinco a la vez. Sin JavaScript sigue la fila con imán de arriba, para
+   izquierda. Se ven los cinco a la vez. Sin JavaScript queda la fila con imán de arriba, para
    que todos se alcancen. Las posiciones salen de los hermanos del de arriba (:has para los ya
    vistos); el guion solo mueve aria-current y anima el reparto. touch-action deja el gesto
    horizontal al guion (deslizar pasa de registro) y el vertical a la página. */
@@ -1096,11 +1084,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
    para el de arriba. Con todos a la vista, el colofón sobra. */
 .tirada.con-js .pliego:not([aria-current]) .pliego-pie{visibility:hidden}
 .tirada.con-js .tirada-colofon{display:none}
-/* El índice al lado (D29): desde 1100 px la pila va a la izquierda y la hoja de contactos, a la
-   derecha, como índice vertical con miniatura y título entero; con él se pasa de un registro a
-   otro (no hay flechas). Así la tirada llena el carril como las demás secciones: sola, la pila
-   dejaba unos 360 px vacíos a 1900. El pliego y el abanico se ajustan al hueco que deja el
-   índice: a 1900, como en el tablero; a 1100, más juntos. */
+/* El índice al lado (ver «La tirada con el índice al lado y sin flechas» en
+   docs/deferidos-y-decisiones.md): desde 1100 px la pila va a la izquierda y la hoja de
+   contactos, a la derecha, como índice vertical con miniatura y título entero; con él se pasa
+   de un registro a otro (no hay flechas). Así la tirada llena el carril como las demás
+   secciones: sola, la pila dejaría vacío el lado derecho. El pliego y el abanico se ajustan al
+   hueco que deja el índice: a 1100 px, más juntos que a 1900. */
 @media (min-width:1100px){
   .tirada.con-js{display:grid; grid-template-columns:minmax(var(--borde), 1fr) minmax(0, calc(var(--wide) - 320px)) 320px minmax(var(--borde), 1fr)}
   .tirada.con-js .tirada-cabeza{grid-column:2 / 4; width:auto; margin:0}
@@ -1128,8 +1117,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 }
 /* La reimpresión: la tinta sube del papel en --dur-base y el magenta llega después, cuando la
    tinta ya casi está. Y el acomodo de la pila: cada pliego se corre a su lugar en tres
-   --dur-base (0,66 s; excepción a «solo color», aprobada con la pila); el que pasa arriba lo reparte el guion.
-   Con menos movimiento, todo de golpe. */
+   --dur-base (0,66 s), la excepción a «solo color» que lleva la pila; el que pasa arriba lo
+   reparte el guion. Con menos movimiento, todo de golpe. */
 @media (prefers-reduced-motion:no-preference){
   .tirada.con-js .pliego{transition:--tinta var(--dur-base) var(--ease), --trama var(--dur-base) var(--ease),
     --marca var(--dur-base) var(--ease), --sello var(--dur-base) var(--ease),
@@ -1186,12 +1175,11 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .tirada-contacto .riso-duo, .tirada-contacto-vacia{width:64px}
 }
 
-/* Dossier / kit de prensa (ticket 5.1; D11), en pantalla y en papel. Se lee en el carril
-   de lectura, que mide lo que una hoja: lo que se ve es lo que se imprime. Arriba, la
-   cejilla «Dossier · kit de prensa» —el título era solo el nombre del colectivo, y la
-   barra, el pie y el botón de la cabecera llaman a la página «Dossier»— y el botón de
-   imprimir, a la derecha del título: iba antes que él. Cada sección abre con su título
-   en la tipografía de titulares; era un rótulo de 12 px. */
+/* Dossier / kit de prensa, en pantalla y en papel. Se lee en el carril de lectura, que mide
+   lo que una hoja: lo que se ve es lo que se imprime. Arriba, la cejilla «Dossier · kit de
+   prensa» —la barra, el pie y el botón de la cabecera llaman a la página «Dossier»— y el
+   botón de imprimir, a la derecha del título. Cada sección abre con su título en la
+   tipografía de titulares. */
 .dossier-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
   gap:var(--s2) var(--s4); padding:var(--s5) 0 var(--s3); border-bottom:2px solid var(--ink)}
 .dossier-head .kicker{margin:0}
@@ -1213,10 +1201,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .dossier-datos > div{padding-block:10px; border-top:1px solid var(--line)}
 .dossier-datos > div:last-child{border-bottom:1px solid var(--line)}
 .dossier-datos dd{margin:2px 0 0; overflow-wrap:anywhere}
-/* Las cifras (D11): lo primero que busca un jurado. El número, grande y en la tipografía
-   de titulares, con el trazo de marcador amarillo que el dueño eligió para las cifras
-   de la portada (paso 13), que ya no las lleva; la etiqueta, debajo. El trazo se
-   imprime: es el amarillo del cartel, no un fondo de pantalla. */
+/* Las cifras: lo primero que busca un jurado (ver «Cifras del dossier en grande» en
+   docs/deferidos-y-decisiones.md). El número, grande y en la tipografía de titulares, con
+   un trazo de marcador amarillo; la etiqueta, debajo. El trazo se imprime: es el amarillo
+   del cartel, no un fondo de pantalla. */
 .dossier-cifras{list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:var(--s3) var(--s4)}
 .dossier-cifras strong{display:block; width:fit-content; margin:0 0 6px -.12em; padding:0 .12em;
   font-family:var(--display); font-weight:700; font-size:var(--t6); line-height:1;
@@ -1224,7 +1212,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   background:linear-gradient(to top, transparent .06em, var(--riso-amarillo) .06em,
     var(--riso-amarillo) .48em, transparent .48em);
   -webkit-print-color-adjust:exact; print-color-adjust:exact}
-/* En el teléfono, de dos en dos: en fila, cada línea partía donde caía. */
+/* En el teléfono, de dos en dos: en fila, cada línea partiría donde cayera. */
 @media screen and (max-width:719px){
   .dossier-cifras{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
 }
@@ -1243,7 +1231,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
    con su tipo, su título y su lugar, que en una columna estrecha van uno bajo otro. */
 .cronologia{list-style:none; padding:0; margin:0}
 /* La columna del año se mide en el cuerpo del año, no en rem: el rem crece con la ventana
-   y en la hoja impresa es menor, y ahí «2026» se partía en «202» y «6». */
+   y en la hoja impresa es menor, y ahí «2026» se partiría en «202» y «6». */
 .cronologia-anio{display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:var(--s3);
   padding-block:var(--s2); border-top:1px solid var(--line)}
 .cronologia-anio:last-child{border-bottom:1px solid var(--line)}
@@ -1282,12 +1270,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .dossier-contact{padding:var(--s3); background:var(--paper-2)}
 
 /* Pie: la identidad del colectivo, el mapa, el boletín (lista de prensa) y lo legal. */
-/* La identidad abre el pie (ticket 4.4): el sello, de dónde es y desde cuándo, y cómo
-   escribirle. El correo y el Instagram ya no van en el mapa, para no repetirse. */
+/* La identidad abre el pie: el sello, de dónde es y desde cuándo, y cómo escribirle. El
+   correo y el Instagram van aquí y no en el mapa, para no repetirse. */
 .foot-identidad{grid-area:identidad; display:flex; flex-direction:column; align-items:flex-start;
   gap:var(--s1)}
 /* El sello del pie es el de la cabecera, con el nombre en dos líneas: en su columna no cabe
-   en una. Y en blanco: la regla de los enlaces del pie lo dejaba en el color del papel. */
+   en una. Y en blanco: la regla de los enlaces del pie lo dejaría en el color del papel. */
 .site-foot .brand{padding:5px 12px; color:#fff}
 .site-foot .brand-nombre{font-size:var(--t2); line-height:1.05; max-width:7.5em}
 .foot-presentacion{margin:var(--s1) 0 0; font-size:var(--t-1)}
@@ -1307,17 +1295,17 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* El borde del campo con un error: le gana al del campo, que pesa lo mismo, por ir después. */
 .newsletter [aria-invalid="true"]{border-color:#b0322b; border-width:2px}
 .news-consent{font-size:var(--t-1); color:var(--muted)}
-/* Mapa del sitio en columnas. `auto-fit` + `minmax` reparte los cuatro grupos sin
-   consultas de medios: cuando no caben, bajan solos a dos columnas. Con 150 px de mínimo,
-   a 320 de pantalla caían a una y el pie medía más de mil píxeles. */
+/* Mapa del sitio en columnas. Por debajo de 720 px, `auto-fit` + `minmax` reparte los cuatro
+   grupos: cuando no caben, bajan solos a dos columnas. Con 150 px de mínimo, a 320 de
+   pantalla caerían a una y el pie mediría más de mil píxeles. */
 .foot-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 120px), 1fr));
   gap:20px 24px; margin:0}
-/* El pie usa el ancho para medir menos de alto: medía 435 px a 951 de ancho. El orden es
-   el del ticket 4.4: la identidad, el mapa, el boletín y lo legal. Desde 720 px, los cuatro
-   grupos van en una fila, a la medida de su contenido, y el boletín y lo legal comparten
-   otra. Desde 900 px la identidad cabe al lado de los grupos (antes, con ellos al lado, se
-   salían de la pantalla). Desde 1100 px, todo en una fila: la identidad, los grupos y, a
-   la derecha, el boletín con la línea legal debajo. */
+/* El pie usa el ancho para medir menos de alto. El orden: la identidad, el mapa, el boletín
+   y lo legal. Desde 720 px, los cuatro grupos van en una fila, a la medida de su contenido,
+   y el boletín y lo legal comparten otra. Desde 900 px la identidad va al lado de los grupos
+   (por debajo de unos 780 px, con ella al lado, los grupos se saldrían de su columna). Desde
+   1100 px, todo en una fila: la identidad, los grupos y, a la derecha, el boletín con la
+   línea legal debajo. */
 .site-foot > .wrap-wide{display:grid; grid-template-columns:minmax(0,1fr);
   grid-template-areas:"identidad" "mapa" "news" "legal"; gap:var(--s3); align-items:start}
 .site-foot .newsletter{grid-area:news}
@@ -1334,7 +1322,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   .site-foot > .wrap-wide{grid-template-columns:auto minmax(0,1fr) auto;
     grid-template-areas:"identidad mapa mapa" "news news legal"}
   /* El aire entre la identidad y los grupos, como margen: un hueco de columna estrecharía
-     también el boletín, que va debajo de las dos, y a 951 px partía el botón a otra línea. */
+     también el boletín, que va debajo de las dos, y a 951 px partiría el botón a otra línea. */
   .foot-identidad{margin-right:var(--s4)}
 }
 @media (min-width:1100px){
@@ -1358,13 +1346,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 
 /* ── Sala de lectura: poema y artículo ──
    Una columna ancla con lo que identifica la pieza —cejilla, título, firma, fecha, el
-   registro, la obra reseñada— y, a su lado, el texto. Antes todo iba apilado en la columna
-   de 780 px, con el título, la firma y la fecha empujando el texto hacia abajo.
+   registro, la obra reseñada— y, a su lado, el texto.
    El reparto es 4:7 y el texto sigue limitado por --medida: lo que se ensancha es la
    página, no la línea. Desde 840 px de ventana: por debajo no caben las dos columnas y la
    ancla va encima. La ancla acompaña al bajar solo si la pantalla tiene alto para ella.
    La rejilla es `.lectura-sala` y no el artículo entero: un elemento fijo (sticky) se mueve
-   por todo su contenedor, y con el pie dentro la ancla bajaba hasta taparlo. */
+   por todo su contenedor, y con el pie dentro la ancla bajaría hasta taparlo. */
 /* El mismo aire sobre el título que en la cabecera de un índice. */
 .lectura, .ficha{padding-top:var(--s4)}
 .lectura-sala{display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--s4)}
@@ -1395,15 +1382,16 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
     align-items:start}
 }
 /* El título en la columna ancla, que mide unos 300 px a 951 de ventana: a su tamaño caben
-   diez o doce letras por línea, y una palabra más larga («imposibilidad», «desmemoriadamente»)
-   se partía por la mitad y sin guion. Se divide con guion, en español. Un título largo baja
-   además un paso (.titulo-largo: cuántas letras, en apps/site/templatetags/titles.py). */
+   unas trece letras por línea en un poema y unas veinte en un texto, y una palabra más larga
+   («desmemoriadamente», en un poema) se partiría por la mitad y sin guion. Se divide con
+   guion, en español. Un título largo baja además un paso (.titulo-largo: cuántas letras, en
+   apps/site/templatetags/titles.py). */
 .lectura-ancla h1{hyphens:auto}
 .poem .lectura-ancla h1.titulo-largo{font-size:var(--t5)}
 .article .lectura-ancla h1.titulo-largo{font-size:var(--t4)}
 @media (min-width:840px) and (min-height:700px){
   /* Una ancla más alta que la pantalla —un título de doscientas letras, cuatro firmas y ocho
-     etiquetas— dejaba su parte de abajo fuera de la vista durante toda la lectura: se queda
+     etiquetas— dejaría su parte de abajo fuera de la vista durante toda la lectura: se queda
      a la altura de la pantalla y se desplaza por dentro. Si cabe, nada cambia. El relleno
      lateral es para el contorno del foco, que la caja recortaría. */
   .lectura-ancla{position:sticky; top:calc(var(--alto-cabecera) + var(--s3));
@@ -1413,15 +1401,17 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 
 /* ── Fichas: integrante, publicación, evento ──
    La imagen a la izquierda —retrato 4:5, cubierta 5:7, afiche— y quién o qué es, a su
-   lado. Era una imagen suelta encima de una cabecera de índice. */
+   lado. */
 .ficha-cabecera{display:grid; gap:var(--s3); align-items:start; margin:0 0 var(--s5)}
 .ficha-medio{max-width:260px; margin:0}
 .ficha-medio figcaption{margin:var(--s2) 0 0}
 @media (min-width:720px){
   .ficha-cabecera{grid-template-columns:minmax(200px,320px) minmax(0,1fr); column-gap:clamp(24px,5vw,80px)}
   .ficha-cabecera--sin-medio{grid-template-columns:minmax(0,1fr)}
-  /* El afiche de un evento llega a 420 px (ticket 5.2) si al texto le quedan 360; con
-     menos sitio, se queda con lo que sobra (266 px a 720 de ventana, 420 a 951). */
+  /* Un afiche es vertical: a todo el ancho de la columna ocuparía más de una pantalla y
+     empujaría la descripción y la galería fuera de la vista. Llega a 420 px si al texto le
+     quedan 360; con menos sitio, se queda con lo que sobra (266 px a 720 de ventana, 420 a
+     951). */
   .ficha-cabecera--afiche{grid-template-columns:minmax(200px,420px) minmax(360px,1fr)}
   .ficha-medio{max-width:none}
 }
@@ -1453,19 +1443,18 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* Detalle de artículo */
 .article{padding:20px 0 60px}
 .article h1{font-size:var(--t5); line-height:var(--lh-titulo); margin:10px 0; text-wrap:balance}
-/* Medida de lectura. A 18px en los 780 de la columna el cuerpo corría a 102 caracteres
-   por línea; lo legible está entre 45 y 75 (Bringhurst), y pasado ese largo el ojo
-   pierde el arranque de la línea siguiente. La medida va en `ch` para que siga a la
+/* Medida de lectura. Sin ella, el cuerpo correría a todo el ancho de la columna; lo legible
+   está entre 45 y 75 caracteres por línea (Bringhurst), y pasado ese largo el ojo pierde el
+   arranque de la línea siguiente. La medida va en `ch` para que siga a la
    tipografía: si cambia la fuente o el cuerpo, la línea conserva su largo en letras. */
 .article .dek{font-size:var(--t3); line-height:1.4}
 .article .body{margin-top:28px; font-size:var(--t2); line-height:var(--lh-lectura); max-width:var(--medida)}
 .article .body p{margin:0 0 1.2em}
 /* Lo que el autor puede poner en el cuerpo además de párrafos (la lista blanca de
-   `content/sanitize.py`). Un bloque preformateado —una partitura, una tabla hecha con
+   `apps/content/sanitize.py`). Un bloque preformateado —una partitura, una tabla hecha con
    espacios— conserva sus columnas y se desplaza dentro de su caja: con sus líneas enteras
-   empujaba la página hacia los lados, a cualquier ancho (lo destapó un ensayo de prueba
-   con una partitura). Una figura ocupa la columna, con su pie debajo; traía 40 px de margen
-   a cada lado. */
+   empujaría la página hacia los lados, a cualquier ancho. Una figura ocupa la columna, con
+   su pie debajo, sin los 40 px de margen que trae a cada lado. */
 .article .body pre{max-width:100%; overflow-x:auto; margin:0 0 1.2em; padding:var(--s2);
   background:var(--paper-2); font-family:var(--mono); font-size:var(--t-1); line-height:var(--lh-ui)}
 .article .body code{font-family:var(--mono); font-size:var(--t1)}
@@ -1492,7 +1481,7 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 }
 
 /* Paginación. Cuenta lo que hay («1–12 de 38 poemas»), deja saltar a una página
-   concreta y da a cada número una caja de 44 px: eran dos enlaces de 12 px. */
+   concreta y da a cada número una caja de 44 px. */
 .pagination{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
   gap:12px 20px; margin-top:36px; padding-top:20px; border-top:1px solid var(--border)}
 .pagination-count{margin:0}
@@ -1508,8 +1497,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 /* Formularios */
 .form{display:flex; flex-direction:column; gap:18px; max-width:620px; margin-top:8px}
 .form .field{display:flex; flex-direction:column; gap:6px}
-/* La etiqueta de un campo se lee, no se rotula: caja de frase, 14 px y en tinta.
-   Iba en mayúsculas grises de 12 px, lo más tenue del formulario. */
+/* La etiqueta de un campo se lee, no se rotula: en caja de frase y en tinta, no en las
+   mayúsculas grises de los rótulos. */
 .form label{font-family:var(--display); font-weight:600; font-size:var(--t0); color:var(--ink)}
 .form-leyenda{margin:0; font-size:var(--t0); color:var(--muted)}
 .form .req{color:var(--accent)}
@@ -1523,10 +1512,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .form button{align-self:flex-start}
 
 /* Footer */
-/* El pie se lee en la serif: era monoespaciada de 12 px de punta a punta.
-   Es la única tinta del sitio, y cierra todas las páginas: los enlaces en papel con el
-   subrayado en el rosa del cartel, el texto de apoyo en el gris de la tinta y el foco
-   en papel. El campo del correo sigue blanco: es un campo. */
+/* El pie se lee en la serif. Es la única banda de tinta del sitio, y cierra todas las
+   páginas: los enlaces en papel con el subrayado en el rosa del cartel, el texto de apoyo
+   en el gris de la tinta y el foco en papel. El campo del correo va en blanco: es un
+   campo. */
 .site-foot{padding:var(--s4) 0 var(--s3); background:var(--ink); color:var(--muted-on-ink);
   font-size:var(--t0)}
 .site-foot a{color:var(--paper); text-decoration-color:var(--accent-on-ink)}
@@ -1544,16 +1533,16 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .error-links{list-style:none; padding:0; margin:24px 0 0; display:flex; flex-wrap:wrap; gap:8px 20px}
 
 /* ──────────────────────────────────────────────────────────────────────────
-   «Las voces» en la portada (D23), que reemplazó a la cinta y a los pliegos de D22.
+   «Las voces» en la portada (ver «“Las voces” en relevo» en docs/deferidos-y-decisiones.md).
 
    La cabeza a la izquierda, angosta y a 40 px de los retratos; a la derecha, una fila de
    retratos con el nombre debajo, los pares un poco más abajo. Cuántos se ven lo decide
-   A_LA_VISTA (y A_LA_VISTA_TELEFONO) en apps/content/views.py: la fila tiene una columna por
+   A_LA_VISTA (y A_LA_VISTA_TELEFONO) en apps/site/portada.py: la fila tiene una columna por
    retrato visible, y la hoja no repite el número. Toda la tarjeta es el enlace, así que al
    señalarla solo su retrato pasa a color.
 
    El relevo (static/js/integrantes.js): cada 1,8 s llega otra integrante a uno de los
-   lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de una
+   lugares, bajo una pasada de tinta azul con el filo magenta, como el tambor de un
    risógrafo. Es solo de la vista: la lista no cambia de orden, para que el lector de
    pantalla la recorra siempre igual. El guion le da a cada retrato su lugar en la fila
    (`order`) y marca los pares; las que esperan quedan fuera de la fila, solo para el lector.

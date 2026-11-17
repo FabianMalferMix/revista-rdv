@@ -1,12 +1,7 @@
-// Click-to-play de los reproductores externos (hallazgo de seguridad S-19).
-//
-// El iframe de YouTube/Vimeo se insertaba con la página, así que el navegador contactaba
-// con ese tercero —enviándole IP, agente de usuario y referente— en cuanto se abría
-// cualquier ficha de registro y también la PORTADA, sin que nadie hubiera pulsado nada y
-// mientras /cookies/ afirma que no se comparte información con terceros.
-//
-// Aquí el iframe solo se crea cuando la persona lo pide. Un único escuchador delegado en
-// el documento cubre todos los reproductores, incluidos los que llegan por htmx.
+// Los reproductores externos se cargan al pulsar. El iframe de YouTube o Vimeo conecta con
+// ese tercero en cuanto se inserta, y le envía la IP y el agente de usuario de quien abre la
+// página: aquí solo se crea cuando la persona lo pide. Un único escuchador delegado en el
+// documento cubre todos los reproductores, incluidos los que llegan por htmx.
 (() => {
   "use strict";
 
@@ -19,7 +14,7 @@
     iframe.setAttribute("title", contenedor.getAttribute("data-embed-title") || "Video");
     iframe.setAttribute("allowfullscreen", "");
     iframe.setAttribute("allow", "accelerometer; encrypted-media; picture-in-picture");
-    // Se reproduce en cuanto se pide: quien pulsó ya expresó su intención.
+    // Se carga en cuanto se pide: quien pulsó ya expresó su intención.
     iframe.setAttribute("loading", "eager");
 
     contenedor.textContent = "";
