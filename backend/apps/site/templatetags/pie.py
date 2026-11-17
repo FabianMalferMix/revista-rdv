@@ -18,13 +18,19 @@ PIE = "partials/_pie_de_entidad.html"
 
 
 def puerta(rotulo, texto, url):
-    """Una salida: un rótulo que dice qué es («Más de», «Índice») y el destino."""
+    """Una salida: un rótulo que dice qué es («Más de», «Índice») y el destino. Sin destino
+    (`url` None), la puerta nombra su texto sin enlace."""
     return {"rotulo": rotulo, "texto": texto, "url": url}
 
 
 def firmas(personas):
-    """Una puerta por cada persona que firma, hacia su página."""
-    return [puerta("Más de", p.display_name, p.get_absolute_url()) for p in personas]
+    """Una puerta por cada persona que firma, hacia su página si la tiene (`has_page`, de la
+    precarga de la vista). Si no, en la vista previa de una pieza sin publicar, la nombra sin
+    enlace: llevaría a un 404."""
+    return [
+        puerta("Más de", p.display_name, p.get_absolute_url() if p.has_page else None)
+        for p in personas
+    ]
 
 
 def puertas_vecinas(neighbors, nombre, titulo):
@@ -88,12 +94,11 @@ def event_pie(event, neighbors):
 @register.inclusion_tag(PIE)
 def publication_pie(publication, neighbors):
     pie = [puerta("Índice", "Todas las publicaciones", reverse("showcase:publication_index"))]
-    if publication.publisher:
-        pie.append(
-            puerta(
-                "Editorial", publication.publisher.name, publication.publisher.get_absolute_url()
-            )
-        )
+    if publisher := publication.publisher:
+        # La editorial sin ficha (`publisher_has_page`, de la consulta de la vista) se nombra
+        # sin enlace.
+        url = publisher.get_absolute_url() if publication.publisher_has_page else None
+        pie.append(puerta("Editorial", publisher.name, url))
     if publication.year:
         pie.append(puerta("Trayectoria", str(publication.year), url_for_year(publication.year)))
     # Quien participa sin ficha (`has_page`, de la precarga de la vista) no tiene puerta: no

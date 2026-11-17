@@ -8,6 +8,7 @@ a:hover{text-decoration-thickness:2px}
    lectura (poemas, artículos, metadatos) se queda en la serif de lectura. */
 .brand,
 .index-head h1, .article h1, .poem h1, .dossier-head h1, .dossier-doc h3, .ficha-texto h1, .lectura-firmas a, .pie-entidad a,
+.lectura-firmas .sin-enlace, .pie-entidad .sin-enlace,
 .fila-titulo, .featured h2, .next-event h2,
 .recording-card h2, .collection-list h2, .event-card h2,
 .member-name, .pub-title, .album-title, .year-mark, .rec-caratula-titulo, .subhead, .nav a, .subnav a{
@@ -1372,7 +1373,9 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .lectura-ancla .meta{margin:8px 0 0}
 .lectura-firmas{list-style:none; margin:var(--s3) 0 0; padding:0; display:flex; flex-direction:column; gap:var(--s1)}
 .lectura-firmas li{display:flex; align-items:center; gap:12px}
-.lectura-firmas a{font-weight:600; font-size:var(--t0); text-decoration:none; color:var(--ink)}
+/* Quien firma sin ficha (en una vista previa) se nombra sin enlace, compuesto como quien la
+   tiene: sin subrayado al pasar el puntero, porque no lleva a ninguna parte. */
+.lectura-firmas a, .lectura-firmas .sin-enlace{font-weight:600; font-size:var(--t0); text-decoration:none; color:var(--ink)}
 .lectura-firmas a:hover{text-decoration:underline}
 /* Retrato pequeño de quien firma: 4:5, como los retratos del colectivo; nunca un círculo. */
 .firma-retrato{flex:none; width:40px; height:50px; object-fit:cover; background:var(--paper-2)}
@@ -1443,7 +1446,9 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
   grid-template-columns:repeat(auto-fit,minmax(min(100%, 220px),1fr))}
 .pie-entidad li{position:relative; padding:var(--s3) var(--s3) var(--s3) 0; border-bottom:1px solid var(--line)}
 .pie-entidad .rotulo{display:block; margin:0 0 6px}
-.pie-entidad a{font-weight:700; font-size:var(--t3); line-height:1.15; text-decoration:none; color:var(--ink)}
+/* Una puerta sin destino (lo que no tiene página pública, en una vista previa) nombra su texto
+   como las demás, sin la capa que la haría pulsable ni el subrayado al pasar el puntero. */
+.pie-entidad a, .pie-entidad .sin-enlace{font-weight:700; font-size:var(--t3); line-height:1.15; text-decoration:none; color:var(--ink)}
 
 /* Detalle de artículo */
 .article{padding:20px 0 60px}

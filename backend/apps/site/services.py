@@ -1,13 +1,15 @@
 """Consultas que cruzan varias apps: cuándo publicó el colectivo por última vez (la portada y el
-dossier), quienes participan en una ficha y las coincidencias por nombre de la búsqueda."""
+dossier), quienes participan en una ficha, si la editorial de una publicación tiene ficha y las
+coincidencias por nombre de la búsqueda."""
 
-from django.db.models import DateTimeField, F, IntegerField, Prefetch, Value
+from django.db.models import DateTimeField, Exists, F, IntegerField, OuterRef, Prefetch, Value
 from django.db.models.functions import Cast, ExtractYear
 
 from apps.agenda.models import Event
 from apps.content.models import editorial_models
 from apps.media.models import Recording
 from apps.people.models import Contributor
+from apps.reviews.models import Publisher
 from apps.showcase.models import Publication
 
 
@@ -32,6 +34,16 @@ def participants_prefetch():
     persona con `has_page` (`Contributor.objects.with_page()`): «Participan» y el pie de la
     ficha la enlazan solo si tiene ficha, y lo saben con la misma consulta de la lista."""
     return Prefetch("participants", queryset=Contributor.objects.with_page())
+
+
+def with_publisher_page(publications):
+    """Las publicaciones con `publisher_has_page`, si su editorial tiene ficha, con el criterio
+    de su ficha (`Publisher.objects.visible()`) y en la misma consulta. La ficha de una
+    publicación enlaza su editorial solo si la tiene: en la vista previa de una sin publicar, la
+    editorial puede no tener nada publicado, y su enlace llevaría a un 404."""
+    return publications.annotate(
+        publisher_has_page=Exists(Publisher.objects.visible().filter(pk=OuterRef("publisher")))
+    )
 
 
 # Las columnas de cada fila de `coincidencias_por_nombre`, en este orden.

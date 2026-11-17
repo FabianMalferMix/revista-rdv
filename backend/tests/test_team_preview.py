@@ -3,6 +3,11 @@
 Con la franja «Vista previa: no publicado», sin indexar y sin guardarse en cachés compartidas. Un
 anónimo recibe 404, como siempre, y una autora no ve los borradores ajenos. Lo publicado se sirve
 igual que antes, sin franja.
+
+La vista previa enseña la pieza como la verá quien lee, pero lo que la rodea puede no tener página
+pública todavía: quien firma sin nada publicado, la editorial sin nada publicado, la obra que
+nadie ha reseñado. Se nombran sin enlace, porque el suyo llevaría a un 404: ningún enlace de una
+vista previa lleva a uno. Lo que sí tiene página sigue enlazado.
 """
 
 from datetime import timedelta
@@ -10,18 +15,30 @@ from datetime import timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.content.models import Collection, EditorialStatus, Page, PublishStatus
+from apps.content.models import (
+    ArticleContributor,
+    Collection,
+    EditorialStatus,
+    Page,
+    PoemContributor,
+    PublishStatus,
+)
 from apps.people import roles
+from apps.people.models import Contributor
 from apps.reviews.models import Publisher, Work
 from tests.factories import (
     make_article,
     make_event,
+    make_image,
     make_poem,
     make_publication,
     make_published_article,
+    make_published_poem,
     make_recording,
     publish,
     soup,
@@ -156,3 +173,159 @@ def test_the_preview_links_the_reviewed_work_only_if_it_has_a_page(client, edito
         [nueva.get_absolute_url(), editorial.get_absolute_url()],
     )
     assert client.get(nueva.get_absolute_url()).status_code == 200
+
+
+@pytest.fixture
+def signers():
+    """Quien firma sin nada publicado, que no tiene página, y dos que la tienen por razones
+    distintas: alguien de fuera que firma un poema publicado y una integrante sin nada publicado."""
+    berta = Contributor.objects.create(slug="berta", display_name="Berta Invitada")
+    luis = Contributor.objects.create(slug="luis", display_name="Luis Mora")
+    PoemContributor.objects.create(poem=make_published_poem(), contributor=luis)
+    ana = Contributor.objects.create(slug="ana", display_name="Ana Pizarro", is_member=True)
+    return berta, luis, ana
+
+
+def _sign(piece, people):
+    """Las firmas de un texto o de un poema, en ese orden."""
+    model = type(piece).__name__.lower()
+    bridge = ArticleContributor if model == "article" else PoemContributor
+    for position, person in enumerate(people):
+        bridge.objects.create(**{model: piece}, contributor=person, position=position)
+
+
+def _named(names):
+    """Cada nombre, como se lee, y adónde lleva: None si se nombra sin enlace."""
+    return [(name.get_text(), name.get("href")) for name in names]
+
+
+def _signatures(sopa):
+    """Quienes firman, bajo el título."""
+    return _named(sopa.select(".lectura-firmas li > a, .lectura-firmas li > .sin-enlace"))
+
+
+def _doors(sopa, rotulo):
+    """Las puertas del pie con ese rótulo."""
+    return _named(
+        name
+        for li in sopa.select("nav.pie-entidad li")
+        if li.select_one(".rotulo").get_text() == rotulo
+        for name in li.select(":scope > a, :scope > .sin-enlace")
+    )
+
+
+def _walk(client, sopa):
+    """Cada enlace interno de la página, pedido por quien la ve como al pulsarlo (sin el
+    fragmento), y su código."""
+    links = {
+        a["href"].split("#")[0]
+        for a in sopa.select('a[href^="/"]')
+        if not a["href"].startswith("//")
+    }
+    return {href: client.get(href).status_code for href in sorted(links)}
+
+
+def _not_200(codes):
+    return {href: code for href, code in codes.items() if code != 200}
+
+
+@pytest.mark.parametrize("make", [make_article, make_poem])
+def test_the_preview_names_a_signer_without_a_page_without_a_link(
+    client, editor, signers, legal_pages, make
+):
+    """Quien firma un texto o un poema sin publicar y no tiene nada publicado no tiene página: la
+    vista previa la nombra sin enlace, en las firmas y en el pie. Quien la tiene sigue enlazado."""
+    berta, luis, ana = signers
+    borrador = make(status=S.IN_REVIEW)
+    _sign(borrador, signers)
+    # La página de Berta responde 404; las de los otros dos, 200.
+    assert client.get(berta.get_absolute_url()).status_code == 404
+    assert [client.get(c.get_absolute_url()).status_code for c in (luis, ana)] == [200, 200]
+
+    client.force_login(editor)
+    url = borrador.get_absolute_url()
+    assert _is_preview(client.get(url))
+    sopa = soup(client, url)
+    named = [
+        ("Berta Invitada", None),
+        ("Luis Mora", luis.get_absolute_url()),
+        ("Ana Pizarro", ana.get_absolute_url()),
+    ]
+    assert _signatures(sopa) == named
+    assert _doors(sopa, "Más de") == named
+    # Ningún enlace de la página lleva a un 404. Control: el recorrido pasa por las páginas de
+    # quienes firman con página.
+    codes = _walk(client, sopa)
+    assert {luis.get_absolute_url(), ana.get_absolute_url()} <= codes.keys()
+    assert _not_200(codes) == {}
+    # Al publicarse, la pieza le da página a quien la firma, y la ficha la enlaza.
+    publish(borrador)
+    assert _signatures(soup(client, url))[0] == ("Berta Invitada", berta.get_absolute_url())
+    assert client.get(berta.get_absolute_url()).status_code == 200
+
+
+def _meta(sopa):
+    """Los datos de la publicación bajo su título, como se leen, y adónde llevan sus enlaces."""
+    meta = sopa.select_one(".pub-detail .meta")
+    return " ".join(meta.get_text(" ", strip=True).split()), [a["href"] for a in meta.select("a")]
+
+
+def test_the_preview_of_a_publication_links_its_publisher_only_if_it_has_a_page(
+    client, editor, signers, legal_pages
+):
+    """La editorial de una publicación sin publicar puede no tener nada publicado: la vista previa
+    la nombra sin enlace, en los datos y en el pie. La que tiene página sigue enlazada."""
+    berta, luis, _ = signers
+    nueva = Publisher.objects.create(slug="editorial-nueva", name="Editorial Nueva")
+    conocida = Publisher.objects.create(slug="editorial-conocida", name="Editorial Conocida")
+    make_publication(publisher=conocida)  # publicada: le da página a su editorial
+    assert client.get(nueva.get_absolute_url()).status_code == 404
+    assert client.get(conocida.get_absolute_url()).status_code == 200
+
+    client.force_login(editor)
+    for editorial, href in ((nueva, None), (conocida, conocida.get_absolute_url())):
+        borrador = make_publication(publisher=editorial, published=False, year=2025)
+        borrador.participants.add(berta, luis)
+        url = borrador.get_absolute_url()
+        assert _is_preview(client.get(url))
+        sopa = soup(client, url)
+        assert _meta(sopa) == (f"2025 · {editorial.name}", [href] if href else [])
+        assert _doors(sopa, "Editorial") == [(editorial.name, href)]
+        # Control en la misma respuesta: la puerta de quien participa con página va enlazada.
+        assert _doors(sopa, "Más de") == [("Luis Mora", luis.get_absolute_url())]
+        codes = _walk(client, sopa)
+        assert luis.get_absolute_url() in codes
+        assert _not_200(codes) == {}
+
+
+@pytest.mark.parametrize("make", [make_article, make_poem])
+def test_the_preview_costs_the_same_queries_with_five_signers_as_with_one(client, editor, make):
+    """Saber quién tiene página no cuesta una consulta por persona: llega con las firmas y sus
+    retratos, en las mismas consultas para una que para cinco."""
+    people = [
+        Contributor.objects.create(
+            slug=f"firma-{n}",
+            display_name=f"Firma {n}",
+            is_member=n % 2 == 1,
+            photo=make_image(f"retrato-{n}"),
+        )
+        for n in range(5)
+    ]
+    borrador = make(status=S.IN_REVIEW)
+    _sign(borrador, people[:1])
+    client.force_login(editor)
+    url = borrador.get_absolute_url()
+    soup(client, url)  # en caliente: el perfil del sitio ya existe
+    with CaptureQueriesContext(connection) as una:
+        soup(client, url)
+    borrador.authors.clear()
+    _sign(borrador, people)
+    with CaptureQueriesContext(connection) as cinco:
+        sopa = soup(client, url)
+    # Control: la vista previa nombra a las cinco, cada una con su retrato, y enlaza a quien tiene
+    # página.
+    assert _signatures(sopa) == [
+        (p.display_name, p.get_absolute_url() if p.is_member else None) for p in people
+    ]
+    assert len(sopa.select(".lectura-firmas img")) == 5
+    assert len(cinco) == len(una), "una consulta más por persona"
