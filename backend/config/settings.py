@@ -202,6 +202,9 @@ LANGUAGE_CODE = "es"
 TIME_ZONE = "America/Santiago"
 USE_I18N = True
 USE_TZ = True
+# Los textos de Django que el proyecto escribe a su manera (los del selector doble del panel):
+# Django lee estos catálogos después de los suyos, y lo de aquí manda.
+LOCALE_PATHS = [BASE_DIR / "config" / "locale"]
 
 # ── Estáticos y medios ────────────────────────────────────
 STATIC_URL = "static/"

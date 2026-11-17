@@ -11,3 +11,15 @@
   color: var(--body-quiet-color);
   font-size: 0.75rem;
 }
+
+/* La tabla de las notas cabe en el ancho de la ficha, también en una ventana de 951 px: el
+   panel da a un texto largo 48em de ancho, y aquí el cuadro de cada nota ocupa lo que dejan el
+   autor, la fecha y la casilla de borrar. Por debajo de 12em ya no se escribe con comodidad: en
+   el teléfono, la tabla se desplaza para enseñar el resto. Crece solo hacia abajo, para que
+   estirarlo no saque de la vista las otras columnas. */
+.notas-editoriales textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 12em;
+  resize: vertical;
+}

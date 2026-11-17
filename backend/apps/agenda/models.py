@@ -57,7 +57,12 @@ class Event(TimestampedModel):
         FERIA = "feria", "Feria"
         OTRO = "otro", "Otro"
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay un evento con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     type = models.CharField(
         max_length=20, choices=Type.choices, default=Type.RECITAL, verbose_name="tipo"
