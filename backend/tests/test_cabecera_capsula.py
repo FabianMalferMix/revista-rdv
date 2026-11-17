@@ -1,10 +1,10 @@
-"""La cabecera al bajar: la opción C del tablero de la barra, elegida por el dueño el 2026-10-15.
+"""La cabecera al bajar (ver «La cabecera al bajar: opción C» en docs/deferidos-y-decisiones.md).
 
-Arriba, la cabecera de siempre sin el filete; en la portada, nada (el nombre grande es la
+Arriba, la cabecera sin el filete; en la portada, nada (el nombre grande es la
 cabecera, como en brikken.co). Al bajar lo que mide la cabecera, una cápsula centrada.
 static/js/cabecera.js se carga en el <head> y pone data-barra="arriba" antes de la primera
 pintura, sin parpadeo, y "pildora" al bajar. estados.css solo cambia la cabecera con esa marca: sin
-JavaScript, o si el guion no llega o falla al montarse, queda la cabecera fija de siempre.
+JavaScript, o si el guion no llega o falla al montarse, queda la cabecera fija.
 """
 
 import re
@@ -60,7 +60,7 @@ def test_the_portada_is_recognized_by_the_mark_on_its_body(client):
 
 
 def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
-    """Si cabecera.js no llega o falla, no hay marca, y queda la cabecera fija de siempre: lo
+    """Si cabecera.js no llega o falla, no hay marca, y queda la cabecera fija: lo
     que la esconde, la vuelve transparente o le quita el puntero exige data-barra."""
     cambian = [
         selector
@@ -76,8 +76,8 @@ def test_without_the_scripts_mark_no_rule_hides_or_reshapes_the_header():
 
 
 def test_arriba_de_la_portada_no_hay_cabecera_solo_con_javascript():
-    """La cápsula escondida y el dossier en el titular, solo con la marca del guion: sin ella,
-    la cabecera de siempre y un solo botón principal por pantalla (paso 19)."""
+    """La cápsula escondida y el dossier en la hoja, solo con la marca del guion: sin ella,
+    la cabecera fija y un solo botón principal por pantalla."""
     assert css.rule((), f"{ARRIBA} > {PORTADA} .masthead-fila")["opacity"] == "0"
     dossier = f"[data-barra] > {PORTADA} .hero-dossier"
     assert css.rule((), dossier)["display"] == "inline-flex"
@@ -98,11 +98,11 @@ def test_la_franja_mide_lo_mismo_y_lo_de_abajo_no_se_mueve():
 
 
 def test_la_franja_no_tapa_lo_que_pasa_junto_a_la_capsula():
-    """D34: con la cápsula, la franja de la cabecera es transparente y no recibe el puntero
-    en todas las páginas: lo que pasa a su altura se lee y se pulsa a los lados, como en la
-    portada. Antes, fuera de la portada, un velo de papel la tapaba de lado a lado y cortaba
-    el contenido. Ninguna regla de la cápsula le vuelve a dar fondo a la franja (ni a sus
-    pseudoelementos), sea para todas las páginas o para algunas."""
+    """Con la cápsula, la franja de la cabecera es transparente y no recibe el puntero en
+    todas las páginas: lo que pasa a su altura se lee y se pulsa a los lados (ver «La cápsula
+    sin velo, en todas las páginas» en docs/deferidos-y-decisiones.md). Ninguna regla de la
+    cápsula le vuelve a dar fondo a la franja (ni a sus pseudoelementos), sea para todas las
+    páginas o para algunas."""
     franja = css.rule((), f"{CAPSULA} .masthead")
     assert franja["background"] == "transparent" and franja["pointer-events"] == "none"
     con_fondo = [
@@ -138,9 +138,9 @@ def test_el_guion_solo_cambia_un_atributo():
 
 
 def test_enfocar_la_cabecera_no_desplaza_la_pagina():
-    """Con el scroll-padding, tabular por la cabecera a mitad de página, o cerrar la lupa con
-    Escape, hacía saltar la página unos 450 px. El margen de los controles de la cabecera
-    descuenta exactamente el relleno de la página."""
+    """El margen de los controles de la cabecera descuenta exactamente el relleno de la
+    página: sin eso, con el scroll-padding, tabular por la cabecera a mitad de página, o
+    cerrar la lupa con Escape, haría saltar la página unos 450 px."""
     relleno = css.rule((), "html")["scroll-padding-top"]
     assert relleno == "calc(var(--alto-cabecera) + var(--s2))"
     margen = css.rule((), ".masthead :is(a, summary, input)")["scroll-margin-top"]

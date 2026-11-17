@@ -66,7 +66,7 @@
      la página terminó de leerse.
   {% endcomment %}
   <script src="{% static 'js/common.js' %}{{ version_estaticos }}" defer></script>
-  {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa (S-19). #}
+  {# Click-to-play: no se contacta con YouTube/Vimeo hasta que se pulsa. #}
   <script src="{% static 'js/embeds.js' %}{{ version_estaticos }}" defer></script>
   {# La lupa de la cabecera: foco al campo al abrir y Escape para cerrar. #}
   <script src="{% static 'js/buscador.js' %}{{ version_estaticos }}" defer></script>
@@ -89,10 +89,9 @@
     <p class="vista-previa" role="status">Vista previa: no publicado. Solo lo ve el equipo.</p>
   {% endif %}
   {% comment %}
-     Cabecera de una fila (D2, D9): el sello, los cinco enlaces de la barra, la lupa que
-     abre el buscador y el botón «Dossier». Fija arriba al bajar. Medía 111 px en
-     escritorio y 156 en el teléfono, con el campo de búsqueda siempre abierto.
-     En el teléfono: el sello, la lupa y «Menú», que despliega el mapa del sitio.
+     Cabecera de una fila: el sello, los cinco enlaces de la barra, la lupa que abre el
+     buscador y el botón «Dossier». Fija arriba al bajar. En el teléfono: el sello, la lupa
+     y «Menú», que despliega el mapa del sitio.
   {% endcomment %}
   <header class="masthead">
     <div class="wrap-wide masthead-fila">
@@ -153,10 +152,10 @@
   {% endif %}
 
   {% comment %}
-     El lienzo tiene tres carriles: lectura (el ancho de siempre), ancho y a sangre.
-     Cada hijo directo de <main> cae en el de lectura salvo que la página pida otra
-     cosa con el bloque `lienzo` (los índices y la portada piden «lienzo--ancho»).
-     Ver lienzo.css.
+     El lienzo tiene tres carriles: lectura, ancho y a sangre. Cada hijo directo de <main>
+     cae en el de lectura salvo que la página pida otra cosa con el bloque `lienzo`: la
+     portada, los índices, la búsqueda, las salas de lectura y las fichas a dos columnas
+     piden «lienzo--ancho». Ver lienzo.css.
   {% endcomment %}
   <main id="main" class="lienzo {% block lienzo %}{% endblock %}">
     {% block content %}{% endblock %}
@@ -165,9 +164,8 @@
   <footer class="site-foot">
     <div class="wrap-wide">
       {% comment %}
-         La identidad del colectivo abre el pie (ticket 4.4): el sello, de dónde es y desde
-         cuándo, y cómo escribirle. El pie era solo enlaces y un formulario: al llegar al
-         final de una página no decía de quién era.
+         La identidad del colectivo abre el pie: el sello, de dónde es y desde cuándo, y cómo
+         escribirle. Así, al llegar al final de una página, se sabe de quién es.
       {% endcomment %}
       <div class="foot-identidad">
         {% include "partials/_sello.html" with site_name=site_name only %}

@@ -1,7 +1,7 @@
-"""Paginación con contador, números y objetivos cómodos (backlog UX, ticket 1.10).
+"""Paginación con contador, números y objetivos cómodos.
 
-Decía «Página 2 de 4» entre dos enlaces de 12 px. No se sabía cuántas piezas había ni se
-podía saltar a una página concreta, y tres plantillas repetían el mismo bloque.
+Dice qué piezas se ven y cuántas hay («1–12 de 13 textos»), deja saltar a una página
+concreta, y las plantillas que paginan comparten un solo parcial.
 """
 
 import re

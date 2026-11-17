@@ -1,8 +1,8 @@
 """Las líneas de datos unidos con « · » no dejan ningún separador colgando.
 
 Las arma la etiqueta `{% joined %}` (apps/site/templatetags/joined.py): un dato que falta se omite
-con su separador. Antes, cada plantilla ponía sus separadores a mano, y la ficha de una
-publicación sin año abría su línea con « · », y la de una editorial sin país, con « · Sitio web».
+con su separador: la ficha de una publicación sin año no abre su línea con « · », ni la de
+una editorial sin país con « · Sitio web».
 """
 
 import pytest

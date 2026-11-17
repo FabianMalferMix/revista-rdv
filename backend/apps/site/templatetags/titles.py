@@ -9,8 +9,8 @@ register = template.Library()
 # líneas: con más letras pasaría de dos, y baja a `--t6` (`.pliego--largo` en componentes.css).
 PLIEGO_LONG_TITLE = 34
 # El título de la ficha de un texto o de un poema va en el ancla de la sala de lectura, que a
-# 951 px mide unos 300 y en la que caben diez o doce letras por línea: con más letras, un título
-# llenaba el ancla de líneas (el de un poema de 125 ocupaba catorce), y baja un paso
+# 951 px mide unos 300 y en la que caben unas trece letras por línea en un poema y unas veinte
+# en un texto: con más letras, un título llenaría el ancla de líneas, y baja un paso
 # (`.titulo-largo` en componentes.css), también donde el navegador no divide con guion.
 FICHA_LONG_TITLE = 90
 

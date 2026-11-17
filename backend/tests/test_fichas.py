@@ -1,9 +1,8 @@
-"""Sala de lectura, fichas a dos columnas y pie de entidad (backlog UX, ticket 2.4).
+"""Sala de lectura, fichas a dos columnas y pie de entidad.
 
 Poema y artículo se leen en una sala con su columna ancla; integrante, publicación y
 evento ponen su imagen al lado de lo que son; y cada ficha termina en salidas hacia el
-índice, quien firma y lo que viene antes y después. Antes eran callejones sin salida:
-una ficha de poema tenía un solo enlace interno.
+índice, quien firma y lo que viene antes y después: ninguna es un callejón sin salida.
 """
 
 from datetime import timedelta
@@ -127,8 +126,8 @@ def test_el_poema_se_lee_verso_a_verso_en_su_sala(client):
 
 
 def test_el_registro_del_poema_lleva_a_su_ficha_y_no_al_tercero(client):
-    """El enlace iba directo a YouTube, saltándose el aviso de privacidad de la ficha del
-    registro. Ahora lleva a la ficha; un archivo propio se escucha ahí mismo."""
+    """El enlace lleva a la ficha del registro, no directo a YouTube ni a Vimeo, que se
+    saltaría el aviso de privacidad de la ficha; un archivo propio se escucha ahí mismo."""
     registro = make_recording(slug="lectura", title="Lectura", embed_url="https://vimeo.com/123")
     poema = _poema("con-registro", recording=registro)
     sopa = soup(client, poema.get_absolute_url())
@@ -168,9 +167,9 @@ def test_el_articulo_ensena_su_imagen_y_la_obra_resenada_en_la_sala(client):
 @pytest.mark.parametrize("tipo", ["poema", "articulo"])
 def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, tipo):
     """La ancla es `position:sticky`, y un elemento fijo se desplaza por todo su
-    contenedor. Con el pie dentro de la misma rejilla, al llegar al final la ancla bajaba y
-    se montaba sobre las salidas: 255 px en un artículo a 951 de ancho (lo vio el dueño del
-    sitio). La sala va en su bloque y el pie, fuera."""
+    contenedor. Con el pie dentro de la misma rejilla, al llegar al final la ancla bajaría y
+    se montaría sobre las salidas: 255 px en un artículo a 951 de ancho. La sala va en su
+    bloque y el pie, fuera."""
     if tipo == "poema":
         objeto = _poema("fijo")
     else:
@@ -189,9 +188,9 @@ def test_la_ancla_fija_no_comparte_contenedor_con_el_pie(client, tipo):
 
 @pytest.mark.parametrize("tipo", ["poema", "articulo"])
 def test_a_ficha_title_drops_a_step_past_90_letters(client, tipo):
-    """En el ancla de la sala caben diez o doce letras por línea: un título de más de 90 baja
-    un paso, en todos los navegadores. El umbral es el de esta columna; el del pliego de la
-    tirada mide otra y no se unifican."""
+    """En el ancla de la sala caben unas trece letras por línea en un poema y unas veinte en
+    un texto: un título de más de 90 baja un paso, en todos los navegadores. El umbral es el
+    de esta columna; el del pliego de la tirada mide otra y no se unifican."""
     for slug, letras in (("justo", 90), ("largo", 91)):
         if tipo == "poema":
             _poema(f"{slug}-{tipo}", title="x" * letras)
@@ -227,8 +226,8 @@ def test_la_ficha_de_integrante_pone_el_retrato_al_lado(client):
 
 
 def test_en_su_ficha_cada_fila_omite_su_propia_firma(client):
-    """Cada fila de sus textos repetía su nombre. Un texto a cuatro manos sigue nombrando
-    a la otra persona."""
+    """En su ficha, ninguna fila de sus textos repite su nombre. Un texto a cuatro manos sigue
+    nombrando a la otra persona."""
     ella = Contributor.objects.create(slug="ella", display_name="Ella Misma", is_member=True)
     otra = Contributor.objects.create(slug="otra", display_name="La Otra")
     sola = make_article(slug="sola", status=EditorialStatus.PUBLISHED, published_at=timezone.now())

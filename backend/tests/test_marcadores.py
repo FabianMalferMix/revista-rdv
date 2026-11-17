@@ -1,4 +1,4 @@
-"""Lo que se muestra cuando falta una imagen (backlog UX, ticket 1.13)."""
+"""Lo que se muestra cuando falta una imagen."""
 
 import pytest
 from django.urls import reverse
@@ -27,7 +27,7 @@ def test_iniciales(nombre, esperado):
 
 def test_quien_no_tiene_retrato_lleva_su_monograma(client):
     """Una sola inicial en un círculo es el avatar por defecto de cualquier aplicación. El
-    monograma va en la misma caja 4:5 que el retrato (ticket 3.6)."""
+    monograma va en la misma caja 4:5 que el retrato."""
     Contributor.objects.create(
         slug="rocio", display_name="Rocío Carrasco", is_member=True, active=True
     )
@@ -46,7 +46,8 @@ def test_a_member_with_a_portrait_shows_it_instead_of_the_monogram(client):
 
 
 def test_una_publicacion_sin_cubierta_ensena_su_titulo(client):
-    """El marcador era una caja con la palabra «LIBRO»: no decía de qué libro."""
+    """Sin cubierta, el marcador dice el título: una caja con la palabra «LIBRO» no diría de
+    qué libro."""
     make_publication(slug="sin-cubierta", title="Cuaderno sin cubierta")
     html = client.get(reverse("showcase:publication_index")).content.decode()
     assert (

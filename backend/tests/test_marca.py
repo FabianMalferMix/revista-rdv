@@ -1,8 +1,6 @@
-"""La marca del colectivo (backlog UX, ticket 3.7, con lo que eligió el dueño del sitio).
-
-El dueño se quedó con el sello magenta de la cabecera y le añadió el monograma RV dentro;
-eligió como icono «RdV» en blanco sobre el mismo magenta, y como tarjeta para compartir el
-sello a toda la tarjeta. Antes la pestaña no tenía icono y /favicon.ico daba 404.
+"""La marca del colectivo: el sello magenta de la cabecera, con el monograma RV dentro; como
+icono, «RdV» en blanco sobre el mismo magenta, y como tarjeta para compartir, el sello a toda
+la tarjeta. /favicon.ico lleva al icono.
 """
 
 from pathlib import Path
@@ -62,7 +60,8 @@ def test_los_iconos_existen_con_su_tamano():
 
 
 def test_quien_pide_favicon_ico_recibe_el_icono(client):
-    """Lectores de RSS, navegadores viejos y buscadores lo piden en la raíz: daba 404."""
+    """Lectores de RSS, navegadores viejos y buscadores lo piden en la raíz: reciben el icono,
+    no un 404."""
     respuesta = client.get("/favicon.ico")
     assert respuesta.status_code == 302, "temporal: la URL del estático cambia con el icono"
     assert respuesta["Location"].endswith("favicon.ico")

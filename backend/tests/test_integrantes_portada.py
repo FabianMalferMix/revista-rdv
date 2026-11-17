@@ -1,6 +1,4 @@
-"""«Las voces» en la portada (D23): la opción 3 del tablero «Las voces en relevo», con la pasada
-de tinta de la 2, que eligió el dueño del sitio (2026-10-22). Reemplaza a la cinta y a los
-pliegos de D22.
+"""«Las voces» en la portada (ver «“Las voces” en relevo» en docs/deferidos-y-decisiones.md).
 
 La cabeza a la izquierda, con el botón a /integrantes/; a la derecha, una fila de cinco retratos
 (tres en el teléfono) con el nombre debajo, y cada retrato lleva a su ficha. El título no cuenta:
@@ -46,8 +44,7 @@ def _seccion(client):
 
 
 def test_el_titulo_no_cuenta_y_el_boton_lleva_al_colectivo(client):
-    """«12 voces» decía el número exacto de integrantes; el dueño prefirió no mostrar cifras
-    que delaten el tamaño del colectivo (D22)."""
+    """El título dice «Las voces», sin cifra, y el botón lleva al índice de integrantes."""
     _integrantes(3)
     _, seccion = _seccion(client)
     assert seccion.select_one(".rotulo").get_text() == "El colectivo"
@@ -152,9 +149,10 @@ def test_the_head_goes_beside_the_portraits_and_above_them_on_the_phone():
 
 
 def test_el_relevo_corre_solo_con_puntero_y_se_detiene_al_senalar():
-    """Como la cinta (D1): solo donde hay un puntero que pueda posarse y no se pidió menos
-    movimiento; se detiene con el puntero encima o el foco dentro, fuera de la vista y con la
-    pestaña oculta. Así ningún retrato se escapa cuando se va a pulsar."""
+    """Solo donde hay un puntero que pueda posarse y no se pidió menos movimiento; se detiene
+    con el puntero encima o el foco dentro, fuera de la vista y con la pestaña oculta. Así
+    ningún retrato se escapa cuando se va a pulsar, y el relevo no lleva control de pausa (ver
+    «“Las voces” no lleva control de pausa» en docs/deferidos-y-decisiones.md)."""
     assert "'(hover: hover) and (prefers-reduced-motion: no-preference)'" in INTEGRANTES_JS
     assert "const CADA = 1800;" in INTEGRANTES_JS
     assert "seccion.matches(':hover, :focus-within')" in INTEGRANTES_JS
@@ -179,8 +177,8 @@ def test_llega_bajo_una_pasada_de_tinta():
 
 def test_the_script_only_writes_each_portraits_place_and_leaves_the_address_alone():
     """La CSP bloquea el atributo style (y cssText, que lo escribe entero), no el CSSOM: el guion
-    solo le da a cada retrato su lugar en la fila (`order`), porque la lista ya no cambia de
-    orden. El aspecto sigue en componentes.css. Que la que llega ocupe el lugar de la que se va, que
+    solo le da a cada retrato su lugar en la fila (`order`), porque la lista no cambia de
+    orden. El aspecto va en componentes.css. Que la que llega ocupe el lugar de la que se va, que
     los pares vayan más abajo y que el lector reciba la lista entera lo mira la prueba de humo."""
     assert set(re.findall(r"\.style\b(\.\w+)?", INTEGRANTES_JS)) == {".order"}
     for prohibido in (

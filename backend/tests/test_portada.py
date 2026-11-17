@@ -1,9 +1,10 @@
-"""La portada completa (backlog UX, ticket 4.3; D13).
+"""La portada completa.
 
-Después del titular, la portada ordena sus bloques: el destacado, la obra (los últimos
-poemas con sus tres primeros versos, junto a los últimos textos), las integrantes («12
-voces»), las publicaciones y un cierre para programadores y jurados. Cada sección lleva encima su parte del sitio y, bajo el título, el filete de su
-territorio. El dueño del sitio eligió conservar el bloque de publicaciones.
+Después de la hoja, la portada ordena sus bloques: el destacado (la tirada de registros o el
+poema destacado), la próxima actividad, la obra (los últimos poemas con sus tres primeros
+versos, junto a los últimos textos), «Las voces», las publicaciones y un cierre para
+programadores y jurados. Cada sección lleva encima su parte del sitio y, bajo el título, el
+filete de su territorio.
 """
 
 from datetime import timedelta
@@ -62,8 +63,8 @@ def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client):
 
 
 def test_el_orden_de_los_bloques(client):
-    """La obra, las integrantes, las publicaciones y el cierre. La obra va primero porque
-    lo pidió el dueño del sitio al ver la portada; el cierre, al final."""
+    """La obra va antes que las integrantes; después, las publicaciones, y el cierre, al
+    final."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     make_poem(status=PUBLICADO, published_at=timezone.now())
     make_article(status=PUBLICADO, published_at=timezone.now())
@@ -92,7 +93,7 @@ def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client):
         for cabeza in sopa.select(".seccion-cabeza")
     }
     assert cabezas == {
-        # Sin cifra desde D22: «3 voces» decía el tamaño del colectivo.
+        # El título va sin cifra: cuántas son lo dice la cejilla de la hoja.
         "Las voces": ("colectivo", "El colectivo"),
         "Poemas": ("obra", None),
         "Textos": ("obra", None),
@@ -100,13 +101,14 @@ def test_cada_seccion_lleva_su_cejilla_y_su_territorio(client):
     }
     # La obra lleva su cejilla una vez, sobre las dos columnas.
     assert sopa.select_one(".home-obra-cejilla").get_text() == "La obra"
-    # Sin `only` en el include, una sección sin cejilla pintaba la lista del titular.
+    # Ningún rótulo pinta una lista: la cabeza de sección se incluye con `only` y no hereda
+    # las variables de la página.
     assert not [r for r in sopa.select("main .rotulo") if r.get_text().startswith("[")]
 
 
 def test_las_publicaciones_las_ensena_todas(client):
-    """El titular se quedaba con el primer libro con cubierta y el bloque no lo repetía. Con
-    la portada como obra (D18) ya no hay libro arriba: el bloque los enseña todos."""
+    """Arriba no va ningún libro: el bloque de publicaciones los enseña todos, también los que
+    tienen cubierta."""
     make_publication(slug="primera", title="Primera", position=0, cover=_cubierta("c1"))
     make_publication(slug="segunda", title="Segunda", position=1, cover=_cubierta("c2"))
     make_publication(slug="tercera", title="Tercera", position=2)
@@ -171,9 +173,10 @@ def test_la_ultima_publicacion_solo_cuenta_lo_publicado():
 
 
 def test_las_puertas_del_cierre_son_sellos_en_risografia():
-    """D31: cada puerta de «Prensa y gestión» es un sello con grano y una segunda tinta corrida
-    que no calza; las palabras pequeñas, sin ella, para que se lean. Se endereza al señalarlo
-    solo si no se pidió menos movimiento."""
+    """Cada puerta de «Prensa y gestión» es un sello con grano y una segunda tinta corrida que
+    no calza; las palabras pequeñas, sin ella, para que se lean. Se endereza al señalarlo solo
+    si no se pidió menos movimiento (ver «“Prensa y gestión”, sellos en risografía» en
+    docs/deferidos-y-decisiones.md)."""
     assert "feTurbulence" in css.tokens()["--grano"]
     assert css.rule((), ".home-cierre .pie-entidad li")["mask-image"] == "var(--grano)"
     pasada = css.rule((), ".home-cierre .pie-entidad li::before")
@@ -193,9 +196,10 @@ def test_las_puertas_del_cierre_son_sellos_en_risografia():
 
 
 def test_la_hoja_es_una_lamina_a_dos_tintas():
-    """D33: desde 900 px, el manifiesto en letra de cartel y tinta azul con grano a la
-    izquierda, y a la derecha un círculo de trama magenta con el sello de la convocatoria
-    encima. El grano es uno solo para toda la portada, y no se come el foco."""
+    """Desde 900 px, el manifiesto en letra de cartel y tinta azul con grano a la izquierda, y
+    a la derecha un círculo de trama magenta con el sello de la convocatoria encima (ver «La
+    hoja, lámina a dos tintas» en docs/deferidos-y-decisiones.md). El grano es uno solo para
+    toda la portada, y no se come el foco."""
     assert css.tokens()["--grano"].startswith("url(")
     assert len([d for _, d in css.declarations() if d.name == "--grano"]) == 1
     lamina = ("@media (min-width:900px)",)
@@ -218,7 +222,7 @@ def test_la_hoja_es_una_lamina_a_dos_tintas():
 
 
 def test_el_manifiesto_termina_en_su_primera_pausa(client):
-    """D33: la portada cita el manifiesto hasta su primera pausa, no a media frase."""
+    """La portada cita el manifiesto hasta su primera pausa, no a media frase."""
     perfil = SiteProfile.load()
     perfil.manifesto = (
         "Somos un colectivo que lee en voz alta y lleva los poemas a donde no suelen llegar: "
@@ -252,5 +256,6 @@ LARGA = " ".join(f"palabra{n}" for n in range(1, 41)) + "."
 def test_primera_pausa(texto, cita):
     """Hasta el primer punto, dos puntos, punto y coma, cierre de pregunta o de exclamación
     (los dos puntos y el punto y coma, cerrados con punto); un punto dentro de una cifra no
-    es una pausa. Si la pausa llega tarde, la palabra 28, como antes."""
+    es una pausa. Si la pausa llega tarde (pasado el tope de `primera_pausa`), se corta en la
+    palabra 28."""
     assert primera_pausa(texto) == cita

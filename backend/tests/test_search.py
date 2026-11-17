@@ -1,4 +1,4 @@
-"""Vista de búsqueda FTS en vivo (htmx): artículos y poemas — Lotes F2-6 / F3-1."""
+"""La búsqueda de texto completo, en el panel de la lupa (htmx) y en su página."""
 
 import re
 
@@ -62,8 +62,8 @@ def test_search_excludes_draft_poems(client):
 
 
 def test_poem_search_vector_tracks_bulk_update(client):
-    # QuerySet.update NO pasa por save(): con el trigger, el vector igual se refresca
-    # (el enfoque previo, que recalculaba solo en save(), dejaba el vector obsoleto).
+    # QuerySet.update no pasa por save(): el vector es una columna generada, así que la base
+    # lo rehace igual.
     poem = _publish(make_poem(slug="poema-bulk", title="Título inicial", body="palabra vieja"))
     Poem.objects.filter(pk=poem.pk).update(body="hipogrifo violento")
     resp = client.get(reverse("site:search"), {"q": "hipogrifo"})
@@ -94,7 +94,7 @@ def test_search_accented_query_finds_unaccented_title(client):
     assert b"Cronica urbana del invierno" in resp.content
 
 
-# ── Degradación sin JavaScript (hallazgo #09) ───────────────────────────────
+# ── Degradación sin JavaScript ──────────────────────────────────────────────
 
 
 def test_search_without_js_returns_full_page(client):
@@ -149,7 +149,7 @@ def test_the_search_says_which_headers_its_answer_depends_on(client):
         assert {"HX-Request", "HX-Target"} <= vary, headers
 
 
-# ── Panel en vivo y página de búsqueda (backlog UX, ticket 1.5) ─────────────
+# ── Panel en vivo y página de búsqueda ──────────────────────────────────────
 
 
 def test_el_panel_en_vivo_ofrece_una_salida_a_la_pagina(client):
@@ -175,13 +175,14 @@ def test_la_pagina_de_busqueda_no_repite_el_enlace_a_si_misma(client):
 
 
 def test_la_pagina_de_busqueda_tiene_un_solo_campo(client):
-    """Tenía dos a la vista: el de la cabecera con su panel y el de la página."""
+    """Un solo campo, el de la página: el de la cabecera, con su panel, sería un segundo
+    buscador a la vista."""
     html = client.get(reverse("site:search")).content.decode()
     assert len(re.findall(r'<input[^>]*name="q"', html)) == 1
     assert 'id="search-results"' not in html
 
 
-# ── Cobertura completa y grupos por tipo (backlog UX, ticket 5.4) ───────────
+# ── Cobertura completa y grupos por tipo ────────────────────────────────────
 
 BUSCAR = reverse("site:search")
 
@@ -209,7 +210,7 @@ def _integrante(nombre, slug, **extra):
 
 
 def test_fernanda_devuelve_a_la_integrante(client):
-    """La aceptación del ticket: buscar un nombre lleva a la ficha de la integrante."""
+    """Buscar un nombre lleva a la ficha de la integrante."""
     _integrante("Fernanda Soto", "fernanda-soto", role="Fundadora · edición")
     grupos = _grupos(client, "Fernanda")
     assert grupos == {"Personas": [("Fernanda Soto", "Fundadora · edición")]}
@@ -314,7 +315,7 @@ def test_un_titulo_con_etiquetas_se_escapa(client):
 
 def test_los_cuatro_tipos_por_nombre_son_una_sola_consulta(client):
     """Unidos (UNION ALL), cada uno con su tope: con una consulta por tipo, la búsqueda
-    pasaba de su techo. Y el coste no crece con lo que encuentra."""
+    pasaría de su techo. Y el coste no crece con lo que encuentra."""
     from django.db import connection
     from django.test.utils import CaptureQueriesContext
 

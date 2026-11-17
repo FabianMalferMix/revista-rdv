@@ -1,10 +1,7 @@
-"""El titular de la portada (backlog UX, ticket 4.2; decisiones D8, D9 y D18).
-
-El titular era el lema, «Colectivo de poesía», con el nombre escondido en un h1 para
-lectores de pantalla. Después el nombre fue el titular, con el lema en la cejilla y un objeto
-real al lado; el dueño del sitio quitó lo que iba debajo: las cifras, los aliados y la cita
-de prensa. Con la portada como obra (D18, 2026-10-20) el nombre es el logo, al pie de la
-obra, y lo demás pasa a la hoja que sigue, sin el objeto: ver test_portada_obra.py.
+"""La hoja de la portada: la cejilla (el lema, el lugar, desde cuándo, cuántas integrantes y el
+Instagram), el manifiesto, los botones y, mientras haya una convocatoria abierta, su sello. Sin
+la franja de cifras, sin aliados ni cita de prensa, y sin cubierta. El nombre es el logo, al pie
+de la obra: ver test_portada_obra.py.
 """
 
 from datetime import date, timedelta
@@ -95,15 +92,14 @@ def test_the_cejilla_counts_them_in_singular_or_plural(client, cuantas, cuenta):
 
 
 def test_la_cejilla_cuenta_a_todas(client):
-    """Las cuenta todas, también las que esperan su pliego en «El colectivo» (D22)."""
+    """Las cuenta todas, también las que esperan su turno en el relevo de «Las voces»."""
     for i in range(17):
         Contributor.objects.create(slug=f"m{i}", display_name=f"Integrante {i}", is_member=True)
     assert "17 integrantes" in _portada(client).select_one(".hero-cejilla").get_text()
 
 
 def test_la_hoja_ya_no_lleva_la_cubierta(client):
-    """La cubierta acompañaba al nombre; con la obra a sangre arriba ya no va (D18). El libro
-    sigue en el bloque de publicaciones."""
+    """La hoja no lleva cubierta: el libro va en el bloque de publicaciones."""
     make_publication(slug="primera", title="Cuadernos del ruido", cover=_imagen("cubierta-1"))
     sopa = _portada(client)
     assert sopa.select_one(".hero-objeto, .hero-cubierta") is None
@@ -114,7 +110,7 @@ def test_la_hoja_ya_no_lleva_la_cubierta(client):
 
 
 def test_un_solo_boton_principal_y_el_mismo_correo_que_el_pie(client):
-    """El botón principal del titular es el dossier, que la hoja oculta desde donde lo lleva
+    """El botón principal de la hoja es el dossier, que la hoja oculta desde donde lo lleva
     la cabecera. «Escríbenos» usa el correo de gestión o, si falta, el general: el del pie."""
     perfil = SiteProfile.load()
     perfil.general_email = "hola@example.com"
@@ -129,8 +125,9 @@ def test_un_solo_boton_principal_y_el_mismo_correo_que_el_pie(client):
 
 
 def test_la_portada_no_lleva_cifras(client):
-    """El dueño del sitio quitó las cifras (2026-10-14): el colectivo aún es pequeño y
-    prefiere no enseñar cuántos son, cuántas actividades y cuántas publicaciones."""
+    """Sin la franja de cifras (integrantes, actividades, publicaciones): el colectivo aún es
+    pequeño (ver «Sin cifras en la portada» en docs/deferidos-y-decisiones.md). Cuántas
+    integrantes son lo dice la cejilla."""
     Contributor.objects.create(slug="m1", display_name="Integrante Uno", is_member=True)
     make_event(
         slug="pasado", type=Event.Type.FESTIVAL, starts_at=timezone.now() - timedelta(days=30)
@@ -142,7 +139,8 @@ def test_la_portada_no_lleva_cifras(client):
 
 
 def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
-    """Flotaba a la derecha del lema, donde fue después el objeto, y el ticket pedía no taparlo."""
+    """El sello va después de los botones: por debajo de 900 px se ve bajo ellos; desde 900,
+    sobre la trama de la derecha."""
     ahora = timezone.now()
     Call.objects.create(
         slug="abierta",
@@ -156,8 +154,8 @@ def test_el_sello_de_la_convocatoria_va_bajo_los_botones(client):
 
 
 def test_la_portada_no_lleva_cita_de_prensa_ni_aliados(client):
-    """Bajo el titular iba una línea con una cita de prensa y «Con el apoyo de». El dueño del
-    sitio la quitó entera (2026-10-14): el colectivo aún es pequeño."""
+    """Sin la línea de respaldo (una cita de prensa y «Con el apoyo de»): el colectivo aún es
+    pequeño."""
     PressMention.objects.create(
         title="b",
         outlet="Radio Dos",

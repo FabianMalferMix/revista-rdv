@@ -1,9 +1,7 @@
 """Superficie de descubrimiento/sindicación: sitemap.xml y RSS de artículos.
 
-Cubre los hallazgos #05 (sitemap y RSS sin ninguna prueba) y #12 (el sitemap
-omitía la portada y las páginas índice). Una regresión silenciosa —reverse mal
-escrito, modelo sin get_absolute_url, cambio de esquema XML— rompería estas
-páginas en producción sin que la suite lo detectara.
+Una regresión silenciosa —reverse mal escrito, modelo sin get_absolute_url, cambio de
+esquema XML— rompería estas páginas en producción sin que la suite lo detectara.
 
 La validación de contrato usa la stdlib (minidom): comprueba que el XML está bien
 formado y que las etiquetas clave existen, sin añadir dependencias (feedparser).
@@ -57,7 +55,7 @@ def test_sitemap_lists_published_article_hides_draft(client):
 
 
 def test_sitemap_includes_static_landing_pages(client):
-    """El sitemap incluye la portada y los índices; antes los omitía (#12)."""
+    """El sitemap incluye la portada y los índices."""
     content = client.get(reverse("sitemap")).content.decode()
     for name in [
         "site:home",
@@ -73,7 +71,7 @@ def test_sitemap_includes_static_landing_pages(client):
 def test_every_sitemap_section_builds_urls_without_error():
     """Con datos sembrados, cada sección construye sus <url> (items + location +
     lastmod) sin lanzar: evita romper el sitemap entero por un filtro/campo/reverse
-    mal escrito en cualquiera de las 13 secciones."""
+    mal escrito en cualquiera de las secciones de SITEMAPS."""
     from django.contrib.sites.requests import RequestSite
     from django.test import RequestFactory
 

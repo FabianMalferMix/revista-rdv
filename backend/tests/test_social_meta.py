@@ -2,9 +2,8 @@
 `twitter:card`, según tenga imagen propia o no.
 
 Con imagen propia, esa; sin ella, la del perfil del sitio; en los dos casos, la tarjeta
-grande. Sin ninguna, no hay `og:image` y la tarjeta es la pequeña. Antes, el texto, el
-evento y la publicación dejaban la tarjeta pequeña aunque usaran la imagen del perfil, y el
-texto ignoraba la imagen para compartir que se elige en el panel.
+grande. Sin ninguna, no hay `og:image` y la tarjeta es la pequeña. Un texto prefiere su
+imagen para compartir, la que se elige en el panel, a su portada.
 """
 
 import json

@@ -1,10 +1,9 @@
-"""El estante de la portada (D24): la opción 3 del tablero «El catálogo en portada», con las
-recomendaciones que aceptó el dueño del sitio (2026-10-22).
+"""El estante de la portada (ver «El estante de publicaciones» en docs/deferidos-y-decisiones.md).
 
-Una publicación de frente y hasta siete de lomo (cinco en D24; más largo en D25), de pie sobre
-la tabla, con la ficha de la de frente al lado y «Ver todo el catálogo →» bajo la tabla. Va de frente la marcada «Featured» y, si no hay, la primera según «Position».
-Sin JavaScript cada lomo lleva a su ficha; static/js/estante.js lo convierte en un botón que
-saca ese libro al frente. Nada se mueve solo.
+Una publicación de frente y hasta siete de lomo, de pie sobre la tabla, con la ficha de la de
+frente al lado y «Ver todo el catálogo →» bajo la tabla. Va de frente la marcada «Destacada» y,
+si no hay, la primera según «Posición». Sin JavaScript cada lomo lleva a su ficha;
+static/js/estante.js lo convierte en un botón que saca ese libro al frente. Nada se mueve solo.
 """
 
 import re
@@ -70,9 +69,9 @@ def test_each_book_names_its_own_card(client):
 
 
 def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
-    """Más largo desde D25: una de frente y hasta siete de lomo, lo que cabe a 951 px junto a
-    la ficha angosta. Quien busca una que no está, tiene «Ver todo el catálogo →» bajo la
-    tabla, como botón lleno: en la cabecera era un enlace que pasaba inadvertido."""
+    """Una de frente y hasta siete de lomo, lo que cabe a 951 px junto a la ficha angosta.
+    Quien busca una que no está, tiene «Ver todo el catálogo →» bajo la tabla, como botón
+    lleno: un enlace en la cabeza de la sección pasaría inadvertido."""
     for i in range(10):
         make_publication(slug=f"p{i}", title=f"Publicación {i}", position=i)
     _, estante = _estante(client)
@@ -82,7 +81,7 @@ def test_hasta_ocho_y_el_catalogo_bajo_la_tabla(client):
     assert catalogo["href"] == reverse("showcase:publication_index")
     assert catalogo.get_text(strip=True) == "Ver todo el catálogo→"
     assert estante.select_one(".estante-cabeza a") is None
-    # La tabla mide lo que sus libros, sin tramos vacíos, y la ficha ocupa el resto (D26).
+    # La tabla mide lo que sus libros, sin tramos vacíos, y la ficha ocupa el resto.
     assert css.rule((), ".estante")["grid-template-columns"] == "auto minmax(0, 1fr)"
     tabla = css.rule((), ".estante-tabla")
     assert (tabla["width"], tabla["max-width"]) == ("fit-content", "100%")
@@ -159,10 +158,10 @@ def _tapa(nombre, borde, centro):
 
 
 def test_el_lomo_y_el_canto_toman_el_color_de_su_tapa(client):
-    """D28: azul de lomo y blanco de frente no era el mismo libro. El lomo lleva el color del
-    borde de su tapa y el canto (el grueso que asoma junto a la tapa de frente), uno más
-    oscuro; los dos como rectángulos de SVG, porque la CSP no admite estilos en línea. Sobre
-    un lomo oscuro, el texto va claro."""
+    """El lomo lleva el color del borde de su tapa, para que lomo y tapa se lean como el mismo
+    libro, y el canto (el grueso que asoma junto a la tapa de frente), uno más oscuro; los dos
+    como rectángulos de SVG, porque la CSP no admite estilos en línea. Sobre un lomo oscuro, el
+    texto va claro."""
     make_publication(slug="rosa", position=0, cover=_tapa("rosa", (246, 214, 230), (20, 30, 200)))
     make_publication(slug="azul", position=1, cover=_tapa("azul", (31, 115, 199), (250, 250, 250)))
     make_publication(slug="sin-tapa", position=2)
@@ -218,12 +217,12 @@ def test_el_guion_saca_al_frente_sin_moverse_solo():
 
 
 def test_la_tabla_tiene_aire_al_final_ni_medio_vacia_ni_saturada():
-    """D27: la tabla mide lo que sus libros más un tramo libre, proporcional a la pantalla."""
+    """La tabla mide lo que sus libros más un tramo libre, proporcional a la pantalla."""
     assert css.rule((), ".estante-tabla")["padding"] == "0 clamp(40px, 6vw, 120px) 0 14px"
 
 
 def test_el_cambio_de_libro_es_suave():
-    """D27: cada libro se desliza desde donde estaba hasta su lugar nuevo (FLIP), el elegido
+    """Cada libro se desliza desde donde estaba hasta su lugar nuevo (FLIP), el elegido
     gira desde el lomo hasta quedar de frente, y las fichas, apiladas en la misma celda, se
     funden. Un cambio a medias se corta antes del siguiente. Con «reducir movimiento», al
     instante."""
@@ -235,9 +234,9 @@ def test_el_cambio_de_libro_es_suave():
 
 
 def test_el_cambio_de_libro_va_sin_prisa():
-    """D32: el cambio se veía demasiado rápido: su curva hacía casi todo el recorrido en los
-    primeros 90 ms. Ahora los libros se mueven con la curva de la tirada, en casi un segundo:
-    los dos guiones la toman de common.js, que la lee de la hoja, donde está una sola vez."""
+    """Los libros se mueven con la curva de la tirada, en casi un segundo: una curva que
+    hiciera casi todo el recorrido en los primeros 90 ms se vería demasiado rápida. Los dos
+    guiones la toman de common.js, que la lee de la hoja, donde está una sola vez."""
     assert "const DESLIZA = 800;" in ESTANTE_JS and "const GIRO = 900;" in ESTANTE_JS
     registros_js = (BACKEND / "static" / "js" / "registros.js").read_text()
     for guion in (ESTANTE_JS, registros_js):
@@ -248,8 +247,8 @@ def test_el_cambio_de_libro_va_sin_prisa():
 
 
 def test_en_pantallas_anchas_los_libros_crecen():
-    """D30: a 1900 px el estante y su ficha dejaban unos 360 px vacíos a la derecha; desde
-    1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve)."""
+    """Desde 1400 px los libros crecen (y la tapa pide una copia del tamaño que se ve): sin
+    eso, a 1900 px el estante y su ficha dejarían unos 360 px vacíos a la derecha."""
     assert ESTANTE_WIDE == 1400
     ancho = (f"@media {from_cut(ESTANTE_WIDE)}",)
     frente = css.rule(ancho, ".ejemplar-frente")["width"]
@@ -262,7 +261,7 @@ def test_en_pantallas_anchas_los_libros_crecen():
 
 def test_the_cover_asks_for_the_width_the_sheet_gives_it_at_every_cut():
     """En cada tramo de su `sizes`, la tapa de frente pide el ancho que le da la hoja en ese
-    corte, y fuera de ellos, el de siempre: la copia de la tapa es la que se ve."""
+    corte, y fuera de ellos, el de su regla base: la copia de la tapa es la que se ve."""
     tramos, resto = SIZES["tapa-estante"]
     assert tramos, "la tapa no cambia de ancho con la ventana"
     for media, ancho in tramos:

@@ -1,10 +1,8 @@
-"""El pie con la identidad del colectivo y los enlaces que faltaban entre fichas
-(backlog UX, tickets 4.4 y 4.5).
+"""El pie con la identidad del colectivo, y los enlaces entre fichas.
 
-El pie era un formulario y un mapa de enlaces: al llegar al final de una página no decía
-de quién era. Ahora lo abre la identidad del colectivo (el sello, de dónde es y desde
-cuándo, el correo y el Instagram), y el mapa ya no repite el correo ni el Instagram. La
-ficha de una integrante enseña ahora las actividades en que participó.
+Lo abre la identidad del colectivo (el sello, de dónde es y desde cuándo, el correo y el
+Instagram): al llegar al final de una página, se sabe de quién es. El mapa no repite el correo
+ni el Instagram. La ficha de una integrante enseña las actividades en que participó.
 """
 
 from datetime import timedelta
@@ -47,7 +45,7 @@ def test_el_pie_empieza_por_la_identidad_del_colectivo(client, perfil):
         "hola@example.com": "mailto:hola@example.com",
         "Instagram @repitentesdelverso": "https://www.instagram.com/repitentesdelverso/",
     }
-    # El orden del ticket: la identidad, el mapa, el boletín y lo legal.
+    # El orden: la identidad, el mapa, el boletín y lo legal.
     piezas = [hijo["class"][0] for hijo in pie.select_one(".wrap-wide").find_all(recursive=False)]
     assert piezas == ["foot-identidad", "foot-groups", "newsletter", "foot-legal"], (
         "el orden del marcado es el que se ve y el del tabulador"
@@ -82,7 +80,7 @@ def test_the_phone_menu_ends_press_and_management_with_the_contact_address(clien
 
 def test_aliados_se_titula_como_el_enlace_que_lleva_a_ella(client):
     """El pie, la sub-fila de «Prensa y gestión» y el cierre de la portada la llaman
-    «Aliados»; su título decía «Aliados y financiamiento» (la bajada ya habla de los fondos)."""
+    «Aliados», y su título también: la bajada ya habla de los fondos."""
     assert soup(client, reverse("showcase:partner_index")).h1.get_text(strip=True) == "Aliados"
 
 

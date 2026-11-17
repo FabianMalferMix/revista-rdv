@@ -1,4 +1,4 @@
-"""Datos estructurados (JSON-LD) y og:image por defecto — Lote F3-6."""
+"""Datos estructurados (JSON-LD) y og:image por defecto."""
 
 import json
 import re
@@ -138,7 +138,7 @@ def test_the_canonical_names_the_page_that_was_served(client, settings):
 
 
 def test_article_jsonld_includes_image_when_og_available(client):
-    """El JSON-LD de Article incluye "image" cuando hay portada o og_image del sitio (#15)."""
+    """El JSON-LD de Article incluye "image" cuando hay portada o og_image del sitio."""
     profile = SiteProfile.load()
     profile.og_image = _asset()
     profile.save()
@@ -149,14 +149,14 @@ def test_article_jsonld_includes_image_when_og_available(client):
 
 
 def test_article_meta_description_falls_back_to_title(client):
-    """Sin seo_description ni subtitle, la meta description cae al título (no vacía, #30)."""
+    """Sin seo_description ni subtitle, la meta description cae al título (no vacía)."""
     art = make_article(status=EditorialStatus.PUBLISHED, slug="sin-desc", title="Solo Título")
     html = client.get(reverse("content:article_detail", args=[art.slug])).content.decode()
     assert '<meta name="description" content="Solo Título">' in html
 
 
 def test_event_jsonld_includes_enddate_when_present(client):
-    """El JSON-LD de Event declara endDate cuando el evento tiene hora de fin (#31)."""
+    """El JSON-LD de Event declara endDate cuando el evento tiene hora de fin."""
     start = timezone.now() + timedelta(days=5)
     ev = Event.objects.create(
         slug="ev-end",

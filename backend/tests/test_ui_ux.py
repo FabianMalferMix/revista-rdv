@@ -1,4 +1,4 @@
-"""UX y accesibilidad: skip link, buscador overlay, focus, lightbox (Lote UI-3)."""
+"""UX y accesibilidad: skip link, buscador overlay, focus, lightbox."""
 
 import pytest
 from bs4 import BeautifulSoup
@@ -32,10 +32,9 @@ pytestmark = pytest.mark.django_db
 def test_skip_link_and_main_landmark(client):
     content = client.get(reverse("content:text_archive")).content
     assert b'class="skip" href="#main"' in content
-    # El destino del enlace de salto: un <main> con ese id. (Antes se afirmaba además la
-    # clase `wrap`; <main> dejó de ser la caja de 820 px al pasar a ser el lienzo.)
+    # El destino del enlace de salto: un <main> con ese id, que es el lienzo.
     assert b'<main id="main" class="lienzo' in content
-    # En la portada salta también la obra (D18): lleva a la hoja, que está dentro de <main>.
+    # En la portada salta también la obra: lleva a la hoja, que está dentro de <main>.
     portada = client.get(reverse("site:home")).content.decode()
     assert 'class="skip" href="#contenido"' in portada
     assert portada.index('<main id="main"') < portada.index('id="contenido"')
@@ -45,7 +44,7 @@ def test_the_search_panel_announces_a_count_and_not_the_whole_list(client):
     """Los resultados no son una región viva: el lector los leería enteros en cada pausa. Se
     anuncia el recuento, en una región de estado aparte que rellena la parcial (test_search)."""
     sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
-    # Un solo contenedor de resultados (el div suelto a ancho completo desapareció).
+    # Un solo contenedor de resultados.
     resultados = sopa.select("#search-results")
     assert len(resultados) == 1
     assert resultados[0].find_parent(attrs={"aria-live": True}) is None
@@ -145,7 +144,7 @@ def test_card_titles_sit_one_level_below_the_heading_they_hang_from(client):
 
 def test_submit_file_help_aria_reference_resolves(client):
     """El aria-describedby del input de archivo apunta a un id que EXISTE en el
-    documento (antes la referencia ARIA estaba rota, #14). Verificado con bs4."""
+    documento. Verificado con bs4."""
     from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(client.get(reverse("submissions:submit")).content, "html.parser")

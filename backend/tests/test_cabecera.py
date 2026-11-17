@@ -1,9 +1,7 @@
-"""La cabecera de una fila (backlog UX, ticket 4.1; decisiones D2 y D9).
-
-Medía 111 px en escritorio y 156 en el teléfono: el sello y el campo de búsqueda siempre
-abierto en una fila, y cuatro enlaces debajo. `/textos/` y el dossier solo estaban en el
-pie, y ninguna página decía cuál era la actual. Ahora va en una fila: el sello, cinco
-enlaces, una lupa que abre el buscador y el botón «Dossier».
+"""La cabecera de una fila: el sello, cinco enlaces, una lupa que abre el buscador y el botón
+«Dossier». La barra marca la página actual y su territorio (ver «Barra de cinco enlaces y
+“Dossier”; prensa y aliados como línea de respaldo» y «El buscador, plegado en una lupa» en
+docs/deferidos-y-decisiones.md).
 """
 
 from dataclasses import replace

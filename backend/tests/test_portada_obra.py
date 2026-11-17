@@ -1,10 +1,10 @@
-"""La portada como obra (D18): la mancheta de afiche con telón que eligió el dueño del sitio
-en el tablero de la portada (2026-10-20).
+"""La portada como obra (ver «La portada como obra: mancheta de afiche con telón» en
+docs/deferidos-y-decisiones.md).
 
-La primera vista es una obra a sangre con el logo al pie; lo que era el titular pasa a la
-hoja que sigue. La obra la elige el colectivo en el perfil del sitio y sale en AVIF y WebP,
-con un recorte vertical para el teléfono; sin ella, va la lámina del estreno. El alto, el
-asomo y el telón están en test_css_sistema.py; la hoja, en test_titular.py.
+La primera vista es una obra a sangre con el logo al pie, y la hoja sigue debajo. La obra la
+elige el colectivo en el perfil del sitio y sale en AVIF y WebP, con un recorte vertical para
+el teléfono; sin ella, va la lámina del estreno. El alto, el asomo y el telón están en
+test_css_sistema.py; la hoja, en test_titular.py.
 """
 
 from io import BytesIO
@@ -98,8 +98,8 @@ def test_the_obra_asks_for_the_size_the_sheet_paints_it_at():
 
 
 def test_la_lamina_esta_entera_y_cumple_el_presupuesto():
-    """Hasta 300 KB en escritorio y 150 KB en el teléfono (cálculo del tablero, a partir de la
-    meta de carga de 2,5 s). Cada copia que nombra la etiqueta existe, con su tamaño."""
+    """Hasta 300 KB en escritorio y 150 KB en el teléfono, lo que cabe en la meta de carga de
+    2,5 s. Cada copia que nombra la etiqueta existe, con su tamaño."""
     for forma, tope in (("ancha", 300), ("alta", 150)):
         for ancho, alto in LAMINA[forma]:
             for ext in ("avif", "webp"):
