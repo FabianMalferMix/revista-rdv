@@ -596,7 +596,7 @@ def test_los_retratos_nuevos_no_son_circulos():
 BLANCO_PERMITIDO = {
     ".search input",
     ".search-page input",
-    ".newsletter input[type=email]",
+    ".newsletter [type=email]",
     ".form input, .form textarea, .form select",
     ".pub-card img, .pub-cover-fallback",
     ".embed-play",

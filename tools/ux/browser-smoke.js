@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Prueba de humo en navegador: el sitio en Chrome a 951 px (la ventana del dueño) y a 375 px (un
-// teléfono), y lo que pide cada imagen a 951 y a 390 px, con los guiones de backend/static/js/
-// ejecutándose de verdad. Una comprobación falla si lo que mide no se cumple, y también ante un
-// error de página o de consola, un recurso propio que no carga o una petición a un tercero que
-// nadie pidió. La corre el job `navegador` del CI.
+// teléfono), y lo que pide cada imagen y el aire de las fichas a 951 y a 390 px, con los guiones
+// de backend/static/js/ ejecutándose de verdad. Una comprobación falla si lo que mide no se
+// cumple, y también ante un error de página o de consola, un recurso propio que no carga o una
+// petición a un tercero que nadie pidió. La corre el job `navegador` del CI.
 //
 //   node tools/ux/browser-smoke.js [--base URL]
 //
@@ -202,6 +202,65 @@ function measureImages() {
     });
   }
   ruler.remove();
+  return found;
+}
+
+// El borde de un campo de correo del boletín, con los dos colores con que se compara resueltos
+// junto a él: el del borde de los campos (`--edge`) y el del mensaje de error, si lo hay.
+function emailBorder(input) {
+  const probe = document.createElement('span');
+  probe.style.color = 'var(--edge)';
+  input.after(probe);
+  const edge = getComputedStyle(probe).color;
+  probe.remove();
+  const style = getComputedStyle(input);
+  const message = document.getElementById(`${input.id}_error`)?.querySelector('.error');
+  return {
+    invalid: input.getAttribute('aria-invalid'),
+    width: style.borderTopWidth,
+    color: style.borderTopColor,
+    edge,
+    error: message ? getComputedStyle(message).color : null,
+  };
+}
+
+// En la página: lo que se enfoca con el tabulador y se ve, si es un botón o tiene caja propia
+// (fondo, borde o sombra) o esquinas propias. De cada pieza, sus esquinas sin el foco y con él, si
+// con el foco se ve el anillo, y cuáles de `kinds` es. Un enlace del texto no tiene caja, y el
+// anillo le pone sus esquinas. Con `onlyActive`, solo lo que ya tiene el foco.
+function measureCorners([kinds, onlyActive]) {
+  const corners = (e) => {
+    const s = getComputedStyle(e);
+    return [s.borderTopLeftRadius, s.borderTopRightRadius, s.borderBottomRightRadius, s.borderBottomLeftRadius].join(' ');
+  };
+  const boxed = (e) => {
+    const s = getComputedStyle(e);
+    return s.backgroundColor !== 'rgba(0, 0, 0, 0)' || s.backgroundImage !== 'none' || s.boxShadow !== 'none'
+      || ['Top', 'Right', 'Bottom', 'Left'].some((side) => s[`border${side}Style`] !== 'none' && parseFloat(s[`border${side}Width`]) > 0);
+  };
+  const pieces = onlyActive
+    ? [document.activeElement]
+    : [...document.querySelectorAll('a[href], button, summary, input:not([type=hidden]), select, textarea, [tabindex]')]
+      .filter((e) => e.tabIndex >= 0 && e.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
+      .filter((e) => e.matches('button, .btn') || boxed(e) || corners(e) !== '0px 0px 0px 0px');
+  const found = [];
+  for (const e of pieces) {
+    e.focus();
+    // Lo que no recibe el foco (inerte o desactivado) no cuenta.
+    if (document.activeElement !== e) continue;
+    const s = getComputedStyle(e);
+    const focused = corners(e);
+    const ring = e.matches(':focus-visible') && s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 2;
+    e.blur();
+    const label = (e.getAttribute('aria-label') || e.textContent || e.value || '').trim().replace(/\s+/g, ' ');
+    found.push({
+      name: `${e.tagName.toLowerCase()}${[...e.classList].map((c) => `.${c}`).join('')} «${label.slice(0, 30)}»`,
+      kinds: kinds.filter((kind) => e.matches(kind)),
+      rest: corners(e),
+      focused,
+      ring,
+    });
+  }
   return found;
 }
 
@@ -412,11 +471,14 @@ const CHECKS = [
     },
   },
   {
-    name: 'Un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado y el foco',
+    name: 'Un correo que el sitio no acepta vuelve a su campo, con lo escrito, el error al lado, su borde de error y el foco',
     widths: [951, 375],
     async run({ page }) {
       await visit(page, '/textos/');
       const field = page.locator('footer input[name="email"]');
+      const plain = await field.evaluate(emailBorder);
+      expect(plain.invalid === null, `sin enviar, el campo ya lleva aria-invalid="${plain.invalid}"`);
+      expect(plain.color === plain.edge, `sin error, el borde del campo es ${plain.color}, y no ${plain.edge}, el de los campos`);
       // «ana@correo» lo acepta el navegador (no pide punto en el dominio) y Django no.
       await field.fill('ana@correo');
       await Promise.all([page.waitForURL('**/novedades/'), field.press('Enter')]);
@@ -440,6 +502,12 @@ const CHECKS = [
       expect(state.error === 'Revisa el correo ingresado.', `el error dice «${state.error}»`);
       expect(state.near, 'el error no está junto al campo');
       expect(!state.covered, 'el campo con el foco queda tapado');
+      const marked = await page.locator('input[name="email"]').evaluate(emailBorder);
+      expect(marked.invalid === 'true', `con el error, el campo lleva aria-invalid="${marked.invalid}"`);
+      expect(
+        parseFloat(marked.width) > parseFloat(plain.width) && marked.color === marked.error,
+        `con el error, el borde del campo es de ${marked.width} en ${marked.color}: sin error es de ${plain.width}, y el error va en ${marked.error}`
+      );
     },
   },
   {
@@ -1181,6 +1249,79 @@ const CHECKS = [
       } finally {
         await noScripts.close();
       }
+    },
+  },
+  {
+    name: 'En cada ficha, entre su cabecera y el título de su primera sección, el mismo aire',
+    widths: [951, 390],
+    async run({ page }) {
+      // Del borde de abajo de la cabecera (`head`) al título de la primera sección, y si el título
+      // va justo después de la cabecera.
+      const gapBelow = (head) =>
+        page.evaluate((selector) => {
+          const top = document.querySelector(selector);
+          const title = document.querySelector('main .subhead');
+          if (!top || !title) return null;
+          return {
+            gap: title.getBoundingClientRect().top - top.getBoundingClientRect().bottom,
+            next: top.nextElementSibling === title,
+          };
+        }, head);
+      // La medida: la de la ficha de una integrante, que abre con su retrato.
+      await visit(page, '/integrante/fernanda-soto/');
+      const reference = await gapBelow('main .ficha-cabecera');
+      expect(reference && reference.gap > 0, 'la ficha de una integrante no tiene un título que medir bajo su cabecera');
+      // Las que abren con el filete de su cabecera y, justo debajo, el título de una sección.
+      const wrong = [];
+      for (const route of ['/obra/la-casa-vacia/', '/editorial/ediciones-ceniza/', '/autor/camila-reyes/', '/colaborador/diego-salinas/']) {
+        await visit(page, route);
+        const measured = await gapBelow('main .index-head');
+        expect(measured && measured.next, `${route}: bajo el filete de la cabecera no va el título de una sección`);
+        if (Math.abs(measured.gap - reference.gap) >= 0.5) wrong.push(`${route}, ${measured.gap} px`);
+      }
+      expect(
+        !wrong.length,
+        `entre el filete y el título hay, en ${wrong.join('; en ')}, y en la ficha de una integrante, ${reference.gap} px`
+      );
+    },
+  },
+  {
+    name: 'Con el foco, cada botón y cada pieza con caja conserva sus esquinas, y el anillo se ve',
+    widths: [951, 375],
+    async run({ page }) {
+      // Las piezas que tienen que estar entre las medidas, para que no pase en vacío.
+      const kinds = ['.skip', '.btn', '.form button', '.tag', '.embed-play', '.tirada-contacto', '.ejemplar-lomo'];
+      const measured = new Set();
+      const wrong = [];
+      const review = (where, pieces) => {
+        for (const piece of pieces) {
+          piece.kinds.forEach((kind) => measured.add(kind));
+          if (piece.focused !== piece.rest) {
+            wrong.push(`${where}: ${piece.name} tiene esquinas de ${piece.rest} y, con el foco, de ${piece.focused}`);
+          }
+          if (!piece.ring) wrong.push(`${where}: ${piece.name} tiene el foco y no se ve el anillo`);
+        }
+      };
+      const routes = ['/', '/textos/', '/texto/resena-la-casa-vacia/', '/registro/recital-nuevas-voces/', '/enviar/', '/buscar/?q=casa'];
+      for (const route of routes) {
+        await visit(page, route);
+        // Con el teclado, también se ve el foco que pone un guion (`:focus-visible`).
+        await page.keyboard.press('Tab');
+        review(route, await page.evaluate(measureCorners, [kinds, false]));
+      }
+      // El campo de la lupa solo se ve con la lupa abierta, que le da el foco.
+      await visit(page, '/registros/');
+      await page.click('.busqueda summary');
+      const inField = await page
+        .waitForFunction(() => document.activeElement.matches('.busqueda input[type="search"]'), null, { timeout: 2000 })
+        .then(() => true, () => false);
+      expect(inField, 'al abrir la lupa, el foco no va al campo');
+      const lupa = await page.evaluate(measureCorners, [kinds, true]);
+      expect(lupa.length === 1, 'el campo de la lupa no se pudo medir');
+      review('/registros/ (la lupa)', lupa);
+      expect(!wrong.length, wrong.join(' · '));
+      const missing = kinds.filter((kind) => !measured.has(kind));
+      expect(!missing.length, `no hay ningún ${missing.join(', ')} que medir`);
     },
   },
 ];

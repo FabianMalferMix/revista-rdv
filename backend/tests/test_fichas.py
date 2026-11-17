@@ -254,6 +254,33 @@ def test_en_su_ficha_cada_fila_omite_su_propia_firma(client):
     assert "Ella Misma" in archivo
 
 
+def test_on_a_contributor_page_her_texts_do_not_repeat_her_byline(client):
+    """Como sus poemas: la página de quien colabora no repite su nombre en cada texto, y uno
+    firmado con otra persona sigue nombrando a la otra."""
+    ella = Contributor.objects.create(slug="ella", display_name="Ella Misma")
+    otra = Contributor.objects.create(slug="otra", display_name="La Otra")
+    sola = make_article(slug="sola", status=EditorialStatus.PUBLISHED, published_at=timezone.now())
+    juntas = make_article(
+        slug="juntas", status=EditorialStatus.PUBLISHED, published_at=timezone.now()
+    )
+    ArticleContributor.objects.create(article=sola, contributor=ella)
+    ArticleContributor.objects.create(article=juntas, contributor=ella, position=0)
+    ArticleContributor.objects.create(article=juntas, contributor=otra, position=1)
+
+    page = soup(client, ella.get_absolute_url())
+    assert ella.get_absolute_url() == reverse("content:contributor_detail", args=["ella"])
+    assert page.select_one(".index-head h1").get_text(strip=True) == "Ella Misma"
+    pies = {
+        f.select_one(".fila-titulo a")["href"]: f.select_one(".fila-pie").get_text(" ", strip=True)
+        for f in page.select("li.fila")
+    }
+    assert set(pies) == {sola.get_absolute_url(), juntas.get_absolute_url()}
+    assert "Ella Misma" not in pies[sola.get_absolute_url()]
+    assert "Ella Misma" not in pies[juntas.get_absolute_url()]
+    # Control: el texto a cuatro manos nombra a la otra persona.
+    assert "La Otra" in pies[juntas.get_absolute_url()]
+
+
 def test_la_ficha_de_publicacion_pone_la_cubierta_al_lado(client):
     publicacion = make_publication(slug="sin-tapa", title="Sin tapa")
     medio = soup(client, publicacion.get_absolute_url()).select_one(".ficha-cabecera .ficha-medio")
