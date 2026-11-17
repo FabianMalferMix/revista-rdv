@@ -158,15 +158,25 @@ class EditorialItem(TimestampedModel):
         return self.status == publishing.PUBLISHED
 
     @classmethod
-    def bylines_prefetch(cls, prefix=""):
-        """La precarga de `bylines`. Con `prefix` va sobre una relación: «article__»."""
+    def bylines_prefetch(cls, prefix="", with_page=False):
+        """La precarga de `bylines`. Con `prefix` va sobre una relación: «article__».
+
+        Con `with_page`, cada persona llega con `has_page`, si tiene ficha, con el criterio de
+        su ficha (`Contributor.objects.with_page()`), en una consulta más para todas. La pide
+        la ficha de la pieza: en la vista previa de una sin publicar, quien firma puede no
+        tener ficha todavía, y su enlace llevaría a un 404. Las listas no la piden: enseñan
+        solo lo publicado, y quien firma algo publicado tiene ficha.
+        """
         through = cls.authors.through
-        return models.Prefetch(
-            f"{prefix}{through._meta.model_name}_set",
-            queryset=through.objects.select_related("contributor__photo").order_by(
-                "position", "pk"
-            ),
-        )
+        rows = through.objects.order_by("position", "pk")
+        if with_page:
+            people = through._meta.get_field("contributor").related_model.objects.with_page()
+            rows = rows.prefetch_related(
+                models.Prefetch("contributor", queryset=people.select_related("photo"))
+            )
+        else:
+            rows = rows.select_related("contributor__photo")
+        return models.Prefetch(f"{prefix}{through._meta.model_name}_set", queryset=rows)
 
     @property
     def bylines(self):
@@ -174,7 +184,8 @@ class EditorialItem(TimestampedModel):
 
         Django no aplica el orden del puente al M2M `authors`, que sale por nombre: las
         firmas se leen siempre de aquí. El desempate por `pk` cuenta, porque el inline del
-        panel crea todas las filas en la posición 0. Sin precarga, la hace en el momento.
+        panel crea todas las filas en la posición 0. Sin precarga, la hace en el momento, sin
+        `has_page`.
         """
         models.prefetch_related_objects([self], self.bylines_prefetch())
         through = type(self).authors.through

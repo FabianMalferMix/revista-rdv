@@ -1,10 +1,13 @@
 {% comment %}
    Pie de entidad: adónde ir después de una ficha. Cada celda se pulsa entera: el ::after de
-   su enlace la cubre. Lo dibuja la etiqueta de cada ficha (apps/site/templatetags/pie.py),
-   que, como toda etiqueta de inclusión, la pinta solo con lo que le pasa.
+   su enlace la cubre. Una puerta sin `url` (lo que no tiene página pública, en una vista
+   previa) nombra su texto sin enlace, compuesto igual (`.sin-enlace`). Lo dibuja la etiqueta
+   de cada ficha (apps/site/templatetags/pie.py), que, como toda etiqueta de inclusión, la
+   pinta solo con lo que le pasa.
 
    Parámetros (los da la etiqueta):
-     pie        las puertas (obligatorio): una lista de {rotulo, texto, url}
+     pie        las puertas (obligatorio): una lista de {rotulo, texto, url}; `url` puede ser
+                None
      etiqueta   el nombre de la navegación para los lectores de pantalla; «Seguir leyendo»
                 si no se da otro
 {% endcomment %}
@@ -12,7 +15,7 @@
   <nav class="pie-entidad" aria-label="{% firstof etiqueta 'Seguir leyendo' %}">
     <ul>
       {% for p in pie %}
-        <li><span class="rotulo">{{ p.rotulo }}</span><a class="enlace-total" href="{{ p.url }}">{{ p.texto }}</a></li>
+        <li><span class="rotulo">{{ p.rotulo }}</span>{% if p.url %}<a class="enlace-total" href="{{ p.url }}">{{ p.texto }}</a>{% else %}<span class="sin-enlace">{{ p.texto }}</span>{% endif %}</li>
       {% endfor %}
     </ul>
   </nav>

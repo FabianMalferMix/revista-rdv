@@ -35,7 +35,7 @@ def article_detail(request, slug):
     article, preview = publishing.piece_for(
         request,
         Article.objects.select_related("section", "cover_image").prefetch_related(
-            Article.bylines_prefetch(),
+            Article.bylines_prefetch(with_page=True),
             Prefetch(
                 "reviewed_works",
                 queryset=Work.objects.select_related("publisher", "cover_image").with_page(),
@@ -122,7 +122,9 @@ def poem_index(request):
 def poem_detail(request, slug):
     poem, preview = publishing.piece_for(
         request,
-        Poem.objects.select_related("recording").prefetch_related(Poem.bylines_prefetch()),
+        Poem.objects.select_related("recording").prefetch_related(
+            Poem.bylines_prefetch(with_page=True)
+        ),
         slug=slug,
     )
     response = render(

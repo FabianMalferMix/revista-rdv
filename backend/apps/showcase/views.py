@@ -8,7 +8,7 @@ from apps.agenda.services import cronologia, stats
 from apps.content.models import Article
 from apps.people.models import Contributor
 from apps.site.pie import vecinos_en_lista
-from apps.site.services import participants_prefetch, ultima_publicacion
+from apps.site.services import participants_prefetch, ultima_publicacion, with_publisher_page
 from config import protected_media, publishing
 
 from .models import Partner, PressMention, Publication, SiteProfile
@@ -32,8 +32,10 @@ def publication_index(request):
 def publication_detail(request, slug):
     publication, preview = publishing.piece_for(
         request,
-        Publication.objects.select_related("publisher", "cover").prefetch_related(
-            participants_prefetch(), "where_to_buy"
+        with_publisher_page(
+            Publication.objects.select_related("publisher", "cover").prefetch_related(
+                participants_prefetch(), "where_to_buy"
+            )
         ),
         slug=slug,
     )

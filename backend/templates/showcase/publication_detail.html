@@ -26,7 +26,7 @@
           {% joined %}
             {% if publication.year %}{{ publication.year }}{% endif %}
           {% part %}
-            {% if publication.publisher %}<a href="{{ publication.publisher.get_absolute_url }}">{{ publication.publisher.name }}</a>{% endif %}
+            {% if publication.publisher %}{% if publication.publisher_has_page %}<a href="{{ publication.publisher.get_absolute_url }}">{{ publication.publisher.name }}</a>{% else %}{{ publication.publisher.name }}{% endif %}{% endif %}
           {% part %}
             {% if publication.isbn %}ISBN {{ publication.isbn }}{% endif %}
           {% endjoined %}

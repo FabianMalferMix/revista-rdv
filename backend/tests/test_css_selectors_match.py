@@ -944,9 +944,11 @@ def site_pages(client, groups, editor, legal_pages, frozen_rate_limit_window):
     home = client.get(reverse("site:home")).content.decode()
     pages.append(_with_search_results(home, panel.content.decode()))
 
-    # Lo que ve el equipo: la vista previa de un borrador y, en el panel, un texto con la nota
-    # de otra persona, que se lee y no se escribe.
+    # Lo que ve el equipo: la vista previa de un borrador, que firma alguien sin nada publicado
+    # (no tiene página: las firmas y el pie la nombran sin enlace), y, en el panel, un texto con
+    # la nota de otra persona, que se lee y no se escribe.
     draft = make_article(slug="borrador", title="Borrador", owner=editor)
+    draft.authors.add(Contributor.objects.create(slug="firma-nueva", display_name="Firma Nueva"))
     other = get_user_model().objects.create_user("editora_dos", password="pw", is_staff=True)
     other.groups.add(groups["editor"])
     EditorialNote.objects.create(
