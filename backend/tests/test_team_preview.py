@@ -1,8 +1,7 @@
 """La vista previa del equipo: la ficha de algo sin publicar se sirve a quien puede verlo en el panel.
 
 Con la franja «Vista previa: no publicado», sin indexar y sin guardarse en cachés compartidas. Un
-anónimo recibe 404, como siempre, y una autora no ve los borradores ajenos. Lo publicado se sirve
-igual que antes, sin franja.
+anónimo recibe 404, y una autora no ve los borradores ajenos. Lo publicado se sirve sin franja.
 
 La vista previa enseña la pieza como la verá quien lee, pero lo que la rodea puede no tener página
 pública todavía: quien firma sin nada publicado, la editorial sin nada publicado, la obra que
@@ -80,7 +79,7 @@ def test_the_editor_and_the_owner_preview_a_draft_and_nobody_else(
         assert _is_preview(client.get(url)), person
     client.force_login(other_author)
     assert client.get(url).status_code == 404
-    # Control: lo publicado se ve igual que siempre, sin franja ni noindex.
+    # Control: lo publicado se ve sin franja ni noindex.
     published = make(owner=autor, status=S.PUBLISHED)
     client.force_login(editor)
     response = client.get(published.get_absolute_url())
@@ -128,7 +127,7 @@ def test_a_scheduled_piece_is_previewed_until_it_is_published(client, editor):
 
 
 def test_without_access_to_the_panel_there_is_no_preview(client, groups):
-    """Alguien que conserva los permisos de su grupo pero ya no entra al panel no ve borradores."""
+    """Quien conserva los permisos de su grupo pero no entra al panel no ve borradores."""
     former = get_user_model().objects.create_user("ya-no-entra", password="pw", is_staff=False)
     former.groups.add(groups[roles.EDITOR])
     draft = make_article(status=S.DRAFT)

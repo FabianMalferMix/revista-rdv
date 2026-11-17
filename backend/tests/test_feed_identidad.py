@@ -1,10 +1,7 @@
-"""El RSS de textos anuncia la identidad configurada, no una escrita a fuego.
+"""El RSS de textos anuncia la identidad del perfil del sitio, no una escrita en el código.
 
-`LatestArticlesFeed` llevaba «Reseñas — Revista literaria» como atributo de clase, de
-cuando el proyecto era una revista de reseñas y no un colectivo de poesía. Al no consultar
-`SiteProfile`, configurar la identidad en el panel —que está anotado como pendiente— no
-habría cambiado el feed: el desajuste habría sobrevivido en silencio justo a la tarea
-pensada para arreglarlo. Y quien lee un RSS es prensa y gestores, la audiencia del sitio.
+`LatestArticlesFeed` lee el nombre y el lema de `SiteProfile`: cambiarlos en el panel cambia
+también el feed. Y quien lee un RSS es prensa y gestores, la audiencia del sitio.
 """
 
 import pytest
@@ -36,7 +33,8 @@ def test_el_titulo_sale_del_perfil_no_del_codigo():
 
 
 def test_no_queda_rastro_de_la_identidad_antigua():
-    """La prueba que habría detectado esto: ninguna cadena fija del pasado en el feed."""
+    """El canal no anuncia una identidad escrita en el código, como «Revista literaria»: solo
+    la del perfil."""
     perfil = SiteProfile.load()
     perfil.name = "Casa Tomada"
     perfil.tagline = "Colectivo de poesía"
@@ -61,7 +59,7 @@ def test_sin_lema_no_deja_un_guion_suelto():
 
 
 def test_el_feed_sigue_sirviendo_los_articulos():
-    """Contra-prueba: cambiar el encabezado no debe romper el contenido."""
+    """Control: con el encabezado del perfil, el feed sirve los textos publicados."""
     from apps.content.models import Article, EditorialStatus
 
     Article.objects.create(

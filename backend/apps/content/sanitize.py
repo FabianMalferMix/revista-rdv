@@ -1,4 +1,4 @@
-"""Sanitización de HTML autoral (cierra el riesgo del `|safe` en plantillas).
+"""El saneo del HTML de autor (el cuerpo de textos y páginas), al guardarlo y al pintarlo.
 
 Las listas y la regla de las imágenes son las de `config/content_policy.py`, las mismas que recibe
 el editor del panel.

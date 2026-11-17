@@ -1,10 +1,10 @@
-"""El desplegable de acciones ofrece solo lo que el rol podría ejecutar.
+"""El desplegable de acciones ofrece solo lo que el rol puede ejecutar.
 
-Antes, un autor veía las nueve transiciones del flujo aunque ocho fueran inalcanzables
-para él contra cualquier pieza y en cualquier estado: seleccionar veinte artículos y
-pulsar «Publicar» devolvía veinte avisos de rechazo. El filtro es de comodidad; el
-control sigue siendo la guarda de `workflow.perform_transition`, y estas pruebas fijan
-ese orden para que quitar el filtro no se lea como abrir un permiso.
+A una autora le queda «Enviar a revisión»: las demás transiciones no las puede disparar
+contra ninguna pieza ni en ningún estado, y sin el filtro, seleccionar veinte artículos y
+pulsar «Publicar» devolvería veinte avisos de rechazo. El filtro es de comodidad; el control
+es la guarda de `workflow.perform_transition`, y estas pruebas fijan ese orden para que
+quitar el filtro no se lea como abrir un permiso.
 """
 
 import pytest
@@ -55,10 +55,11 @@ def test_el_filtro_alcanza_tambien_a_los_poemas(autor):
 
 
 def test_no_se_lleva_por_delante_las_acciones_que_no_son_transiciones(autor):
-    """El filtro solo conoce la tabla de transiciones; lo demás no le incumbe.
+    """El filtro retira las transiciones que el rol no puede ejecutar, no las demás acciones:
+    una propia, que no pide permiso, se queda.
 
-    Se prueba con una acción propia y no con `delete_selected` porque esa nunca llega
-    hasta aquí para un autor: `has_delete_permission` ya la retiró antes por rol.
+    Se prueba con una acción propia y no con `delete_selected`, que a una autora se le retira
+    por su propio permiso: pide el de borrar, y `has_delete_permission` se lo niega por rol.
     """
 
     class ArticleAdminConExtra(ArticleAdmin):

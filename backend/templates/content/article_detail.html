@@ -34,9 +34,9 @@
 {% block content %}
   <article class="article lectura">
     {% comment %}
-       La ancla se queda fija al bajar, y un elemento fijo solo puede moverse dentro de su
-       contenedor. Por eso la sala —ancla y texto— va en su propio bloque y el pie queda
-       fuera: dentro del mismo, la ancla bajaba hasta montarse sobre las salidas.
+       En pantalla ancha y alta, el ancla se queda fija al bajar, y un elemento fijo solo puede
+       moverse dentro de su contenedor. Por eso la sala —ancla y texto— va en su propio bloque
+       y el pie queda fuera: dentro del mismo, el ancla bajaría hasta montarse sobre las salidas.
     {% endcomment %}
     <div class="lectura-sala">
     <header class="lectura-ancla">
@@ -91,7 +91,7 @@
           {% endif %}
         </figure>
       {% endif %}
-      {# body ya viene sanitizado con nh3 (lista blanca) en Article.save. #}
+      {# Se depura al pintarlo, con la lista blanca de nh3: loaddata y `update()` no pasan por Article.save. #}
       <div class="body" hx-disable>{{ article.body|authored_html }}</div>
     </div>
     </div>

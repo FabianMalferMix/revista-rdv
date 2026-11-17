@@ -7,7 +7,7 @@
 {% block content %}
   <article class="article">
     <h1>{{ page.title }}</h1>
-    {# body ya viene sanitizado con nh3 (lista blanca) en Page.save. #}
+    {# Se depura al pintarlo, con la lista blanca de nh3: loaddata y `update()` no pasan por Page.save. #}
     <div class="body" hx-disable>{{ page.body|authored_html }}</div>
   </article>
 {% endblock %}

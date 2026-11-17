@@ -1,4 +1,4 @@
-"""Máquina de estados editorial (versión colapsada: 8 estados, sin corrector).
+"""Máquina de estados editorial: los ocho estados de `EditorialStatus`.
 
 Compartida por todas las piezas que heredan de EditorialItem (artículos y poemas).
 Las transiciones se validan aquí en el servidor, nunca en la UI. Cada movimiento

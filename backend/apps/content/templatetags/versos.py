@@ -25,8 +25,8 @@ def primeros_versos(cuerpo, cuantos=3):
     return versos
 
 
-# Lo que la portada cita de un poema, como mucho: un poema corriente cabe entero en sus tres
-# versos (los de la demostración miden entre 20 y 50 letras).
+# Lo que la portada cita de un poema, como mucho: tres versos de hasta cincuenta letras caben
+# enteros.
 LETRAS_DEL_ADELANTO = 160
 
 
@@ -36,9 +36,9 @@ def adelanto(cuerpo, cuantos=3):
     LETRAS_DEL_ADELANTO letras entre todos.
 
     Un poema de versos largos, o en prosa, abre con párrafos: sin tope, sus tres «versos»
-    llenaban la portada (una oda de prueba ocupaba diez líneas, y un poema en prosa habría
-    puesto tres párrafos enteros). El verso que no cabe se corta en una palabra, con puntos
-    suspensivos; si para él quedan menos de cuarenta letras, no se cita.
+    llenarían la portada (un poema en prosa pondría tres párrafos enteros). El verso que no
+    cabe se corta en una palabra, con puntos suspensivos; si para él quedan menos de
+    cuarenta letras, no se cita.
     """
     citados, quedan = [], LETRAS_DEL_ADELANTO
     for verso in primeros_versos(cuerpo, cuantos):
@@ -113,7 +113,8 @@ def opening_stanzas(cuerpo, cuantos=FEATURED_VERSES):
     return "\n\n".join("\n".join(estrofa) for estrofa in citadas)
 
 
-# El manifiesto en la portada (D33): hasta su primera pausa, si llega antes de estas palabras.
+# El manifiesto en la portada: hasta su primera pausa, si llega antes de estas palabras (ver
+# «La hoja, lámina a dos tintas» en docs/deferidos-y-decisiones.md).
 PALABRAS_DEL_MANIFIESTO = 36
 _PAUSA = re.compile(r"[.:;?!](?=\s|$)")
 
@@ -123,10 +124,10 @@ def primera_pausa(texto, tope=PALABRAS_DEL_MANIFIESTO):
     """El comienzo de un texto hasta su primera pausa: punto, dos puntos, punto y coma, o
     cierre de pregunta o de exclamación.
 
-    La portada cortaba el manifiesto en la palabra 28, a media frase («donde no suelen …»),
-    y en letra de cartel se notaba más. Los dos puntos y el punto y coma se cierran con
-    punto: lo que venía después (una enumeración, otra idea) no se cita. Si la primera pausa
-    llega después de `tope` palabras, se corta en la palabra 28, como antes.
+    Un corte por número de palabras deja el manifiesto a media frase, y en letra de cartel
+    se nota más. Los dos puntos y el punto y coma se cierran con punto: lo que viene después
+    (una enumeración, otra idea) no se cita. Si no hay pausa, o llega pasadas `tope`
+    palabras, se corta en la palabra 28, con « …».
     """
     texto = " ".join((texto or "").split())
     pausa = _PAUSA.search(texto)

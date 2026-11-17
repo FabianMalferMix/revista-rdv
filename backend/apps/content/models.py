@@ -194,7 +194,7 @@ class EditorialItem(TimestampedModel):
 
         Django no aplica el orden del puente al M2M `authors`, que sale por nombre: las
         firmas se leen siempre de aquí. El desempate por `pk` cuenta, porque el inline del
-        panel crea todas las filas en la posición 0. Sin precarga, la hace en el momento, sin
+        panel propone la posición 0 en cada fila. Sin precarga, la hace en el momento, sin
         `has_page`.
         """
         models.prefetch_related_objects([self], self.bylines_prefetch())
@@ -334,10 +334,10 @@ class Article(EditorialItem):
     def seccion_aporta(self):
         """¿Dice la sección algo que el tipo no diga ya?
 
-        La cejilla de cada tarjeta mostraba «Reseñas · Reseña», «Ensayos · Ensayo»: la
-        misma palabra dos veces. La sección solo se nombra junto al tipo cuando añade
-        información («Crónica · Entrevista»). Se comparan sin tildes ni mayúsculas, y
-        basta que una empiece por la otra para cubrir el plural.
+        La cejilla nombra la sección junto al tipo solo cuando añade información, como en
+        «Crónica · Entrevista»; si no, diría la misma palabra dos veces («Reseñas · Reseña»).
+        Se comparan sin tildes ni mayúsculas, y basta que una empiece por la otra para cubrir
+        el plural.
         """
         if not self.section_id:
             return False
@@ -507,13 +507,11 @@ class Poem(EditorialItem):
 
     @property
     def published_recording(self):
-        """El registro asociado, SOLO si está publicado (hallazgo S-05).
+        """El registro asociado, solo si está publicado.
 
-        La ficha del poema era el único consumidor de `Recording` que no filtraba por
-        estado: publicaba el audio y el enlace de embed de una grabación con
-        `published=False`, en el HTML de una página indexada. Además rompía la
-        reversibilidad de «despublicar». Se filtra aquí, en la capa de datos, para que
-        ninguna plantilla tenga que acordarse.
+        Uno sin publicar no llega a la ficha del poema, ni su audio ni su enlace, ni a la fila
+        de los listados, y despublicarlo lo retira de los poemas que lo enlazan. Se filtra
+        aquí, en la capa de datos, para que ninguna plantilla tenga que acordarse.
         """
         recording = self.recording
         return recording if recording is not None and recording.published else None
@@ -547,10 +545,9 @@ class PublishStatus(models.TextChoices):
 
 
 class Collection(models.Model):
-    """Colección / antología: agrupación curada de piezas (ex «dosier»).
+    """Colección o antología: una agrupación curada de artículos y poemas.
 
-    El término «dosier» se reservó para el kit de prensa del colectivo; esta entidad
-    agrupa contenido editorial (artículos y, desde el lote de obra, poemas).
+    No es el dosier: así se llama el kit de prensa del colectivo.
     """
 
     slug = models.SlugField(
@@ -659,7 +656,7 @@ LEGAL_PAGES = tuple(legal.pages())
 
 
 class Page(models.Model):
-    """Página estática: Quiénes somos, Bases, Contacto, y las legales (LEGAL_PAGES)."""
+    """Página estática, como Quiénes somos o Bases, o una de las legales (LEGAL_PAGES)."""
 
     slug = models.SlugField(
         max_length=255,
@@ -783,7 +780,7 @@ class EditorialTransition(models.Model):
 
 
 class EditorialNote(models.Model):
-    """Discusión interna editor ↔ autor, separada de los comentarios públicos."""
+    """Discusión interna editor ↔ autor sobre una pieza, en el panel."""
 
     content_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE, related_name="+", verbose_name="tipo de pieza"

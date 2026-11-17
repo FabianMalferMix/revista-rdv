@@ -22,9 +22,9 @@
   {% endcomment %}
   <article class="lectura poem">
     {% comment %}
-       La ancla se queda fija al bajar, y un elemento fijo solo puede moverse dentro de su
-       contenedor. Por eso la sala —ancla y texto— va en su propio bloque y el pie queda
-       fuera: dentro del mismo, la ancla bajaba hasta montarse sobre las salidas.
+       En pantalla ancha y alta, el ancla se queda fija al bajar, y un elemento fijo solo puede
+       moverse dentro de su contenedor. Por eso la sala —ancla y texto— va en su propio bloque
+       y el pie queda fuera: dentro del mismo, el ancla bajaría hasta montarse sobre las salidas.
     {% endcomment %}
     <div class="lectura-sala">
     <header class="lectura-ancla">
@@ -35,8 +35,7 @@
       {% if poem.published_at %}<p class="meta"><time datetime="{{ poem.published_at|date:'Y-m-d' }}">{{ poem.published_at|date:"j M Y" }}</time></p>{% endif %}
       {% comment %}
          El registro se escucha aquí si es un archivo propio; si es un video de YouTube o
-         Vimeo, se va a su ficha, que pide permiso antes de conectar con el tercero. Antes
-         el enlace llevaba directamente a YouTube.
+         Vimeo, se va a su ficha, que pide permiso antes de conectar con el tercero.
       {% endcomment %}
       {% with rec=poem.published_recording %}
         {% if rec %}

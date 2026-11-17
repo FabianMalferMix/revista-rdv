@@ -24,7 +24,7 @@ def _cleaned(html, site_url):
 
 @register.filter
 def authored_html(html):
-    """El HTML de autor, depurado con la lista blanca de nh3: cada cuerpo se depura una vez por
-    proceso."""
-    # Se marca como seguro exactamente lo que devolvió nh3 con la lista blanca del sitio.
+    """El HTML de autor, depurado con la lista blanca de nh3. Cada proceso recuerda los 256
+    cuerpos que pintó más recientemente, y esos no se vuelven a depurar."""
+    # Se marca como seguro exactamente lo que devolvió `clean_html` con la lista blanca del sitio.
     return mark_safe(_cleaned(html or "", settings.SITE_URL))  # nosec B308, B703
