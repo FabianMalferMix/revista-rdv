@@ -314,6 +314,7 @@ class Recording(TimestampedModel):
         max_length=255,
         unique=True,
         verbose_name="dirección",
+        error_messages={"unique": "Ya hay un registro con esta dirección."},
         help_text="Lo que va tras /registro/ en la dirección pública. Al publicar el registro "
         "queda fija, porque los enlaces que ya circulan no se pueden cambiar.",
     )

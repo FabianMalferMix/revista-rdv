@@ -32,7 +32,12 @@ class CallQuerySet(models.QuerySet):
 class Call(models.Model):
     """Convocatoria. `is_open` es derivado (se calcula, no se almacena)."""
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una convocatoria con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     description = models.TextField(blank=True, verbose_name="descripción")
     opens_at = models.DateTimeField(verbose_name="abre el")

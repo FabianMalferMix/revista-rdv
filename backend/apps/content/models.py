@@ -22,7 +22,12 @@ from .sanitize import clean_html
 
 
 class Section(models.Model):
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una sección con esta dirección."},
+    )
     name = models.CharField(max_length=255, verbose_name="nombre")
     description = models.TextField(blank=True, verbose_name="descripción")
     position = models.PositiveSmallIntegerField(default=0, verbose_name="posición")
@@ -40,7 +45,12 @@ class Section(models.Model):
 
 
 class Tag(models.Model):
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una etiqueta con esta dirección."},
+    )
     name = models.CharField(max_length=255, verbose_name="nombre")
 
     class Meta:
@@ -216,7 +226,12 @@ class ArticleQuerySet(publishing.EditorialQuerySet):
 
 
 class Article(EditorialItem):
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay un artículo con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     subtitle = models.CharField(
         max_length=255, blank=True, verbose_name="subtítulo", help_text="Bajada"
@@ -414,7 +429,12 @@ class Poem(EditorialItem):
     cuando no hay registros destacados.
     """
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay un poema con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     epigraph = models.TextField(
         blank=True, verbose_name="epígrafe", help_text="Epígrafe o dedicatoria (opcional)."
@@ -533,7 +553,12 @@ class Collection(models.Model):
     agrupa contenido editorial (artículos y, desde el lote de obra, poemas).
     """
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una colección con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     description = models.TextField(blank=True, verbose_name="descripción")
     intro = models.TextField(blank=True, verbose_name="introducción")
@@ -636,7 +661,12 @@ LEGAL_PAGES = tuple(legal.pages())
 class Page(models.Model):
     """Página estática: Quiénes somos, Bases, Contacto, y las legales (LEGAL_PAGES)."""
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una página con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     body = models.TextField(verbose_name="cuerpo", help_text=AUTHORED_HTML_HELP)
     status = models.CharField(
@@ -710,8 +740,13 @@ class EditorialTransition(models.Model):
     )
     object_id = models.PositiveBigIntegerField(verbose_name="identificador de la pieza")
     item = GenericForeignKey("content_type", "object_id")
-    from_status = models.CharField("estado de origen", max_length=20)
-    to_status = models.CharField("estado de destino", max_length=20)
+    # Con los estados de las piezas, el panel nombra cada uno como en el resto de sus fichas.
+    from_status = models.CharField(
+        "estado de origen", max_length=20, choices=EditorialStatus.choices
+    )
+    to_status = models.CharField(
+        "estado de destino", max_length=20, choices=EditorialStatus.choices
+    )
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -734,7 +769,9 @@ class EditorialTransition(models.Model):
         indexes = [models.Index(fields=["content_type", "object_id"], name="edtransition_item_idx")]
 
     def __str__(self):
-        return f"{self.item_title}: {self.from_status} → {self.to_status}"
+        return (
+            f"{self.item_title}: {self.get_from_status_display()} → {self.get_to_status_display()}"
+        )
 
     def save(self, *args, **kwargs):
         if not self._state.adding:

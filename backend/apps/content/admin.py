@@ -166,9 +166,16 @@ class EditorialNoteInline(GenericTabularInline):
     extra = 1
     # El autor es quien la escribe (EditorialItemAdmin.save_formset), no un desplegable.
     readonly_fields = ["author", "created_at"]
+    # La clase con la que admin/editorial_notes.css ajusta la tabla al ancho de la ficha.
+    classes = ["notas-editoriales"]
 
     class Media:
         css = {"all": ["admin/editorial_notes.css"]}
+
+    def get_queryset(self, request):
+        # Cada nota se nombra y se firma con su autor: llega en la misma consulta, no en una
+        # por nota.
+        return super().get_queryset(request).select_related("author")
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)

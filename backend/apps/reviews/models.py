@@ -43,7 +43,12 @@ class WorkQuerySet(models.QuerySet):
 class Publisher(models.Model):
     """Editorial. Extraída de Work (3NF): habilita 'reseñas por editorial'."""
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una editorial con esta dirección."},
+    )
     name = models.CharField(max_length=255, verbose_name="nombre")
     country = models.CharField(max_length=100, blank=True, verbose_name="país")
     website = models.URLField(blank=True, verbose_name="sitio web")
@@ -65,7 +70,12 @@ class Publisher(models.Model):
 class BookAuthor(models.Model):
     """Autor de la obra reseñada. Distinto del Contributor de la revista."""
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay un autor de obra con esta dirección."},
+    )
     name = models.CharField(max_length=255, verbose_name="nombre")
     bio = models.TextField(blank=True, verbose_name="biografía")
 
@@ -93,7 +103,12 @@ class Work(models.Model):
         ANTOLOGIA = "antologia", "Antología"
         OTRO = "otro", "Otro"
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una obra con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     kind = models.CharField(
         max_length=20, choices=Kind.choices, default=Kind.LIBRO, verbose_name="tipo"
@@ -136,6 +151,7 @@ class Work(models.Model):
         on_delete=models.SET_NULL,
         related_name="obra_resenada",
         verbose_name="publicación del colectivo",
+        error_messages={"unique": "Ya hay una obra con esta publicación del colectivo."},
         help_text="Si la obra reseñada es una publicación del colectivo, cuál: su ficha enseñará "
         "las reseñas.",
     )

@@ -10,11 +10,16 @@ Nada se comportaba mal: es presentación. Por eso estas pruebas miran el rótulo
 y no la configuración que lo produce.
 """
 
+import ast
+import gettext
+import json
 import re
 from datetime import datetime
 
 import pytest
+from bs4 import BeautifulSoup
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Model
@@ -22,6 +27,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.content import workflow
 from apps.content.models import (
     Article,
     Collection,
@@ -29,8 +35,9 @@ from apps.content.models import (
     CollectionPoem,
     EditorialNote,
 )
+from apps.people.models import Contributor
 from apps.submissions.models import Submission
-from tests.factories import make_article, make_poem, soup
+from tests.factories import admin_form_fields, make_article, make_poem, soup
 
 pytestmark = pytest.mark.django_db
 
@@ -174,6 +181,33 @@ def test_every_project_model_names_its_rows():
     assert not nameless, "modelos que se nombran con el texto de Django: " + ", ".join(nameless)
 
 
+def test_every_unique_field_has_its_own_warning():
+    """El aviso de Django para un valor repetido pega el nombre de la pieza y el rótulo del campo
+    en una frase en masculino: «Ya existe Artículo con este Dirección.». Cada campo único lleva
+    el suyo, que nombra la pieza y el campo: «Ya hay un artículo con esta dirección.»."""
+    fields = [
+        (model._meta, field)
+        for model in _project_models()
+        for field in model._meta.local_concrete_fields
+        if field.unique and not field.primary_key
+    ]
+    names = {f"{meta.label}.{field.name}" for meta, field in fields}
+    # Control: llega a las direcciones, a la cuenta de quien colabora y a la publicación del
+    # colectivo de una obra.
+    assert {"content.Article.slug", "people.Contributor.user", "reviews.Work.publicacion"} <= (
+        names
+    ), names
+    wrong = sorted(
+        f"{meta.label}.{field.name}: «{message}»"
+        for meta, field in fields
+        for message in [str(field.error_messages["unique"])]
+        if "%(" in message
+        or str(meta.verbose_name) not in message
+        or str(field.verbose_name) not in message
+    )
+    assert not wrong, "avisos que no nombran la pieza y su campo: " + ", ".join(wrong)
+
+
 def _field_labels(page):
     """El rótulo que se lee en cada fila de la ficha, por el campo que rotula."""
     labels = {}
@@ -259,6 +293,162 @@ def test_collection_rows_read_their_position_and_title(client, editor):
         "collectionarticle_set-group": ["1. Correspondencias"],
         "collectionpoem_set-group": ["2. Arena"],
     }
+
+
+def _post(client, url, form_id, **values):
+    """Envía el formulario del panel con sus valores iniciales y los dados, y lo que vuelve."""
+    data = admin_form_fields(client.get(url).content, form_id)
+    data.update(values)
+    response = client.post(url, data)
+    assert response.status_code == 200, "el formulario se guardó: no había nada repetido"
+    return BeautifulSoup(response.content, "html.parser")
+
+
+def test_a_repeated_address_says_which_piece_has_it(client, editor):
+    make_article(slug="correspondencias", title="Correspondencias")
+    client.force_login(editor)
+    page = _post(
+        client,
+        reverse("admin:content_article_add"),
+        "article_form",
+        title="Correspondencias, otra vez",
+        slug="correspondencias",
+        body="<p>Otro texto.</p>",
+    )
+    assert _texts(page.select(".field-slug .errorlist li")) == [
+        "Ya hay un artículo con esta dirección."
+    ]
+    assert "Ya existe" not in page.get_text()
+
+
+def test_an_account_with_its_contributor_says_so(client, groups):
+    """Las cuentas las enlaza el admin: el editor no gestiona cuentas."""
+    users = get_user_model().objects
+    admin = users.create_user("admin_test", password="pw", is_staff=True)
+    admin.groups.add(groups["admin"])
+    account = users.create_user("lucia", password="pw", is_staff=True)
+    Contributor.objects.create(slug="lucia-prado", display_name="Lucía Prado", user=account)
+    client.force_login(admin)
+    page = _post(
+        client,
+        reverse("admin:people_contributor_add"),
+        "contributor_form",
+        display_name="Lucía P.",
+        slug="lucia-p",
+        user=str(account.pk),
+    )
+    assert _texts(page.select(".field-user .errorlist li")) == [
+        "Ya hay un colaborador con esta cuenta."
+    ]
+    assert "Ya existe" not in page.get_text()
+
+
+def test_the_log_names_each_state_like_the_rest_of_the_panel(client, editor, autor):
+    article = make_article(title="Correspondencias", owner=autor)
+    workflow.perform_transition(article, "submit", autor)
+    workflow.perform_transition(article, "accept", editor)
+
+    client.force_login(editor)
+    page = soup(client, reverse("admin:content_article_change", args=[article.pk]))
+    log = page.select_one("#content-editorialtransition-content_type-object_id-group")
+    rows = sorted(
+        _texts(row.select("td.original p, td.field-from_status, td.field-to_status"))
+        for row in log.select("tr.has_original")
+    )
+    assert rows == [
+        ["Correspondencias: Borrador → En revisión", "Borrador", "En revisión"],
+        ["Correspondencias: En revisión → Aprobado", "En revisión", "Aprobado"],
+    ]
+    assert "in_review" not in log.get_text()
+
+
+# El catálogo de textos de los guiones del panel que escribe el proyecto, y su copia compilada,
+# la que lee Django.
+JS_CATALOG = settings.BASE_DIR / "config" / "locale" / "es" / "LC_MESSAGES" / "djangojs"
+
+
+def _admin_js_catalog(client, page):
+    """El catálogo que carga una página del panel para sus guiones, como lo recibe el navegador."""
+    script = client.get(page.select_one('script[src$="/jsi18n/"]')["src"]).content.decode()
+    start = script.index("const newcatalog = ") + len("const newcatalog = ")
+    return json.JSONDecoder().raw_decode(script, start)[0]
+
+
+def test_the_double_selector_reads_in_spanish(client, editor):
+    """El selector doble de las etiquetas, con sus textos tal como los arma
+    admin/js/SelectFilter2.js: el rótulo del campo («etiquetas») en lugar de %s."""
+    client.force_login(editor)
+    page = soup(client, reverse("admin:content_article_add"))
+    label = page.select_one("select#id_tags")["data-field-name"]
+    catalog = _admin_js_catalog(client, page)
+    texts = {
+        "Available %s": "Lista de etiquetas disponibles",
+        'Choose %s by selecting them and then select the "Choose" arrow button.': (
+            "Para elegir etiquetas, se marcan en esta lista y se pulsa la flecha «Elegir»."
+        ),
+        "Type into this box to filter down the list of available %s.": (
+            "Lo que se escribe en este cuadro filtra la lista de etiquetas disponibles."
+        ),
+        "Choose all %s": "Elegir todo",
+        "Choose selected %s": "Elegir lo marcado",
+        "Remove selected %s": "Quitar lo marcado",
+        "Chosen %s": "Selección de etiquetas",
+        'Remove %s by selecting them and then select the "Remove" arrow button.': (
+            "Para quitar etiquetas, se marcan en esta lista y se pulsa la flecha «Quitar»."
+        ),
+        "Type into this box to filter down the list of selected %s.": (
+            "Lo que se escribe en este cuadro filtra la selección de etiquetas."
+        ),
+        "Remove all %s": "Quitar todo",
+    }
+    assert {msgid: catalog[msgid].replace("%s", label) for msgid in texts} == texts
+    # Bajo la selección, cuando el filtro esconde algo de lo elegido: uno, varios, un millón.
+    assert catalog["%s selected option not visible"] == [
+        "%s opción elegida no visible",
+        "%s opciones elegidas no visibles",
+        "%s opciones elegidas no visibles",
+    ]
+    assert catalog["(click to clear)"] == "(clic para quitar el filtro)"
+    assert "%s Disponibles" not in catalog.values()
+    # Control: el resto del catálogo sigue siendo el de Django.
+    assert catalog["Filter"] == "Filtro"
+
+
+def _po_catalog(path):
+    """Lo que dice un .po, como lo guarda gettext al leer el .mo: cada msgid con su msgstr y, en
+    los que tienen plural, cada (msgid, n) con su msgstr[n]."""
+    entries = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith('"'):  # la continuación de la cadena de arriba
+            keyword, text = entries[-1][-1]
+            entries[-1][-1] = (keyword, text + ast.literal_eval(line))
+        elif line.startswith("msg"):
+            keyword, text = line.split(" ", 1)
+            if keyword == "msgid":
+                entries.append([])
+            entries[-1].append((keyword, ast.literal_eval(text)))
+    catalog = {}
+    for entry in entries:
+        fields = dict(entry)
+        if "msgid_plural" in fields:
+            for keyword, text in entry[2:]:
+                catalog[(fields["msgid"], int(keyword.removeprefix("msgstr[")[:-1]))] = text
+        else:
+            catalog[fields["msgid"]] = fields["msgstr"]
+    return catalog
+
+
+def test_the_compiled_js_catalog_says_what_its_source_says():
+    """Django lee el .mo y los textos se cambian en el .po: un .po sin recompilar dejaría en el
+    panel los textos de antes. Se rehace con `msgfmt --check-format -o djangojs.mo djangojs.po`."""
+    source = _po_catalog(JS_CATALOG.with_suffix(".po"))
+    with JS_CATALOG.with_suffix(".mo").open("rb") as compiled:
+        copy = gettext.GNUTranslations(compiled)._catalog
+    # Control: el .po se lee entero, con su cabecera y con cada forma de un plural.
+    assert {"", "Available %s", "(click to clear)", ("%s selected option not visible", 2)} <= set(
+        source
+    ), source
+    assert copy == source
 
 
 def _pantalla_de_bloqueo(client):

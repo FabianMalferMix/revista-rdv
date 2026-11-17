@@ -51,7 +51,12 @@ class Contributor(models.Model):
     en /integrantes/ con perfil enriquecido (bio corta, poética, rol, año de ingreso).
     """
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay un colaborador con esta dirección."},
+    )
     display_name = models.CharField(max_length=255, verbose_name="nombre")
     bio = models.TextField(blank=True, verbose_name="biografía")
     photo = models.ForeignKey(
@@ -71,6 +76,7 @@ class Contributor(models.Model):
         on_delete=models.SET_NULL,
         related_name="contributor_profile",
         verbose_name="cuenta",
+        error_messages={"unique": "Ya hay un colaborador con esta cuenta."},
     )
     # ── Membresía del colectivo ──────────────────────────────
     is_member = models.BooleanField(

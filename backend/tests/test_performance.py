@@ -7,6 +7,8 @@ superaría de inmediato. Los techos llevan holgura sobre lo medido hoy.
 """
 
 import pytest
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.db.models import QuerySet, TextField
 from django.test import Client
@@ -17,6 +19,7 @@ from apps.content.models import (
     Article,
     ArticleContributor,
     Collection,
+    EditorialNote,
     Page,
     PoemContributor,
     PublishStatus,
@@ -302,3 +305,28 @@ def test_an_index_does_not_read_who_takes_part_and_the_page_does(client, model):
         return any(table in query["sql"] for query in queries)
 
     assert (reads(listing), reads(page)) == (False, True)
+
+
+def test_the_article_page_costs_the_same_with_one_editorial_note_or_five(client, editor, groups):
+    """Cada nota de la ficha se nombra y se firma con su autor, que llega en la consulta de las
+    notas."""
+    article = make_article(owner=editor)
+    item = {"content_type": ContentType.objects.get_for_model(Article), "object_id": article.pk}
+    members = [editor]
+    for n in range(1, 5):
+        member = get_user_model().objects.create_user(f"editora_{n}", password="pw", is_staff=True)
+        member.groups.add(groups["editor"])
+        members.append(member)
+    url = reverse("admin:content_article_change", args=[article.pk])
+    client.force_login(editor)
+    EditorialNote.objects.create(**item, author=editor, body="Revisar la fecha.")
+    client.get(url)  # en caliente
+    with CaptureQueriesContext(connection) as one:
+        assert client.get(url).status_code == 200
+    for member in members[1:]:
+        EditorialNote.objects.create(**item, author=member, body="Revisar la fecha.")
+    with CaptureQueriesContext(connection) as five:
+        page = client.get(url).content.decode()
+    # Control: la ficha nombra cada nota con su autor.
+    assert [m.username for m in members if f"Nota de {m.username}," not in page] == []
+    assert len(five) == len(one), "una consulta más por nota"

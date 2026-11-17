@@ -236,7 +236,12 @@ class Publication(TimestampedModel):
         REVISTA = "revista", "Revista"
         DISCO = "disco", "Disco"
 
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="dirección")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        verbose_name="dirección",
+        error_messages={"unique": "Ya hay una publicación con esta dirección."},
+    )
     title = models.CharField(max_length=255, verbose_name="título")
     kind = models.CharField(
         max_length=20, choices=Kind.choices, default=Kind.PLAQUETTE, verbose_name="tipo"
