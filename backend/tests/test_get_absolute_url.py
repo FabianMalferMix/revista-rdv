@@ -70,7 +70,7 @@ def test_la_url_lleva_de_verdad_a_la_pieza():
 
 
 def test_el_panel_ofrece_ver_en_el_sitio():
-    """El motivo del arreglo. Django solo pone el botón si el modelo sabe su URL.
+    """Django solo pone el botón si el modelo sabe su URL.
 
     No devuelve la URL directa sino su ruta de redirección `/admin/r/<tipo>/<id>/`, que
     resuelve con `get_absolute_url`. Sin el método, `get_view_on_site_url` da None y el
@@ -119,7 +119,8 @@ def test_tambien_para_las_piezas_sin_publicar(borrador):
 
 
 def test_el_sitemap_sigue_respondiendo():
-    """Contra-prueba: los sitemaps resolvían con reverse(); añadir el método no los rompe."""
+    """Contra-prueba: el sitemap, que da la dirección de cada ficha con su `get_absolute_url`,
+    responde."""
     _articulo()
     Page.objects.create(title="P", slug="p", status=PublishStatus.PUBLISHED)
     assert Client().get("/sitemap.xml").status_code == 200

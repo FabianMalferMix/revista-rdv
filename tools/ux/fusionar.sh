@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# fusionar.sh — cierra un paso del plan: fusiona su PR solo si el CI está verde.
+# fusionar.sh — fusiona un PR solo si el CI está verde.
 #
 #   tools/ux/fusionar.sh <n.º de PR> <rama> "<efecto visible>" ["<cuerpo del merge>"]
-#   tools/ux/fusionar.sh 105 ux-2-2-indices-y-rejillas "los índices son filas y las rejillas reparten el ancho"
+#   tools/ux/fusionar.sh 123 nombre-de-la-rama "lo que cambia, en una frase"
 #
-# Hace lo que pide §0 del backlog, en este orden:
+# Hace la «Fusión» que pide el «Flujo de trabajo» de CONTRIBUTING.md, en este orden:
 #   1. exige que el PR esté limpio y con TODAS sus comprobaciones en verde;
 #   2. fusiona sin fast-forward con el asunto «Merge <rama> — <efecto> (#n)», y deja que
 #      GitHub borre la rama remota (nunca `git push --delete`);
 #   3. trae `main`, borra la rama local y te deja en `main` al día.
 # No comprueba el CI de `main` después del merge: eso se mira aparte, antes de abrir el
-# siguiente paso (`gh run list --branch main --limit 1`).
+# siguiente PR (`gh run list --branch main --limit 1`).
 #
 # El cuerpo del merge es opcional (cuarto argumento o variable CUERPO_MERGE): ahí va la
 # línea de atribución que indique tu sesión, si la hay.

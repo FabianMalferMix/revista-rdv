@@ -1,4 +1,4 @@
-"""Logging JSON estructurado (Lote F1-B)."""
+"""Logging JSON estructurado."""
 
 import json
 import logging

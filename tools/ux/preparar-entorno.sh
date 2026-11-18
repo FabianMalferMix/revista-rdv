@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# preparar-entorno.sh — deja una máquina nueva lista para trabajar sobre el diseño, con los mismos
-# datos con que se diseñó y se midió cada paso.
+# preparar-entorno.sh — deja una máquina nueva lista para trabajar sobre el diseño, con los datos
+# de desarrollo del repositorio: lo que se ve y se mide es lo mismo en cualquier máquina.
 #
 #   tools/ux/preparar-entorno.sh
 #

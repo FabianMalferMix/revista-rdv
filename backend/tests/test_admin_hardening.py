@@ -1,9 +1,7 @@
-"""Endurecimiento del panel editorial (hallazgos S-11, S-12 y permisos que no componían).
+"""Endurecimiento del panel editorial: sus permisos componen con los de Django.
 
-Los tres tenían en común que el modelo de permisos del panel decidía por su cuenta y se
-desentendía del de Django: retirar un permiso a mano no surtía efecto, un rol bajo podía
-enumerar cuentas ajenas, y el despliegue restauraba en silencio lo que se hubiera
-ajustado.
+Retirar un permiso de modelo surte efecto aunque la cuenta siga en su grupo, un rol bajo no
+enumera cuentas ajenas, y el despliegue no restaura en silencio lo que se ajustó a mano.
 """
 
 import pytest
@@ -37,7 +35,7 @@ def _peticion(user):
     return req
 
 
-# ── S-11: uploaded_by no es editable ni enumera cuentas ───
+# ── uploaded_by no es editable ni enumera cuentas ─────────
 
 
 def test_uploaded_by_es_readonly(editor):
@@ -63,8 +61,9 @@ def test_no_se_reasigna_la_autoria_existente(autor, editor):
 
 
 def test_revocar_el_permiso_de_modelo_surte_efecto(groups, editor):
-    """Antes, `has_change_permission` decidía solo por pertenencia al grupo: quitarle
-    `content.change_article` a alguien del grupo editor no cambiaba nada."""
+    """`has_change_permission` y `has_delete_permission` miran el permiso de modelo, no solo
+    el grupo: retirarle al grupo editor `content.change_article` y `content.delete_article`
+    basta, aunque el editor siga en él."""
     admin_obj = ArticleAdmin(Article, AdminSite())
     art = Article.objects.create(slug="a", title="A", owner=editor)
     # Control: con los permisos del grupo, el editor cambia y borra.
@@ -96,12 +95,12 @@ def test_un_autor_con_permiso_no_puede_borrar(autor):
     assert admin_obj.has_delete_permission(_peticion(autor), art) is False
 
 
-# ── S-12: setup_groups no revierte ajustes manuales ───────
+# ── setup_groups no revierte ajustes manuales ─────────────
 
 
 def test_setup_groups_no_restaura_un_permiso_retirado_a_mano():
-    """El entrypoint lo ejecuta en CADA arranque: con `.set()`, un permiso retirado tras
-    un incidente reaparecía en el siguiente despliegue, en silencio."""
+    """release.sh lo ejecuta en CADA despliegue: con `.set()`, un permiso retirado tras un
+    incidente reaparecería en el siguiente, en silencio."""
     call_command("setup_groups", verbosity=0)
     editor = Group.objects.get(name="editor")
     perm = Permission.objects.get(

@@ -1,9 +1,9 @@
-"""Las imágenes de contenedor van fijadas por digest (hallazgo S-34).
+"""Las imágenes de contenedor van fijadas por digest.
 
 Un tag como `postgres:16` o `python:3.12-slim` es MUTABLE: el mismo texto puede resolver
 mañana a una imagen distinta, así que ni la construcción es reproducible ni se puede
-afirmar qué se está ejecutando. Fijar el digest además reactiva a Dependabot, que con un
-tag sin componente de parche no tenía nada que proponer.
+afirmar qué se está ejecutando. Con el digest fijado, además, Dependabot propone cada imagen
+nueva; con un tag sin componente de parche no tendría nada que proponer.
 
 Estas comprobaciones son de formato y no consultan la red: existen para que nadie
 desfije una imagen sin darse cuenta.

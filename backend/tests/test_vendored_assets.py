@@ -1,4 +1,4 @@
-"""Lo vendorizado es exactamente lo que dice su manifiesto (hallazgo S-31).
+"""Lo vendorizado es exactamente lo que dice su manifiesto.
 
 htmx y TinyMCE se sirven auto-hospedados para que la CSP pueda limitar `script-src` a `'self'`,
 y quedan fuera del radar de pip-audit y trivy. `static/vendor/manifest.json` dice qué hay: el
@@ -51,8 +51,8 @@ def test_the_declared_versions_are_the_ones_inside_the_bundles():
 
 
 def test_htmx_esta_al_dia_en_su_linea_2_0():
-    """htmx 2.0.3 acumulaba ~21 meses y 7 releases de parche de retraso (S-32). No se
-    consulta la red: se fija el suelo conocido para que un downgrade cante."""
+    """htmx sigue en su línea 2.0 y no baja de la 2.0.11, ya verificada. No se consulta la
+    red: se fija el suelo conocido para que una vuelta atrás falle."""
     mayor, menor, parche = (int(p) for p in MANIFEST["htmx"]["version"].split("."))
     assert (mayor, menor) == (2, 0)
     assert parche >= 11, "htmx quedó por detrás de la 2.0.11 ya verificada"

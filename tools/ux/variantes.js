@@ -13,7 +13,6 @@
 //   `ventana` captura la pantalla que se ve al abrir la página.
 // Escribe <nombre>.png en <dirSalida>. La CSP del sitio no admite estilos en línea: este
 // navegador la desactiva (bypassCSP) solo para capturar; el sitio no cambia.
-// Así se eligieron las cifras y el destacado de la portada tras el paso 13 del plan.
 
 const { chromium } = require('playwright-core');
 const fs = require('fs');

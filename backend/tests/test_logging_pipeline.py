@@ -2,8 +2,8 @@
 
 La redacción sigue a las rutas del URLconf: renombrar la de confirmación, o añadir otra
 ruta con token, no deja el token en claro sin tocar nada más. Y llega a todos los
-procesos: a los extras anidados que adjunta Celery, al worker y a beat (que antes perdían
-el formato y el filtro) y a gunicorn.
+procesos: a los extras anidados que adjunta Celery, al worker y a beat, que escriben con el
+formato y el filtro de Django, y a gunicorn.
 """
 
 import json

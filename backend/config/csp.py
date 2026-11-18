@@ -64,14 +64,14 @@ def _new_nonce():
 class ContentSecurityPolicyMiddleware:
     """Fija la cabecera CSP; genera el nonce solo si la plantilla lo usa.
 
-    POR QUÉ VA DESPUÉS DE WhiteNoise (y no antes): así los estáticos no llevan CSP. Se
-    evaluó moverlo delante para cubrirlos y NO compensa — los navegadores ignoran la CSP
-    en subrecursos (hoja de estilos, script, imagen): solo la aplican a documentos. El
-    único caso con valor sería navegar directamente a un documento servido desde
-    STATIC_ROOT, y ahí no hay ninguno: el árbol de estáticos son .js, .css, .md y .txt.
+    POR QUÉ VA DESPUÉS DE WhiteNoise (y no antes): así los estáticos no llevan CSP. Moverlo
+    delante para cubrirlos NO compensa — los navegadores ignoran la CSP en subrecursos (hoja
+    de estilos, script, imagen): solo la aplican a documentos. El único caso con valor sería
+    navegar directamente a un documento servido desde STATIC_ROOT, y los estáticos propios
+    (`static/`) no tienen ninguno; los del admin de Django solo traen iconos SVG sin guiones.
     A cambio, moverlo añadiría una cabecera a cada petición de estático (TinyMCE solo ya
-    son 14 archivos). `tests/test_security_csp.py` fija esa suposición: si alguien añade
-    un .html o .svg a los estáticos, el test avisa para reconsiderarlo.
+    son 14 archivos). `tests/test_security_csp.py` fija esa suposición para `static/`: si
+    alguien añade un .html o .svg, el test avisa para reconsiderarlo.
     """
 
     def __init__(self, get_response):

@@ -13,9 +13,9 @@
 # paso deja la base y los medios como estaban.
 set -eu
 
-# Confirmación explícita: antes bastaba con invocarlo sin argumentos —`latest` era el valor por
-# defecto— para arrasar la base y los medios de producción. Se exige nombrar la base que se va
-# a destruir, para que no ocurra por inercia.
+# Confirmación explícita: se exige nombrar la base que se va a destruir, para que no ocurra por
+# inercia. `latest` es el valor por defecto: sin esto, bastaría invocarlo sin argumentos para
+# arrasar la base y los medios de producción.
 ESPERADO="SI-DESTRUIR-${POSTGRES_DB}"
 if [ "${RESTORE_CONFIRM:-}" != "$ESPERADO" ]; then
   echo "✗ restore.sh DESTRUYE la base '${POSTGRES_DB}' y los volúmenes de medios."

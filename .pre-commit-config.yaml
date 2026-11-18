@@ -1,6 +1,7 @@
 # Ganchos de pre-commit. Instalar una vez:  pip install pre-commit && pre-commit install
 # Correr sobre todo el repo:                 pre-commit run --all-files
-# El CI los corre en el job hygiene, salvo ruff y gitleaks, que tienen sus propios jobs.
+# El CI los corre en el job hygiene, salvo ruff y gitleaks, que corren en los jobs test y
+# security.
 
 # Lo de terceros y lo generado no se toca: lo vendorizado se verifica por sha256
 # (tests/test_vendored_assets.py), las licencias de las fuentes van tal cual las publica

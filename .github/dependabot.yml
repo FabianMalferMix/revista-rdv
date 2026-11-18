@@ -38,8 +38,8 @@ updates:
   #
   # Las imágenes van fijadas por DIGEST (sha256), no solo por tag: así Dependabot puede
   # proponer la actualización del digest cuando la base se reconstruye con parches del
-  # sistema operativo. Con un tag sin componente de parche («3.12-slim») esta entrada era
-  # inerte por construcción (hallazgo S-34).
+  # sistema operativo. Con un tag sin componente de parche («3.12-slim») y sin digest, esta
+  # entrada no tendría nada que proponer.
   - package-ecosystem: docker
     directory: /backend
     schedule:
@@ -49,8 +49,8 @@ updates:
         update-types:
           ["version-update:semver-major", "version-update:semver-minor"]
 
-  # El Dockerfile del sidecar de respaldos no lo cubría ninguna entrada: quedaba fuera
-  # del radar pese a manejar la base de datos completa.
+  # El Dockerfile del sidecar de respaldos, que maneja la base de datos completa: vive en
+  # otro directorio, y sin su propia entrada quedaría fuera del radar.
   - package-ecosystem: docker
     directory: /infra/backup
     schedule:
@@ -60,10 +60,9 @@ updates:
         update-types: ["version-update:semver-major"]
 
   # Imágenes declaradas en los docker-compose (postgres, redis, caddy), que el
-  # ecosistema `docker` NO cubre porque solo analiza Dockerfiles (hallazgo S-35).
-  # `docker-compose` es un ecosistema propio y verificado contra el esquema oficial de
-  # SchemaStore antes de añadirlo: una entrada con un nombre inválido detendría TODAS
-  # las actualizaciones, que sería peor que la carencia.
+  # ecosistema `docker` NO cubre porque solo analiza Dockerfiles. `docker-compose` es un
+  # ecosistema propio, con el nombre del esquema oficial de SchemaStore: una entrada con un
+  # nombre inválido detendría TODAS las actualizaciones.
   #
   # Como las imágenes van fijadas por DIGEST, lo que propone son actualizaciones de
   # digest: exactamente lo que interesa para recoger los parches del sistema operativo
@@ -82,8 +81,9 @@ updates:
       - dependency-name: "caddy"
         update-types: ["version-update:semver-major"]
 
-  # Las herramientas de Node de tools/ux/ (playwright-core y ESLint), que corren en el job
-  # `navegador` del CI. Las minor/patch se agrupan en un PR; los saltos MAJOR llegan sueltos.
+  # Las herramientas de Node de tools/ux/ (playwright-core, axe-core y ESLint), que corren
+  # en el job `navegador` del CI. Las minor/patch se agrupan en un PR; los saltos MAJOR
+  # llegan sueltos.
   - package-ecosystem: npm
     directory: /tools/ux
     schedule:

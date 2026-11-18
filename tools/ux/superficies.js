@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Superficies: lo que el ticket 3.1 y el 3.2 prometen, medido en la página pintada.
+// Superficies: las bandas de tinta, los planos amarillos, las cajas y el contraste de cada
+// página, medidos en la página pintada y comparados con su meta.
 //
 //   node tools/ux/superficies.js <ancho> <alto> [nombre …]
 //   node tools/ux/superficies.js 951 900                 # todas las páginas de pages.txt

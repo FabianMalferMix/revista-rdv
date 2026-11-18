@@ -112,7 +112,7 @@ ALLOWED_ATTRIBUTES = {
 
 # Los esquemas admitidos en href y src, fijados a mano: nh3 admite por defecto 25 (ssh, magnet,
 # bitcoin, sms, wtai…) que este sitio no necesita y que podrían cambiar con una versión de la
-# librería. Los peligrosos (javascript:, data:, vbscript:) ya los descartaba nh3.
+# librería. Los peligrosos (javascript:, data:, vbscript:) no están ni entre esos 25.
 ALLOWED_URL_SCHEMES = frozenset({"http", "https", "mailto"})
 
 # Las imágenes del HTML de autor solo se publican si son del propio sitio (`is_own_url`): la CSP

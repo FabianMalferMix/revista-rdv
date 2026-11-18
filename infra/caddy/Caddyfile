@@ -4,8 +4,8 @@
 	# Timeouts de borde. Sin ellos, Caddy sostiene indefinidamente una conexión lenta y
 	# la reenvía a gunicorn, que atiende un número fijo de peticiones a la vez (procesos
 	# por hilos, ver backend/gunicorn.conf.py): unas pocas conexiones lentas bastan para
-	# ocuparlas todas y tumbar el sitio (slowloris). Con read_body/read_header acotados,
-	# Caddy absorbe o corta el cuerpo ANTES de tocar la aplicación.
+	# ocuparlas todas y tumbar el sitio (slowloris). read_header corta una cabecera lenta
+	# antes de que la petición llegue a la aplicación.
 	#
 	# read_body es el plazo de todo el cuerpo: cinco minutos dejan subir un audio de 50 MB
 	# con unos 1,4 Mbps de subida. El precio: Caddy reenvía el cuerpo a gunicorn mientras
@@ -20,9 +20,9 @@
 	}
 
 	# Logger POR DEFECTO, que es del que cuelga el log de ERRORES. No basta con filtrar
-	# el log de acceso del sitio: cuando el upstream falla (un 500, un timeout), Caddy
-	# emite una entrada de error que incluye la petición entera, y ahí volvía a aparecer
-	# el token del boletín sin redactar. Se comprobó reproduciéndolo.
+	# el log de acceso del sitio: cuando falla el reenvío a gunicorn (caído, una conexión
+	# cortada, un plazo vencido), Caddy emite una entrada de error que incluye la petición
+	# entera, y sin este filtro el token del boletín aparecería en ella sin redactar.
 	#
 	# Las rutas con token son las de apps/community/urls.py, y el token también viaja en
 	# las cabeceras que repiten la URL de la página: Referer (estáticos, formularios) y
@@ -67,11 +67,11 @@ www.{$SITE_ADDRESS::80} {
 		max_size 12MB
 	}
 
-	# Medios servidos directamente desde el volumen (cierra A3: MEDIA en producción).
-	# OJO: estas respuestas NO pasan por Django, así que ni el SecurityMiddleware ni
-	# config.csp las tocan. Las cabeceras se emiten aquí para que un archivo subido
-	# desde el panel no pueda ejecutarse como HTML/JS en el origen del sitio (S-01);
-	# es la capa que además protege lo ya subido, sin migrar datos.
+	# Medios servidos directamente desde el volumen. OJO: estas respuestas NO pasan por
+	# Django, así que ni el SecurityMiddleware ni config.csp las tocan. Las cabeceras se
+	# emiten aquí para que un archivo subido desde el panel no pueda ejecutarse como HTML/JS
+	# en el origen del sitio, y cubren todo lo que hay en el volumen, haya pasado o no por
+	# los validadores de subida.
 	handle_path /media/* {
 		# El audio de los registros y los PDF de las publicaciones no se sirven desde aquí:
 		# los entrega Django solo mientras su pieza está publicada (abajo, X-Accel-Redirect).
@@ -87,10 +87,8 @@ www.{$SITE_ADDRESS::80} {
 		}
 	}
 
-	# Estáticos servidos en el BORDE (hallazgo S-27). Antes los servía WhiteNoise dentro
-	# de la app, así que cada CSS, cada JS y los ~14 archivos de TinyMCE atravesaban los
-	# workers de gunicorn: consumo del recurso más escaso del sistema para devolver
-	# ficheros inmutables, y superficie extra para el agotamiento de workers (S-07).
+	# Estáticos servidos en el BORDE: ningún CSS, JS ni archivo de TinyMCE ocupa un hilo de
+	# gunicorn, el recurso más escaso del sistema.
 	#
 	# Lo que lleva hash del contenido en el nombre (el manifiesto de Django: «tokens.3f2a9c1b7e4d.css»)
 	# se cachea como inmutable y eterno: un cambio de contenido cambia el nombre. Lo demás (la
@@ -140,12 +138,11 @@ www.{$SITE_ADDRESS::80} {
 
 	header -Server
 
-	# Log de acceso en el BORDE, no en gunicorn (residuo del hallazgo S-20 y del aviso
-	# de que el log de gunicorn registraba siempre la IP interna del proxy). Aquí sí se
-	# ve la IP real del cliente, y sobre todo se puede REDACTAR: los enlaces del boletín
-	# llevan el token en la ruta, así que un log sin filtrar entrega a quien lo lea la
-	# capacidad de dar de baja suscripciones ajenas. gunicorn no permitía esto, porque
-	# su formato de acceso no admite sustituciones.
+	# Log de acceso en el BORDE, no en gunicorn, que ve como cliente la IP interna del proxy.
+	# Aquí sí se ve la IP real del cliente, y sobre todo se puede REDACTAR: los enlaces del
+	# boletín llevan el token en la ruta, así que un log sin filtrar entrega a quien lo lea la
+	# capacidad de dar de baja suscripciones ajenas. El formato de acceso de gunicorn no admite
+	# sustituciones.
 	log {
 		output stdout
 		format filter {

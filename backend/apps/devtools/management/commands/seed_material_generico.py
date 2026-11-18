@@ -146,7 +146,7 @@ def _escribir(img, xy, texto, tamano, color, ancho_max=None, interlinea=1.08, pe
     fuente = _fuente(tamano, peso)
     if ancho_max:
         # Una palabra más larga que la caja no se puede partir: se reduce el cuerpo
-        # hasta que quepa («Correspondencias» se salía de su cubierta).
+        # hasta que quepa.
         palabra = max(texto.split(), key=len, default="")
         while tamano > 18 and draw.textlength(palabra, font=fuente) > ancho_max:
             tamano = int(tamano * 0.92)

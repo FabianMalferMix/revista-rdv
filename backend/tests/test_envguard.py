@@ -58,7 +58,7 @@ def test_configuracion_correcta_no_da_problemas():
 
 
 def test_placeholder_de_la_plantilla_de_produccion_es_rechazado():
-    """EL fallo original: estos son los valores literales que traía .env.prod.example."""
+    """Un secreto con el marcador de una plantilla sin sustituir («CAMBIA-ESTO…») no pasa."""
     problemas = _check(
         {"POSTGRES_PASSWORD": "CAMBIA-ESTO-por-una-contrasena-fuerte"},
         secret="CAMBIA-ESTO-por-una-clave-larga-y-secreta",
@@ -68,7 +68,7 @@ def test_placeholder_de_la_plantilla_de_produccion_es_rechazado():
 
 
 def test_secretos_vacios_de_la_plantilla_son_rechazados():
-    # La plantilla ahora los deja vacíos: el guard debe atraparlos igual.
+    # La plantilla deja los secretos vacíos: el guard los atrapa igual.
     sin_clave = {"CELERY_BROKER_URL": "redis://redis:6379/0", "CACHE_URL": "redis://cache:6379/0"}
     problemas = _check({"POSTGRES_PASSWORD": "", **sin_clave}, secret="")
     assert any("DJANGO_SECRET_KEY" in p for p in problemas)
@@ -114,9 +114,9 @@ def test_broker_and_cache_urls_need_a_password(name):
 
 
 def test_example_com_no_se_considera_placeholder():
-    """Regresión: `example.com` es el dominio reservado por la RFC 2606 y es el uso
-    CORRECTO en entornos de prueba — el propio CI usa `ci.example.com`. Una versión
-    anterior de este guard lo marcaba como placeholder y habría dejado el CI en rojo."""
+    """`example.com` es el dominio reservado por la RFC 2606 y es el uso CORRECTO en
+    entornos de prueba — el propio CI usa `ci.example.com`: si el guard lo tomara por un
+    marcador, dejaría el CI en rojo."""
     assert is_placeholder("https://cambia-esto.example.com")  # control: el marcador sí cuenta
     assert not is_placeholder("ci.example.com")
     assert (

@@ -1,5 +1,4 @@
-bricolage-grotesque.woff2 — Bricolage Grotesque, la fuente de titulares desde el
-2026-10-20 (antes, Syne).
+bricolage-grotesque.woff2 — Bricolage Grotesque, la fuente de titulares.
 
 Copyright 2022 The Bricolage Grotesque Project Authors
 (https://github.com/ateliertriay/bricolage). Diseño de Mathieu Triay.

@@ -1,4 +1,4 @@
-"""Sondas de salud: liveness (/healthz/) y readiness (/readyz/) — Lote F2-4."""
+"""Sondas de salud: liveness (/healthz/) y readiness (/readyz/)."""
 
 import secrets
 import shutil
@@ -25,7 +25,7 @@ def test_healthz_is_cheap_liveness(client):
 
 def test_loopback_always_allowed_for_internal_healthcheck():
     # La sonda del contenedor pega con Host=127.0.0.1; el loopback debe estar
-    # permitido siempre para no dar DisallowedHost→400 en prod (Onda A).
+    # permitido siempre para no dar DisallowedHost→400 en prod.
     from django.conf import settings
 
     assert "127.0.0.1" in settings.ALLOWED_HOSTS

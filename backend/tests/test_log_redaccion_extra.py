@@ -1,13 +1,13 @@
 """Ningún campo del log JSON deja pasar el token del boletín, ni siquiera los extra.
 
-`RedactTokensFilter` redactaba `record.msg` y ahí se detenía. Pero `JsonFormatter`
-serializa además todos los atributos extra del registro, y `django.request` adjunta el
-WSGIRequest entero: su repr() lleva la ruta cruda. En un 404 sobre un enlace de baja el
-log salía con el mensaje redactado y el token en claro dos campos más allá.
+`RedactTokensFilter` redacta `record.msg` y ahí se detiene. Pero `JsonFormatter` serializa
+además todos los atributos extra del registro, y `django.request` adjunta el WSGIRequest
+entero: su repr() lleva la ruta cruda. Si el formateador no los redactara, en un 404 sobre un
+enlace de baja el log saldría con el mensaje redactado y el token en claro dos campos más
+allá.
 
-Los tokens de baja son permanentes y valen por sí solos: quien lea el log puede dar de
-baja a cualquiera. Encontrado en las pruebas manuales del §8.6 del barrido, comparando el
-log del proxy (limpio) con el de la aplicación (no).
+Los tokens de baja son permanentes y valen por sí solos: quien lea el log puede dar de baja
+a cualquiera.
 """
 
 import json
@@ -19,10 +19,10 @@ from django.urls import reverse
 from config.logformat import JsonFormatter
 
 # Valor deliberadamente ANODINO: minúsculas, con guiones y sin entropía. Un literal con
-# pinta de credencial —mayúsculas, dígitos, longitud— hacía saltar la regla
-# `generic-api-key` de gitleaks y dejaba el job `security` en rojo. Silenciarlo con la
-# allowlist habría funcionado, pero cada excepción es una rendija permanente en el
-# escáner; sale más barato que la prueba no parezca un secreto.
+# pinta de credencial —mayúsculas, dígitos, longitud— haría saltar la regla
+# `generic-api-key` de gitleaks y dejaría el job `security` en rojo. Silenciarlo con la
+# allowlist funcionaría, pero cada excepción es una rendija permanente en el escáner; sale
+# más barato que la prueba no parezca un secreto.
 VALOR_INVENTADO = "no-es-una-credencial"
 # La ruta sale del URLconf, como la redacción: si se renombra, la prueba la sigue.
 RUTA = reverse("community:unsubscribe", args=[VALOR_INVENTADO])

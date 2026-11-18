@@ -27,7 +27,7 @@ DEFAULT_HOSTS = "localhost,127.0.0.1,0.0.0.0"
 # simplemente no responde (DisallowedHost), así que se corrige solo. Un secreto sin
 # sustituir, en cambio, es silencioso.
 PLACEHOLDER_MARKERS = ("cambia-esto", "change-me", "changeme")
-# Los valores del correo que traía la plantilla de producción.
+# Valores de ejemplo del correo, que un `.env` copiado de una plantilla puede traer sin sustituir.
 EMAIL_TEMPLATE_MARKERS = ("tudominio", "tuproveedor")
 EMAIL_TEMPLATE_VALUES = ("secreto", "usuario")
 

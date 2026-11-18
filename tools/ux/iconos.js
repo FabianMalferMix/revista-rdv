@@ -16,9 +16,10 @@
 //                                      «imagen para compartir» (og_image) del perfil del sitio
 //
 // Necesita el sitio arriba en UX_BASE (http://localhost:8000) y Pillow en python3 para el .ico.
-// Los SVG viven aquí y no en static/: la hoja no admite archivos .svg (test_security_csp).
-// Diseño elegido por el dueño del sitio tras el paso 17: «RdV» en blanco sobre el magenta
-// del sello (icono) y el sello a toda la tarjeta, con el monograma RV (tarjeta).
+// Los SVG viven aquí y no en static/: ahí no puede haber documentos navegables, como un .svg,
+// porque los estáticos se sirven sin CSP (test_security_csp).
+// El diseño: «RdV» en blanco sobre el magenta del sello (icono) y el sello a toda la tarjeta,
+// con el monograma RV (tarjeta).
 
 const { chromium } = require('playwright-core');
 const { execFileSync } = require('child_process');

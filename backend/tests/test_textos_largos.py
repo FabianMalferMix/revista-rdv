@@ -1,11 +1,10 @@
-"""Textos y poemas largos de prueba, y lo que destaparon (lo pidió el dueño, 2026-10-14).
+"""Textos y poemas largos de prueba, con los casos límite que la demostración no tiene.
 
 `seed_textos_largos` siembra seis textos y cinco poemas cercanos a los reales: una reseña de
 once minutos, un ensayo de quince, una entrevista, una crónica, una crítica con todos los
-casos límite y una reseña de dos libros; una letanía de 106 versos, un poema en prosa, una
-oda de versos que no caben, un poema escalonado y uno breve de título larguísimo.
-Recorridos a siete anchos destaparon tres fallos de la sala de lectura que el contenido de
-demostración no podía enseñar (las pruebas de la hoja están en `test_css_sistema.py`).
+casos límite y una reseña de dos libros; una letanía de más de cien líneas, un poema en
+prosa, una oda de versos que no caben, un poema escalonado y uno breve de título larguísimo.
+Las pruebas de la hoja de la sala de lectura están en `test_css_sistema.py`.
 """
 
 import pytest
@@ -78,8 +77,8 @@ def test_firma_con_las_integrantes_que_hay_y_no_las_borra():
 
 def test_cada_pieza_se_lee_y_un_titulo_larguisimo_baja_un_paso(client):
     """Las once páginas responden con su título. Pasadas las noventa letras, el título de la
-    columna ancla lleva la marca que lo baja un paso: el de un poema de 125 letras ocupaba
-    catorce líneas y partía palabras por la mitad."""
+    columna ancla lleva la marca que lo baja un paso: en esa columna caben unas trece letras
+    por línea en un poema, y un título así la llenaría de líneas."""
     _sembrar()
     for pieza in (*_textos(), *_poemas()):
         respuesta = client.get(pieza.get_absolute_url())

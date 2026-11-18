@@ -1,12 +1,13 @@
-"""Retención de PII y redacción de secretos en los registros (S-18, S-20).
+"""Retención de PII y redacción de secretos en los registros.
 
-S-18: la purga prometía en la política borrar los datos de quien se da de baja, pero
-solo cubría suscriptores nunca confirmados y envíos resueltos; los dados de baja y los
-intentos de acceso de django-axes (IP + usuario tecleado) se acumulaban sin caducidad.
+La purga cumple lo que promete la política: además de los suscriptores nunca confirmados y
+los envíos resueltos, borra a quien se dio de baja y lo que django-axes guarda de cada
+acceso (IP + usuario tecleado). Por su cuenta, axes solo borra los intentos caducados, y
+solo cuando alguien vuelve a entrar, salir o fallar: sus bitácoras de accesos no las borra.
 
-S-20: los enlaces del boletín llevan el token en la RUTA, así que acababan en el log
-JSON y —lo más serio— en el nombre de la transacción enviada a Sentry, es decir a un
-tercero. Quien leyera esos registros podía dar de baja suscripciones ajenas.
+Los enlaces del boletín llevan el token en la RUTA: sin redacción, acabaría en el log JSON
+y —lo más serio— en el nombre de la transacción enviada a Sentry, es decir a un tercero.
+Quien leyera esos registros podría dar de baja suscripciones ajenas.
 """
 
 import logging
@@ -32,7 +33,7 @@ def _suscriptor(email, status):
     return sub
 
 
-# ── S-18: la purga cubre lo que la política promete ───────
+# ── La purga cubre lo que la política promete ─────────────
 
 
 def test_la_purga_borra_a_quien_se_dio_de_baja():
@@ -63,8 +64,8 @@ def test_la_purga_respeta_lo_reciente():
 
 
 def test_la_purga_borra_los_intentos_de_acceso_caducados():
-    """django-axes guarda IP y usuario tecleado: son datos personales y no tenían
-    ninguna política de retención."""
+    """django-axes guarda IP y usuario tecleado, que son datos personales: la purga los borra
+    pasados `AXES_RETENTION_DAYS`."""
     from axes.models import AccessAttempt
 
     from apps.submissions.management.commands.purge_stale_data import AXES_RETENTION_DAYS
@@ -91,7 +92,7 @@ def test_dry_run_no_borra_nada():
     assert NewsletterSubscriber.objects.filter(email="baja2@example.com").exists()
 
 
-# ── S-20: los tokens no salen en los registros ────────────
+# ── Los tokens no salen en los registros ──────────────────
 
 
 def test_se_redacta_el_token_de_las_rutas_del_boletin():
@@ -124,7 +125,7 @@ def test_el_filtro_de_logging_redacta_el_mensaje():
 
 
 def test_sentry_no_recibe_el_token():
-    """Es el punto más serio: sin esto el token viajaba a un TERCERO."""
+    """Es el punto más serio: sin esto, el token viajaría a un TERCERO."""
     evento = {
         "transaction": "/novedades/baja/SECRETO-123/",
         "request": {"url": "https://sitio.cl/novedades/baja/SECRETO-123/"},

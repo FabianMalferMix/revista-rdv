@@ -24,15 +24,23 @@ ROOT = Path(__file__).resolve().parents[2]
 BASELINE = Path(__file__).with_name("decision_refs_baseline.json")
 
 # Códigos de decisión (D18, C5) y de ticket (B07), hallazgos y sesiones de auditorías
-# anteriores (S-33, qa-23), pasos, lotes y tickets de planes, y números de PR.
+# anteriores (S-33, qa-23); pasos, lotes, ondas, tickets y decisiones numeradas de planes
+# («Lote F2-4», «Onda D», «tickets 1.2», «decisión 3»), y números de PR, también sueltos.
+# Un número suelto cuenta si tiene una o dos cifras («#15»), que no pueden ser un color (#333
+# y #151515 tienen tres o más), y no sigue a «&» (la entidad HTML &#15;); con más cifras,
+# solo entre paréntesis («(#147)»).
 PATTERN = re.compile(
     r"\b[DC]\d{1,2}\b"
     r"|\bB\d{2}\b"
     r"|\bS-\d{2}\b"
     r"|\bqa-\d+\b"
-    r"|\b(?:[Tt]icket|[Pp]aso|[Ll]ote)\s+(?:\d|[A-H]\b)"
+    r"|\b(?:[Tt]ickets?|[Pp]asos?|[Ll]otes?)\s+(?:\d|[A-H]\b|[A-Z]{1,3}-?\d)"
+    r"|\b[Oo]ndas?\s+[A-H]\b"
+    r"|\b[Dd]ecisi[oó]n(?:es)?\s+\d"
     r"|\b[Hh]allazgos?\b"
     r"|\bPR\s*#\d+"
+    r"|(?<![&\w#])#\d{1,2}\b"
+    r"|\(#\d+\)"
 )
 
 # La documentación, las migraciones, los datos y lo de terceros pueden citarlos; el código no.
@@ -43,6 +51,7 @@ EXCLUDED = re.compile(
     r"|/migrations/"
     r"|^backend/static/vendor/"
     r"|^backend/datos_de_desarrollo/"
+    r"|^backend/apps/devtools/management/commands/textos_largos/"
     r"|^tools/ux/(?:linea-base|final)/"
     r"|^tools/ci/decision_refs"
 )

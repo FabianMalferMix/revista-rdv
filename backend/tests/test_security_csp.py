@@ -1,4 +1,4 @@
-"""Auto-hospedaje de dependencias JS + CSP restrictiva (Lote F2-1)."""
+"""Auto-hospedaje de dependencias JS + CSP restrictiva."""
 
 import json
 import re
@@ -145,7 +145,7 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     """Por defecto htmx mete sus estilos de indicador en un <style> en línea: la CSP lo bloquea
     y la consola avisa en cada página. Con `includeIndicatorStyles: false` no lo intenta, y sus
     reglas viven en componentes.css, también la del indicador que es el propio elemento marcado (el
-    buscador lo nombra con hx-indicator, y sin ella el «…» no aparecía nunca)."""
+    buscador lo nombra con hx-indicator, y sin ella el «…» no aparecería nunca)."""
     contenido = client.get(reverse("site:home")).content.decode()
     meta = re.search(r"<meta name=\"htmx-config\" content='([^']+)'>", contenido)
     assert meta and json.loads(meta.group(1)) == {"includeIndicatorStyles": False}
@@ -155,10 +155,10 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
 
 
 def test_los_comentarios_de_una_linea_no_ocupan_dos():
-    """`{# … #}` solo vale en una línea: partido en dos, Django lo imprime como texto. Le pasó
-    a un comentario de base.html que nombraba `<style>`: el navegador abrió un estilo en línea
-    en medio de la página, la CSP lo bloqueó y se tragó el buscador. Los de varias líneas van
-    con {% comment %}."""
+    """`{# … #}` solo vale en una línea: partido en dos, Django lo imprime como texto. Si ese
+    texto nombra `<style>`, el navegador abre ahí un estilo en línea, que la CSP bloquea, y se
+    traga como estilo lo que sigue hasta su cierre. Los de varias líneas van con
+    {% comment %}."""
     plantillas = Path(__file__).resolve().parent.parent / "templates"
     lines = [
         (ruta, n, linea)
@@ -200,7 +200,7 @@ def test_admin_article_add_selfhosts_tinymce(admin_client):
 
 @pytest.mark.django_db
 def test_permissions_policy_header_is_restrictive(client):
-    """Se emite una Permissions-Policy restrictiva en las respuestas (hallazgo #16)."""
+    """Se emite una Permissions-Policy restrictiva en las respuestas."""
     resp = client.get(reverse("site:home"))
     pp = resp.get("Permissions-Policy", "")
     assert "geolocation=()" in pp
