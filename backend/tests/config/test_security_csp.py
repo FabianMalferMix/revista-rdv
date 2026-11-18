@@ -1,4 +1,14 @@
-"""Auto-hospedaje de dependencias JS + CSP restrictiva."""
+"""La política de seguridad de contenidos (config/csp.py), y el sitio que la cumple.
+
+Toda respuesta lleva la política en vigor, no en modo de informe, con sus directivas; si la
+respuesta ya trae una, se respeta. El nonce entra en la cabecera solo si la plantilla lo usa, es
+el mismo en toda la petición y lo lleva el JSON-LD de un texto. Los estilos en línea se permiten
+solo en el panel, y los guiones en línea, nunca. htmx y TinyMCE se sirven desde el propio sitio,
+y htmx no mete estilos en línea; un comentario de una línea no se parte en dos en las
+plantillas, porque Django lo imprimiría como texto. Entre los estáticos, que la política no
+cubre, no hay documentos navegables, y la cabecera Permissions-Policy niega la geolocalización,
+la cámara, el micrófono y el pago.
+"""
 
 import json
 import re

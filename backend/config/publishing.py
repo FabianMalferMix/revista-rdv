@@ -8,7 +8,7 @@ prensa, en `published`, y los aliados, en `active`.
 Cada modelo monta su QuerySet como manager (`objects = ….as_manager()`), así que el filtro vale
 también desde las relaciones (`member.events.published()`). Dentro de una consulta sobre otro
 modelo se usa como subconsulta: `article__in=Article.objects.published()`. Fuera de estos
-QuerySets el filtro no se escribe a mano, y tests/test_published_querysets.py lo vigila.
+QuerySets el filtro no se escribe a mano, y tests/config/test_published_querysets.py lo vigila.
 
 Las fichas piden su pieza con `piece_for`: a quien puede verla en el panel le sirven también lo
 que no está publicado, como vista previa.

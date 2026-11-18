@@ -70,7 +70,7 @@ class ContentSecurityPolicyMiddleware:
     navegar directamente a un documento servido desde STATIC_ROOT, y los estáticos propios
     (`static/`) no tienen ninguno; los del admin de Django solo traen iconos SVG sin guiones.
     A cambio, moverlo añadiría una cabecera a cada petición de estático (TinyMCE solo ya
-    son 14 archivos). `tests/test_security_csp.py` fija esa suposición para `static/`: si
+    son 14 archivos). `tests/config/test_security_csp.py` fija esa suposición para `static/`: si
     alguien añade un .html o .svg, el test avisa para reconsiderarlo.
     """
 

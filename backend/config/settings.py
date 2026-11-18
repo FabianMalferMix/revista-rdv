@@ -380,7 +380,7 @@ SENTRY_DSN = env_str("SENTRY_DSN")
 # ── Guard de producción ───────────────────────────────────
 # Con DEBUG=0 rechaza arrancar con valores de ejemplo, secretos débiles o defensas
 # apagadas sin autorización. La lógica vive en config.envguard (función pura, probada en
-# tests/test_envguard.py) y recibe los mismos valores que usa Django.
+# tests/config/test_envguard.py) y recibe los mismos valores que usa Django.
 if not DEBUG:
     _effective = {
         "DJANGO_SECRET_KEY": SECRET_KEY,

@@ -181,7 +181,7 @@ SITEMAPS = {
 }
 
 # Las fichas públicas que el sitemap no anuncia, con su motivo. Toda ficha está en SITEMAPS o
-# aquí (tests/test_completeness.py).
+# aquí (tests/config/test_completeness.py).
 EXCLUDED_FROM_SITEMAP = {
     "content:tag_detail": "Listados de los textos de una etiqueta: repiten fichas que ya están.",
 }

@@ -5,6 +5,8 @@ variables locales de cada marco y las cabeceras, y el texto de un error SMTP cit
 dirección a la que no se pudo escribir. Estas pruebas arrancan Sentry como en producción
 (`init_sentry`), con un transporte que guarda los eventos en vez de enviarlos, provocan
 errores reales en el alta y en el envío del correo, y buscan en lo que se habría enviado.
+Otras dos pasan un evento hecho a mano por `sentry_before_send`: el token de una ruta del
+boletín sale tapado en la transacción y en la URL, y un evento con una forma inesperada se envía.
 """
 
 import json
@@ -22,6 +24,7 @@ from apps.community import views
 from apps.community.models import NewsletterSubscriber
 from apps.community.tasks import send_confirmation_email
 from config import redaction
+from config.redaction import sentry_before_send
 
 pytestmark = pytest.mark.django_db
 EMAIL = "ana.prueba@example.com"
@@ -130,6 +133,27 @@ def test_a_clean_event_is_sent(sentry_events):
     sentry_sdk.capture_message(f"Alta de {EMAIL}")
     (event,) = sentry_events()
     assert event["message"] == "Alta de <correo>"
+
+
+def test_sentry_no_recibe_el_token():
+    """Es el punto más serio: sin esto, el token viajaría a un TERCERO."""
+    evento = {
+        "transaction": "/novedades/baja/SECRETO-123/",
+        "request": {"url": "https://sitio.cl/novedades/baja/SECRETO-123/"},
+    }
+    limpio = sentry_before_send(evento, {})
+    # Control: el evento conserva la ruta, con el token tapado.
+    assert limpio["transaction"] == "/novedades/baja/<redactado>/"
+    assert limpio["request"]["url"] == "https://sitio.cl/novedades/baja/<redactado>/"
+    assert "SECRETO-123" not in limpio["transaction"]
+    assert "SECRETO-123" not in limpio["request"]["url"]
+
+
+def test_la_redaccion_nunca_rompe_el_reporte():
+    """Un evento con una forma inesperada se envía igual: la limpieza solo descarta lo que
+    no pudo limpiar (`test_an_event_that_cannot_be_cleaned_is_not_sent`)."""
+    assert sentry_before_send({"transaction": None, "request": "no-es-dict"}, {}) is not None
+    assert sentry_before_send({}, {}) == {}
 
 
 @pytest.mark.parametrize("name", ["community:confirm", "community:unsubscribe"])

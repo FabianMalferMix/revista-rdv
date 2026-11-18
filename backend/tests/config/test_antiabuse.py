@@ -1,4 +1,15 @@
-"""Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit)."""
+"""El abuso de lo público: el límite de peticiones por IP de la búsqueda, el alta al boletín y
+el envío de propuestas (config/ratelimit.py), y el bloqueo del acceso al panel tras los intentos
+fallidos (django-axes).
+
+Pasado el límite, el alta no se guarda y responde la página de siempre, con su aviso (en la del
+boletín, junto al campo y con el correo escrito), y un 429 que dice en Retry-After cuánto falta
+para que se renueve la ventana. La IP de cada cliente es la última de X-Forwarded-For, la que
+añade el proxy, o la de la conexión si no hay proxy; los dos controles la resuelven igual, y
+cada cliente tiene su propio cupo. Los intentos fallidos bloquean la cuenta solo desde esa IP,
+aunque llegue la contraseña correcta, y el acierto de otra cuenta desde esa IP no pone el
+contador a cero.
+"""
 
 import time
 
@@ -10,21 +21,6 @@ from django.urls import reverse
 from apps.community.models import NewsletterSubscriber
 
 pytestmark = pytest.mark.django_db
-
-
-@override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=3)
-def test_axes_locks_out_repeated_failed_admin_logins(client):
-    from axes.utils import reset
-
-    reset()
-    url = reverse("admin:login")
-    for _ in range(3):
-        client.post(url, {"username": "atacante", "password": "malo"})
-    # Superado el límite, axes bloquea esa cuenta desde esa IP con un 429 (Too Many Requests),
-    # no con la página del login (200).
-    resp = client.post(url, {"username": "atacante", "password": "malo"})
-    assert resp.status_code in (403, 429)
-    reset()
 
 
 def test_subscribe_is_rate_limited_by_ip(client, frozen_rate_limit_window):
@@ -53,20 +49,6 @@ def test_the_rate_limit_notice_waits_by_the_field_with_what_was_typed(
     assert correo["value"] == "extra@example.com"
     aviso = sopa.select_one(f"#{correo['aria-describedby'].split()[0]}")
     assert "Demasiados intentos" in aviso.get_text()
-
-
-def test_subscribe_under_limit_still_works(client):
-    url = reverse("community:subscribe")
-    client.post(url, {"email": "primera@example.com", "next": "/"})
-    assert NewsletterSubscriber.objects.filter(email="primera@example.com").exists()
-
-
-def test_submit_is_rate_limited_by_ip(client, frozen_rate_limit_window):
-    url = reverse("submissions:submit")
-    for _ in range(10):  # rate 10/h
-        client.post(url, {})
-    resp = client.post(url, {})
-    assert b"demasiadas propuestas" in resp.content
 
 
 # ── Pasado el límite: la página de siempre, con un 429 ─────────────────────

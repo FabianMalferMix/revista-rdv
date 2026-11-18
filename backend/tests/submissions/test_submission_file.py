@@ -1,5 +1,6 @@
 """El adjunto de un envío solo lo descarga quien puede ver los envíos: a un anónimo lo manda al
-login y a una autora le responde 404. Si el archivo falta en el disco, también 404.
+login y a una autora le responde 404. Si el archivo falta en el disco, también 404. El almacén
+privado no da URL pública: al archivo solo se llega por esa vista.
 """
 
 import pytest
@@ -60,3 +61,10 @@ def test_a_submission_file_missing_from_disk_is_a_404(client, editor, caplog):
     assert record.levelname == "WARNING"
     assert str(submission.pk) in record.getMessage()
     assert "carta-de-ana" not in record.getMessage()
+
+
+def test_private_storage_has_no_public_url():
+    from apps.submissions.models import private_storage
+
+    with pytest.raises(ValueError, match="no tienen URL pública"):
+        private_storage().url("submissions/2026/11/manuscrito.pdf")

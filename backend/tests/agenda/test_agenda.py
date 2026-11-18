@@ -5,8 +5,7 @@ actividades y ofrece escribir al mismo correo del pie. La trayectoria reúne por
 hora local, las actividades hechas, los hitos y las publicaciones con su editorial. La galería
 enseña cada álbum con fotos en una hoja de hasta tres, con el texto alternativo solo en la
 primera, sin una consulta más por álbum ni traer las fotos que no enseña. `stats` cuenta lo que
-nombra cada página (festivales y ferias, juntos o por separado), y cada actividad tiene su
-dirección.
+nombra cada página (festivales y ferias, juntos o por separado).
 """
 
 from datetime import datetime, timedelta
@@ -88,11 +87,6 @@ def test_gallery_lists_only_events_with_photos(client):
     resp = client.get(reverse("agenda:gallery"))
     assert b"Evento Con Fotos" in resp.content
     assert b"Evento Sin Fotos" not in resp.content
-
-
-def test_event_absolute_url(client):
-    event = make_event(slug="ruta")
-    assert event.get_absolute_url() == reverse("agenda:event_detail", args=["ruta"])
 
 
 def test_stats_service_shape_and_counts():

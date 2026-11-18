@@ -1,7 +1,7 @@
 """Sentry, con la redacción de datos personales y de secretos probada.
 
 `init_sentry()` vive aquí, y no en settings.py, para que una prueba pueda arrancarla con un
-transporte que guarda los eventos en vez de enviarlos (tests/test_sentry_redaction.py).
+transporte que guarda los eventos en vez de enviarlos (tests/config/test_sentry_redaction.py).
 """
 
 import sentry_sdk

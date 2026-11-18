@@ -86,7 +86,8 @@ def _resilient(name, method):
 
 class ResilientRedisCache(RedisCache):
     """RedisCache que no propaga los errores de Redis: cada método público degrada a lo que
-    devolvería una caché vacía (tests/test_resilience.py compara la lista con RedisCache)."""
+    devolvería una caché vacía (tests/config/test_resilience.py compara la lista con
+    RedisCache)."""
 
 
 for _name in FALLBACKS:

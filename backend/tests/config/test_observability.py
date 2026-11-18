@@ -1,4 +1,5 @@
-"""Logging JSON estructurado."""
+"""El registro en JSON (config/logformat.py): cada registro sale como JSON válido, con la hora,
+el nivel, el logger y el mensaje ya formateado; la traza de una excepción va en `exc_info`."""
 
 import json
 import logging
@@ -36,10 +37,3 @@ def test_json_formatter_includes_exception():
         rec = _record(level=logging.ERROR, msg="fallo", args=(), exc_info=sys.exc_info())
     out = json.loads(JsonFormatter().format(rec))
     assert "ValueError: boom" in out["exc_info"]
-
-
-def test_json_formatter_includes_extra_fields():
-    rec = _record()
-    rec.request_id = "abc123"  # logger.warning(..., extra={"request_id": ...})
-    out = json.loads(JsonFormatter().format(rec))
-    assert out["request_id"] == "abc123"

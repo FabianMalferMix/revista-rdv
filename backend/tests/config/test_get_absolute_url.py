@@ -28,7 +28,6 @@ from apps.content.models import (
     EditorialStatus,
     Page,
     Poem,
-    PublishStatus,
     Section,
     Tag,
 )
@@ -36,8 +35,8 @@ from apps.media.models import Recording
 from apps.people.models import Contributor
 from apps.reviews.models import BookAuthor, Publisher, Work
 from apps.showcase.models import Publication
+from tests.config.test_completeness import ENTITY, ROUTES
 from tests.factories import make_article, make_published_article, soup
-from tests.test_completeness import ENTITY, ROUTES
 
 pytestmark = pytest.mark.django_db
 
@@ -116,14 +115,6 @@ def test_tambien_para_las_piezas_sin_publicar(borrador):
     assert a.get_absolute_url() == "/texto/otro/"
     esperado = 404 if borrador else 200
     assert Client().get(a.get_absolute_url()).status_code == esperado
-
-
-def test_el_sitemap_sigue_respondiendo():
-    """Contra-prueba: el sitemap, que da la dirección de cada ficha con su `get_absolute_url`,
-    responde."""
-    _articulo()
-    Page.objects.create(title="P", slug="p", status=PublishStatus.PUBLISHED)
-    assert Client().get("/sitemap.xml").status_code == 200
 
 
 # La pieza de cada ficha pública, con lo que la distingue cuando un modelo tiene dos fichas: una

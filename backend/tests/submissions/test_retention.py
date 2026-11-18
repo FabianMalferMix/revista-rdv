@@ -1,5 +1,7 @@
 """La purga de datos personales caducados (comando purge_stale_data): lo viejo se borra; lo
-confirmado, lo aceptado y lo reciente se conservan."""
+confirmado, lo aceptado y lo reciente se conservan. Entran también los intentos de acceso que
+guarda django-axes, con la IP y el usuario tecleado: por su cuenta, axes solo borra los caducados
+cuando alguien vuelve a entrar, salir o fallar."""
 
 from datetime import timedelta
 
@@ -59,6 +61,35 @@ def test_purge_removes_stale_and_keeps_active():
     assert NewsletterSubscriber.objects.filter(pk=recent.pk).exists()
     assert not Submission.objects.filter(pk=old_rejected.pk).exists()
     assert Submission.objects.filter(pk=accepted.pk).exists()
+
+
+def test_la_purga_respeta_lo_reciente():
+    NewsletterSubscriber.objects.create(email="reciente@example.com", status=NS.UNSUBSCRIBED)
+    call_command("purge_stale_data", days=180, verbosity=0)
+    assert NewsletterSubscriber.objects.filter(email="reciente@example.com").exists()
+
+
+def test_la_purga_borra_los_intentos_de_acceso_caducados():
+    """django-axes guarda IP y usuario tecleado, que son datos personales: la purga los borra
+    pasados `AXES_RETENTION_DAYS`."""
+    from axes.models import AccessAttempt
+
+    from apps.submissions.management.commands.purge_stale_data import AXES_RETENTION_DAYS
+
+    viejo = AccessAttempt.objects.create(
+        username="alguien", ip_address="203.0.113.5", failures_since_start=1
+    )
+    AccessAttempt.objects.filter(pk=viejo.pk).update(
+        attempt_time=timezone.now() - timedelta(days=AXES_RETENTION_DAYS + 1)
+    )
+    reciente = AccessAttempt.objects.create(
+        username="otro", ip_address="203.0.113.6", failures_since_start=1
+    )
+
+    call_command("purge_stale_data", verbosity=0)
+
+    assert not AccessAttempt.objects.filter(pk=viejo.pk).exists()
+    assert AccessAttempt.objects.filter(pk=reciente.pk).exists()
 
 
 def test_purge_dry_run_deletes_nothing():

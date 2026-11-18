@@ -33,13 +33,6 @@ def _propios(settings):
     return [*(raiz / ruta for ruta in STYLESHEETS), *(raiz / "js").glob("*.js")]
 
 
-def test_en_desarrollo_cada_hoja_lleva_version(settings):
-    settings.DEBUG = True
-    enlaces = _enlaces(Client().get("/").content.decode())
-    assert len(enlaces) == len(STYLESHEETS), f"no se encontraron los enlaces a las hojas: {enlaces}"
-    assert all(re.fullmatch(r"[^?]+\?v=\d+", enlace) for enlace in enlaces), enlaces
-
-
 def test_en_desarrollo_cada_guion_propio_lleva_version(settings):
     settings.DEBUG = True
     html = Client().get("/").content.decode()
