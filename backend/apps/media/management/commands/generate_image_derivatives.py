@@ -3,9 +3,9 @@
 Limpia de metadatos las que aún no se comprobaron, genera las copias que falten (`srcset` y, si
 la imagen es la portada, sus copias AVIF y WebP), repara el ancho y el alto y mide el color del
 borde. Idempotente: solo abre las imágenes a las que les falta algo. Correrlo tras subir
-imágenes en masa, al desplegar un cambio que introduce o ajusta los anchos de las copias, o para
-limpiar imágenes subidas antes de que la limpieza fuera obligatoria. Sale con error si alguna
-imagen no se pudo limpiar o leer (el log dice cuál y por qué): habrá que reemplazarla.
+imágenes en masa o al desplegar un cambio que introduce o ajusta los anchos de las copias. Sale
+con error si alguna imagen no se pudo limpiar o leer (el log dice cuál y por qué): habrá que
+reemplazarla.
 """
 
 import logging

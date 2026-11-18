@@ -1,9 +1,10 @@
 """El panel solo ofrece los destacados que cambian algo en el sitio.
 
-Los registros y las publicaciones conservan su casilla: la tirada y el estante de la
-portada la leen. La de textos, poemas, actividades y menciones de prensa, la obra principal
-de una reseña y el idioma de una obra no los leía nadie, y salieron. La tirada lleva como
-mucho TIRADA_SIZE registros, y el panel no deja destacar uno más.
+Los registros y las publicaciones tienen su casilla, porque la tirada y el estante de la
+portada la leen. Los textos, los poemas, las actividades y las menciones de prensa no la
+tienen, y el panel tampoco ofrece la obra principal de una reseña ni el idioma de una obra:
+nada los leería. La tirada lleva como mucho TIRADA_SIZE registros, y el panel no deja
+destacar uno más.
 """
 
 import pytest

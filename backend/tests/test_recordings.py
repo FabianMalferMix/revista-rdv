@@ -49,13 +49,9 @@ def test_recording_index_lists_published_only(client):
 
 
 def test_el_indice_ensena_miniaturas_y_no_reproductores(client):
-    """El índice enseña y la ficha reproduce (backlog UX, ticket 2.2).
-
-    La página era una pila de reproductores, uno por pantalla: dos registros medían
-    1262 px. Ahora cada registro es una miniatura con su título que lleva a la ficha, y
-    en el índice no queda nada que conecte con YouTube o Vimeo, ni siquiera a la espera
-    de un clic. Antes esta prueba afirmaba lo contrario (`player-frame` en el índice).
-    """
+    """El índice enseña y la ficha reproduce: cada registro es una miniatura con su título que
+    lleva a la ficha, y en el índice no hay nada que conecte con YouTube o Vimeo, ni siquiera a
+    la espera de un clic."""
     from bs4 import BeautifulSoup
 
     from apps.media.models import Recording
@@ -86,7 +82,8 @@ def test_el_indice_ensena_miniaturas_y_no_reproductores(client):
 
 
 def test_la_miniatura_usa_el_cartel_y_sin_cartel_lleva_el_titulo(client):
-    """Una placa azul vacía no dice qué registro es (decisión D10: nunca vacía)."""
+    """La miniatura enseña el cartel y, sin cartel, lleva el título: una placa azul vacía no
+    dice qué registro es."""
     from io import BytesIO
 
     from bs4 import BeautifulSoup
@@ -182,8 +179,8 @@ def test_podcast_feed_only_audio_with_enclosure(client):
 
 
 def test_podcast_enclosure_url_is_absolute(client):
-    """Contrato de podcast (hallazgo #07): el <enclosure> debe llevar URL ABSOLUTA
-    (esquema + host) o Apple/Spotify no descargan el audio y el episodio queda mudo."""
+    """El <enclosure> del pódcast lleva una URL ABSOLUTA (esquema y host): con una relativa,
+    Apple y Spotify no descargan el audio y el episodio queda mudo."""
     import xml.dom.minidom as minidom
     from urllib.parse import urlparse
 

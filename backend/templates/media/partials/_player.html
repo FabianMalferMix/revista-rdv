@@ -9,14 +9,14 @@
 {% endcomment %}{% with src=r.embed_url|embed_src proveedor=r.embed_url|embed_provider %}
   {% if src %}
     {% comment %}
-       Click-to-play (hallazgo S-19). El iframe NO se inserta hasta que la persona lo
-       pide: cargarlo de entrada contactaba con YouTube/Vimeo —enviándoles IP, agente y
-       referente— en cuanto se abría la página, incluida la PORTADA, mientras
-       /cookies/ afirma que no se comparte información con terceros.
-       Mientras tanto la placa nunca está vacía (D10): el póster del registro, impreso a
-       una tinta como las fotos de los listados, o su carátula tipográfica. El póster es
-       una imagen propia, nunca la miniatura del proveedor, que conectaría con él antes
-       del clic. Al pulsar, embeds.js vacía la placa y pone el iframe en su lugar.
+       Click-to-play. El iframe NO se inserta hasta que la persona lo pide: cargado con la
+       página, YouTube o Vimeo recibirían la IP y el agente de usuario de quien la abre sin
+       que haya pulsado nada.
+       Mientras tanto la placa nunca está vacía (ver «La placa azul del reproductor, nunca
+       vacía» en docs/deferidos-y-decisiones.md): el póster del registro, impreso a una tinta
+       como las fotos de los listados, o su carátula tipográfica. El póster es una imagen
+       propia, nunca la miniatura del proveedor, que conectaría con él antes del clic. Al
+       pulsar, embeds.js vacía la placa y pone el iframe en su lugar.
     {% endcomment %}
     <div class="player-frame player-consent" data-embed-src="{{ src }}" data-embed-title="{{ r.title }}">
       {% if r.poster %}
@@ -39,7 +39,7 @@
     {% if r.kind == "video" %}
       <video controls preload="none" {% if titulo_id %}aria-labelledby="{{ titulo_id }}" {% endif %}{% if r.poster %}poster="{{ r.poster.file.url }}"{% endif %} src="{{ r.file.url }}"></video>
     {% else %}
-      {% comment %} Un audio con póster lo enseña al lado, cuadrado, como una portada de disco. {% endcomment %}
+      {% comment %} Un audio con póster lo enseña a la izquierda, a su proporción. {% endcomment %}
       <div class="player-audio">
         {% if r.poster %}<span class="riso-duo">{% sizes "poster-audio" as sizes %}{% responsive_img r.poster css_class="player-audio-poster" sizes=sizes decorativa=True %}</span>{% endif %}
         <audio controls preload="none" {% if titulo_id %}aria-labelledby="{{ titulo_id }}" {% endif %}src="{{ r.file_url }}"></audio>

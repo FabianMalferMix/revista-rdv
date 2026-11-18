@@ -12,9 +12,9 @@ from .models import MediaAsset, Recording
 class MediaAssetAdmin(admin.ModelAdmin):
     list_display = ["__str__", "used_in", "width", "height", "uploaded_by", "created_at"]
     search_fields = ["alt_text", "caption", "credit"]
-    # `uploaded_by` era un <select> editable con TODAS las cuentas del sistema: el rol
-    # más bajo (autor) las enumeraba —nombres de usuario del equipo— y además podía
-    # atribuir una subida a otra persona. Ahora es automático y no falsificable.
+    # `uploaded_by` es de solo lectura y lo pone save_model: editable, sería un <select> con
+    # TODAS las cuentas del sistema, que le enumeraría al rol más bajo (autor) los nombres de
+    # usuario del equipo y le dejaría atribuir una subida a otra persona.
     readonly_fields = ["width", "height", "uploaded_by", "created_at"]
 
     def save_model(self, request, obj, form, change):
