@@ -8,13 +8,24 @@ incluyen en el árbol, cada uno con su propia licencia. Este archivo los inventa
 > abajo conviene revisarlo con un abogado antes de considerar el asunto cerrado —igual
 > que el texto de la política de privacidad.
 
-## ⚠️ TinyMCE 7.9.3 — GPLv2-or-later
+## ⚠️ TinyMCE 8 — GPLv2-or-later
 
-`backend/static/vendor/tinymce/` (editor de texto enriquecido del panel editorial).
+`backend/static/vendor/tinymce-<versión>/` (editor de texto enriquecido del panel editorial). La
+versión exacta está en `backend/static/vendor/manifest.json`.
 
-- **Licencia:** GNU General Public License v2 o posterior, según
-  `backend/static/vendor/tinymce/license.md` (© Ephox Corporation DBA Tiny Technologies).
-- **Origen:** <https://github.com/tinymce/tinymce>, release 7.9.3.
+- **Licencia:** el paquete de npm ofrece dos, según su `license.md` (© Ephox Corporation DBA Tiny
+  Technologies): la GNU General Public License v2 o posterior, o los términos de uso de Tiny,
+  con su acuerdo de licencia autoalojada. El proyecto lo usa bajo la **GPL v2 o posterior** y se
+  lo declara al editor con `license_key: "gpl"` (`backend/static/admin/richtext_init.js`), como
+  indica la documentación de Tiny para quien lo autoaloja bajo la GPL. El código fuente en
+  GitHub lleva solo la GPL; el texto doble se añade al empaquetarlo para npm.
+- **La frase de aceptación:** ese `license.md` termina con «By use of this Software you have
+  agreed to these Tiny Technologies, Inc Software Terms & Conditions of Use», sin distinguir
+  entre las dos opciones. La documentación de Tiny y sus requisitos de atribución tratan el uso
+  libre y autoalojado como uso bajo la GPL.
+- **Origen:** <https://github.com/tinymce/tinymce>, en la etiqueta de esa versión. Lo
+  vendorizado es el paquete `tinymce` de npm, verificado contra su integridad
+  (`python3 tools/vendor/update.py check`).
 - **Por qué importa:** el proyecto **sirve** ese JavaScript minificado a los navegadores.
   Distribuir la forma compilada de un programa GPLv2 obliga a acompañarla de su licencia
   y a ofrecer el código fuente correspondiente (GPLv2 §3). Un repositorio que se declara
@@ -26,13 +37,11 @@ incluyen en el árbol, cada uno con su propia licencia. Este archivo los inventa
 - **Estado:** se cumple señalándolo aquí, conservando `license.md` y `notices.txt` en el
   árbol y enlazando la release oficial como fuente correspondiente.
 
-**Decisión pendiente del colectivo** (las tres son válidas; solo la primera es de coste
-cero y es la que está aplicada):
-
-1. **Dejarlo así** — mantener TinyMCE bajo GPLv2 y este aviso.
-2. **Licencia comercial de TinyMCE** — elimina la obligación de copyleft; tiene coste.
-3. **Sustituir el editor** por uno permisivo (MIT/BSD) si se prefiere no tener GPL en el
-   árbol. Afecta a `backend/apps/content/admin.py` y a `backend/static/admin/richtext_init.js`.
+**Decidido el 2026-11-10** (C36, en `docs/deferidos-y-decisiones.md`): seguir con TinyMCE bajo
+la GPL v2 o posterior y este aviso. Quedan otras dos salidas: la licencia comercial de Tiny, que
+elimina la obligación de copyleft y tiene coste, o sustituir el editor por uno permisivo
+(MIT/BSD), que afecta a `backend/apps/content/admin.py` y a
+`backend/static/admin/richtext_init.js`.
 
 ## Otros componentes
 
@@ -41,11 +50,12 @@ cero y es la que está aplicada):
 | htmx 2.0.11 | `backend/static/vendor/htmx/` | 0BSD | Ninguna (ni siquiera atribución) |
 | Bricolage Grotesque, con el eje de peso recortado a 400-700 | `backend/static/fonts/` | SIL Open Font License 1.1 | Conservar el aviso y la licencia (`fonts/OFL-bricolage-grotesque.txt`); ver `fonts/NOTICE.txt` |
 | Source Serif 4 (Adobe), modificada y renombrada «RdV Serif» | `backend/static/fonts/` | SIL Open Font License 1.1, con nombre reservado «Source» | Conservar el aviso y la licencia (`fonts/OFL-source-serif-4.txt`); una versión modificada no puede llamarse «Source»; ver `fonts/NOTICE.txt` |
-| DOMPurify | dentro del bundle de TinyMCE | Apache-2.0 / MPL-2.0 | Ver `vendor/tinymce/notices.txt` |
+| DOMPurify | dentro del bundle de TinyMCE | Apache-2.0 / MPL-2.0 | Ver `notices.txt`, en la carpeta de TinyMCE |
 | Fotos de demostración (`event-*.jpg`): de Lorem Picsum, originadas en Unsplash y pasadas a escala de grises | `backend/datos_de_desarrollo/media/assets/2026/07/` | Licencia Unsplash (uso libre, también comercial) | Ninguna; son marcadores reemplazables. Las demás imágenes de esa copia son marcadores dibujados para el proyecto (`seed_material_generico`) |
 
 Las versiones exactas y los `sha256` de lo vendorizado están en
-[`backend/static/vendor/VERSIONS.md`](backend/static/vendor/VERSIONS.md).
+[`backend/static/vendor/manifest.json`](backend/static/vendor/manifest.json); cómo se
+actualiza, en [`backend/static/vendor/VERSIONS.md`](backend/static/vendor/VERSIONS.md).
 
 ## Contenido del sitio
 

@@ -2,7 +2,7 @@
 """Comprueba o actualiza lo vendorizado en backend/static/vendor, desde npm.
 
     python3 tools/vendor/update.py check
-    python3 tools/vendor/update.py update tinymce 7.9.4
+    python3 tools/vendor/update.py update <librería> <versión>
 
 El manifiesto (backend/static/vendor/manifest.json) dice, por librería, su paquete de npm, su
 versión, la integridad del paquete (`dist.integrity`), de dónde salen sus archivos en el paquete,
@@ -10,7 +10,7 @@ adónde van y el sha256 de cada uno. `check` baja cada paquete, verifica su inte
 cada archivo con el árbol. `update` baja la versión pedida, la verifica, pone sus archivos en su
 carpeta (la de TinyMCE lleva la versión: la URL cambia con ella, y la caché del navegador no
 sirve la vieja) y reescribe el manifiesto y package.json. Después: revisar el cambio, correr la
-suite y la prueba de humo del panel.
+suite y comprobar a mano el buscador en vivo (htmx) o el editor del panel (TinyMCE).
 """
 
 import base64

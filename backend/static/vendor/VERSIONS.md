@@ -15,8 +15,8 @@ del manifiesto o si `package.json` pide otra versión.
 1. `python3 tools/vendor/update.py update <librería> <versión>` (desde la raíz del
    repositorio). Baja el paquete de npm, lo verifica contra su `dist.integrity`, pone sus
    archivos en su carpeta y reescribe `manifest.json` y `package.json`. La carpeta de TinyMCE
-   lleva la versión (`tinymce-7.9.3/`): la URL cambia con ella, y ningún navegador sigue con
-   la copia vieja.
+   lleva la versión (`tinymce-<versión>/`): la URL cambia con ella, y ningún navegador sigue
+   con la copia vieja.
 2. Revisa el cambio y ejecuta la suite. Comprueba a mano el buscador en vivo (htmx) o el
    editor del panel (TinyMCE), según corresponda.
 3. Si cambia la lista de archivos (un plugin nuevo en `richtext_init.js`), añádelos al
@@ -37,13 +37,16 @@ publicado en npm.
   iconos, 3 plugins, pieles y licencias). Solo se carga en el panel editorial. La carpeta está
   **exenta del hash del manifiesto** de estáticos (`config/staticfiles.py`, que toma la
   versión de `manifest.json`) porque carga sus recursos con rutas relativas en tiempo de
-  ejecución. Caddy no la marca como inmutable: la revalida en cada uso.
+  ejecución. Caddy no la marca como inmutable: la revalida en cada uso. Va con
+  `license_key: "gpl"` (`richtext_init.js`): sin una clave, TinyMCE deja el editor
+  deshabilitado. Al actualizarlo, comprobar que su `license.md` sigue ofreciendo la GPL (la
+  prueba lo exige) y que el editor abre habilitado y sin avisos en la consola.
 
 ## Licencias
 
-Ver [`../../../NOTICE.md`](../../../NOTICE.md). **TinyMCE 7.x es GPLv2-or-later**, lo que
-tiene consecuencias para un repositorio que se declara propietario: está documentado
-allí.
+Ver [`../../../NOTICE.md`](../../../NOTICE.md). **TinyMCE se usa bajo la GPL v2 o posterior**
+(su paquete ofrece además los términos de Tiny), lo que tiene consecuencias para un
+repositorio que se declara propietario: está documentado allí.
 
 ## Historial
 
@@ -56,3 +59,8 @@ allí.
   respuesta puede llevar `<template type="partial" hx-target="…">`, que se inserta en su
   propio destino) y cinco correcciones. El HTML de autor no puede colar uno: el saneado quita
   `<template>` y los atributos `hx-*`. `includeIndicatorStyles` sigue existiendo.
+- **2026-11-18** — TinyMCE 7.9.3 → 8.10.2, con `update.py` (C36). La 8 exige una clave de
+  licencia: va `license_key: "gpl"`, la del uso bajo la GPL v2 o posterior. Los 14 archivos
+  conservan sus rutas, y `lists`, `link` y `autolink` siguen en el paquete libre. Trae
+  DOMPurify 3.4.11 (su `notices.txt` aún dice 3.3.2) y los arreglos de seguridad de la línea 8:
+  la 7 libre ya no los recibe.

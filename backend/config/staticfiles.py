@@ -13,7 +13,7 @@ En runtime TinyMCE se auto-carga pidiendo `themes/silver/theme.min.js`,
 hash, esas peticiones darían 404. Por eso su carpeta se sirve sin hash: queda en el
 manifiesto con su nombre tal cual (así `{% static %}` sigue resolviéndolo con
 `manifest_strict=True`), pero no se hashea ni se reescribe. La carpeta lleva la versión
-(`vendor/tinymce-7.9.3/`), tomada del manifiesto de lo vendorizado: al actualizar, la URL
+(`vendor/tinymce-<versión>/`), tomada del manifiesto de lo vendorizado: al actualizar, la URL
 cambia y ningún navegador sigue con la copia vieja en caché.
 """
 
@@ -29,7 +29,7 @@ _VENDOR = json.loads(
         "utf-8"
     )
 )
-# La carpeta de TinyMCE, con su versión, relativa a STATIC_URL: «vendor/tinymce-7.9.3/».
+# La carpeta de TinyMCE, con su versión, relativa a STATIC_URL: «vendor/tinymce-<versión>/».
 TINYMCE_DIR = "vendor/" + _VENDOR["tinymce"]["target"].format(version=_VENDOR["tinymce"]["version"])
 
 # Las hojas del sitio, relativas a STATIC_URL: una por capa y en el orden de la cascada, que es

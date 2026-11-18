@@ -11,25 +11,25 @@
   },
   "tinymce": {
     "package": "tinymce",
-    "version": "7.9.3",
-    "integrity": "sha512-Mtm54U5YJ6Pyo/GaAx+JSHXTGEuxrg2AowVWCD9zy1eBolp5Ub7S1rTtsyQdxhPegfhLuR3VLiTKGw1tacv09g==",
+    "version": "8.10.2",
+    "integrity": "sha512-Na5apA/kwb5o5HrHAZWnWssvZFZRph7gyROSXyvkAwS7E/59qEUttQx2ACfHLkM5EUyzCz2ww9PMm5/VpeZgIA==",
     "source": "",
     "target": "tinymce-{version}/",
     "files": {
-      "icons/default/icons.min.js": "6f835998e904252231194141807f190e97342f34e5d390019c1805fd6f7ccaef",
-      "license.md": "2fcd38ecec1bedcf12c8fc7b6d874537028ae36a03ce9d4e9a243ea8371fe7ea",
-      "models/dom/model.min.js": "d6cb35949722f4b836ad383d160b4a77e55ac1e642898af793c2a90bd830dce0",
-      "notices.txt": "658de17590bce4a2fa0c158f9780fae02f75309906cdc7e285e05ab9b166f156",
-      "plugins/autolink/plugin.min.js": "0c88dbb5b98a8891e671884bd22a2ba227f3d8273520746419c88138ded14d1c",
-      "plugins/link/plugin.min.js": "33e0dc25bdab261cc7e53ad8e1f1d4817d1cdecfb66a17191bc6c2ff55b56666",
-      "plugins/lists/plugin.min.js": "a6474b2f8566449fed62e537f47942ff46fbc9b7644f7171766a589c366e900c",
+      "icons/default/icons.min.js": "8b3e1a9efb34d0416541dbb8bc282ca96325ca238af14b34b9084c72ec987f37",
+      "license.md": "b51d1c5ec53358d4d8745d1f6fcce764ce1bfaf82b254f6d501f42760678d4e0",
+      "models/dom/model.min.js": "e54e3678771cb9ff68c042299d4e0322d70aa73d5c4ba6fcf2c46dec243cf250",
+      "notices.txt": "012d23ec45cd3d46c8ea5017774ad3fab9c38ec2b984bfcd29489d804d566dca",
+      "plugins/autolink/plugin.min.js": "e8e83eb921703b6fdc888e891b03d6edfa6226c93b2bfa2bb5a36a55bdbecffc",
+      "plugins/link/plugin.min.js": "733f0d504ee5b1c5b664d92100a424f0cf6eb294d81cacb243b448f9fa19cb10",
+      "plugins/lists/plugin.min.js": "2866866f29037b806bd5020bbe88ffbfc44f446a677473dad31fc400f8ac5e60",
       "skins/content/default/content.min.css": "8fbc7f18efefe59b8b7d692d25e0c4283aa4100eaba292e1cdda0cd32e20fc88",
-      "skins/ui/oxide/content.inline.min.css": "38b26d400206176ba08eb2a6807194495badebbfcb6b9623ad207de64e28acc0",
-      "skins/ui/oxide/content.min.css": "15901f2ed975b278f065342e7e8c9dc6bbddf664b7b71925290395868682e37a",
-      "skins/ui/oxide/skin.min.css": "35a0a7c567d7cc412f2ce09994b4add600762930300ad5782a46ccc519bcd40e",
+      "skins/ui/oxide/content.inline.min.css": "17de5083cf3b487d0eee1e9533af381d03ba6bb712f9d6643083dbe8fc869304",
+      "skins/ui/oxide/content.min.css": "eae99a867b594161b3974966772d04191abde5800111f8b69944f9ea72e9374c",
+      "skins/ui/oxide/skin.min.css": "19077784af1fb79af825270f4dc0bad4ec2893b300b69abe16537914e81ec73c",
       "skins/ui/oxide/skin.shadowdom.css": "059129c8669b433ed627232748a76f8187ada00c84fb07f29c772fbe2190c848",
-      "themes/silver/theme.min.js": "7dd1082653d06715952f76e24e4c02780620a923d54facd9e3aad76434edc08e",
-      "tinymce.min.js": "ca7a4ae9354b117b3133d5b449b4f807ac1484e66b5019c1381e1990ebb1ecd3"
+      "themes/silver/theme.min.js": "be2a60f489c7bf408957b9a7f96279e2f26aed3dce9e9e0ade9afd84e39b987c",
+      "tinymce.min.js": "004f51f8cd9fef25bafbe06d0a32382e7916b29ae2c9ebb74c40ff15d5a825d2"
     }
   }
 }
