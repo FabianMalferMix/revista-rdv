@@ -711,6 +711,48 @@ class Page(models.Model):
         super().save(*args, **kwargs)
 
 
+class BodyImage(models.Model):
+    """Una imagen de la biblioteca que muestra el cuerpo de una pieza. Cada guardado rehace las de
+    su pieza desde el cuerpo (signals.py): así Recursos dice dónde se usa cada imagen y no deja
+    borrar la que un cuerpo muestra, que quedaría rota."""
+
+    image = models.ForeignKey(
+        "media.MediaAsset", on_delete=models.PROTECT, related_name="+", verbose_name="imagen"
+    )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return str(self.item)
+
+
+class ArticleBodyImage(BodyImage):
+    item = models.ForeignKey(
+        Article, on_delete=models.CASCADE, related_name="body_images", verbose_name="artículo"
+    )
+
+    class Meta:
+        verbose_name = "cuerpo de artículo"
+        verbose_name_plural = "cuerpos de artículo"
+        constraints = [
+            models.UniqueConstraint(fields=["item", "image"], name="uniq_article_body_image")
+        ]
+
+
+class PageBodyImage(BodyImage):
+    item = models.ForeignKey(
+        Page, on_delete=models.CASCADE, related_name="body_images", verbose_name="página"
+    )
+
+    class Meta:
+        verbose_name = "cuerpo de página"
+        verbose_name_plural = "cuerpos de página"
+        constraints = [
+            models.UniqueConstraint(fields=["item", "image"], name="uniq_page_body_image")
+        ]
+
+
 class ImmutableLogError(Exception):
     """Un intento de cambiar o borrar una entrada de la bitácora editorial."""
 

@@ -1,10 +1,12 @@
 """El saneo del HTML de autor (el cuerpo de textos y páginas), al guardarlo y al pintarlo.
 
 Las listas y la regla de las imágenes son las de `config/content_policy.py`, las mismas que recibe
-el editor del panel.
+el editor del panel. El formulario del panel deja pasar las imágenes de otro sitio para que el
+guardado las copie a la biblioteca (`apps/content/services.py`).
 """
 
 import re
+from html.parser import HTMLParser
 
 import nh3
 
@@ -24,11 +26,21 @@ _IMG = re.compile(r"<img\b[^>]*>")
 _EMPTY_WRAPPER = re.compile(r"<(a|figure)\b[^>]*>\s*</\1>")
 
 
-def _keep_own_image_sources(tag, attribute, value):
-    """El `src` de una imagen pasa solo si es del propio sitio."""
-    if tag == "img" and attribute == "src" and not is_own_url(value):
-        return None
-    return value
+def own_images_only(src):
+    """La regla de lo que se guarda y se pinta: una imagen pasa solo si es del propio sitio."""
+    return src if is_own_url(src) else None
+
+
+def keep_any_image(src):
+    """Deja pasar también las imágenes de otro sitio, para copiarlas antes de guardar."""
+    return src
+
+
+def _attribute_filter(image_source):
+    def keep(tag, attribute, value):
+        return image_source(value) if tag == "img" and attribute == "src" else value
+
+    return keep
 
 
 def _drop_images_without_source(html):
@@ -40,17 +52,39 @@ def _drop_images_without_source(html):
     return html
 
 
-def clean_html(html):
-    """Devuelve el HTML depurado según la lista blanca. Idempotente."""
+def clean_html(html, image_source=own_images_only):
+    """Devuelve el HTML depurado según la lista blanca. `image_source(src)` decide la dirección de
+    cada imagen: la deja, la cambia o devuelve None, y entonces la imagen se quita entera. Con la
+    regla de siempre, idempotente."""
     if not html:
         return html
     cleaned = nh3.clean(
         html,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
-        attribute_filter=_keep_own_image_sources,
+        attribute_filter=_attribute_filter(image_source),
         clean_content_tags={"script", "style"},
         link_rel="nofollow noopener noreferrer",
         url_schemes=ALLOWED_URL_SCHEMES,
     )
     return _drop_images_without_source(cleaned)
+
+
+class _ImageCollector(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.images = {}
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if tag == "img" and attributes.get("src"):
+            self.images.setdefault(attributes["src"], attributes.get("alt") or "")
+
+
+def images_in(html):
+    """Las imágenes que el cuerpo muestra una vez saneado, de este sitio o de otro, como {src: alt},
+    en orden y sin repetir. Cada `src` es el valor que recibe `image_source` en `clean_html`."""
+    collector = _ImageCollector()
+    collector.feed(clean_html(html, image_source=keep_any_image) or "")
+    collector.close()
+    return collector.images

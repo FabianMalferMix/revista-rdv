@@ -34,6 +34,10 @@ ADMIN_ONLY = frozenset(
         # La marca de una base de desarrollo: solo existe donde se instalan las herramientas de
         # desarrollo, y en producción no hay permisos suyos que repartir.
         "devtools.DevelopmentMarker",
+        # Las imágenes de la biblioteca que muestra cada cuerpo: las escribe cada guardado, desde el
+        # cuerpo, y no se gestionan en el panel.
+        "content.ArticleBodyImage",
+        "content.PageBodyImage",
     }
 )
 

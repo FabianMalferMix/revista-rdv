@@ -14,6 +14,7 @@ from django.core.files.base import ContentFile
 from django.db.models.signals import post_init
 from django.utils import timezone
 from PIL import Image
+from PIL.TiffImagePlugin import IFDRational
 
 from apps.agenda.models import Event, EventPhoto
 from apps.content.models import Article, EditorialStatus, Poem
@@ -50,12 +51,30 @@ def make_photo(event, position=0):
     return EventPhoto.objects.create(event=event, asset=asset, position=position)
 
 
+def image_bytes(fmt="JPEG", size=(30, 40), *, gps=False):
+    """Los bytes de una imagen real, en `fmt` (JPEG, PNG, WEBP, GIF…). Con `gps`, lleva en su EXIF
+    la cámara y las coordenadas de Santiago, como la foto de un teléfono."""
+    image = Image.new("RGB", size, (10, 20, 30))
+    options = {}
+    if gps:
+        exif = Image.Exif()
+        exif[0x0110] = "CamaraX"  # Model
+        exif[0x8825] = {  # GPSInfo
+            1: "S",
+            2: (IFDRational(33), IFDRational(27), IFDRational(0)),
+            3: "W",
+            4: (IFDRational(70), IFDRational(39), IFDRational(0)),
+        }
+        options["exif"] = exif
+    buffer = BytesIO()
+    image.save(buffer, format=fmt, **options)
+    return buffer.getvalue()
+
+
 def make_image(nombre, alt="Imagen"):
     """Un recurso de imagen real, de 30 × 40, para retratos, cubiertas y logos."""
-    buffer = BytesIO()
-    Image.new("RGB", (30, 40), (10, 20, 30)).save(buffer, format="JPEG")
     asset = MediaAsset(alt_text=alt)
-    asset.file.save(f"{nombre}.jpg", ContentFile(buffer.getvalue()))
+    asset.file.save(f"{nombre}.jpg", ContentFile(image_bytes()))
     return asset
 
 

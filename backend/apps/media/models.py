@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from io import BytesIO
 from pathlib import PurePosixPath
 
@@ -41,6 +42,12 @@ REWRITE_FORMATS = {
 
 # Lo que lanza Pillow ante un archivo que no puede leer: ilegible, truncado o demasiado grande.
 IMAGE_ERRORS = (OSError, Image.DecompressionBombError)
+
+# El nombre de una copia, como lo arman `_derivative_name` («foto__480w.jpg») y `_portada_name`
+# («foto__portada-jpg-960w.avif», con la extensión del original).
+_COPY_NAME = re.compile(
+    r"(?P<stem>.+)__(?:\d+w(?P<suffix>\.[^./]+)|portada-(?P<ext>[^./]+)-\d+w\.[^./]+)"
+)
 
 
 class ImageCleanupError(Exception):
@@ -144,6 +151,14 @@ class MediaAsset(models.Model):
     def _derivative_name(self, width):
         p = PurePosixPath(self.file.name)
         return str(p.with_name(f"{p.stem}__{width}w{p.suffix}"))
+
+    @staticmethod
+    def original_name(name):
+        """El nombre del original del que salió una copia, o el mismo nombre si no es el de una."""
+        match = _COPY_NAME.fullmatch(name)
+        if not match:
+            return name
+        return match["stem"] + (match["suffix"] or f".{match['ext']}")
 
     def derivative_names(self):
         """Los nombres de las copias registradas. Lo consume apps.media.filecleanup: al borrar o
