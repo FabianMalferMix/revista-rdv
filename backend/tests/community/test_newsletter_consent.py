@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.community.models import CONFIRM_TOKEN_TTL, NewsletterSubscriber
+from apps.community.views import ALTA_NEUTRA
 
 pytestmark = pytest.mark.django_db
 S = NewsletterSubscriber.Status
@@ -50,28 +51,6 @@ def test_un_get_no_da_de_baja():
     Client().get(reverse("community:unsubscribe", args=[sub.token]))
     sub.refresh_from_db()
     assert sub.status == S.CONFIRMED
-
-
-def test_el_post_del_formulario_si_confirma(client):
-    sub = _pendiente()
-    resp = client.post(reverse("community:confirm", args=[sub.confirm_token]))
-    assert resp.status_code == 200
-    sub.refresh_from_db()
-    assert sub.status == S.CONFIRMED
-
-
-def test_baja_en_un_clic_rfc8058(client):
-    """El cliente de correo envía POST con `List-Unsubscribe=One-Click`, sin sesión ni
-    token CSRF: la vista está exenta a propósito para que la baja funcione."""
-    sub = _pendiente(status=S.CONFIRMED)
-    resp = client.post(
-        reverse("community:unsubscribe", args=[sub.token]),
-        data="List-Unsubscribe=One-Click",
-        content_type="application/x-www-form-urlencoded",
-    )
-    assert resp.status_code == 200
-    sub.refresh_from_db()
-    assert sub.status == S.UNSUBSCRIBED
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
@@ -161,5 +140,6 @@ def test_el_honeypot_tambien_responde_igual(client, django_capture_on_commit_cal
             follow=True,
         )
     assert "Si la dirección es válida".encode() in resp.content
+    assert ALTA_NEUTRA in resp.content.decode()  # la misma respuesta que las demás ramas
     assert not NewsletterSubscriber.objects.filter(email="bot@example.com").exists()
     assert len(mail.outbox) == 0

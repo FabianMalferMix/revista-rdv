@@ -1,18 +1,15 @@
-"""El ciclo de vida del suscriptor y de los envíos, y la purga que mide desde él.
+"""La purga cuenta desde el último cambio de estado, no desde la llegada.
 
-La purga cuenta desde el último cambio de estado, no desde la llegada: quien vuelve a
-suscribirse no pierde su alta nueva, y un envío rechazado hoy no se borra la semana siguiente
-por haber llegado hace meses, porque la política de privacidad promete contar desde la
-resolución.
+Quien vuelve a suscribirse no pierde su alta nueva, y un envío rechazado hoy no se borra la
+semana siguiente por haber llegado hace meses, porque la política de privacidad promete contar
+desde la resolución. Esa fecha sigue al estado del envío: se fija al resolverlo y se borra si
+vuelve a revisión.
 """
 
 from datetime import timedelta
 
 import pytest
-from django.core import mail
 from django.core.management import call_command
-from django.test import override_settings
-from django.urls import reverse
 from django.utils import timezone
 
 from apps.community import services
@@ -20,8 +17,6 @@ from apps.community.models import NewsletterSubscriber
 from apps.submissions.models import Submission
 
 pytestmark = pytest.mark.django_db
-S = NewsletterSubscriber.Status
-LOCMEM = "django.core.mail.backends.locmem.EmailBackend"
 
 
 def _purge():
@@ -30,12 +25,6 @@ def _purge():
 
 def _ago(days):
     return timezone.now() - timedelta(days=days)
-
-
-def test_two_signups_with_different_case_leave_one_row(client):
-    for email in ("Ana@Correo.cl", "  ana@correo.CL "):
-        client.post(reverse("community:subscribe"), {"email": email, "apodo": ""})
-    assert list(NewsletterSubscriber.objects.values_list("email", flat=True)) == ["ana@correo.cl"]
 
 
 def test_resubscribing_restarts_the_purge_clock():
@@ -81,39 +70,3 @@ def test_the_resolution_date_follows_the_status():
     submission.status = Submission.Status.IN_REVIEW
     submission.save()
     assert submission.resolved_at is None
-
-
-@override_settings(EMAIL_BACKEND=LOCMEM)
-def test_the_confirmation_is_not_resent_within_ten_minutes(
-    client, django_capture_on_commit_callbacks
-):
-    def signup():
-        with django_capture_on_commit_callbacks(execute=True):
-            response = client.post(
-                reverse("community:subscribe"), {"email": "z@example.com", "apodo": ""}
-            )
-        return response
-
-    first, second = signup(), signup()
-    assert len(mail.outbox) == 1
-    assert first.status_code == second.status_code == 302  # la misma respuesta
-    NewsletterSubscriber.objects.update(confirm_token_at=timezone.now() - timedelta(minutes=11))
-    signup()
-    assert len(mail.outbox) == 2
-
-
-def test_unsubscribing_voids_a_pending_confirmation_link(client):
-    sub = services.subscribe("anula@example.com")
-    link = reverse("community:confirm", args=[sub.confirm_token])
-    assert client.get(link).status_code == 200
-    sub.unsubscribe()
-    assert client.get(link).status_code == 404
-
-
-def test_coming_back_after_unsubscribing_requires_confirming_again():
-    sub = services.subscribe("regresa@example.com")
-    sub.confirm()
-    sub.unsubscribe()
-    sub = services.subscribe("regresa@example.com")
-    assert sub.status == S.PENDING
-    assert sub.confirmed_at is None

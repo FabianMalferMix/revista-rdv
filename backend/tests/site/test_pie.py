@@ -2,7 +2,8 @@
 
 Lo abre la identidad del colectivo (el sello, de dónde es y desde cuándo, el correo y el
 Instagram): al llegar al final de una página, se sabe de quién es. El mapa no repite el correo
-ni el Instagram.
+ni el Instagram. Enlaza a las páginas de privacidad y de cookies, con la nota de consentimiento
+del boletín.
 """
 
 import pytest
@@ -72,3 +73,10 @@ def test_the_phone_menu_ends_press_and_management_with_the_contact_address(clien
     mail = "mailto:hola@example.com"
     assert {title for title, hrefs in groups.items() if mail in hrefs} == {"Prensa y gestión"}
     assert groups["Prensa y gestión"][-1] == mail
+
+
+def test_footer_has_legal_links_and_consent(client):
+    content = client.get(reverse("site:home")).content
+    assert reverse("content:page_detail", args=["privacidad"]).encode() in content
+    assert reverse("content:page_detail", args=["cookies"]).encode() in content
+    assert b"pol\xc3\xadtica de privacidad" in content  # nota de consentimiento del form

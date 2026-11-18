@@ -92,6 +92,7 @@ def test_the_email_names_the_collective_and_links_from_the_site_url(settings):
     sub = _pending()
     send_confirmation_email(sub.pk)
     (message,) = mail.outbox
+    assert message.to == [EMAIL]
     assert message.subject == "Confirma tu suscripción a las novedades de Colectivo de Prueba"
     assert "Gracias por suscribirte a las novedades de Colectivo de Prueba." in message.body
     assert (
