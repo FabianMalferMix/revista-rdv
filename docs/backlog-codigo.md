@@ -180,7 +180,7 @@
 | B76 | Rendimiento menor | — | M | no | hecho (#276) |
 | B77 | Nombres trampa y rótulos completos | — | S | no | hecho (#277) |
 | B78 | Comentarios que dicen el presente | B03 | L | no | hecho (#286, #287, #288, #289, #291, #292, #293) |
-| B79 | La suite, por componente | B61 | L | no | pendiente |
+| B79 | La suite, por componente | B61 | L | no | en curso (etapa 1: #296) |
 | B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |
 | B86 | Las imágenes de otro sitio se copian al guardar | B68 | M | no | pendiente |
