@@ -12,8 +12,8 @@ services:
     image: resenas-app:dev
     command: python manage.py runserver 0.0.0.0:8000
     # runserver atiende cada petición en un hilo nuevo, y con conexiones persistentes cada
-    # hilo dejaba la suya abierta: unos cientos de páginas seguidas llenaban las 100 de
-    # Postgres y el sitio respondía 500 («too many clients already»). La documentación de
+    # hilo dejaría la suya abierta: unos cientos de páginas seguidas llenarían las 100 de
+    # Postgres y el sitio respondería 500 («too many clients already»). La documentación de
     # Django pide no usarlas con el servidor de desarrollo.
     environment:
       DJANGO_CONN_MAX_AGE: "0"

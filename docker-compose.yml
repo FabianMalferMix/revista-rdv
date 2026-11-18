@@ -2,8 +2,8 @@ name: resenas
 
 # Rotación de los logs de cada contenedor: con el driver json-file por defecto crecen sin
 # límite en el disco de la base, de los medios y de los respaldos. Diez megas por archivo y
-# cinco archivos por servicio (docker-compose.prod.yml repite el ancla para el proxy: las
-# anclas de YAML no cruzan archivos, y tests/test_compose_logging.py las compara).
+# cinco archivos por servicio (docker-compose.prod.yml repite el ancla para la caché y el
+# proxy: las anclas de YAML no cruzan archivos, y tests/test_compose_logging.py las compara).
 x-logging: &logging
   driver: json-file
   options:
@@ -75,7 +75,7 @@ services:
       - media:/app/mediafiles
       - private_media:/app/private_media
       # Los estáticos ya recolectados se comparten con el proxy, que los sirve en el
-      # borde en vez de hacerlos atravesar los workers de gunicorn (hallazgo S-27).
+      # borde en vez de hacerlos atravesar los workers de gunicorn.
       - staticfiles:/app/staticfiles
     depends_on:
       db:
@@ -124,10 +124,10 @@ services:
     logging: *logging
     build: ./infra/backup   # postgres:16 + restic (off-site) + curl (alertas)
     profiles: ["backup"]
-    # Entorno EXPLÍCITO en vez de `env_file: .env` (mínimo privilegio): antes recibía el
-    # fichero completo, incluida DJANGO_SECRET_KEY y las credenciales de SMTP, que no
-    # necesita para nada. Ojo al enumerar: RESTIC_PASSWORD y AWS_* no aparecen en los
-    # scripts porque los lee el propio binario `restic`, no el shell.
+    # Entorno EXPLÍCITO en vez de `env_file: .env` (mínimo privilegio): el fichero completo
+    # le daría DJANGO_SECRET_KEY y las credenciales de SMTP, que no necesita para nada. Ojo
+    # al enumerar: RESTIC_PASSWORD y AWS_* no aparecen en los scripts porque los lee el
+    # propio binario `restic`, no el shell.
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-resenas}
       POSTGRES_USER: ${POSTGRES_USER:-resenas}

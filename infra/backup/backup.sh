@@ -11,7 +11,7 @@ set -eu
 
 # Los artefactos que genera este script contienen la BASE DE DATOS COMPLETA (correos de
 # suscriptores, PII de envíos, hashes de contraseñas) y los MANUSCRITOS privados. Sin
-# umask quedaban 0644 en un bind-mount del host, legibles por cualquier usuario local.
+# umask quedarían 0644 en un bind-mount del host, legibles por cualquier usuario local.
 # 077 los deja 0600 y los directorios 0700.
 umask 077
 

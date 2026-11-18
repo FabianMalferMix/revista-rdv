@@ -4,16 +4,15 @@ on:
   push:
     branches: [main]
   pull_request:
-  # pip-audit y trivy solo corrían al haber commits: un CVE publicado sobre el código
-  # ya fijado no se detectaba mientras el repositorio estuviera quieto (S-34).
+  # Cada lunes, aunque el repositorio esté quieto: así pip-audit y trivy detectan un CVE
+  # publicado después de fijar la dependencia.
   schedule:
     - cron: "0 6 * * 1" # lunes 06:00 UTC
 
-# Mínimo privilegio para el GITHUB_TOKEN (hallazgo S-33). Sin este bloque, el token
-# hereda los permisos por defecto del repositorio, que en muchas configuraciones
-# incluyen escritura sobre el contenido: un paso comprometido —y este workflow ejecuta
-# binarios descargados de terceros— podría empujar commits. Los jobs que necesiten más
-# lo declaran ellos mismos.
+# Mínimo privilegio para el GITHUB_TOKEN. Sin este bloque, el token hereda los permisos
+# por defecto del repositorio, que en muchas configuraciones incluyen escritura sobre el
+# contenido: un paso comprometido —y este workflow ejecuta binarios descargados de
+# terceros— podría empujar commits. Los jobs que necesiten más lo declaran ellos mismos.
 permissions:
   contents: read
 
@@ -68,14 +67,10 @@ jobs:
 
       - name: Auditoría de dependencias (pip-audit, bloqueante)
         run: |
-          pip install "pip-audit==2.10.1"  # versión fijada: resultado reproducible (S-33)
+          pip install "pip-audit==2.10.1"  # versión fijada: resultado reproducible
           # Audita el lockfile completo (runtime + dev). Bloqueante: falla el CI
-          # ante cualquier CVE conocido en una dependencia fijada.
-          #
-          # Ya NO se ignora PYSEC-2026-1845 (carrera en /tmp de pytest): la nota que
-          # había aquí decía «revisar al subir pytest a >=9.0.3», y con pytest 9.1.1 la
-          # advertencia desaparece. Sin exclusiones: cada una es un punto ciego que
-          # sobrevive a su motivo si nadie la revisa.
+          # ante cualquier CVE conocido en una dependencia fijada. Sin exclusiones:
+          # cada una es un punto ciego que sobrevive a su motivo si nadie la revisa.
           pip-audit -r backend/requirements-dev.txt
 
       - name: Verificar migraciones al día
@@ -85,9 +80,9 @@ jobs:
       - name: Reversibilidad de migraciones (ida y vuelta)
         working-directory: backend
         # makemigrations --check solo detecta migraciones faltantes, no su
-        # reversibilidad. Aquí se aplica todo, se revierte hasta 0008 —ejercitando el
-        # reverse_sql de las migraciones no triviales: triggers FTS de 0009/0011 y los
-        # datos de 0010— y se reaplica, sobre la BD limpia del servicio (no la de tests).
+        # reversibilidad. Aquí se aplica todo, se revierte content hasta 0008 —ejercitando
+        # la vuelta atrás de cada migración posterior, también las de SQL a mano y las de
+        # datos— y se reaplica, sobre la BD limpia del servicio (no la de tests).
         run: |
           python manage.py migrate
           python manage.py migrate content 0008
@@ -95,7 +90,7 @@ jobs:
 
       - name: Ejecutar tests (con cobertura medida)
         working-directory: backend
-        # Umbral de cobertura: falla el CI si baja del 80% (config en pyproject.toml).
+        # Umbral de cobertura: falla el CI si baja del 80% (qué se mide, en pyproject.toml).
         # Incluye apps y config (la middleware CSP y el logging entran al gate). En paralelo,
         # un proceso por CPU (pytest-xdist): cada uno con su propia base de pruebas.
         run: pytest -n auto --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
@@ -241,8 +236,6 @@ jobs:
           ./trivy image --severity HIGH --ignore-unfixed --format table resenas-prod
           ./trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 --format table resenas-prod
 
-  # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
-  # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
   hygiene:
     runs-on: ubuntu-latest
     steps:
@@ -312,6 +305,8 @@ jobs:
         if: failure()
         run: docker compose logs --no-color release web
 
+  # Gates de seguridad estática: secretos (gitleaks) y SAST (bandit), más la revisión
+  # de dependencias del PR. Independientes de la BD/imagen, corren en paralelo.
   security:
     runs-on: ubuntu-latest
     # dependency-review-action necesita leer el PR además del contenido; se le concede
@@ -325,8 +320,7 @@ jobs:
           fetch-depth: 0 # gitleaks escanea todo el historial
 
       - name: Escaneo de secretos (gitleaks, bloqueante)
-        # Se verifica el sha256 del tarball ANTES de extraerlo y ejecutarlo (S-33): antes
-        # se canalizaba directo a `tar -xz`, sin comprobar nada.
+        # Se verifica el sha256 del tarball ANTES de extraerlo y ejecutarlo.
         env:
           GITLEAKS_VERSION: "8.21.2"
           GITLEAKS_SHA256: "5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba"
@@ -355,9 +349,9 @@ jobs:
           python-version-file: .python-version
 
       - name: SAST (bandit, severidad media+, bloqueante)
-        # Versión fijada: un job que exige --require-hashes al resto de las dependencias
+        # Versión fijada: un CI que exige --require-hashes al resto de las dependencias
         # no debería instalar sus propias herramientas desde la última versión que haya
-        # ese día (S-33). Fijarla hace además reproducible el resultado del SAST.
+        # ese día. Fijarla hace además reproducible el resultado del SAST.
         run: |
           python -m pip install "pip==26.3"
           python -m pip install "bandit==1.9.4"
@@ -584,8 +578,8 @@ jobs:
 
   # Verifica la recuperación ante desastre (DR): que un respaldo pg_dump del esquema
   # REAL (con el vector de búsqueda generado, su configuración, la extensión unaccent y
-  # datos de migración) se pueda restaurar
-  # íntegro. Ni backup.sh ni restore.sh se ejercitaban en ningún test/CI.
+  # datos de migración) se pueda restaurar íntegro, y backup.sh y restore.sh tal como los
+  # corre el sidecar.
   backup-restore:
     runs-on: ubuntu-latest
     steps:
@@ -635,7 +629,7 @@ jobs:
           EXT=$($PG psql -U resenas -d restored -tAc "SELECT count(*) FROM pg_extension WHERE extname='unaccent';")
           echo "content_page orig=$ORIG restaurado=$REST | vectores generados=$FTS | configuración=$CFG | unaccent=$EXT"
           # Comprobaciones explícitas: con `set -e`, en `test A && test B` el fallo de A no
-          # aborta el paso, y la comprobación nunca podía fallar.
+          # aborta el paso; por eso el `|| { …; exit 1; }`.
           [ "$ORIG" = "$REST" ] && [ "$ORIG" -gt 0 ] && [ "$FTS" = "2" ] && [ "$CFG" = "1" ] && [ "$EXT" = "1" ] \
             || { echo "FALLO: la restauración no coincide con el original"; exit 1; }
           echo "OK: respaldo restaurado íntegro (datos + vectores de búsqueda + configuración + extensión)"

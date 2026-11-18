@@ -1250,8 +1250,8 @@ const CHECKS = [
           expect(count > 0, `${route}: no hay ningún ${selector} oculto que medir`);
         }
       };
-      // Con los guiones: las fichas del estante que no están al frente. Las voces que esperan
-      // turno ya no llevan hidden: quedan en la lista para el lector, fuera de la fila.
+      // Con los guiones: las fichas del estante que no están al frente. A las voces que esperan
+      // turno el guion les quita el hidden: quedan en la lista para el lector, fuera de la fila.
       await expectHidden(page, '/', ['.estante-ficha']);
       // Sin ellos: la hoja de contactos de la tirada, las voces que esperan y el botón de
       // imprimir del dossier.
