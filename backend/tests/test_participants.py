@@ -1,7 +1,6 @@
 """«Participan» se lee igual en las tres fichas que lo llevan: la publicación, la actividad y el
 registro. Lo pinta una sola parcial, `partials/_participan.html`: el rótulo de los datos de la
-ficha y los nombres, cada uno hacia su página si la tiene. Eran tres bloques copiados, y el del
-registro iba con otro título.
+ficha y los nombres, cada uno hacia su página si la tiene.
 
 Tiene página quien la tiene en su ficha (`Contributor.objects.visible()`): las integrantes y
 quien firma algo publicado. Quien solo participa no la tiene, y su enlace llevaría a un 404: se

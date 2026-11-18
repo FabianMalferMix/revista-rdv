@@ -26,7 +26,7 @@ _FILE_SIGNATURES = {
 
 
 # Piezas que el formato OBLIGA a llevar dentro del contenedor. Sin esto, `mis-fotos.zip`
-# renombrado a `.docx` pasaba la validación: la firma PK es la del ZIP, no la del
+# renombrado a `.docx` pasaría la validación: la firma PK es la del ZIP, no la del
 # documento. No cierra un agujero de ejecución —el adjunto va a almacenamiento privado y
 # solo lo descarga un editor— pero evita aceptar como manuscrito algo que Word no abrirá.
 _ZIP_REQUERIDOS = {
@@ -95,7 +95,7 @@ class SubmissionForm(HoneypotMixin, forms.ModelForm):
         widgets = {
             # `autocomplete` dice al navegador qué dato es cada campo, para que lo rellene
             # con lo que la persona ya guardó (WCAG 1.3.5). Sin él, nombre y correo se
-            # escribían a mano cada vez.
+            # escribirían a mano cada vez.
             "author_name": forms.TextInput(attrs={"autocomplete": "name"}),
             "author_email": forms.EmailInput(attrs={"autocomplete": "email"}),
             "body": forms.Textarea(attrs={"rows": 8}),

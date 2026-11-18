@@ -1,9 +1,9 @@
-"""Las reseñas de una publicación del colectivo (lo pidió el dueño del sitio tras el paso 21).
+"""Las reseñas de una publicación del colectivo.
 
 Una reseña del sitio apunta a una obra reseñada (`reviews.Work`), y las publicaciones del
-colectivo (`showcase.Publication`) son el catálogo: no había forma de decir que una obra
-reseñada era un libro del colectivo. Ahora la obra puede señalar su publicación, la ficha de
-la publicación enseña sus reseñas y la de la obra lleva a la publicación.
+colectivo (`showcase.Publication`) son el catálogo. La obra puede señalar su publicación
+(`Work.publicacion`): la ficha de la publicación enseña sus reseñas y la de la obra lleva a la
+publicación.
 """
 
 from datetime import timedelta
@@ -95,7 +95,8 @@ def test_las_resenas_de_una_publicacion_cuestan_una_consulta_fija(client):
 
 
 def test_la_cabecera_de_una_obra_sin_autores_no_empieza_por_un_separador(client):
-    """«· Overol · 2024»: el punto medio iba delante de la editorial aunque no hubiera autores."""
+    """Sin autores, la cabecera de la obra empieza por el primer dato que haya, no por un punto
+    medio («· Overol · 2024»)."""
     obra = Work.objects.create(slug="sin-autores", title="Sin autores", publication_year=2024)
     _resena(obra, "Su reseña", dias=1)  # la ficha existe si una reseña la respalda
     sopa = soup(client, reverse("reviews:work_detail", args=[obra.slug]))

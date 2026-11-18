@@ -41,7 +41,8 @@ class WorkQuerySet(models.QuerySet):
 
 
 class Publisher(models.Model):
-    """Editorial. Extraída de Work (3NF): habilita 'reseñas por editorial'."""
+    """Editorial de una obra reseñada o de una publicación del colectivo. Su ficha reúne las
+    publicaciones del colectivo con ella, sus demás obras y las reseñas de todas sus obras."""
 
     slug = models.SlugField(
         max_length=255,
@@ -68,7 +69,8 @@ class Publisher(models.Model):
 
 
 class BookAuthor(models.Model):
-    """Autor de la obra reseñada. Distinto del Contributor de la revista."""
+    """Autor de la obra reseñada. Distinto del Contributor, que firma en el sitio o integra el
+    colectivo."""
 
     slug = models.SlugField(
         max_length=255,
@@ -127,7 +129,7 @@ class Work(models.Model):
     # ISBN es clave candidata OPCIONAL: se guarda NULL (no "") cuando falta —save() lo
     # coacciona— para permitir varias obras sin ISBN; la unicidad se aplica solo sobre
     # ISBN reales vía UniqueConstraint parcial (ver Meta), no con unique=True plano
-    # (que hacía chocar dos "" en el admin: IntegrityError/500).
+    # (con el que dos "" chocarían en el admin: IntegrityError/500).
     isbn = models.CharField(max_length=20, null=True, blank=True, verbose_name="ISBN")
     cover_image = models.ForeignKey(
         "media.MediaAsset",

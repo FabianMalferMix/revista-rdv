@@ -13,8 +13,8 @@ pytestmark = pytest.mark.django_db
 
 
 def test_multiple_works_without_isbn_allowed():
-    # "" se coacciona a NULL en save(): varias obras sin ISBN conviven (antes el 2.º
-    # "" chocaba con el UNIQUE plano y daba IntegrityError/500 en el admin).
+    # "" se coacciona a NULL en save(): varias obras sin ISBN conviven (con un UNIQUE plano,
+    # el 2.º "" chocaría y daría IntegrityError/500 en el admin).
     a = Work.objects.create(slug="obra-1", title="Poemario 1", isbn="")
     Work.objects.create(slug="obra-2", title="Poemario 2")  # isbn omitido
     a.refresh_from_db()
@@ -27,7 +27,7 @@ def test_duplicate_real_isbn_rejected():
         Work.objects.create(slug="obra-b", title="B", isbn="978-956-000-1")
 
 
-# ── Vistas públicas de reviews (hallazgo #10: sin prueba) ───────────────────
+# ── Vistas públicas de reviews ──────────────────────────────────────────────
 
 
 def test_work_detail_renders_and_lists_published_review_only(client):

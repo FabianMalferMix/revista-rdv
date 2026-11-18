@@ -1,13 +1,13 @@
-"""Un ZIP cualquiera ya no pasa por .docx.
+"""Un ZIP cualquiera no pasa por .docx.
 
 `SubmissionForm` valida que los bytes iniciales correspondan a la extensión declarada, y
 eso rechaza un PNG renombrado a .pdf. Pero un .docx (y un .odt) SON contenedores ZIP, así
-que su firma `PK\\x03\\x04` la cumple cualquier zip: `mis-fotos.zip` renombrado a `.docx`
-entraba como manuscrito.
+que su firma `PK\\x03\\x04` la cumple cualquier zip: solo con ella, `mis-fotos.zip`
+renombrado a `.docx` entraría como manuscrito.
 
-No era un agujero de ejecución —el adjunto va a almacenamiento privado, solo lo descarga
-quien tiene rol de editor, y se sirve con nosniff y CSP sandbox—, pero sí una promesa que
-la validación no cumplía. Se cierra mirando el ÍNDICE del contenedor.
+No sería un agujero de ejecución —el adjunto va a almacenamiento privado, solo lo descarga
+quien tiene rol de editor, y sale como archivo adjunto, con nosniff—, pero sí una promesa
+que la validación no cumpliría. Por eso se mira el ÍNDICE del contenedor.
 
 La mitad que más importa de estas pruebas es la contraria: que un .docx legítimo siga
 entrando. Una validación más estricta que rechace envíos reales es peor que la laxa.
@@ -91,8 +91,8 @@ def test_un_zip_corrupto_no_revienta():
 def test_no_se_extrae_nada_del_contenedor():
     """Solo se lee el índice, así que una entrada enorme declarada no se descomprime.
 
-    Un zip bomba entraría por ahí si el validador extrajera. Se comprueba con una entrada
-    que declara 1 GB: si se descomprimiera, esta prueba tardaría o agotaría la memoria.
+    Un zip bomba entraría por ahí si el validador extrajera. La entrada de la prueba declara
+    5 MB y comprime muchísimo: el docx bien formado entra sin que nada se cuelgue.
     """
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
@@ -104,7 +104,7 @@ def test_no_se_extrae_nada_del_contenedor():
 
 @pytest.mark.parametrize("ext", ["pdf", "rtf", "txt"])
 def test_los_formatos_sin_contenedor_no_cambian(ext):
-    """Contra-prueba: la comprobación nueva solo alcanza a docx y odt."""
+    """Contra-prueba: la comprobación del índice solo alcanza a docx y odt."""
     datos = {"pdf": b"%PDF-1.4 x", "rtf": b"{\\rtf1 x", "txt": b"texto plano"}[ext]
     ok, error = _valida(f"a.{ext}", datos)
     assert ok, error

@@ -1,4 +1,5 @@
-"""Retención/purga de PII (comando purge_stale_data) — Onda D."""
+"""La purga de datos personales caducados (comando purge_stale_data): lo viejo se borra; lo
+confirmado, lo aceptado y lo reciente se conservan."""
 
 from datetime import timedelta
 

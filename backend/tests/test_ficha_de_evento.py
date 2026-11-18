@@ -1,8 +1,6 @@
-"""La ficha de un evento (backlog UX, ticket 5.2).
+"""La ficha de un evento.
 
-El afiche era una imagen de 320 px sin pie, y la columna de al lado se quedaba vacía bajo
-la descripción; las fotos, miniaturas iguales de 207 × 129 con su pie debajo. Ahora el
-afiche va a 420 px como un objeto, con su pie, y a su lado quiénes participan y los
+El afiche va como un objeto de hasta 420 px, con su pie, y a su lado quiénes participan y los
 registros; las fotos, en un mosaico de seis, y las demás en «Ver las N fotos».
 """
 
@@ -109,8 +107,8 @@ def test_con_seis_fotos_o_menos_no_hay_nada_que_desplegar(client):
 
 
 def test_el_pie_de_cada_foto_se_lee_en_su_texto_alternativo_y_en_la_vista_ampliada(client):
-    """Bajo cada miniatura rompía el mosaico. No se pierde: es el texto alternativo de la
-    miniatura y va en el pie de la vista ampliada."""
+    """El pie de una foto no va bajo su miniatura, donde rompería el mosaico, y no se pierde:
+    es el texto alternativo de la miniatura y va en el pie de la vista ampliada."""
     evento = _evento()
     _fotos(evento, 3)
     sopa = _sopa(client, evento)
@@ -123,7 +121,7 @@ def test_el_pie_de_cada_foto_se_lee_en_su_texto_alternativo_y_en_la_vista_amplia
 
 def test_la_ficha_cuesta_lo_mismo_con_dos_fotos_que_con_ocho(client):
     """Las fotos y los registros salen de la caché del prefetch: el recorte del mosaico no
-    añade consultas, y los registros publicados ya no se piden dos veces."""
+    añade consultas, y los registros publicados se piden una sola vez."""
     evento = _evento(poster=make_image("afiche"))
     make_recording(slug="registro", title="Registro", event=evento)
     _fotos(evento, 2)

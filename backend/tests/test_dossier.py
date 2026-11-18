@@ -61,7 +61,7 @@ def test_dossier_aggregates_everything(client, profile):
     ]:
         assert fragment in resp.content
 
-    # El botón de imprimir ya no usa handler inline (incompatible con la CSP).
+    # El botón de imprimir no usa un handler inline, que la CSP bloquearía.
     assert b"onclick" not in resp.content
     assert b"js/dossier.js" in resp.content
 
@@ -80,7 +80,7 @@ def test_home_cta_links_to_dossier_page_without_pdf(client, profile):
     assert b"Ver el dossier" in resp.content
     assert b"Descargar dossier" not in resp.content, "promete una descarga que no ocurre"
     assert reverse("showcase:dossier").encode() in resp.content
-    # «Escríbenos» (ticket 4.2), con el correo de gestión: el mismo que el pie.
+    # «Escríbenos», con el correo de gestión: el mismo que el pie.
     assert b'href="mailto:gestion@example.com">Escr\xc3\xadbenos' in resp.content
 
 
@@ -102,7 +102,7 @@ def test_dossier_page_offers_pdf_download_when_uploaded(client, profile):
     )
 
 
-# ── El dossier como kit de prensa (ticket 5.1) ────────────────────────────
+# ── El dossier como kit de prensa ─────────────────────────────────────────
 
 
 def _sopa(client):
@@ -110,8 +110,8 @@ def _sopa(client):
 
 
 def test_el_titulo_dice_que_es_el_dossier(client, profile):
-    """La barra, el pie y el botón de la cabecera llaman a la página «Dossier», y su título
-    era solo el nombre del colectivo. El botón de imprimir iba antes que el título."""
+    """La barra, el pie y el botón de la cabecera llaman a la página «Dossier»: la cejilla lo
+    dice sobre el nombre del colectivo, y el botón de imprimir va después del título."""
     cabeza = _sopa(client).select_one(".dossier-head")
     assert cabeza.select_one(".kicker").get_text() == "Dossier · kit de prensa"
     assert cabeza.h1.get_text() == "Colectivo Prueba"
@@ -126,9 +126,10 @@ def test_el_boton_de_imprimir_solo_aparece_con_javascript(client, profile):
 
 
 def test_la_trayectoria_es_una_sola_y_va_de_lo_mas_reciente_a_lo_mas_antiguo(client, profile):
-    """Eran dos listas seguidas, primero los hitos y después los eventos, y los años salían
-    desordenados (2022, 2019, 2026, 2025). Ahora es una, por años, con los hitos, las
-    publicaciones y los eventos de cada uno. Una publicación sin año no tiene dónde ir."""
+    """La trayectoria es una sola lista, por años y del más reciente al más antiguo, con los
+    hitos, las publicaciones y los eventos de cada uno: en dos listas seguidas, los años
+    saldrían desordenados (2022, 2019, 2026, 2025). Una publicación sin año no tiene dónde
+    ir."""
     Milestone.objects.create(year=2019, title="Fundación")
     Milestone.objects.create(year=2022, title="Primera plaquette")
     make_publication(slug="libro", title="Un libro", year=2024)
@@ -204,7 +205,7 @@ def test_la_ficha_reune_los_datos_del_colectivo(client, profile, settings):
 
 
 def test_las_cifras_nombran_integrantes_y_festivales(client, profile):
-    """D11: las cifras que busca un jurado, con el nombre de cada una. Sin ferias, la de
+    """Las cifras que busca un jurado, con el nombre de cada una. Sin ferias, la de
     ferias no aparece: un cero no dice nada."""
     for n in range(3):
         Contributor.objects.create(slug=f"i{n}", display_name=f"Integrante {n}", is_member=True)

@@ -140,12 +140,12 @@ def test_each_page_counts_festivals_and_fairs_as_it_names_them(client):
     assert {"2 festivales", "1 feria"} <= cifras, cifras
 
 
-# ── Agenda sin fechas (backlog UX, ticket 1.13) ─────────────────────────────
+# ── Agenda sin fechas ───────────────────────────────────────────────────────
 
 
 def test_la_agenda_vacia_ensena_lo_ultimo_y_como_contactar(client):
-    """Sin fechas anunciadas la página era una frase. Ahora dice qué pasa, ofrece
-    contacto y enseña las últimas actividades: prueba de que el colectivo está activo."""
+    """Sin fechas anunciadas, la página dice qué pasa, ofrece contacto y enseña las últimas
+    actividades: prueba de que el colectivo está activo."""
     from apps.showcase.models import SiteProfile
 
     perfil = SiteProfile.load()
@@ -207,7 +207,7 @@ def test_con_fechas_anunciadas_no_se_mezclan_las_pasadas(client):
     assert "Sin fechas anunciadas" not in html
 
 
-# ── Galería como hoja de contactos (backlog UX, ticket 2.2) ─────────────────
+# ── Galería como hoja de contactos ──────────────────────────────────────────
 
 
 def _hojas(client):
@@ -221,7 +221,8 @@ def _hojas(client):
 
 
 def test_cada_album_ensena_hasta_tres_fotos(client):
-    """Una sola miniatura no decía si detrás había una foto o treinta."""
+    """Cada álbum enseña hasta tres fotos: una sola miniatura no diría si detrás hay una foto
+    o treinta."""
     grande = make_event(slug="grande", title="Álbum Grande")
     for i in range(5):
         make_photo(grande, position=i)

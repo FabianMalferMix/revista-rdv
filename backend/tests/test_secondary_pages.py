@@ -3,7 +3,7 @@ las respalda; lo demás responde 404 y no va al sitemap. Una integrante tiene fi
 
 Cada prueba recorre el mismo camino: sin respaldo, nada; con un respaldo que no está publicado,
 tampoco; al publicarse, la ficha y el sitemap. Cada cambio se confirma, como al guardar en el
-panel: el sitemap sale de su caché, que se vacía al confirmarse (config/listing_cache.py).
+panel: el sitemap sale de su caché, que se renueva al confirmarse (config/listing_cache.py).
 """
 
 import pytest

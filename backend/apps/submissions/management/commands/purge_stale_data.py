@@ -7,7 +7,8 @@ Minimización de datos (Ley 21.719). Cubre cuatro grupos:
     datos, así que conservarlos indefinidamente contradice lo que promete la política;
   · envíos ya resueltos (rechazados/retirados), con su adjunto privado;
   · registros de intentos de acceso de django-axes, que guardan direcciones IP y el
-    usuario tecleado (ambos son datos personales) y no tenían ninguna caducidad.
+    usuario tecleado (ambos son datos personales): axes no borra por antigüedad sus
+    registros de accesos ni de fallos.
 
 Correr periódicamente (cron/beat) o a mano. `--days` fija la antigüedad mínima.
 

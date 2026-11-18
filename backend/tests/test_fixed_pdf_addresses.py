@@ -1,8 +1,8 @@
 """Los PDF que se descargan tienen una dirección fija: /dossier.pdf y /publicacion/<slug>.pdf.
 
 El dossier es lo que un gestor reenvía. El archivo nuevo no puede tomar el nombre del viejo hasta
-que se confirma el guardado, así que una dirección con el nombre del archivo cambiaba con cada
-reemplazo, y la de una publicación ya cambiaba por su nombre al azar.
+que se confirma el guardado, y el de una publicación se guarda con un nombre al azar: una
+dirección con el nombre del archivo cambiaría con cada reemplazo.
 """
 
 import pytest
