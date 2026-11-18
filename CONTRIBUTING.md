@@ -140,8 +140,8 @@ vigente más cercano y no se agrava la deuda.
      `backend/pyproject.toml`) falla ante un import nuevo entre dos apps que no se importaban.
 
    Bien: `perform_transition` (`apps/content/workflow.py`) concentra los cambios de estado
-   editorial, con su bloqueo y su bitácora. Mal: el alta, la confirmación y la baja del boletín
-   viven en `apps/community/views.py`.
+   editorial, con su bloqueo y su bitácora. Mal: una vista que cambia el estado y guarda por su
+   cuenta, sin el bloqueo ni la bitácora.
 2. **Lo publicable.** La regla de visibilidad vive en el QuerySet de cada modelo
    (`config/publishing.py`). Las vistas, el sitemap y los feeds piden `Modelo.objects.published()`,
    también desde las relaciones (`member.events.published()`), y no escriben el filtro a mano:
@@ -165,11 +165,12 @@ vigente más cercano y no se agrava la deuda.
    (tirada, estante, pliego, cápsula), que se usan tal cual también dentro de nombres en inglés,
    como `tirada_items`. Lo existente no se renombra, salvo los nombres trampa que lista el backlog.
 5. **Comentarios.** Dicen qué hace el código hoy y qué restricción lo explica. Bien: el comentario
-   del feed de registros en `config/urls.py` explica por qué se instancia por petición (gunicorn
-   usa hilos). Mal: los comentarios que cuentan qué se hizo en cada sesión o citan una decisión o
-   un ticket («D23», «paso 18»): esa historia va en el commit, y el CI falla si un archivo suma
-   identificadores de esos (`tools/ci/decision_refs.py`). Una garantía de seguridad o de
-   privacidad se escribe como prueba, no como comentario.
+   de `FEEDS` (`apps/site/feeds.py`) explica por qué basta una instancia de cada feed para todos
+   los hilos de gunicorn: los feeds no guardan nada de la petición. Mal: los comentarios que
+   cuentan qué se hizo en cada sesión o citan una decisión o un ticket («D23», «paso 18»): esa
+   historia va en el commit, y el CI falla si un archivo suma identificadores de esos
+   (`tools/ci/decision_refs.py`). Una garantía de seguridad o de privacidad se escribe como
+   prueba, no como comentario.
 6. **Errores.** Nada de `except Exception: return` sin registro: lo esperado, `logger.warning`
    sin traza; lo inesperado, `logger.exception`. Los controles de privacidad fallan cerrados, y un
    proceso solo declara éxito cuando lo verificó. Mal: en `infra/backup/backup.sh`,
