@@ -36,6 +36,70 @@ def test_embed_src_unknown_and_empty():
     assert embed_src("") == ""
 
 
+# ── Los enlaces de YouTube ───────────────────────────────────
+
+YOUTUBE_ID = "dQw4w9WgXcQ"
+
+# El mismo video, enlazado como lo dan la barra de direcciones, el botón de compartir, el código
+# para insertar, un corto o un directo. El `si` de compartir y el `app` llevan valores que también
+# pasarían por un identificador: si el patrón se quedara con uno, el reproductor sería otro.
+YOUTUBE_VIDEO_LINKS = [
+    f"https://www.youtube.com/watch?v={YOUTUBE_ID}",
+    f"https://youtu.be/{YOUTUBE_ID}?si=Xk3pQ9aB2cLm7NvR",
+    f"https://www.youtube.com/watch?si=Xk3pQ9aB2cLm7NvR&v={YOUTUBE_ID}",
+    f"https://m.youtube.com/watch?app=desktop&feature=share&v={YOUTUBE_ID}&t=42s",
+    f"https://www.youtube.com/shorts/{YOUTUBE_ID}?feature=share",
+    f"https://www.youtube.com/live/{YOUTUBE_ID}?si=Xk3pQ9aB2cLm7NvR",
+    f"https://www.youtube.com/embed/{YOUTUBE_ID}?start=10",
+    f"https://www.youtube-nocookie.com/embed/{YOUTUBE_ID}",
+]
+
+# Enlaces de YouTube que no son de un video: un canal, su directo, una lista y los códigos para
+# insertar una lista o el directo de un canal.
+YOUTUBE_OTHER_LINKS = [
+    "https://www.youtube.com/@canal-de-poesia",
+    "https://www.youtube.com/@canal-de-poesia/live",
+    "https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG",
+    "https://www.youtube.com/watch?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG&index=2",
+    "https://www.youtube.com/embed/videoseries?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG",
+    "https://www.youtube.com/embed/live_stream?channel=UCx0sYbCqOb8TBPRdmBHs5If",
+]
+
+
+def _recording_page(client, link):
+    from bs4 import BeautifulSoup
+
+    response = client.get(make_recording(embed_url=link).get_absolute_url())
+    return BeautifulSoup(response.content, "html.parser")
+
+
+def _button(page):
+    """El botón que abre el enlace en el sitio del proveedor."""
+    return page.find("a", string="Ver / escuchar ↗")
+
+
+@pytest.mark.parametrize("link", YOUTUBE_VIDEO_LINKS)
+def test_every_youtube_video_link_gets_the_same_player(client, link):
+    """Cualquier enlace de un video de YouTube arma en la ficha el reproductor de
+    youtube-nocookie.com con el identificador del video, y no el botón que lleva a YouTube."""
+    page = _recording_page(client, link)
+    player = page.select_one("[data-embed-src]")
+    assert player is not None, "la ficha no arma el reproductor"
+    assert player["data-embed-src"] == f"https://www.youtube-nocookie.com/embed/{YOUTUBE_ID}"
+    assert _button(page) is None
+
+
+@pytest.mark.parametrize("link", YOUTUBE_OTHER_LINKS)
+def test_a_youtube_link_that_is_not_a_video_gets_the_button(client, link):
+    """Un enlace de YouTube que no es de un video no arma reproductor: la ficha lleva el botón
+    que lo abre en YouTube."""
+    page = _recording_page(client, link)
+    assert page.select_one("[data-embed-src]") is None
+    button = _button(page)
+    assert button is not None, "la ficha no lleva el botón"
+    assert button["href"] == link
+
+
 # ── Vistas públicas ──────────────────────────────────────────
 
 
