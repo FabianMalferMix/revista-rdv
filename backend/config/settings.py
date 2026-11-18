@@ -163,7 +163,7 @@ AXES_COOLOFF_TIME = 1  # horas de bloqueo tras superar el límite
 # Bloquea la combinación de cuenta e IP: quien prueba contraseñas contra una cuenta queda
 # fuera desde su conexión, sin dejar fuera a la dueña de la cuenta desde otra ni a las demás
 # cuentas de la misma IP. Y un acierto reinicia solo su propia combinación: con el bloqueo
-# por IP, cualquier login correcto desde esa IP borraba los fallos contra todas las cuentas.
+# por IP, cualquier login correcto desde esa IP borraría los fallos contra todas las cuentas.
 AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
 # Sin esto, axes responde «Account locked: too many login attempts» en inglés, y en
@@ -178,7 +178,8 @@ AXES_ENABLED = env_bool("AXES_ENABLED", True)
 
 # django-ratelimit: contadores en la caché por defecto (LocMem en dev, Redis en prod).
 # La IP se resuelve con el MISMO callable que axes para que ambos cuenten por la misma
-# IP tras el proxy (si divergen, el límite por IP se colapsa en un cubo global — #01).
+# IP, la del cliente: tras Caddy, REMOTE_ADDR es la de Caddy, y contar por ella haría del
+# límite por IP un solo cubo para todos.
 RATELIMIT_ENABLE = env_bool("RATELIMIT_ENABLE", True)
 RATELIMIT_IP_META_KEY = "config.clientip.client_ip"
 
@@ -186,16 +187,15 @@ RATELIMIT_IP_META_KEY = "config.clientip.client_ip"
 # (apps/media/validators.py y el formulario de envíos), y Caddy corta algo por encima del tope
 # de cada ruta. Este límite solo cuenta los campos que no son archivos.
 DATA_UPLOAD_MAX_MEMORY_SIZE = env_int("DJANGO_DATA_UPLOAD_MAX", 3 * 1024 * 1024)
-# El valor por defecto de Django: con 200, un evento con 35 fotos no se podía guardar (cada
-# foto suma cinco campos al formulario del panel).
+# El valor por defecto de Django. Cada foto de un evento suma cinco campos al formulario del
+# panel: con un tope de 200, un evento con 35 fotos no se podría guardar.
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
 # ── Internacionalización ──────────────────────────────────
 # Django 6.0 cambiará el esquema que `forms.URLField` asume para una URL sin protocolo:
-# de http a https. Optar ya por el nuevo comportamiento silencia el
-# RemovedInDjango60Warning —que `filterwarnings = error` de pytest.ini convertiría en
-# fallo al subir de versión— y de paso es la opción segura: quien teclee «vimeo.com/123»
-# en el panel obtiene https, no texto plano.
+# de http a https. Optar ya por el nuevo comportamiento silencia el RemovedInDjango60Warning
+# —que `filterwarnings = error` de pytest.ini convierte en fallo— y de paso es la opción
+# segura: quien teclee «vimeo.com/123» en el panel obtiene https, no texto plano.
 FORMS_URLFIELD_ASSUME_HTTPS = True
 
 LANGUAGE_CODE = "es"
@@ -256,7 +256,7 @@ CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", f"{_BROKER_BASE}/1")
 CACHE_URL = env_str("CACHE_URL", f"{_CACHE_BASE}/0")
 # Nadie lee el resultado de una tarea: no se guarda.
 CELERY_TASK_IGNORE_RESULT = True
-# kombu no pone plazos al socket del broker: con Redis colgado, encolar retenía el proceso.
+# kombu no pone plazos al socket del broker: con Redis colgado, encolar retendría el proceso.
 CELERY_BROKER_TRANSPORT_OPTIONS = {"socket_timeout": 5, "socket_connect_timeout": 3}
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
@@ -287,7 +287,7 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 # Sin esto, el worker abre un proceso por CPU del servidor, sin relación con su carga (una
 # tarea por minuto y algún correo) ni con su límite de memoria (WORKER_MEM_LIMIT): con
-# muchas CPU, superaba el límite en reposo. Cada proceso se renueva tras 200 tareas.
+# muchas CPU, superaría el límite en reposo. Cada proceso se renueva tras 200 tareas.
 CELERY_WORKER_CONCURRENCY = env_int("CELERY_CONCURRENCY", 2)
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
 
@@ -300,8 +300,8 @@ if DEBUG:
 else:
     CACHES = {
         "default": {
-            # Backend tolerante: con Redis caído, django-ratelimit propagaba
-            # ConnectionError y los formularios públicos devolvían 500.
+            # Backend tolerante: sin él, con Redis caído, django-ratelimit propagaría
+            # ConnectionError y los formularios públicos y el buscador responderían con un 500.
             "BACKEND": "config.cache.ResilientRedisCache",
             "LOCATION": CACHE_URL,
             # La caché es prescindible: mejor fallar en un segundo que retener un hilo.
@@ -322,7 +322,7 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_REDIRECT_EXEMPT = [r"^healthz/?$", r"^readyz/?$"]
 
 if not DEBUG:
-    # Detrás de un proxy que termina TLS (nginx, etc.).
+    # Detrás de Caddy, que termina TLS y avisa del esquema con X-Forwarded-Proto.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -360,7 +360,7 @@ LOGGING = {
         "json": {"()": "config.logformat.JsonFormatter"},
     },
     # Los enlaces del boletín llevan el token en la ruta: se redacta antes de escribir
-    # nada al log (S-20).
+    # nada al log.
     "filters": {"redact_tokens": {"()": "config.redaction.RedactTokensFilter"}},
     "handlers": {
         "console": {

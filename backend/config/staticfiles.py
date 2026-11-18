@@ -63,7 +63,7 @@ class VendoredStaticFilesStorage(CompressedManifestStaticFilesStorage):
         # Procesa (hash + reescritura de refs + compresión + manifiesto) todo lo demás.
         yield from super().post_process(others, dry_run=dry_run, **options)
 
-        # Registra los vendidos en el manifiesto con su nombre tal cual (sin hash)
+        # Registra los vendorizados en el manifiesto con su nombre tal cual (sin hash)
         # y re-guarda; así {% static %} los resuelve aun con manifest_strict.
         for name in vendored:
             clean = self.clean_name(name)

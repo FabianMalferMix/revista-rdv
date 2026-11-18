@@ -1,9 +1,11 @@
 """Archivos que solo se sirven mientras su pieza está publicada.
 
 El audio de los registros y los PDF de las publicaciones no salen de /media/, que Caddy sirve
-sin preguntar a nadie: despublicar una pieza dejaba su archivo accesible para quien tuviera
-la URL (el feed de pódcast ya la había repartido). Los entrega una vista que primero busca la
-pieza como cualquier ficha (404 si no está publicada; el equipo la ve como vista previa).
+sin preguntar a nadie: desde allí, despublicar una pieza dejaría su archivo accesible para
+quien tuviera la URL (el feed de pódcast ya la habría repartido). Los entrega una vista que
+primero busca la pieza como cualquier ficha (404 si no está publicada; el equipo la ve como
+vista previa).
+
 En producción, la vista responde con X-Accel-Redirect y Caddy lee el archivo del volumen
 (infra/caddy/Caddyfile), de modo que el audio admite saltos (Range) y gunicorn no ocupa un
 hilo en enviarlo. En desarrollo, sin Caddy, lo envía Django.

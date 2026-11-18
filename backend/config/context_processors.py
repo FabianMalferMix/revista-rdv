@@ -18,12 +18,10 @@ def version_estaticos(request):
     desde su última modificación—. Con un archivo editado hace semanas eso son días, y se
     siguen viendo estilos viejos aunque el servidor ya sirva los nuevos.
 
-    Pasó dos veces durante el cambio de paleta: el sitio se veía en modo oscuro después de
-    haberlo eliminado, y la segunda vez después de haber cambiado la paleta entera. Y con los
-    guiones, que no llevaban sufijo: al quitar las flechas de la tirada (D29), el navegador
-    siguió con el `registros.js` viejo, que las buscaba, fallaba al arrancar y dejaba la pila
-    y el índice sin responder. Por eso manda el más reciente de las hojas (`STYLESHEETS`) y los
-    guiones propios, y el mismo sufijo va en todos.
+    Lo mismo vale para los guiones: un guion viejo en caché junto a una plantilla nueva puede
+    no encontrar lo que busca, fallar al arrancar y dejar su componente sin responder. Por eso
+    el sufijo sale del archivo modificado más recientemente entre las hojas (`STYLESHEETS`) y
+    los guiones propios, y el mismo va en todos.
 
     Devuelve cadena vacía fuera de DEBUG para no ensuciar la URL ya hasheada.
     """

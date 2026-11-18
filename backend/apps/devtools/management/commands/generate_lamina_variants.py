@@ -9,8 +9,8 @@ archivo del repositorio pase de 2 MB. De cada maestra salen, con LANCZOS, las co
 
 Cada codificador lleva sus parámetros fijados y las copias van sin metadatos, así que rehacerlas
 da los mismos bytes (tests/test_lamina.py). La AVIF se codifica con un solo hilo y sin mosaicos
-automáticos: Pillow elige los mosaicos según los núcleos de la máquina, y la copia cambiaba de un
-equipo a otro.
+automáticos: Pillow elige los mosaicos según los núcleos de la máquina, y la copia cambiaría de
+un equipo a otro.
 
     python manage.py generate_lamina_variants           # reescribe las copias que difieren
     python manage.py generate_lamina_variants --check   # solo compara; falla si alguna difiere
@@ -128,7 +128,7 @@ def render_variants():
 
 def stale_variants(variants):
     """Lo que no coincide con la receta, en tres listas: las copias que difieren, las que faltan
-    y las que sobran (un archivo `lamina-*` de esas carpetas que la receta ya no da)."""
+    y las que sobran (un archivo `lamina-*` de esas carpetas que la receta no da)."""
     folders = {(STATIC_DIR / path).parent for path in variants}
     present = {
         file.relative_to(STATIC_DIR).as_posix()

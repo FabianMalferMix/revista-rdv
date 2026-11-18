@@ -44,14 +44,14 @@ def _reapuntar(almacen, destino):
 def _isolated_media(settings, tmp_path):
     """MEDIA_ROOT y almacén PRIVADO temporales por test: los archivos subidos en los tests
     no contaminan las carpetas reales ni se acumulan como huérfanos entre corridas, y los
-    nombres son predecibles (sin sufijo por colisión). Autouse global (hallazgo #11).
+    nombres son predecibles (sin sufijo por colisión). Autouse global.
 
     El privado no se puede redirigir solo con `settings`: `Submission.file` declara
     `storage=private_storage`, un invocable que Django evalúa UNA vez al cargar el modelo,
-    y el FileSystemStorage resultante se quedó con la ruta de entonces. Cambiar el ajuste
-    después no lo mueve —por eso cada corrida de la suite dejaba un `m_*.txt` con
-    «contenido-secreto» en el `private_media` de verdad—, así que hay que reapuntar la
-    instancia y devolverla a su sitio al terminar.
+    y el FileSystemStorage resultante se queda con la ruta de ese momento. Cambiar el ajuste
+    después no lo mueve —cada corrida de la suite dejaría los archivos de los envíos de
+    prueba (un `m_*.txt` con «contenido-secreto») en el `private_media` de verdad—, así que
+    hay que reapuntar la instancia y devolverla a su sitio al terminar.
     """
     settings.MEDIA_ROOT = str(tmp_path / "publico")
     privado_real = settings.PRIVATE_MEDIA_ROOT

@@ -29,15 +29,15 @@ def _redact(value):
 def _serializa_redactado(obj):
     """`default` de json.dumps: pasa a texto y redacta de camino.
 
-    Es la última barrera y la que faltaba. `django.request` adjunta el WSGIRequest
-    ENTERO como campo extra, y su repr() lleva la ruta cruda —con el token del
-    boletín— aunque el mensaje ya venga redactado por `RedactTokensFilter`, que solo
-    alcanza `record.msg`. En un 404 sobre /novedades/baja/<token>/ el log quedaba así:
+    Es la última barrera. `django.request` adjunta el WSGIRequest ENTERO como campo extra,
+    y su repr() lleva la ruta cruda —con el token del boletín— aunque el mensaje ya venga
+    redactado por `RedactTokensFilter`, que solo alcanza `record.msg`. Sin esta barrera,
+    un 404 sobre /novedades/baja/<token>/ dejaría en el log:
 
         "message": "Not Found: /novedades/baja/<redactado>/"      <- redactado
         "request": "<WSGIRequest: GET '/novedades/baja/TOKEN/'>"  <- en claro
 
-    Solo afectaba a producción: en desarrollo el formateador es `plain`, que no emite
+    Solo hace falta en producción: en desarrollo el formateador es `plain`, que no emite
     los campos extra.
     """
     return redact_text(str(obj))

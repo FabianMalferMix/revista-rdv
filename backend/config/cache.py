@@ -1,10 +1,9 @@
-"""Caché Redis que degrada en vez de romper (hallazgo S-22).
+"""Caché Redis que degrada en vez de romper.
 
 `django_ratelimit.core` llama a `cache.add()` y `cache.incr()` sin proteger la llamada:
-solo captura `socket.gaierror` (fallo de DNS) y `ValueError`. Con Redis caído o
-rechazando escrituras, `redis.exceptions.ConnectionError` subía hasta la vista y los
-formularios públicos de newsletter y envíos —y ahora también el buscador— devolvían un
-HTTP 500.
+solo captura `socket.gaierror` (fallo de DNS) y `ValueError`. Sin este backend, con Redis
+caído o rechazando escrituras, `redis.exceptions.ConnectionError` subiría hasta la vista, y
+el formulario del boletín, el de envíos y el buscador responderían con un HTTP 500.
 
 La librería SÍ tiene una ruta de degradación diseñada: si el contador acaba en `None`,
 aplica `RATELIMIT_FAIL_OPEN` (por defecto: fail-closed, es decir, limita). Este backend
@@ -15,10 +14,11 @@ de reimplementar la política:
   · `incr()` → ValueError  (la librería lo captura y deja el contador en None)
   · `get()`  → el valor por defecto
 
-Consecuencia deliberada: con Redis caído los endpoints con rate limit responden «espera
-un momento» en lugar de un 500. Se prefiere fail-closed porque quedarse sin control
-anti-abuso es peor que perder temporalmente el envío de un formulario; y con Redis caído
-el sitio ya está degradado de todos modos (Celery tampoco puede encolar).
+Consecuencia deliberada: con Redis caído, las vistas con límite de tasa responden con su
+página y el aviso de que el servicio no está disponible (config/ratelimit.py), en lugar de
+un 500. Se prefiere fail-closed porque quedarse sin control anti-abuso es peor que perder
+temporalmente el envío de un formulario; y con Redis caído el sitio ya está degradado de
+todos modos (Celery tampoco puede encolar).
 """
 
 import functools

@@ -2,8 +2,7 @@
 
 Todas las lecturas de `settings.py` pasan por aquí. Un valor que no se entiende detiene
 el arranque con un error que nombra la variable, en vez de convertirse en silencio en
-otro valor: antes, `AXES_ENABLED=true` apagaba el bloqueo del panel porque solo «1»
-contaba como verdadero.
+otro valor: un `AXES_ENABLED=true` leído como falso apagaría el bloqueo del panel.
 
 Una variable vacía (`EMAIL_PORT=`, como las deja la plantilla) vale lo mismo que una
 ausente: se usa el valor por defecto.
