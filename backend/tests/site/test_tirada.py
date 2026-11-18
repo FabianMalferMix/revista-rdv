@@ -70,6 +70,14 @@ def test_sin_ninguno_marcado_el_del_perfil_hace_de_respaldo(client):
     assert tirada.select("[data-siguiente], .tirada-contactos, .tirada-colofon") == []
     assert sopa.select_one('script[src*="js/registros.js"]') is None
 
+    # Sin publicar, el del perfil tampoco hace de respaldo.
+    recording = perfil.featured_recording
+    recording.published = False
+    recording.save(update_fields=["published"])
+    content = client.get(reverse("site:home")).content.decode()
+    assert "Ver el dossier" in content  # control: la portada se dibuja entera
+    assert "Respaldo" not in content
+
 
 def test_con_un_registro_destacado_no_sale_el_poema_destacado(client):
     profile = SiteProfile.load()

@@ -95,6 +95,7 @@ def test_el_registro_del_poema_lleva_a_su_ficha_y_no_al_tercero(client):
     poema = _poema("con-registro", recording=registro)
     sopa = soup(client, poema.get_absolute_url())
     bloque = sopa.select_one(".lectura-ancla .lectura-registro")
+    assert "Escuchar el poema" in bloque.get_text()
     assert bloque.select_one("a")["href"] == registro.get_absolute_url()
     assert "vimeo.com" not in str(sopa)
     assert bloque.select_one("audio") is None, "un video no se reproduce en la ficha del poema"

@@ -97,11 +97,13 @@ def test_la_ficha_del_registro_tampoco(client):
     assert b"embed-play" in resp.content
 
 
-def test_el_filtro_sigue_resolviendo_la_url_de_incrustacion():
+def test_the_filters_resolve_the_player_and_its_provider():
     """La dirección del reproductor se calcula aunque el iframe espere al clic: se difiere su
     uso, no se pierde."""
     assert embed_src(YOUTUBE) == "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
     assert embed_src(VIMEO) == "https://player.vimeo.com/video/123456789"
+    assert embed_src("https://bandcamp.com/track/x") == ""
+    assert embed_src("") == ""
     assert embed_provider(YOUTUBE) == "YouTube"
     assert embed_provider(VIMEO) == "Vimeo"
     assert embed_provider("https://example.com/x") == ""
