@@ -5,8 +5,8 @@ from django.db import models
 from django.db.models.functions import Lower
 from django.utils import timezone
 
-# Ventana de validez del enlace de confirmación (hallazgo S-15). El de BAJA no caduca
-# nunca: un enlace de baja que deja de funcionar es un problema legal, no una mejora.
+# Ventana de validez del enlace de confirmación. El de BAJA no caduca nunca: un enlace de
+# baja que deja de funcionar es un problema legal, no una mejora.
 CONFIRM_TOKEN_TTL = timedelta(hours=48)
 
 
@@ -14,9 +14,10 @@ class NewsletterSubscriber(models.Model):
     """Suscriptor con doble opt-in.
 
     Lista LATENTE: hoy solo capta y confirma suscriptores; NO existe aún un camino
-    de envío (no hay campaña ni comando de difusión). Por minimización de datos, los
-    suscriptores que nunca confirman se purgan periódicamente (comando
-    purge_stale_data, programado en Celery beat). Construir el envío —con
+    de envío (no hay campaña ni comando de difusión; ver «Newsletter como lista
+    LATENTE» en docs/deferidos-y-decisiones.md). Por minimización de datos, los
+    suscriptores que nunca confirman y los dados de baja se purgan periódicamente
+    (comando purge_stale_data, programado en Celery beat). Construir el envío —con
     List-Unsubscribe y confirmación por POST— cuando se vaya a usar de verdad.
     """
 
@@ -33,8 +34,8 @@ class NewsletterSubscriber(models.Model):
     # Token de BAJA: permanente y estable, para que el enlace de cualquier correo ya
     # enviado siga funcionando siempre.
     token = models.CharField(max_length=64, blank=True, db_index=True, verbose_name="clave de baja")
-    # Token de CONFIRMACIÓN: de un solo uso y con caducidad. Se separa del de baja
-    # porque tenían el mismo ciclo de vida y ninguno caducaba (S-15).
+    # Token de CONFIRMACIÓN: de un solo uso y con caducidad. Va aparte del de baja porque
+    # sus vidas son opuestas: este se gasta al confirmar y caduca; el de baja vale siempre.
     confirm_token = models.CharField(
         max_length=64, blank=True, db_index=True, verbose_name="clave de confirmación"
     )

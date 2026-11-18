@@ -1,4 +1,4 @@
-"""Integridad del consentimiento del doble opt-in (hallazgos S-15, S-16, S-17)."""
+"""Integridad del consentimiento del doble opt-in."""
 
 from datetime import timedelta
 
@@ -28,12 +28,12 @@ def _pendiente(**extra):
     return NewsletterSubscriber.objects.create(**datos)
 
 
-# ── S-16: los escáneres de correo no pueden confirmar ─────
+# ── Los escáneres de correo no pueden confirmar ───────────
 
 
 def test_un_get_no_confirma_la_suscripcion():
-    """Los escáneres de enlaces y las pasarelas antivirus visitan por GET todo lo que
-    llega en un mensaje: si el GET confirmaba, el doble opt-in no probaba nada."""
+    """Un GET no confirma: los escáneres de enlaces y las pasarelas antivirus visitan por GET
+    todo lo que llega en un mensaje, y si el GET confirmara, el doble opt-in no probaría nada."""
     from django.test import Client
 
     sub = _pendiente()
@@ -86,7 +86,7 @@ def test_el_correo_anuncia_el_un_clic():
     assert cabeceras["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
 
 
-# ── S-15: caducidad y un solo uso ─────────────────────────
+# ── Caducidad y un solo uso ───────────────────────────────
 
 
 def test_el_enlace_de_confirmacion_caduca(client):
@@ -127,13 +127,14 @@ def test_reintentar_el_alta_emite_un_token_de_confirmacion_nuevo(client):
     assert sub.token == "tok-baja", "el token de baja debe permanecer estable"
 
 
-# ── S-17: sin oráculo de pertenencia ──────────────────────
+# ── Sin oráculo de pertenencia ────────────────────────────
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_el_alta_no_revela_si_la_direccion_ya_estaba_suscrita(client):
-    """El mensaje distinguía «Ya estabas suscrito/a» de «Te enviamos un correo», así que
-    cualquiera podía comprobar si una dirección concreta estaba en la lista."""
+    """El alta responde lo mismo a una dirección suscrita y a una nueva: un mensaje distinto
+    («Ya estabas suscrito/a») dejaría a cualquiera comprobar si una dirección concreta está en
+    la lista."""
     NewsletterSubscriber.objects.create(email="conocida@example.com", status=S.CONFIRMED, token="t")
 
     def _mensaje(email):

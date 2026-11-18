@@ -1,8 +1,9 @@
 """El ciclo de vida del suscriptor y de los envíos, y la purga que mide desde él.
 
-La purga borraba por la fecha de llegada: quien volvía a suscribirse podía perder su alta
-nueva, y un envío rechazado hoy se borraba la semana siguiente si había llegado hace meses,
-aunque la política de privacidad promete contar desde la resolución.
+La purga cuenta desde el último cambio de estado, no desde la llegada: quien vuelve a
+suscribirse no pierde su alta nueva, y un envío rechazado hoy no se borra la semana siguiente
+por haber llegado hace meses, porque la política de privacidad promete contar desde la
+resolución.
 """
 
 from datetime import timedelta

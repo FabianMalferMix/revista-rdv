@@ -20,7 +20,7 @@ class SubscribeForm(HoneypotMixin, forms.Form):
 
     # max_length iguala la columna varchar(254) del modelo: un correo válido pero más
     # largo se rechaza con un error de validación limpio en vez de reventar en un 500
-    # (DataError) al insertarse (hallazgo #03).
+    # (DataError) al insertarse.
     email = forms.EmailField(
         max_length=254,
         label="Novedades para prensa y gestores",

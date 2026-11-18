@@ -1,4 +1,4 @@
-"""Newsletter con doble opt-in + baja, y páginas legales (Lote F1-E)."""
+"""Newsletter con doble opt-in + baja, y páginas legales."""
 
 import pytest
 from bs4 import BeautifulSoup
@@ -38,7 +38,7 @@ def test_subscribe_sends_confirmation_with_link(client, django_capture_on_commit
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_confirmation_email_carries_list_unsubscribe_header():
-    """El correo lleva la cabecera List-Unsubscribe (RFC 8058) con el enlace de baja,
+    """El correo lleva la cabecera List-Unsubscribe (RFC 2369) con el enlace de baja,
     para que el cliente de correo ofrezca un botón de darse de baja."""
     from apps.community.tasks import send_confirmation_email
 
@@ -62,7 +62,7 @@ def test_confirmation_email_task_sends_message():
 
 
 def test_confirm_sets_confirmed(client):
-    # La confirmación muta por POST (S-16); el GET solo muestra el botón.
+    # La confirmación muta por POST; el GET solo muestra el botón.
     NewsletterSubscriber.objects.create(
         email="x@example.com",
         token="tok-baja",
@@ -132,7 +132,7 @@ def test_subscribe_honeypot_sends_no_mail(client, django_capture_on_commit_callb
 
 def test_subscribe_long_email_rejected_cleanly_not_500(client):
     """Un correo con formato válido pero de >254 caracteres se rechaza con error de
-    validación, no revienta en un HTTP 500 (DataError) al insertarse (hallazgo #03)."""
+    validación, no revienta en un HTTP 500 (DataError) al insertarse."""
     long_email = "a" * 250 + "@example.com"  # 262 caracteres, formato válido
     resp = client.post(reverse("community:subscribe"), {"email": long_email, "apodo": ""})
     assert resp.status_code == 200  # no 500
@@ -144,7 +144,7 @@ def test_subscribe_long_email_rejected_cleanly_not_500(client):
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_subscribe_next_open_redirect_is_blocked(client):
     """Un `next` hacia un host externo se ignora: la redirección se queda en el
-    sitio (evita el open redirect CWE-601, hallazgo #07)."""
+    sitio (evita el open redirect CWE-601)."""
     resp = client.post(
         reverse("community:subscribe"),
         {"email": "safe@example.com", "apodo": "", "next": "https://evil.example/phish"},
@@ -168,9 +168,9 @@ def test_subscribe_next_same_site_is_honored(client):
 @override_settings(EMAIL_BACKEND=LOCMEM)
 @pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
 def test_subscribe_with_a_bogus_next_returns_home(client, nxt):
-    """Una palabra suelta en `next` era un nombre de vista para `redirect()`: «agenda» daba
-    un 500 y «feed» llevaba a /feed/. Ahora todo lo que no es una ruta local lleva a la
-    portada; el control de que una ruta local sí se respeta es la prueba anterior."""
+    """Todo lo que no es una ruta local lleva a la portada, también una palabra suelta, que
+    `redirect()` tomaría por un nombre de vista («agenda» daría un 500 y «feed» llevaría a
+    /feed/). El control de que una ruta local sí se respeta es la prueba anterior."""
     resp = client.post(
         reverse("community:subscribe"), {"email": "valido@example.com", "apodo": "", "next": nxt}
     )
@@ -192,7 +192,7 @@ def test_the_newsletter_page_also_sends_a_bogus_next_home(client, nxt):
 
 def test_subscribe_degrades_gracefully_when_broker_is_down(client):
     """Si el broker está caído al encolar el correo, el alta NO revienta con 500: el
-    suscriptor queda guardado y el fallo se registra (hallazgo: degradación Celery)."""
+    suscriptor queda guardado y el fallo se registra."""
     from unittest import mock
 
     from kombu.exceptions import OperationalError
@@ -256,7 +256,7 @@ def test_footer_has_legal_links_and_consent(client):
 
 
 def test_privacy_page_cites_ley_21719(client, legal_pages):
-    # La política actualizada cita la Ley 21.719 (además de la 19.628).
+    # La política de privacidad cita la Ley 21.719, además de la 19.628.
     resp = client.get(reverse("content:page_detail", args=["privacidad"]))
     assert resp.status_code == 200
     assert b"21.719" in resp.content
@@ -285,9 +285,10 @@ def test_the_footer_paints_the_subscribe_form(client):
 
 
 def test_an_invalid_email_comes_back_to_its_field_with_the_error(client):
-    """El aviso arriba de la página de vuelta quedaba lejos del campo, «Saltar al contenido» se
-    lo saltaba y lo escrito se perdía. Responde la página del boletín: el mismo formulario,
-    en el contenido, con lo escrito, el error junto al campo y el foco en él."""
+    """Un correo que no sirve vuelve a su campo: responde la página del boletín, con el mismo
+    formulario en el contenido, lo escrito, el error junto al campo y el foco en él, y sin un
+    aviso arriba de la página, que quedaría lejos del campo y que «Saltar al contenido» se
+    saltaría."""
     resp = client.post(
         reverse("community:subscribe"), {"email": "ana@correo", "apodo": "", "next": "/textos/"}
     )

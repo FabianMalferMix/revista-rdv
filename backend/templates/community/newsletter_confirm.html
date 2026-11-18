@@ -15,8 +15,9 @@
   {% if not caducado %}
     {% comment %}
        La confirmación se hace por POST a propósito: los escáneres de enlaces de los
-       clientes de correo visitan por GET todo lo que llega en un mensaje y confirmaban
-       la suscripción solos, vaciando de sentido el doble opt-in.
+       clientes de correo visitan por GET todo lo que llega en un mensaje, y un GET que
+       confirmara les dejaría confirmar la suscripción solos, vaciando de sentido el doble
+       opt-in.
     {% endcomment %}
     <form method="post" action="{% url 'community:confirm' token %}">
       {% csrf_token %}
