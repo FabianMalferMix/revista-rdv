@@ -60,11 +60,9 @@ def test_partner_index_lists_active_only(client):
 
 
 def test_home_shows_catalog_but_not_press_or_partners(client):
-    """La portada mantiene el catálogo y deja fuera la prensa y los aliados.
-
-    El ticket 4.2 los había devuelto como una línea bajo el titular (D9): una cita de prensa
-    y «Con el apoyo de». El dueño del sitio quitó las dos cosas de la portada (2026-10-14):
-    el colectivo aún es pequeño. Siguen en /prensa/ y /aliados/.
+    """La portada mantiene el catálogo y deja fuera la prensa y los aliados: ni una cita de
+    prensa ni «Con el apoyo de», mientras el colectivo es pequeño. Siguen en /prensa/ y
+    /aliados/.
     """
     make_publication(slug="en-home", title="Plaquette En Portada", featured=True)
     PressMention.objects.create(title="n", outlet="Radio Cita", quote="Imprescindibles.")

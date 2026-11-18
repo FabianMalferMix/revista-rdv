@@ -17,8 +17,8 @@ def site_profile(request):
 
     Las redes del colectivo van en una lista que se consulta una sola vez por página, y
     solo si alguien la usa: las piden los datos estructurados, el pie, el menú del
-    teléfono y la cejilla de la portada, y cada `social_links.all` en una plantilla era
-    una consulta más.
+    teléfono, la cejilla de la portada y el dossier, y cada `social_links.all` en una
+    plantilla sería una consulta más.
     """
     perfil = SimpleLazyObject(lambda: request_profile(request))
     redes = SimpleLazyObject(lambda: list(perfil.social_links.all()))

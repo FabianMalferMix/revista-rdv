@@ -22,7 +22,7 @@ def iniciales(nombre):
 def firmas_sin(personas, persona):
     """Las personas de la lista menos una: la firma propia en la ficha de quien firma.
 
-    En la ficha de una integrante, cada fila de sus poemas y textos repetía su nombre. Un
+    En la ficha de una integrante, cada fila de sus poemas y textos repetiría su nombre. Un
     texto a cuatro manos sigue nombrando a la otra persona. Las parciales de fila la llaman
     con la persona de la ficha, o con None donde no hay ninguna.
     """

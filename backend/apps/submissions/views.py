@@ -59,9 +59,10 @@ def submit_thanks(request):
 @require_safe
 @staff_member_required
 def submission_file(request, pk):
-    """Descarga del adjunto, para quien puede ver los envíos en el panel. No son públicos: sin el
-    permiso responde 404, sin decir si el envío existe. Si el archivo ya no está en el disco,
-    también 404, y el log lo dice con el número del envío."""
+    """Descarga del adjunto, para quien puede ver los envíos en el panel. No son públicos:
+    quien no puede entrar al panel va a su página de entrada, y quien entra sin el permiso
+    recibe un 404; ninguna de las dos respuestas dice si el envío existe. Si el archivo ya no
+    está en el disco, también 404, y el log lo dice con el número del envío."""
     if not request.user.has_perm("submissions.view_submission"):
         raise Http404
     submission = get_object_or_404(Submission, pk=pk)

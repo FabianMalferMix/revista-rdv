@@ -53,8 +53,8 @@ def event_detail(request, slug):
         ),
         slug=slug,
     )
-    # Los registros publicados salen de la caché del prefetch: un `.filter()` la saltaba y
-    # hacía una consulta más.
+    # Los registros publicados salen de la caché del prefetch: un `.filter()` se la saltaría
+    # y haría una consulta más.
     recordings = [r for r in event.recordings.all() if r.published]
     # Las actividades van por fecha: «anterior» es la de antes en el tiempo. `vecinos`
     # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.

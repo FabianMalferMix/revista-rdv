@@ -145,7 +145,8 @@ def test_the_author_adds_works_but_does_not_edit_them(client, autor):
 @pytest.mark.django_db
 def test_the_first_sync_leaves_the_group_as_the_matrix_says():
     group = Group.objects.create(name=roles.AUTHOR)
-    # Un grupo de antes de la matriz, con un permiso que ya no le corresponde.
+    # Un grupo que nunca se sincronizó (sin registros en RoleGrant), con un permiso que la
+    # matriz no le da.
     stray = Permission.objects.get(content_type__app_label="reviews", codename="change_work")
     group.permissions.add(stray)
     call_command("setup_groups", verbosity=0)

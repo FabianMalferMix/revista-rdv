@@ -39,8 +39,8 @@ def publication_detail(request, slug):
         ),
         slug=slug,
     )
-    # Las reseñas de la publicación: los textos que reseñan la obra que la representa
-    # (`Work.publicacion`). Lo pidió el dueño del sitio después del paso 21 del plan.
+    # Las reseñas de la publicación: los textos publicados que reseñan la obra que la
+    # representa (`Work.publicacion`).
     resenas = list(
         Article.objects.published()
         .for_row()
@@ -89,8 +89,8 @@ def dossier(request):
     dicho la prensa y cómo contactarlos. Fuente única: la base de datos.
 
     La trayectoria es una sola, por años y del más reciente al más antiguo: los hitos, las
-    publicaciones y los ocho últimos eventos. Eran dos listas seguidas, y los años salían
-    desordenados. Retratos, cubiertas y logos vienen en la consulta de su lista.
+    publicaciones y los ocho últimos eventos. Retratos, cubiertas y logos vienen en la consulta
+    de su lista.
     """
     publicaciones = list(_published())
     return render(

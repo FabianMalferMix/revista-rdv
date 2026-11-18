@@ -35,8 +35,8 @@ def test_context_processor_returns_profile(rf):
 
 
 def test_context_processor_never_none_even_on_empty_db(rf):
-    # Fix 'sitio vacío': aunque no exista la fila (QuerySet.delete elude el no-op),
-    # load() la recrea → el context_processor global nunca entrega None.
+    # Aunque no exista la fila (QuerySet.delete elude el no-op), load() la recrea: el
+    # context_processor global nunca entrega None.
     SiteProfile.objects.all().delete()
     assert SiteProfile.objects.count() == 0
     profile = site_profile_cp(rf.get("/"))["site_profile"]

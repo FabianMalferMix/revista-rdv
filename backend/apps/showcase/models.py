@@ -23,7 +23,6 @@ class SiteProfile(models.Model):
     de modo que exista a lo más una fila (patrón singleton, sin dependencias extra).
     """
 
-    # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
     name = models.CharField(max_length=255, default=settings.SITE_NAME, verbose_name="nombre")
     tagline = models.CharField(
         max_length=255, blank=True, verbose_name="lema", help_text="Poética corta / lema."
@@ -81,8 +80,7 @@ class SiteProfile(models.Model):
         verbose_name="imagen para compartir",
         help_text="Imagen social por defecto (og:image) y logo en los datos estructurados.",
     )
-    # La primera vista de la portada es una obra a sangre con el logo al pie (D18). Sin
-    # imagen elegida, la portada lleva la lámina del colectivo (static/img/portada/).
+    # La lámina que la portada lleva sin imagen elegida está en static/img/portada/.
     hero_image = models.ForeignKey(
         "media.MediaAsset",
         null=True,
@@ -316,7 +314,7 @@ class Publication(TimestampedModel):
 
     @cached_property
     def lomo(self):
-        """Los colores del libro en el estante de la portada (D28): el lomo, del color del borde
+        """Los colores del libro en el estante de la portada: el lomo, del color del borde
         de su tapa; el canto (el grueso que asoma junto a la tapa de frente), un poco más oscuro;
         y `oscuro` si el texto del lomo tiene que ir claro para leerse. Vacío sin tapa legible:
         el lomo queda en la hoja clara."""

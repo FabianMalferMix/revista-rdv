@@ -33,8 +33,8 @@
         {% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
         {% comment %}
            Django marca el campo inválido con aria-describedby="<id>_error". Ese id tiene
-           que EXISTIR: los errores se pintaban en <p> sueltos y la referencia apuntaba a
-           nada, así que un lector de pantalla anunciaba «inválido» sin decir por qué.
+           que EXISTIR: sin él, la referencia apuntaría a nada y un lector de pantalla
+           anunciaría «inválido» sin decir por qué.
         {% endcomment %}
         {% if field.errors %}
           <div id="{{ field.auto_id }}_error">

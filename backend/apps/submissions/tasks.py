@@ -14,6 +14,7 @@ def purge_stale_pii():
     """Purga periódica de datos personales caducados (minimización de datos).
 
     Envuelve el comando `purge_stale_data` para poder programarlo en Celery beat:
-    elimina suscriptores nunca confirmados y envíos resueltos con su adjunto.
+    elimina suscriptores nunca confirmados o dados de baja, envíos resueltos con su
+    adjunto y los registros de acceso de django-axes.
     """
     call_command("purge_stale_data")

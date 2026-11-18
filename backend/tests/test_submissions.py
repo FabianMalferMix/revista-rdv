@@ -74,7 +74,7 @@ def test_rejects_oversized_file():
 
 def test_rejects_content_not_matching_extension():
     """Un archivo con extensión permitida pero contenido de otro tipo (binario
-    renombrado) se rechaza por firma, no solo por extensión (hallazgo #08)."""
+    renombrado) se rechaza por firma, no solo por extensión."""
     fake = SimpleUploadedFile(
         "malicioso.pdf", b"MZ\x90\x00fake-exe", content_type="application/pdf"
     )
@@ -100,7 +100,7 @@ def test_rejects_binary_disguised_as_txt():
 
 def test_submit_rate_limited_rehydrates_form(client, frozen_rate_limit_window):
     """Al superar el rate-limit, el formulario conserva lo escrito por el usuario
-    (título y cuerpo) en vez de descartarlo — hallazgo #28."""
+    (título y cuerpo) en vez de descartarlo."""
     from django.urls import reverse
 
     url = reverse("submissions:submit")
@@ -114,7 +114,7 @@ def test_submit_rate_limited_rehydrates_form(client, frozen_rate_limit_window):
     assert "Un cuerpo memorable y distinto." in content  # y el cuerpo
 
 
-# ── Accesibilidad del formulario (backlog UX, ticket 1.11) ──────────────────
+# ── Accesibilidad del formulario ────────────────────────────────────────────
 
 
 def test_el_formulario_dice_que_dato_es_cada_campo(client):
@@ -131,8 +131,8 @@ def test_el_formulario_dice_que_dato_es_cada_campo(client):
 def test_cada_campo_invalido_apunta_a_un_error_que_existe(client):
     """Django marca el campo con aria-describedby="<id>_error"; ese id debe existir.
 
-    Los errores se pintaban en <p> sueltos, así que la referencia apuntaba a nada: un
-    lector de pantalla anunciaba «inválido» sin decir por qué.
+    Con los errores en <p> sueltos, la referencia apuntaría a nada: un lector de pantalla
+    anunciaría «inválido» sin decir por qué.
     """
     from bs4 import BeautifulSoup
     from django.urls import reverse

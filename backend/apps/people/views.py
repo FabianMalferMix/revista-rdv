@@ -27,8 +27,8 @@ def member_detail(request, slug):
     articles = member.articles.published().for_row().order_by("-published_at")
     poems = member.poems.published().for_row().order_by("-published_at")
     recordings = member.recordings.published()
-    # Las actividades en que participó (ticket 4.5): la ficha enseñaba lo que escribe y lo
-    # que grabó, pero no dónde ha leído. Las doce más recientes; el resto, en la trayectoria.
+    # Dónde participa: sus doce actividades de fecha más tardía, con las anunciadas delante;
+    # las anteriores, en la trayectoria.
     actividades = member.events.published().order_by("-starts_at")[:12]
     return render(
         request,

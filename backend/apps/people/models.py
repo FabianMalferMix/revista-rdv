@@ -36,7 +36,8 @@ class ContributorQuerySet(models.QuerySet):
 
     def members(self):
         """Integrantes activos en orden curado (grillas, sitemap, dossier)."""
-        # select_related('photo'): las tarjetas usan m.photo.file.url (cierra el N+1).
+        # La foto viene en la misma consulta, porque cada tarjeta pinta su retrato: si no, cada
+        # integrante costaría una consulta más.
         return (
             self.filter(is_member=True, active=True)
             .select_related("photo")
@@ -131,7 +132,7 @@ class Contributor(models.Model):
 
 
 class SocialLink(models.Model):
-    """Enlace social atómico (reemplaza el antiguo JSON — normalizado a 1NF)."""
+    """Una red social de un colaborador, en su propia fila: una sola por plataforma."""
 
     contributor = models.ForeignKey(
         Contributor,
