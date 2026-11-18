@@ -10,9 +10,9 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
 from config.envguard import (
     WEAKENABLE_DEFENSES,
@@ -206,7 +206,7 @@ def test_the_mail_settings_cannot_keep_the_template_values(name, value):
 def test_the_mail_values_of_the_production_template_do_not_start_the_site():
     """Los marcadores del guard copian los ejemplos de .env.prod.example: si la plantilla
     cambia de ejemplo, el guard tiene que seguir rechazándolo."""
-    template = Path(__file__).resolve().parents[2] / ".env.prod.example"
+    template = settings.BASE_DIR.parent / ".env.prod.example"
     if not template.exists():
         pytest.skip("la plantilla vive en la raíz del repositorio, fuera del contenedor")
     found = re.findall(
@@ -223,7 +223,7 @@ def test_the_mail_values_of_the_production_template_do_not_start_the_site():
 # ── Los settings reales, en un proceso aparte ─────────────────
 # Importar `config.settings` aplica el guard: así se comprueba que recibe los valores que
 # usa Django, interpretados por config/env.py. Cada caso tarda alrededor de un segundo.
-BACKEND_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = settings.BASE_DIR
 CI_SECRET = "ci-prod-secret-Kx7mQ9vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qW"
 
 

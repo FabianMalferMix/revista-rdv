@@ -156,9 +156,9 @@ vigente más cercano y no se agrava la deuda.
    114. Bien: cuántos retratos se ven en «Las voces» lo dice `A_LA_VISTA` (`apps/site/portada.py`),
    que llega a `integrantes.js` en atributos `data-` con el corte del teléfono, y la hoja no lo
    repite; los cortes tienen nombre en `config/breakpoints.py`, y como un `@media` no lee
-   variables, `tests/test_shared_values.py` exige que la hoja corte donde dice ese módulo. Y las
-   rutas se resuelven con `{% url %}` y `reverse()` en todo el sitio, y la dirección de cada pieza
-   sale de su `get_absolute_url`, que `tests/test_get_absolute_url.py` exige a todo modelo con
+   variables, `tests/static/test_shared_values.py` exige que la hoja corte donde dice ese módulo. Y
+   las rutas se resuelven con `{% url %}` y `reverse()` en todo el sitio, y la dirección de cada
+   pieza sale de su `get_absolute_url`, que `tests/test_get_absolute_url.py` exige a todo modelo con
    ficha.
 4. **Idioma.** Los identificadores nuevos de Python y de JavaScript van en inglés. En castellano
    van los textos visibles y el vocabulario del diseño: clases CSS y nombres de componentes
@@ -204,9 +204,9 @@ vigente más cercano y no se agrava la deuda.
     - Toda prueba de «no aparece» lleva un control positivo en la misma respuesta.
     - Los permisos se prueban por HTTP, con los grupos reales.
 
-    Bien: `tests/test_contraste_paleta.py` calcula el contraste desde los tokens. Mal: afirmar que
-    la hoja contiene `repeat(5, minmax(0, 1fr))`, porque un cambio cosmético la rompe y una
-    regresión real la pasa. Si una prueba falla tras un cambio de diseño, no se copia el valor
+    Bien: `tests/static/test_contraste_paleta.py` calcula el contraste desde los tokens. Mal:
+    afirmar que la hoja contiene `repeat(5, minmax(0, 1fr))`, porque un cambio cosmético la rompe y
+    una regresión real la pasa. Si una prueba falla tras un cambio de diseño, no se copia el valor
     nuevo sin preguntarse qué vigilaba.
 11. **Herramientas de desarrollo.** No viven en las apps de producción ni se protegen con
     `--force`, y hay un solo camino para poblar desarrollo. Bien: los comandos de desarrollo

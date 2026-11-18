@@ -7,9 +7,9 @@ la máquina. Lo que la portada sirve de la lámina, y su peso, está en test_por
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from PIL import Image
@@ -17,7 +17,7 @@ from PIL import Image
 from apps.devtools.management.commands import generate_lamina_variants as cmd
 from apps.site.templatetags.portada import LAMINA
 
-PORTADA = Path(__file__).resolve().parent.parent / "static" / "img" / "portada"
+PORTADA = settings.BASE_DIR / "static" / "img" / "portada"
 # Lo que sirve la portada: cada copia de LAMINA en AVIF y en WebP, y la reserva en JPEG.
 SERVED = {
     f"img/portada/lamina-{forma}-{width}.{ext}"

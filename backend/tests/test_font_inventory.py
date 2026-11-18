@@ -11,13 +11,13 @@ saltan en el contenedor de desarrollo, que solo monta backend/.
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
 from tests import css
 
-NOTICE = Path(__file__).resolve().parents[2] / "NOTICE.md"
+NOTICE = settings.BASE_DIR.parent / "NOTICE.md"
 FONTS = css.STATIC / "fonts"
 
 

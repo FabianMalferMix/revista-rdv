@@ -7,9 +7,9 @@ su fuente.
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
 from apps.media.templatetags.images import SIZES, sizes
 from config.breakpoints import (
@@ -25,7 +25,7 @@ from config.breakpoints import (
 )
 from tests import css
 
-BACKEND = Path(__file__).resolve().parent.parent
+BACKEND = settings.BASE_DIR
 SCRIPTS = sorted((BACKEND / "static" / "js").glob("*.js"))
 # Una consulta de ancho escrita a mano: «(max-width: 719px)», «(min-width:1400px)».
 HAND_WRITTEN_CUT = re.compile(r"\((?:max|min)-width:\s*\d+px\)")

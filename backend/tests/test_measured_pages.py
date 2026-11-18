@@ -8,16 +8,16 @@ Leen tools/ux/pages.txt, en la raíz del repositorio: corren en el CI y con el r
 y se saltan en el contenedor de desarrollo, que solo monta backend/.
 """
 
-from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
+from django.conf import settings
 from django.core import serializers
 from django.urls import Resolver404, resolve
 
 from apps.devtools.management.commands.datos_de_desarrollo import CARPETA, read_copy
 
-PAGES = Path(__file__).resolve().parents[2] / "tools" / "ux" / "pages.txt"
+PAGES = settings.BASE_DIR.parent / "tools" / "ux" / "pages.txt"
 
 
 def _routes():

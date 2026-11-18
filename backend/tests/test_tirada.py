@@ -10,10 +10,10 @@ test_css_sistema.py.
 
 import re
 from datetime import date
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -28,9 +28,7 @@ from tests.scripts import taken_from_common
 
 pytestmark = pytest.mark.django_db
 
-REGISTROS_JS = (
-    Path(__file__).resolve().parent.parent / "static" / "js" / "registros.js"
-).read_text()
+REGISTROS_JS = (settings.BASE_DIR / "static" / "js" / "registros.js").read_text()
 
 
 def _registro(slug, **kw):

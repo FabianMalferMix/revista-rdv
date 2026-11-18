@@ -8,12 +8,13 @@ plazo, y una conexión que se cortó se comprueba antes de reutilizarla.
 import os
 import subprocess
 import sys
-from pathlib import Path
 from unittest import mock
+
+from django.conf import settings
 
 from config.celery import app
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = settings.BASE_DIR
 SLEEP = "import django; django.setup(); from django.db import connection; connection.cursor().execute('SELECT pg_sleep(1)'); print('terminó')"
 
 

@@ -10,7 +10,8 @@ arriba; `("@media (min-width:900px)",)`, dentro de ese bloque) y por su selector
 """
 
 import re
-from pathlib import Path
+
+from django.conf import settings
 
 from tests import css
 
@@ -940,7 +941,7 @@ CON_DUOTONO = {
 
 
 def test_el_duotono_solo_va_en_los_listados():
-    plantillas = Path(__file__).resolve().parent.parent / "templates"
+    plantillas = settings.BASE_DIR / "templates"
     con_duo = {
         p.name
         for p in plantillas.rglob("*.html")

@@ -12,9 +12,9 @@ import os
 import subprocess
 import sys
 from copy import deepcopy
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 
 from config import redaction
@@ -22,7 +22,7 @@ from config.celery import app as celery_app
 from config.logformat import JsonFormatter
 from config.redaction import RedactTokensFilter, redact_path
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = settings.BASE_DIR
 # Valor anodino, para que gitleaks no lo tome por una credencial.
 VALUE = "no-es-una-credencial"
 

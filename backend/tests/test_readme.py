@@ -9,12 +9,12 @@ porque solo monta `backend/` y el README no existe ahí.
 """
 
 import re
-from pathlib import Path
 
 import pytest
 from django.apps import apps
+from django.conf import settings
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = settings.BASE_DIR.parent
 
 
 def _structure_paths():

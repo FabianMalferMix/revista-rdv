@@ -4,9 +4,9 @@ Los índices comparten una cabecera con cejilla de dato vivo, título y una fras
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -25,7 +25,7 @@ from tests.factories import make_poem, make_published_article, make_published_po
 
 pytestmark = pytest.mark.django_db
 
-PLANTILLAS = Path(__file__).resolve().parent.parent / "templates"
+PLANTILLAS = settings.BASE_DIR / "templates"
 
 INDICES = [
     "content:poem_index",

@@ -11,12 +11,12 @@ las vistas públicas (comprueba el efecto real).
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 
-PLANTILLAS = Path(__file__).resolve().parent.parent / "templates"
+PLANTILLAS = settings.BASE_DIR / "templates"
 
 # Marcadores que jamás deben llegar al navegador.
 RESTOS = ["{#", "#}", "{% comment %}", "{% endcomment %}"]

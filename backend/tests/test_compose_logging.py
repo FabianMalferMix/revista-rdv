@@ -9,11 +9,11 @@ Los compose están fuera de la imagen: la prueba corre en el CI, con el reposito
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = settings.BASE_DIR.parent
 COMPOSES = ["docker-compose.yml", "docker-compose.prod.yml"]
 _ANCHOR = re.compile(r"^x-logging: &logging\n((?:  .*\n)+)", re.M)
 _SERVICES = re.compile(r"^services:\n((?:(?:  .*)?\n)+)", re.M)
