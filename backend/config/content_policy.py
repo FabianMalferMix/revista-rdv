@@ -45,7 +45,17 @@ class EmbedProvider:
 EMBED_PROVIDERS = (
     EmbedProvider(
         "YouTube",
-        re.compile(r"(?:youtube\.com/watch\?v=|youtu\.be/)(?P<id>[\w-]{6,})"),
+        # Un video, en cualquiera de los enlaces que da YouTube: el de su página (la `v` puede ir
+        # tras otros parámetros, como el `si` de compartir), el de compartir (`youtu.be`), los de
+        # `shorts` y `live` y el del código para insertar (`embed`). Con `videoseries` o
+        # `live_stream`, `embed` es una lista o un canal, no un video, y no lleva reproductor.
+        re.compile(
+            r"(?:youtube\.com/watch\?(?:[^&#\s]*&)*v="
+            r"|youtube\.com/(?:shorts|live)/"
+            r"|youtube(?:-nocookie)?\.com/embed/(?!videoseries|live_stream)"
+            r"|youtu\.be/)"
+            r"(?P<id>[\w-]{6,})"
+        ),
         "https://www.youtube-nocookie.com/embed/{id}",
     ),
     EmbedProvider(
