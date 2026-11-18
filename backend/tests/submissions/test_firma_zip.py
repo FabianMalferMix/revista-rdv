@@ -46,13 +46,13 @@ def _valida(nombre, datos):
     return form.is_valid(), form.errors.get("file", [""])[0]
 
 
-def test_un_zip_cualquiera_ya_no_pasa_por_docx():
+def test_any_zip_renamed_to_docx_is_refused():
     ok, error = _valida("fotos.docx", _zip(["vacaciones.jpg", "playa.jpg"]))
     assert not ok
     assert "no coincide con su extensión" in error
 
 
-def test_un_docx_legitimo_sigue_entrando():
+def test_a_real_docx_is_accepted():
     """La mitad que importa: no romper los envíos de verdad."""
     ok, error = _valida(
         "manuscrito.docx",
@@ -61,7 +61,7 @@ def test_un_docx_legitimo_sigue_entrando():
     assert ok, error
 
 
-def test_un_odt_legitimo_sigue_entrando():
+def test_a_real_odt_is_accepted():
     ok, error = _valida(
         "manuscrito.odt",
         _zip(["mimetype", "META-INF/manifest.xml", "content.xml", "styles.xml"]),

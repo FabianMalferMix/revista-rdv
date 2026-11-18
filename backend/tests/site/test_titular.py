@@ -202,6 +202,9 @@ def test_la_portada_no_lleva_cita_de_prensa_ni_aliados(client):
     assert sopa.select_one(".hero-respaldo, .hero-cita") is None
     assert "Destacada." not in sopa.get_text()
     assert "Casa del Libro" not in sopa.get_text()
+    html = str(sopa)  # todo el HTML: también los atributos y los guiones
+    for fuera in ("Destacada.", "Radio Dos", "Casa del Libro"):  # la cita, su medio, el aliado
+        assert fuera not in html, fuera
 
 
 def test_la_hoja_es_una_lamina_a_dos_tintas():

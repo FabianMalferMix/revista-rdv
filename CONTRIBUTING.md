@@ -193,7 +193,7 @@ vigente más cercano y no se agrava la deuda.
    - Los cambios de esquema van en dos pasos (primero añadir, después quitar), para que el código
      anterior siga funcionando mientras se despliega. Hasta el lanzamiento pueden ir en uno (C30).
    - Los permisos de un modelo nuevo se reparten a los roles de forma explícita, en la matriz de
-     `apps/people/roles.py`: `tests/test_roles.py` falla si un modelo queda sin clasificar.
+     `apps/people/roles.py`: `tests/people/test_roles.py` falla si un modelo queda sin clasificar.
 
    Bien: `publish_due_items` (`apps/content/tasks.py`) es idempotente ante un doble beat o un
    reintento.

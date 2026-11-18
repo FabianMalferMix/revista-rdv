@@ -109,6 +109,13 @@ def test_los_poemas_se_leen_por_sus_tres_primeros_versos(client):
     ]
 
 
+def test_home_shows_next_event(client):
+    make_event(slug="siguiente", title="Actividad Siguiente")
+    make_event(slug="hecho", title="Hecho", starts_at=timezone.now() - timedelta(days=5))
+    resp = client.get(reverse("site:home"))
+    assert b"Actividad Siguiente" in resp.content
+
+
 def test_home_caps_articles_and_links_to_archive(client):
     for i in range(8):
         make_published_article(slug=f"t{i}", title=f"Texto {i}")
