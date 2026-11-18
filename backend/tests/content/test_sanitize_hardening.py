@@ -9,6 +9,7 @@ actualización sin que nada avisara.
 import pytest
 
 from apps.content.sanitize import ALLOWED_URL_SCHEMES, clean_html
+from tests.factories import make_article
 
 # Vectores clásicos: si alguno sobrevive, hay XSS almacenado en artículos y páginas.
 VECTORES = [
@@ -57,7 +58,7 @@ def test_los_esquemas_exoticos_se_descartan(esquema):
     assert "href=" not in salida
 
 
-def test_mailto_sigue_permitido():
+def test_mailto_links_are_allowed():
     salida = clean_html('<a href="mailto:hola@ejemplo.cl">escríbenos</a>')
     assert "mailto:hola@ejemplo.cl" in salida
 
@@ -104,3 +105,19 @@ def test_el_saneo_se_aplica_al_guardar_el_modelo():
     art.refresh_from_db()
     assert "<p>a</p>" in art.body  # control: el texto permitido queda
     assert "<script" not in art.body
+    assert "alert" not in art.body  # el contenido del script también se elimina
+
+
+@pytest.mark.django_db
+def test_sanitizer_keeps_allowed_formatting():
+    article = make_article(
+        body='<p><strong>Negrita</strong> y <a href="https://x.cl">enlace</a>.</p>'
+    )
+    assert "<strong>Negrita</strong>" in article.body
+    assert 'href="https://x.cl"' in article.body
+
+
+def test_clean_html_passes_through_empty_input():
+    """clean_html devuelve la entrada tal cual cuando es vacía o None (no llama a nh3)."""
+    assert clean_html("") == ""
+    assert clean_html(None) is None

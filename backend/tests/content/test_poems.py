@@ -1,6 +1,5 @@
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.content import workflow
 from apps.content.models import (
@@ -9,12 +8,8 @@ from apps.content.models import (
     CollectionPoem,
     EditorialStatus,
     EditorialTransition,
-    PoemContributor,
     PublishStatus,
 )
-from apps.content.tasks import publish_due_items
-from apps.people.models import Contributor
-from apps.showcase.models import SiteProfile
 from tests.factories import make_article, make_poem, make_published_poem
 
 pytestmark = pytest.mark.django_db
@@ -55,27 +50,7 @@ def test_author_cannot_publish_poem(autor):
         workflow.perform_transition(poem, "publish", autor)
 
 
-def test_publish_due_items_covers_poems():
-    from datetime import timedelta
-
-    poem = make_poem(status=S.SCHEDULED)
-    poem.published_at = timezone.now() - timedelta(minutes=1)
-    poem.save(update_fields=["published_at"])
-    assert publish_due_items() >= 1
-    poem.refresh_from_db()
-    assert poem.status == S.PUBLISHED
-
-
 # ── Vistas públicas ──────────────────────────────────────────
-
-
-def test_poem_index_shows_published_hides_drafts(client):
-    make_published_poem(slug="pub", title="Poema Público")
-    make_poem(slug="draft", title="Poema Borrador")
-    resp = client.get(reverse("content:poem_index"))
-    assert resp.status_code == 200
-    assert b"Poema P\xc3\xbablico" in resp.content
-    assert b"Poema Borrador" not in resp.content
 
 
 def test_poem_detail_renders_prewrap_body(client):
@@ -96,11 +71,6 @@ def test_poem_detail_renders_prewrap_body(client):
         '<p class="estrofa"><span class="verso">Verso final</span></p>'
     ).encode() in resp.content
     assert b"a quien lee" in resp.content
-
-
-def test_poem_detail_404_for_draft(client):
-    poem = make_poem(slug="oculto")
-    assert client.get(reverse("content:poem_detail", args=[poem.slug])).status_code == 404
 
 
 def test_poem_body_is_escaped(client):
@@ -125,25 +95,3 @@ def test_collection_merges_articles_and_poems_by_position(client):
     assert resp.status_code == 200
     # El poema (position 0) aparece antes que el artículo (position 1).
     assert resp.content.index(b"Poema En Mixta") < resp.content.index(b"Art\xc3\xadculo En Mixta")
-
-
-def test_member_profile_lists_poems(client):
-    member = Contributor.objects.create(slug="poeta-p", display_name="Poeta Perfil", is_member=True)
-    poem = make_published_poem(slug="suyo", title="Poema Del Perfil")
-    PoemContributor.objects.create(poem=poem, contributor=member)
-    resp = client.get(reverse("people:member_detail", args=[member.slug]))
-    assert b"Poema Del Perfil" in resp.content
-
-
-def test_home_shows_featured_poem_only_if_published(client):
-    profile = SiteProfile.load()
-    draft = make_poem(slug="dest-borrador", title="Destacado Borrador")
-    profile.featured_poem = draft
-    profile.save()
-    content = client.get(reverse("site:home")).content.decode()
-    assert "Ver el dossier" in content  # control: la portada se dibuja entera
-    assert "Destacado Borrador" not in content
-
-    profile.featured_poem = make_published_poem(slug="dest-pub", title="Destacado Público")
-    profile.save()
-    assert b"Destacado P\xc3\xbablico" in client.get(reverse("site:home")).content

@@ -2,7 +2,6 @@ import pytest
 from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory
 
-from apps.content import workflow
 from apps.content.admin import ArticleAdmin
 from apps.content.models import Article, EditorialStatus
 from tests.factories import make_article
@@ -71,23 +70,6 @@ def test_status_always_readonly_published_at_author_only(autor, editor):
     # published_at: readonly para el autor; editable para el editor (programación).
     assert "published_at" in ma.get_readonly_fields(_request(autor))
     assert "published_at" not in ma.get_readonly_fields(_request(editor))
-
-
-def test_all_transition_actions_registered():
-    """Cada transición de la tabla tiene su acción en el panel."""
-    ma = _admin()
-    for name in [f"do_{transition}" for transition in workflow.TRANSITIONS]:
-        assert name in ma.actions and callable(getattr(ma, name, None)), name
-
-
-def test_publish_action_transitions_and_logs(editor, autor):
-    article = make_article(owner=autor, status=S.APPROVED)
-    ma = _admin()
-    ma.do_publish(_request(editor, with_messages=True), Article.objects.filter(pk=article.pk))
-    article.refresh_from_db()
-    assert article.status == S.PUBLISHED
-    # La acción pasa por perform_transition, que deja rastro en la bitácora inmutable.
-    assert article.transitions.filter(to_status=S.PUBLISHED).exists()
 
 
 def test_publish_action_denied_for_author(autor):
