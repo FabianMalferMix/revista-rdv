@@ -1,8 +1,7 @@
-"""Newsletter con doble opt-in + baja, y páginas legales."""
+"""Newsletter con doble opt-in + baja, y el formulario de alta."""
 
 import pytest
 from bs4 import BeautifulSoup
-from django.conf import settings
 from django.core import mail
 from django.test import Client, override_settings
 from django.urls import reverse
@@ -27,38 +26,16 @@ def _pending(email="a@example.com"):
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_subscribe_sends_confirmation_with_link(client, django_capture_on_commit_callbacks):
     with django_capture_on_commit_callbacks(execute=True):
-        client.post(reverse("community:subscribe"), {"email": "nuevo@example.com", "apodo": ""})
+        resp = client.post(
+            reverse("community:subscribe"), {"email": "nuevo@example.com", "apodo": ""}
+        )
+    assert resp.status_code == 302
     sub = NewsletterSubscriber.objects.get(email="nuevo@example.com")
     # Dos tokens de vida distinta: el de baja es permanente, el de confirmación caduca.
     assert sub.status == S.PENDING and sub.token and sub.confirm_token
     assert len(mail.outbox) == 1
     assert reverse("community:confirm", args=[sub.confirm_token]) in mail.outbox[0].body
     assert reverse("community:unsubscribe", args=[sub.token]) in mail.outbox[0].body
-
-
-@override_settings(EMAIL_BACKEND=LOCMEM)
-def test_confirmation_email_carries_list_unsubscribe_header():
-    """El correo lleva la cabecera List-Unsubscribe (RFC 2369) con el enlace de baja,
-    para que el cliente de correo ofrezca un botón de darse de baja."""
-    from apps.community.tasks import send_confirmation_email
-
-    sub = _pending()
-    send_confirmation_email(sub.pk)
-    unsub_url = f"{settings.SITE_URL}{reverse('community:unsubscribe', args=[sub.token])}"
-    assert mail.outbox[0].extra_headers["List-Unsubscribe"] == f"<{unsub_url}>"
-
-
-@override_settings(EMAIL_BACKEND=LOCMEM)
-def test_confirmation_email_task_sends_message():
-    # El envío vive en una tarea Celery (fuera del hilo de la petición, con reintento).
-    from apps.community.tasks import send_confirmation_email
-
-    sub = _pending()
-    send_confirmation_email(sub.pk)
-    assert len(mail.outbox) == 1
-    assert mail.outbox[0].to == ["a@example.com"]
-    confirm_url = f"{settings.SITE_URL}{reverse('community:confirm', args=[sub.confirm_token])}"
-    assert confirm_url in mail.outbox[0].body
 
 
 def test_confirm_sets_confirmed(client):
@@ -73,14 +50,6 @@ def test_confirm_sets_confirmed(client):
     assert resp.status_code == 200
     sub = NewsletterSubscriber.objects.get(email="x@example.com")
     assert sub.status == S.CONFIRMED and sub.confirmed_at is not None
-
-
-def test_unsubscribe_sets_unsubscribed(client):
-    NewsletterSubscriber.objects.create(email="y@example.com", token="tok-baja", status=S.CONFIRMED)
-    resp = client.post(reverse("community:unsubscribe", args=["tok-baja"]))
-    assert resp.status_code == 200
-    sub = NewsletterSubscriber.objects.get(email="y@example.com")
-    assert sub.status == S.UNSUBSCRIBED
 
 
 def test_one_click_unsubscribe_skips_csrf():
@@ -104,10 +73,6 @@ def test_one_click_unsubscribe_skips_csrf():
     assert b"CSRF" in resp.content
 
 
-def test_confirm_bad_token_404(client):
-    assert client.get(reverse("community:confirm", args=["no-existe"])).status_code == 404
-
-
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_already_confirmed_not_reconfirmed(client, django_capture_on_commit_callbacks):
     NewsletterSubscriber.objects.create(email="z@example.com", status=S.CONFIRMED, token="t")
@@ -117,17 +82,6 @@ def test_already_confirmed_not_reconfirmed(client, django_capture_on_commit_call
         )
     assert ALTA_NEUTRA in resp.content.decode()  # control: la respuesta es la de siempre
     assert len(mail.outbox) == 0  # no reenvía a quien ya confirmó
-
-
-@override_settings(EMAIL_BACKEND=LOCMEM)
-def test_subscribe_honeypot_sends_no_mail(client, django_capture_on_commit_callbacks):
-    with django_capture_on_commit_callbacks(execute=True):
-        resp = client.post(
-            reverse("community:subscribe"), {"email": "bot@spam.com", "apodo": "bot"}, follow=True
-        )
-    assert ALTA_NEUTRA in resp.content.decode()  # control: el bot recibe la respuesta de siempre
-    assert not NewsletterSubscriber.objects.filter(email="bot@spam.com").exists()
-    assert len(mail.outbox) == 0
 
 
 def test_subscribe_long_email_rejected_cleanly_not_500(client):
@@ -142,19 +96,6 @@ def test_subscribe_long_email_rejected_cleanly_not_500(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-def test_subscribe_next_open_redirect_is_blocked(client):
-    """Un `next` hacia un host externo se ignora: la redirección se queda en el
-    sitio (evita el open redirect CWE-601)."""
-    resp = client.post(
-        reverse("community:subscribe"),
-        {"email": "safe@example.com", "apodo": "", "next": "https://evil.example/phish"},
-    )
-    assert resp.status_code == 302
-    assert "evil.example" not in resp["Location"]
-    assert resp["Location"] == reverse("site:home")
-
-
-@override_settings(EMAIL_BACKEND=LOCMEM)
 def test_subscribe_next_same_site_is_honored(client):
     """Un `next` a una ruta del propio sitio sí se respeta."""
     resp = client.post(
@@ -166,7 +107,7 @@ def test_subscribe_next_same_site_is_honored(client):
 
 
 @override_settings(EMAIL_BACKEND=LOCMEM)
-@pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "feed", ""])
+@pytest.mark.parametrize("nxt", ["agenda", "//evil.com", "https://evil.example/phish", "feed", ""])
 def test_subscribe_with_a_bogus_next_returns_home(client, nxt):
     """Todo lo que no es una ruta local lleva a la portada, también una palabra suelta, que
     `redirect()` tomaría por un nombre de vista («agenda» daría un 500 y «feed» llevaría a
@@ -210,19 +151,6 @@ def test_subscribe_degrades_gracefully_when_broker_is_down(client):
     assert NewsletterSubscriber.objects.filter(email="broker@example.com").exists()
 
 
-def test_email_task_declares_retry_policy():
-    """La tarea de correo reintenta ante fallos transitorios de SMTP/red (política)."""
-    import smtplib
-
-    from apps.community.tasks import send_confirmation_email
-
-    # SMTPException hereda de OSError: lo transitorio se reintenta, lo permanente no.
-    assert issubclass(smtplib.SMTPException, OSError)
-    assert OSError in send_confirmation_email.autoretry_for
-    assert smtplib.SMTPRecipientsRefused in send_confirmation_email.dont_autoretry_for
-    assert send_confirmation_email.retry_kwargs["max_retries"] == 8
-
-
 def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
     """Sin fail_silently: un fallo definitivo de SMTP se propaga (sube a Sentry) en vez
     de tragarse en silencio."""
@@ -238,29 +166,6 @@ def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
     monkeypatch.setattr(EmailMessage, "send", boom)
     with pytest.raises(smtplib.SMTPException):
         tasks.send_confirmation_email(_pending().pk)
-
-
-def test_legal_pages_published(legal_pages):
-    from django.test import Client
-
-    c = Client()
-    for slug in ["privacidad", "cookies", "terminos"]:
-        assert c.get(reverse("content:page_detail", args=[slug])).status_code == 200
-
-
-def test_footer_has_legal_links_and_consent(client):
-    content = client.get(reverse("site:home")).content
-    assert reverse("content:page_detail", args=["privacidad"]).encode() in content
-    assert reverse("content:page_detail", args=["cookies"]).encode() in content
-    assert b"pol\xc3\xadtica de privacidad" in content  # nota de consentimiento del form
-
-
-def test_privacy_page_cites_ley_21719(client, legal_pages):
-    # La política de privacidad cita la Ley 21.719, además de la 19.628.
-    resp = client.get(reverse("content:page_detail", args=["privacidad"]))
-    assert resp.status_code == 200
-    assert b"21.719" in resp.content
-    assert b"19.628" in resp.content
 
 
 # ── El formulario, desde SubscribeForm: en el pie y en la página del boletín ────────

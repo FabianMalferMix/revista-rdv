@@ -1,10 +1,10 @@
-"""Las páginas legales no se rompen desde el panel.
+"""Las páginas legales se sirven al público y no se rompen desde el panel.
 
 El pie de todas las páginas y el consentimiento del boletín y de los envíos enlazan a
-`privacidad`, `cookies` y `terminos`. Desde el panel, la editora puede corregir su título y
-su texto (los revisará un abogado), pero no cambiarles el slug, despublicarlas ni borrarlas,
-tampoco con la acción en bloque. Cada caso lleva su control: una página corriente sí se
-despublica y se borra.
+`privacidad`, `cookies` y `terminos`, que cualquiera puede leer; la de privacidad cita las leyes
+19.628 y 21.719. Desde el panel, la editora puede corregir su título y su texto (los revisará
+un abogado), pero no cambiarles el slug, despublicarlas ni borrarlas, tampoco con la acción en
+bloque. Cada caso lleva su control: una página corriente sí se despublica y se borra.
 """
 
 import pytest
@@ -153,3 +153,19 @@ def test_deploy_check_fails_if_a_legal_page_is_missing_or_unpublished(legal_page
     assert [slug in e.msg for e in _legal_page_errors()] == [True]
     Page.objects.filter(slug=slug).delete()
     assert [slug in e.msg for e in _legal_page_errors()] == [True]
+
+
+def test_legal_pages_published(legal_pages):
+    from django.test import Client
+
+    c = Client()
+    for slug in ["privacidad", "cookies", "terminos"]:
+        assert c.get(reverse("content:page_detail", args=[slug])).status_code == 200
+
+
+def test_privacy_page_cites_ley_21719(client, legal_pages):
+    # La política de privacidad cita la Ley 21.719, además de la 19.628.
+    resp = client.get(reverse("content:page_detail", args=["privacidad"]))
+    assert resp.status_code == 200
+    assert b"21.719" in resp.content
+    assert b"19.628" in resp.content
