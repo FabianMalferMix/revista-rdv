@@ -65,7 +65,7 @@ def test_dossier_pdf_solo_admite_pdf():
     assert "dossier_pdf" in form.errors
 
 
-def test_mediaasset_ya_estaba_protegido_por_imagefield():
+def test_mediaasset_rejects_a_gif_html_polyglot():
     """`ImageField` trae `validate_image_file_extension` por su campo de formulario, así que
     un políglota GIF/HTML no se sube por esta vía. Se fija para que pasar el campo a
     FileField no abra el agujero en silencio."""

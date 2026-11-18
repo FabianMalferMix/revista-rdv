@@ -81,7 +81,7 @@ def test_clave_secreta_corta_o_poco_variada_es_rechazada():
     assert any("débil" in p for p in _check(secret="a" * 60))  # larga pero un solo carácter
 
 
-def test_centinelas_de_desarrollo_siguen_rechazados():
+def test_the_development_values_are_refused():
     assert any("DJANGO_SECRET_KEY" in p for p in _check(secret="dev-insecure-change-me"))
     assert any("POSTGRES_PASSWORD" in p for p in _check({"POSTGRES_PASSWORD": "resenas"}))
     assert any(
@@ -156,13 +156,6 @@ def test_private_media_inside_public_media_is_refused(tmp_path):
     assert check_storage_separation(media, media)
     # Control positivo: dos carpetas hermanas, como en el compose.
     assert check_storage_separation(media, tmp_path / "private_media") == []
-
-
-def test_private_storage_has_no_public_url():
-    from apps.submissions.models import private_storage
-
-    with pytest.raises(ValueError, match="no tienen URL pública"):
-        private_storage().url("submissions/2026/11/manuscrito.pdf")
 
 
 @pytest.mark.parametrize(

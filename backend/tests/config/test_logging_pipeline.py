@@ -1,8 +1,10 @@
 """El token del boletín no sale en claro de ningún proceso que escriba logs.
 
-La redacción sigue a las rutas del URLconf: renombrar la de confirmación, o añadir otra
-ruta con token, no deja el token en claro sin tocar nada más. Y llega a todos los
-procesos: a los extras anidados que adjunta Celery, al worker y a beat, que escriben con el
+`redact_path` tapa el token de las rutas del boletín, con el dominio o sin él, y deja como están
+las rutas que no lo llevan; el filtro de registro lo tapa en el mensaje. La redacción sigue a
+las rutas del URLconf: renombrar la de confirmación, o añadir otra ruta con token, no deja el
+token en claro sin tocar nada más, y si no puede leerlas, tapa la línea entera. Y llega a todos
+los procesos: a los extras anidados que adjunta Celery, al worker y a beat, que escriben con el
 formato y el filtro de Django, y a gunicorn.
 """
 
@@ -44,6 +46,35 @@ def test_redaction_fails_closed_if_the_routes_cannot_be_read(monkeypatch, settin
     monkeypatch.setattr(redaction, "token_route_prefixes", broken)
     monkeypatch.setattr(redaction, "_patterns", {})
     assert redact_path("GET /boletin/salir/abc/") == redaction.SIN_PATRON
+
+
+def test_se_redacta_el_token_de_las_rutas_del_boletin():
+    # Las rutas salen del URLconf, como la redacción: si se renombran, la prueba las sigue.
+    for nombre in ("community:unsubscribe", "community:confirm"):
+        ruta = reverse(nombre, args=["SECRETO-123"])
+        esperada = ruta.replace("SECRETO-123", "<redactado>")
+        assert redact_path(ruta) == esperada
+        assert redact_path(f"https://sitio.cl{ruta}") == f"https://sitio.cl{esperada}"
+
+
+def test_no_se_toca_lo_que_no_lleva_secreto():
+    for ruta in ["/textos/", "/buscar/?q=umbral", "/novedades/", "/admin/"]:
+        assert redact_path(ruta) == ruta
+
+
+def test_el_filtro_de_logging_redacta_el_mensaje():
+    registro = logging.LogRecord(
+        name="django.request",
+        level=logging.WARNING,
+        pathname=__file__,
+        lineno=1,
+        msg="Not Found: %s",
+        args=(reverse("community:unsubscribe", args=["SECRETO-123"]),),
+        exc_info=None,
+    )
+    assert RedactTokensFilter().filter(registro) is True
+    assert "SECRETO-123" not in registro.getMessage()
+    assert "<redactado>" in registro.getMessage()
 
 
 def test_nested_extras_from_celery_are_redacted():

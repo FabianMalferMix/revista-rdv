@@ -4,7 +4,7 @@
 # security.
 
 # Lo de terceros y lo generado no se toca: lo vendorizado se verifica por sha256
-# (tests/test_vendored_assets.py), las licencias de las fuentes van tal cual las publica
+# (tests/infra/test_vendored_assets.py), las licencias de las fuentes van tal cual las publica
 # su autor y las métricas de tools/ux/ las escribe capture.js.
 exclude: ^(backend/static/vendor/|backend/static/fonts/[^/]+\.txt$|tools/ux/(linea-base|final)/)
 

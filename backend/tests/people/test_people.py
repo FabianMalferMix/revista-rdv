@@ -57,10 +57,12 @@ def test_member_detail_shows_profile_and_published_articles(client, member):
     assert b"Texto Borrador" not in resp.content
 
 
-def test_member_detail_404_for_non_member(client):
-    Contributor.objects.create(slug="externa", display_name="Externa")
-    resp = client.get(reverse("people:member_detail", args=["externa"]))
-    assert resp.status_code == 404
+def test_member_page_of_someone_without_a_public_page_stays_404(client):
+    Contributor.objects.create(slug="sin-ficha", display_name="Sin Ficha")
+    assert client.get("/integrante/sin-ficha/").status_code == 404
+    # Control positivo: una integrante sí tiene su ficha en esa dirección.
+    Contributor.objects.create(slug="con-ficha", display_name="Con Ficha", is_member=True)
+    assert client.get("/integrante/con-ficha/").status_code == 200
 
 
 def test_historical_member_profile_stays_accessible(client):

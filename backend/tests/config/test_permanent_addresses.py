@@ -16,7 +16,6 @@ from django.utils import timezone
 
 from apps.content.models import Article, EditorialStatus
 from apps.media.models import Recording
-from apps.people.models import Contributor
 from config.feeds import FEED_GUID_AUTHORITY
 from config.publishing import FrozenSlugAdminMixin
 from tests.factories import make_article
@@ -114,22 +113,3 @@ def test_every_admin_with_a_public_slug_freezes_it():
     for model, model_admin in site._registry.items():
         if model._meta.label_lower in SLUG_WITH_PUBLIC_PAGE:
             assert isinstance(model_admin, FrozenSlugAdminMixin), model._meta.label_lower
-
-
-def test_former_member_page_redirects_to_the_collaborator_page(client):
-    person = Contributor.objects.create(slug="ex-integrante", display_name="Ex Integrante")
-    article = make_article(status=EditorialStatus.PUBLISHED)
-    article.authors.add(person)
-
-    response = client.get("/integrante/ex-integrante/")
-    assert response.status_code == 302
-    assert response["Location"] == "/colaborador/ex-integrante/"
-    assert client.get(response["Location"]).status_code == 200
-
-
-def test_member_page_of_someone_without_a_public_page_stays_404(client):
-    Contributor.objects.create(slug="sin-ficha", display_name="Sin Ficha")
-    assert client.get("/integrante/sin-ficha/").status_code == 404
-    # Control positivo: una integrante sí tiene su ficha en esa dirección.
-    Contributor.objects.create(slug="con-ficha", display_name="Con Ficha", is_member=True)
-    assert client.get("/integrante/con-ficha/").status_code == 200

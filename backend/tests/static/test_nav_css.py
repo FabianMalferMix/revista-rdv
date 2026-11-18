@@ -42,7 +42,7 @@ def test_se_conserva_el_display_para_navegadores_antiguos():
     assert css.rule(DESKTOP, ".nav-disclosure > .nav")["display"] == "flex"
 
 
-def test_en_movil_el_desplegable_sigue_siendo_visible():
+def test_on_the_phone_the_menu_summary_is_visible():
     """Fuera del bloque de escritorio, el summary («Menú») se ve: en el teléfono es el único
     camino de la cabecera a las secciones, por el mapa del sitio."""
     assert css.rule((), ".nav-disclosure summary")["display"] == "inline-flex"

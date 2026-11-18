@@ -1,4 +1,11 @@
-"""Sondas de salud: liveness (/healthz/) y readiness (/readyz/)."""
+"""Las sondas de salud (config/views.py y config/health.py).
+
+`/healthz/` dice solo que el proceso responde, con «ok», y el loopback por el que pega la sonda
+del contenedor está siempre entre los hosts permitidos. `/readyz/` responde 200 solo si el sitio
+puede operar y, si no, 503 con la lista de lo que falla y su causa en el log: la base, el broker,
+la caché, las migraciones pendientes, el disco casi lleno, las piezas programadas vencidas y el
+latido de las tareas, que deja `publish_due_items` y envejece cuando beat se detiene.
+"""
 
 import secrets
 import shutil

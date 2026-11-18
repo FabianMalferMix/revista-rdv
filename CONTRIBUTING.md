@@ -145,9 +145,9 @@ vigente más cercano y no se agrava la deuda.
 2. **Lo publicable.** La regla de visibilidad vive en el QuerySet de cada modelo
    (`config/publishing.py`). Las vistas, el sitemap y los feeds piden `Modelo.objects.published()`,
    también desde las relaciones (`member.events.published()`), y no escriben el filtro a mano:
-   `tests/test_published_querysets.py` lo vigila. Toda relación hacia algo publicable la respeta.
-   Bien: `Poem.published_recording` (`apps/content/models.py`) devuelve el registro solo si está
-   publicado. Mal: un `.filter(published=True)` en una vista.
+   `tests/config/test_published_querysets.py` lo vigila. Toda relación hacia algo publicable la
+   respeta. Bien: `Poem.published_recording` (`apps/content/models.py`) devuelve el registro solo
+   si está publicado. Mal: un `.filter(published=True)` en una vista.
 3. **Un dato, una fuente.** Si un valor debe coincidir en varias capas, se decide en un lugar y
    viaja: atributos `data-`, propiedades CSS, `reverse()`. Si no se puede, una prueba de la
    relación entre la fuente y la copia. Mal: los `sizes` de las imágenes copian a mano el ancho que
@@ -158,8 +158,8 @@ vigente más cercano y no se agrava la deuda.
    repite; los cortes tienen nombre en `config/breakpoints.py`, y como un `@media` no lee
    variables, `tests/static/test_shared_values.py` exige que la hoja corte donde dice ese módulo. Y
    las rutas se resuelven con `{% url %}` y `reverse()` en todo el sitio, y la dirección de cada
-   pieza sale de su `get_absolute_url`, que `tests/test_get_absolute_url.py` exige a todo modelo con
-   ficha.
+   pieza sale de su `get_absolute_url`, que `tests/config/test_get_absolute_url.py` exige a todo
+   modelo con ficha.
 4. **Idioma.** Los identificadores nuevos de Python y de JavaScript van en inglés. En castellano
    van los textos visibles y el vocabulario del diseño: clases CSS y nombres de componentes
    (tirada, estante, pliego, cápsula), que se usan tal cual también dentro de nombres en inglés,
