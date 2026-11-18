@@ -27,6 +27,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from apps.agenda.models import Event
 from apps.content import legal
 from apps.content.models import LEGAL_PAGES, Article, EditorialStatus, Page, PublishStatus, Tag
+from apps.content.services import body_image_names
 from apps.devtools import identity
 from apps.devtools.management.commands import datos_de_desarrollo as comando
 from apps.devtools.models import DevelopmentMarker
@@ -139,14 +140,27 @@ def test_the_copy_leaves_the_legal_pages_to_migrate_and_names_the_others_by_slug
 
 
 def test_cada_imagen_que_viaja_la_usa_algo_que_viaja():
+    """Por una referencia, o porque la muestra el cuerpo de un texto o de una página que viaja."""
     usadas = {
         fila["fields"][campo.name]
         for fila in DATOS
         for campo in apps.get_model(fila["model"])._meta.get_fields()
         if getattr(campo, "related_model", None) is MediaAsset and campo.name in fila["fields"]
     }
-    imagenes = {fila["pk"] for fila in DATOS if fila["model"] == "media.mediaasset"}
-    assert imagenes and imagenes <= usadas
+    archivos = {
+        fila["fields"]["file"]: fila["pk"] for fila in DATOS if fila["model"] == "media.mediaasset"
+    }
+    en_cuerpos = {
+        archivos[nombre]
+        for fila in DATOS
+        if fila["model"] in ("content.article", "content.page")
+        for nombre in body_image_names(
+            apps.get_model(fila["model"])(slug=fila["fields"]["slug"], body=fila["fields"]["body"])
+        )
+        if nombre in archivos
+    }
+    imagenes = set(archivos.values())
+    assert imagenes and imagenes <= usadas | en_cuerpos
 
 
 def test_sin_contrasenas_ni_cuentas_ni_correos_privados():
@@ -281,6 +295,31 @@ def test_de_ida_y_vuelta_sin_la_cuenta(development_base, django_user_model):
     cargada = Publication.objects.get(slug="ida-y-vuelta")
     assert cargada.cover.file.name == nombre and cargada.cover.uploaded_by is None
     assert cargada.cover.file.storage.exists(nombre)
+
+
+@pytest.mark.django_db
+def test_an_image_only_a_body_shows_travels_with_it_and_loading_notes_it(development_base):
+    """El cuerpo nombra la imagen solo por su dirección: viaja con el texto, y al cargar la copia
+    queda anotada como suya, así Recursos no deja borrarla."""
+    carpeta = development_base
+    foto = make_image("foto-del-cuerpo", alt="Foto que muestra un cuerpo")
+    make_image("suelta", alt="Imagen que nada usa")
+    make_published_article(
+        slug="con-foto", body=f'<p>Texto.</p><p><img src="{foto.file.url}" alt="Foto"></p>'
+    )
+    call_command("datos_de_desarrollo", "exportar", verbosity=0)
+    exportado = (carpeta / "datos.json").read_text("utf-8")
+    assert "Foto que muestra un cuerpo" in exportado
+    assert (carpeta / "media" / foto.file.name).is_file()
+    assert "Imagen que nada usa" not in exportado
+    nombre = foto.file.name
+    Article.objects.all().delete()
+    MediaAsset.objects.all().delete()
+
+    call_command("datos_de_desarrollo", "cargar", verbosity=0)
+
+    cargado = Article.objects.get(slug="con-foto")
+    assert [fila.image.file.name for fila in cargado.body_images.all()] == [nombre]
 
 
 @pytest.mark.django_db

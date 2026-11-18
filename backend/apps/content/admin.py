@@ -15,7 +15,7 @@ from config.content_policy import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 from config.publishing import FrozenSlugAdminMixin
 from config.staticfiles import TINYMCE_DIR
 
-from . import workflow
+from . import services, workflow
 from .models import (
     LEGAL_PAGES,
     Article,
@@ -33,7 +33,7 @@ from .models import (
     Tag,
 )
 from .permissions import can_edit_item
-from .sanitize import clean_html
+from .sanitize import clean_html, keep_any_image
 
 
 def tinymce_valid_elements():
@@ -70,7 +70,8 @@ class RichTextWidget(forms.Textarea):
 
 
 class SanitizedBodyMixin:
-    """Sanea el cuerpo al validar el formulario del panel, como `Model.save()` al guardarlo.
+    """Sanea el cuerpo al validar el formulario del panel, como `Model.save()` al guardarlo, pero
+    sin quitar las imágenes de otro sitio, que copia el guardado (`CopiesRemoteImagesMixin`).
 
     Ninguno de los dos es la garantía, porque una migración de datos, un `bulk_create` o
     `loaddata` no pasan por ellos: la garantía está en la salida, en el filtro `authored_html`
@@ -78,7 +79,35 @@ class SanitizedBodyMixin:
     """
 
     def clean_body(self):
-        return clean_html(self.cleaned_data.get("body", ""))
+        return clean_html(self.cleaned_data.get("body", ""), image_source=keep_any_image)
+
+
+class CopiesRemoteImagesMixin:
+    """Al guardar, copia a la biblioteca las imágenes de otro sitio del cuerpo, y lo dice: cuántas
+    copió y, de cada una que no, por qué. Una imagen que no se copia no impide guardar."""
+
+    def save_model(self, request, obj, form, change):
+        obj.body, copies, failures = services.copy_remote_images(obj.body, request.user)
+        super().save_model(request, obj, form, change)
+        if len(copies) == 1:
+            self.message_user(
+                request,
+                "Se copió una imagen de otro sitio a Recursos: el cuerpo ya muestra la copia.",
+                level=messages.SUCCESS,
+            )
+        elif copies:
+            self.message_user(
+                request,
+                f"Se copiaron {len(copies)} imágenes de otros sitios a Recursos: el cuerpo ya "
+                "muestra las copias.",
+                level=messages.SUCCESS,
+            )
+        for host, reason in failures:
+            self.message_user(
+                request,
+                f"No se copió la imagen de {host} ({reason}): se quitó del cuerpo.",
+                level=messages.WARNING,
+            )
 
 
 class ArticleAdminForm(SanitizedBodyMixin, forms.ModelForm):
@@ -379,7 +408,7 @@ class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Article)
-class ArticleAdmin(EditorialItemAdmin):
+class ArticleAdmin(CopiesRemoteImagesMixin, EditorialItemAdmin):
     form = ArticleAdminForm
     list_display = ["title", "type", "status", "published_at"]
     list_filter = ["status", "type", "section"]
@@ -457,7 +486,7 @@ class CollectionAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Page)
-class PageAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class PageAdmin(CopiesRemoteImagesMixin, FrozenSlugAdminMixin, admin.ModelAdmin):
     form = PageAdminForm
     list_display = ["title", "status"]
     list_filter = ["status"]

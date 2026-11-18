@@ -9,4 +9,9 @@ class ContentConfig(AppConfig):
     verbose_name = "Contenido"
 
     def ready(self):
-        from . import checks  # noqa: F401  registra el check de las páginas legales
+        from . import (
+            checks,  # noqa: F401  registra el check de las páginas legales
+            signals,
+        )
+
+        signals.connect()

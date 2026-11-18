@@ -127,10 +127,11 @@ ALLOWED_URL_SCHEMES = frozenset({"http", "https", "mailto"})
 
 # Las imágenes del HTML de autor solo se publican si son del propio sitio (`is_own_url`): la CSP
 # (`img-src 'self'`) bloquea las de fuera, que saldrían rotas, y pedirlas le contaría a ese otro
-# sitio cada visita. Lo dice el panel junto al cuerpo.
+# sitio cada visita. Al guardar desde el panel, las de otro sitio se copian a la biblioteca
+# (`apps/content/services.py`) y el cuerpo muestra la copia. Lo dice el panel junto al cuerpo.
 AUTHORED_HTML_HELP = (
-    "Las imágenes de otros sitios no se publican: al guardar, el texto se queda solo con las de "
-    "este sitio."
+    "Las imágenes de otros sitios se copian a Recursos al guardar, y el cuerpo muestra la copia. "
+    "La que no se puede copiar se quita, y el panel dice por qué."
 )
 
 # Lo que el navegador quita o lee de otra manera al leer una dirección (el estándar URL de WHATWG):
@@ -146,10 +147,16 @@ def _origin(parts):
     return parts.scheme, parts.hostname, parts.port or _DEFAULT_PORTS.get(parts.scheme)
 
 
+def browser_url(url):
+    """La dirección como la lee el navegador: sin blancos ni caracteres de control en los extremos,
+    sin tabuladores ni saltos de línea dentro, y con «/» donde decía «\\»."""
+    return _TAB_OR_NEWLINE.sub("", url).strip(_C0_CONTROL_OR_SPACE).replace("\\", "/")
+
+
 def is_own_url(url):
     """Si una dirección del HTML de autor es del propio sitio: una ruta relativa o una dirección con
     el origen de SITE_URL. Ante la duda, no lo es."""
-    url = _TAB_OR_NEWLINE.sub("", url).strip(_C0_CONTROL_OR_SPACE).replace("\\", "/")
+    url = browser_url(url)
     # «//otro/…» (y «///otro/…», que el navegador lee igual) es de otro sitio aunque no diga esquema.
     if not url or url.startswith("//"):
         return False

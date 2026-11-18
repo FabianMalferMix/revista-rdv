@@ -7,25 +7,27 @@
 `cargar` es el único camino para poblar desarrollo; también lo usan tools/ux/preparar-entorno.sh
 y el job navegador del CI. Copia los archivos, carga las filas de `datos.json` con sus fechas
 corridas (lo que estaba a N días de la exportación queda a N días de hoy), pone la identidad
-del colectivo (apps/devtools/identity.py) y rehace las copias de las imágenes. No toca lo que
-dejan las migraciones: la copia no trae las páginas legales, que `migrate` crea con su texto
-vigente, y las páginas se buscan por su slug. En una base de desarrollo que ya tiene contenido
-no hace nada; en una con contenido que no se declara de desarrollo, se niega.
+del colectivo (apps/devtools/identity.py), anota las imágenes de la biblioteca que muestra cada
+cuerpo y rehace las copias de las imágenes. No toca lo que dejan las migraciones: la copia no
+trae las páginas legales, que `migrate` crea con su texto vigente, y las páginas se buscan por
+su slug. En una base de desarrollo que ya tiene contenido no hace nada; en una con contenido
+que no se declara de desarrollo, se niega.
 
 El repositorio es público, así que viaja solo lo que el sitio ya muestra:
 
 - lo publicado (`PUBLIC_ROWS`), más las piezas de `DEMO_UNPUBLISHED`, que enseñan el flujo
   editorial en el panel;
 - lo que depende de ello (`OWNED_ROWS`: autorías, fotos, enlaces);
-- y lo que eso nombra (`REFERENCED_ROWS`: sus imágenes, sus autoras, su catálogo), con los
-  originales de sus archivos.
+- y lo que eso nombra (`REFERENCED_ROWS`: sus imágenes, sus autoras, su catálogo, y las imágenes
+  que muestran los cuerpos de los textos y las páginas), con los originales de sus archivos.
 
 Cada campo de cada modelo está en `PUBLIC_FIELDS`, en `PRIVATE_FIELDS` o en `IDENTITY_FIELDS`, y
 un campo nuevo hace fallar la exportación hasta que alguien decida; solo se escriben los de
 `PUBLIC_FIELDS`. Los que calcula la base, como el vector de búsqueda, no viajan: los vuelve a
 calcular al guardar cada fila. Tampoco las cuentas, las sesiones, los registros de acceso y del
 panel, los suscriptores, los envíos ni el historial editorial; las referencias a algo que no
-viaja quedan vacías. Ni las copias de las imágenes a otros tamaños: `cargar` las rehace.
+viaja quedan vacías. Ni las copias de las imágenes a otros tamaños ni la lista de las que muestra
+cada cuerpo: `cargar` las rehace.
 
 Como todo comando de desarrollo, las tres acciones solo corren con DEBUG y fuera de producción
 (DevelopmentCommand). Y `exportar`, además, solo en una base marcada como de desarrollo (con
@@ -54,6 +56,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
 from apps.content.models import LEGAL_PAGES
+from apps.content.services import body_image_ids, sync_all_body_images
 from apps.devtools import identity
 from apps.devtools.management.base import DevelopmentCommand
 from apps.devtools.models import DevelopmentMarker
@@ -101,6 +104,8 @@ NOT_EXPORTED = {
     "people.RoleGrant": "Lo que setup_groups repartió en esta base; lo rehace en cada una.",
     "devtools.DevelopmentMarker": "La marca de esta base, no su contenido: la pone `cargar`.",
     "showcase.SiteSocialLink": "Las redes del colectivo son de su identidad, que pone `cargar`.",
+    "content.ArticleBodyImage": "Sale del cuerpo de cada texto: `cargar` la rehace.",
+    "content.PageBodyImage": "Sale del cuerpo de cada página: `cargar` la rehace.",
 }
 
 # Si alguno tiene filas, la base ya tiene contenido y `cargar` no la toca.
@@ -297,6 +302,10 @@ def exported_pks():
         if demo:
             rows = rows | objects.filter(slug__in=demo)
         included[label] |= set(rows.values_list("pk", flat=True))
+    # Las imágenes que muestran los cuerpos que viajan: el cuerpo solo las nombra por su dirección.
+    for label in ("content.Article", "content.Page"):
+        for item in apps.get_model(label).objects.filter(pk__in=included[label]):
+            included["media.MediaAsset"] |= body_image_ids(item)
     changed = True
     while changed:
         changed = False
@@ -534,6 +543,8 @@ class Command(DevelopmentCommand):
             with transaction.atomic():
                 call_command("loaddata", str(fixture), verbosity=0)
                 identity.apply(SiteProfile.load())
+                # loaddata no pasa por la señal que anota las imágenes de cada cuerpo.
+                sync_all_body_images()
         call_command("generate_image_derivatives", verbosity=0)
         # La obra de la portada pide sus propias copias (AVIF y WebP), que hace SiteProfile al
         # guardarse. Se guardan solo esos campos: la fecha de actualización es la de la copia.

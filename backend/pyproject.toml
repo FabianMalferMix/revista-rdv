@@ -55,6 +55,7 @@ ignore_imports = [
     "apps.agenda.** -> apps.showcase.**",
     "apps.agenda.** -> apps.site.**",
     "apps.community.** -> apps.showcase.**",
+    "apps.content.** -> apps.media.**",
     "apps.content.** -> apps.people.**",
     "apps.content.** -> apps.reviews.**",
     "apps.content.** -> apps.showcase.**",

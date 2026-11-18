@@ -2,7 +2,8 @@
 
 La CSP (`img-src 'self'`) bloquea las de otro sitio, que saldrían rotas, y pedirlas le contaría a ese
 sitio cada visita. El saneado las quita enteras, con su `srcset` y con el enlace o la figura que solo
-las contenían; las del propio sitio (una ruta relativa o el origen de SITE_URL) quedan. El panel lo
+las contenían; las del propio sitio (una ruta relativa o el origen de SITE_URL) quedan. Al guardar
+desde el panel, las de otro sitio se copian antes a Recursos (test_remote_images.py), y el panel lo
 dice junto al cuerpo.
 """
 
@@ -12,7 +13,7 @@ from django.urls import reverse
 
 from apps.content.models import Article, Page
 from apps.content.sanitize import clean_html
-from tests.factories import admin_form_fields, make_published_article, soup
+from tests.factories import make_published_article, soup
 
 SITE = "https://repitentes.example"
 
@@ -127,23 +128,10 @@ def test_an_image_from_another_site_reaches_no_public_page(client):
 
 
 @pytest.mark.django_db
-def test_saving_from_the_panel_keeps_only_the_images_of_the_site(client, editor):
-    article = Article.objects.create(slug="pegado", title="Pegado", body="<p>x</p>", owner=editor)
-    url = reverse("admin:content_article_change", args=[article.pk])
-    client.force_login(editor)
-    data = admin_form_fields(client.get(url).content, "article_form")
-    data["body"] = BODY
-    assert client.post(url, data).status_code == 302
-    article.refresh_from_db()
-    images = BeautifulSoup(article.body, "html.parser").find_all("img")
-    assert [image["alt"] for image in images] == ["Foto del sitio"]
-
-
-@pytest.mark.django_db
 @pytest.mark.parametrize("form", ["admin:content_article_add", "admin:content_page_add"])
-def test_the_panel_says_images_from_other_sites_are_not_published(client, editor, form):
+def test_the_panel_says_images_from_other_sites_are_copied(client, editor, form):
     client.force_login(editor)
     page = soup(client, reverse(form))
     textarea = page.select_one("textarea#id_body")
     help_text = page.select_one(f"#{textarea['aria-describedby']}").get_text(" ", strip=True)
-    assert help_text.startswith("Las imágenes de otros sitios no se publican")
+    assert help_text.startswith("Las imágenes de otros sitios se copian a Recursos al guardar")

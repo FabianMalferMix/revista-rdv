@@ -64,6 +64,29 @@ def _isolated_media(settings, tmp_path):
         _reapuntar(campo.storage, privado_real)
 
 
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch):
+    """Ninguna prueba sale a la red por el descargador de imágenes de otro sitio
+    (config/remote_fetch.py): la que lo usa pide `remote_sites`, un internet de mentira."""
+    from config import remote_fetch
+
+    def offline(*args, **kwargs):
+        pytest.fail("Una prueba intentó salir a la red por config/remote_fetch.py")
+
+    monkeypatch.setattr(remote_fetch, "_getaddrinfo", offline)
+    monkeypatch.setattr(remote_fetch, "_create_connection", offline)
+
+
+@pytest.fixture
+def remote_sites(monkeypatch):
+    """Un internet de mentira para el descargador (tests/remote_sites.py):
+    `remote_sites.serve(url, respuesta)` hace que esa dirección conteste."""
+    from tests.remote_sites import FakeInternet
+
+    with FakeInternet(monkeypatch) as internet:
+        yield internet
+
+
 @pytest.fixture
 def frozen_rate_limit_window(monkeypatch):
     """Una sola ventana de django-ratelimit durante toda la prueba. La biblioteca cuenta por

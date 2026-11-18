@@ -5,15 +5,24 @@ puede, la subida se rechaza) y, cuando el guardado confirma, encola la tarea `pr
 (apps/media/tasks.py), que llama aquí: repara el ancho y el alto, genera las copias del
 `srcset`, las de la portada si alguna app la usa como tal, y mide el color del borde. El
 comando `generate_image_derivatives` usa este mismo servicio con las imágenes que ya existen.
+
+Una imagen de otro sitio entra por `copy_remote_image`, con los mismos validadores y la misma
+limpieza que una subida.
 """
 
 import logging
+import warnings
 from io import BytesIO
 
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.utils.text import slugify
 from PIL import Image
 
-from .models import IMAGE_ERRORS, MediaAsset
+from config.remote_fetch import RemoteFetchError, fetch_image
+
+from .models import IMAGE_ERRORS, REWRITE_FORMATS, ImageCleanupError, MediaAsset
+from .validators import MAX_IMAGE_MB, MAX_IMAGE_PIXELS, MB
 
 logger = logging.getLogger(__name__)
 
@@ -167,3 +176,63 @@ def border_color(img):
     ]
     mediana = [sorted(p[c] for p in anillo)[len(anillo) // 2] for c in range(3)]
     return "#{:02x}{:02x}{:02x}".format(*mediana)
+
+
+# ── Las imágenes de otro sitio ────────────────────────────────
+
+
+class ImageNotCopied(Exception):
+    """Una imagen de otro sitio que no entró en la biblioteca. El mensaje dice por qué."""
+
+
+# Por qué una imagen traída no entra en la biblioteca, dicho para quien la pegó. Las claves son los
+# códigos de los validadores de `MediaAsset.file` (validators.py).
+_REJECTED = {
+    "file_too_big": f"pesa más de {MAX_IMAGE_MB} MB",
+    "image_format": "no es JPEG, PNG ni WebP",
+    "image_too_big": f"pasa de {MAX_IMAGE_PIXELS // 1_000_000} megapíxeles",
+    "image_unreadable": "no se pudo leer como imagen",
+}
+
+
+def copy_remote_image(url, *, alt_text, uploaded_by, deadline):
+    """Trae la imagen de `url` y la guarda en la biblioteca por el camino de una subida desde el
+    panel: los validadores de `MediaAsset.file`, la limpieza de metadatos al guardar y las copias
+    del `srcset` al confirmar. Devuelve el recurso, o lanza ImageNotCopied con el motivo.
+
+    `deadline` es el instante de `time.monotonic()` en que se deja de esperar al otro sitio.
+    """
+    try:
+        content = fetch_image(url, max_bytes=MAX_IMAGE_MB * MB, deadline=deadline)
+    except RemoteFetchError as exc:
+        raise ImageNotCopied(str(exc)) from exc
+    name = f"{slugify(alt_text)[:50] or 'imagen-copiada'}.{_extension(content)}"
+    image = ContentFile(content, name=name)
+    try:
+        for validate in MediaAsset._meta.get_field("file").validators:
+            validate(image)
+    except ValidationError as exc:
+        raise ImageNotCopied(_REJECTED.get(exc.code, "no es una imagen válida")) from exc
+    asset = MediaAsset(file=image, alt_text=alt_text, uploaded_by=uploaded_by)
+    asset.full_clean(exclude=["file"])
+    try:
+        asset.save()
+    except ImageCleanupError as exc:
+        raise ImageNotCopied("no se pudo limpiar de metadatos") from exc
+    return asset
+
+
+def _extension(content):
+    """La extensión del formato en que queda la imagen, que es de la que Caddy deriva el
+    Content-Type con que la sirve. Si Pillow no la reconoce, la del JPEG: los validadores la
+    rechazan igual."""
+    fmt = ""
+    try:
+        with warnings.catch_warnings():
+            # La que pasa del máximo de píxeles solo avisa al abrirse: la rechazan los validadores.
+            warnings.simplefilter("ignore", Image.DecompressionBombWarning)
+            with Image.open(BytesIO(content)) as img:
+                fmt = (img.format or "").upper()
+    except IMAGE_ERRORS:
+        pass
+    return REWRITE_FORMATS.get(fmt, REWRITE_FORMATS["JPEG"])[0].lower()
