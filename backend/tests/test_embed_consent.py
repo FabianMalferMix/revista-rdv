@@ -2,6 +2,8 @@
 
 El iframe de YouTube o Vimeo no se inserta hasta que la persona pulsa: cargado con la página,
 el proveedor recibiría la IP y el agente de usuario de quien la abre sin que haya pulsado nada.
+Lo que le llega tras el clic (la orden de sonar y solo el origen del sitio, no la dirección de la
+página) lo comprueba en un navegador la prueba de humo, `tools/ux/browser-smoke.js`.
 """
 
 import re

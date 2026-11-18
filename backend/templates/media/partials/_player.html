@@ -16,7 +16,8 @@
        vacía» en docs/deferidos-y-decisiones.md): el póster del registro, impreso a una tinta
        como las fotos de los listados, o su carátula tipográfica. El póster es una imagen
        propia, nunca la miniatura del proveedor, que conectaría con él antes del clic. Al
-       pulsar, embeds.js vacía la placa y pone el iframe en su lugar.
+       pulsar, embeds.js vacía la placa y pone en su lugar el iframe, que empieza a sonar y
+       le envía al proveedor solo el origen del sitio, no la dirección de la página.
     {% endcomment %}
     <div class="player-frame player-consent" data-embed-src="{{ src }}" data-embed-title="{{ r.title }}">
       {% if r.poster %}

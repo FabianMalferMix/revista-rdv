@@ -44,7 +44,8 @@ async function openTab(browser, width) {
   const context = await browser.newContext(WINDOWS[width]);
   const page = await context.newPage();
   const problems = [];
-  // Lo que va a un tercero: sin permiso es un fallo; con él (la persona pulsó), se anota aparte.
+  // Lo que va a un tercero: sin permiso es un fallo; con él (la persona pulsó), se anota aparte
+  // la petición entera, para ver qué le llega.
   const thirdParty = [];
   const allowed = new Set();
   const consented = [];
@@ -59,10 +60,11 @@ async function openTab(browser, width) {
   });
   // Nada sale del sitio: lo que va a un tercero se anota y se responde vacío, sin red.
   await page.route('**/*', (route) => {
-    const url = route.request().url();
-    const origin = new URL(url).origin;
+    const request = route.request();
+    const origin = new URL(request.url()).origin;
     if (origin === ORIGIN) return route.continue();
-    (allowed.has(origin) ? consented : thirdParty).push(url);
+    if (allowed.has(origin)) consented.push(request);
+    else thirdParty.push(request.url());
     return route.fulfill({ status: 200, contentType: 'text/html', body: '' });
   });
   return { context, page, problems, thirdParty, allowed, consented };
@@ -994,7 +996,7 @@ const CHECKS = [
     },
   },
   {
-    name: 'El reproductor externo solo se carga, y solo contacta al tercero, al pulsar',
+    name: 'El reproductor externo solo se carga, y solo contacta al tercero, al pulsar; entonces pide sonar y le envía solo el origen del sitio',
     widths: [951, 375],
     async run({ page, thirdParty, allowed, consented }) {
       await visit(page, '/registros/');
@@ -1017,12 +1019,24 @@ const CHECKS = [
       const host = new URL(player).origin;
       allowed.add(host);
       await page.click('.player-consent .embed-play');
-      const loaded = await page
-        .waitForSelector(`iframe[src="${player}"]`, { timeout: 3000 })
-        .then(() => true, () => false);
+      const iframe = `iframe[src^="${player}"]`;
+      const loaded = await page.waitForSelector(iframe, { timeout: 3000 }).then(() => true, () => false);
       expect(loaded, 'pulsar no carga el reproductor');
       await page.waitForTimeout(SETTLE_MS);
-      expect(consented.some((url) => url.startsWith(host)), `el reproductor no llegó a pedir ${host}`);
+      const request = consented.find((r) => r.url().startsWith(host) && r.resourceType() === 'document');
+      expect(request, `el reproductor no llegó a pedir ${host}`);
+      // Lo que le llega al proveedor: YouTube no reproduce sin el origen del sitio, y la dirección
+      // de la página no le hace falta.
+      const referer = request.headers().referer || '(ninguno)';
+      expect(referer === `${ORIGIN}/`, `el reproductor pide ${host} con el referente ${referer}, no con el origen del sitio`);
+      expect(new URL(request.url()).searchParams.get('autoplay') === '1', 'el reproductor no pide sonar al cargar');
+      // El permiso que el navegador le da de verdad al iframe: el que la página le delega en
+      // `allow`, si su cabecera Permissions-Policy no lo prohíbe.
+      const mayPlay = await page.locator(iframe).evaluate((f) =>
+        f.featurePolicy ? f.featurePolicy.allowsFeature('autoplay', new URL(f.src).origin) : null,
+      );
+      expect(mayPlay !== null, 'este Chrome no dice qué permisos tiene el iframe (featurePolicy)');
+      expect(mayPlay, 'el iframe no tiene permiso para sonar');
     },
   },
   {
