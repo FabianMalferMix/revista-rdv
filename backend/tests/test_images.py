@@ -1,4 +1,4 @@
-"""Imágenes responsivas (srcset + width/height) y cierre de N+1 — Lote F3-2."""
+"""Imágenes responsivas (srcset + width/height), sin una consulta por imagen."""
 
 from io import BytesIO
 

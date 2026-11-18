@@ -1,9 +1,7 @@
-"""Los reproductores externos no contactan con terceros sin permiso (hallazgo S-19).
+"""Los reproductores externos no contactan con terceros sin permiso.
 
-El iframe de YouTube/Vimeo se insertaba con la página, así que el navegador contactaba
-con ese tercero —IP, agente de usuario y referente— en cuanto se abría cualquier ficha
-de registro y también la PORTADA, sin que nadie hubiera pulsado nada, mientras
-/cookies/ afirma que «no compartimos información con terceros».
+El iframe de YouTube o Vimeo no se inserta hasta que la persona pulsa: cargado con la página,
+el proveedor recibiría la IP y el agente de usuario de quien la abre sin que haya pulsado nada.
 """
 
 import re
@@ -73,8 +71,8 @@ def test_sin_javascript_queda_un_enlace_al_proveedor():
 
 
 def test_la_portada_no_contacta_con_terceros(client):
-    """La portada es la página más visitada: era la peor exposición. Desde la tirada (D19) no
-    reproduce: presenta el registro y lleva a su ficha, donde está el click-to-play."""
+    """La portada, la página más visitada, no reproduce: la tirada presenta el registro y lleva
+    a su ficha, donde está el click-to-play."""
     from apps.showcase.models import SiteProfile
 
     rec = _recording(featured=True)
@@ -98,7 +96,8 @@ def test_la_ficha_del_registro_tampoco(client):
 
 
 def test_el_filtro_sigue_resolviendo_la_url_de_incrustacion():
-    """La URL correcta debe seguir calculándose: se difiere su uso, no se pierde."""
+    """La dirección del reproductor se calcula aunque el iframe espere al clic: se difiere su
+    uso, no se pierde."""
     assert embed_src(YOUTUBE) == "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
     assert embed_src(VIMEO) == "https://player.vimeo.com/video/123456789"
     assert embed_provider(YOUTUBE) == "YouTube"
@@ -107,13 +106,8 @@ def test_el_filtro_sigue_resolviendo_la_url_de_incrustacion():
 
 
 def test_la_ficha_sin_fecha_no_abre_con_un_separador_suelto(client):
-    """El · separa fecha y evento; sin fecha no debe encabezar la línea.
-
-    `recorded_on` es opcional y el registro destacado no lo tiene, así que la
-    línea de metadatos abría con «· Recital «Nuevas voces»». El separador
-    estaba escrito dentro del bloque del evento en vez de depender de que
-    hubiera algo delante.
-    """
+    """El · separa la fecha y el evento, y sin fecha no encabeza la línea: `recorded_on` es
+    opcional."""
     from tests.factories import make_event
 
     evento = make_event(title="Recital de prueba")
@@ -129,7 +123,7 @@ def test_la_ficha_sin_fecha_no_abre_con_un_separador_suelto(client):
     assert "Recital de prueba" in texto, "el evento dejó de mostrarse"
 
 
-# ── La placa nunca está vacía (ticket 3.4, D10) ───────────────────────────
+# ── La placa nunca está vacía ─────────────────────────────────────────────
 
 
 def _poster(texto="Cartel del recital"):

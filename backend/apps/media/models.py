@@ -52,10 +52,10 @@ class MediaAsset(models.Model):
 
     # Anchos de los derivados para `srcset` (solo se generan los menores al original).
     SRCSET_WIDTHS = (240, 480, 960, 1440)
-    # La obra de la portada va a sangre (D18): pide copias más anchas y en formatos
-    # modernos. Se hacen solo para la imagen elegida como portada (apps.showcase lo dice al
-    # servicio de imágenes), no para cada imagen que se sube. Las calidades dejan la lámina
-    # del estreno bajo 300 KB en escritorio y 150 KB en el teléfono.
+    # La obra de la portada va a sangre: pide copias más anchas y en formatos modernos. Se
+    # hacen solo para la imagen elegida como portada (apps.showcase lo dice al servicio de
+    # imágenes), no para cada imagen que se sube. Las calidades dejan la lámina del estreno
+    # bajo 300 KB en escritorio y 150 KB en el teléfono.
     PORTADA_WIDTHS = (640, 960, 1080, 1440, 1920, 2560)
     PORTADA_FORMATS = (("avif", "AVIF", {"quality": 50}), ("webp", "WEBP", {"quality": 70}))
 
@@ -78,7 +78,7 @@ class MediaAsset(models.Model):
     width = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name="ancho")
     height = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name="alto")
     # Cuándo se comprobó que el original no lleva metadatos, o se reescribió sin ellos. Vacío: aún
-    # no se comprobó (el comando de derivados lo hace con las imágenes anteriores).
+    # no se comprobó (lo comprueba el comando de derivados).
     metadata_stripped_at = models.DateTimeField(
         null=True, blank=True, editable=False, verbose_name="sin metadatos desde"
     )
@@ -156,7 +156,7 @@ class MediaAsset(models.Model):
         copies = (self.derivatives or {}).get(kind, {})
         return sorted((int(width), name) for width, name in copies.items())
 
-    # ── La obra de la portada (D18) ───────────────────────────
+    # ── La obra de la portada ─────────────────────────────────
     def _portada_name(self, width, ext):
         # Con la extensión del original en el nombre: «obra.jpg» y «obra.png» de la misma
         # carpeta no comparten copias (ni las borra una al borrar la otra).
@@ -309,7 +309,7 @@ class Recording(TimestampedModel):
         AUDIO = "audio", "Audio"
         VIDEO = "video", "Video"
 
-    # Los nombres van en castellano: son los rótulos del panel (2026-10-22, D21).
+    # Los nombres van en castellano: son los rótulos del panel.
     slug = models.SlugField(
         max_length=255,
         unique=True,
@@ -420,7 +420,7 @@ class Recording(TimestampedModel):
         return url_for_recording(self.slug)
 
     def file_url(self):
-        """La dirección de el audio: la vista que lo entrega solo si el registro es público."""
+        """La dirección del audio: la vista que lo entrega solo si el registro es público."""
         if not self.file:
             return ""
         return reverse("media:recording_file", args=[self.slug, file_name(self.file)])

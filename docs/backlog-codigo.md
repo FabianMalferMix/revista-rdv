@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 86 de 91 tickets cerrados (de los 91: 42 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 32: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B91 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos, y B91, por lo que se vio en B77.
+> **Avance:** 86 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
 
 ## Cómo se usa
 
@@ -179,7 +179,7 @@
 | B75 | Convenciones HTTP | — | S | no | hecho (#275) |
 | B76 | Rendimiento menor | — | M | no | hecho (#276) |
 | B77 | Nombres trampa y rótulos completos | — | S | no | hecho (#277) |
-| B78 | Comentarios que dicen el presente | B03 | L | no | en curso (etapa 1: #286; etapa 2: #287; etapa 3: #288) |
+| B78 | Comentarios que dicen el presente | B03 | L | no | en curso (etapa 1: #286; etapa 2: #287; etapa 3: #288; etapa 4: #289) |
 | B79 | La suite, por componente | B61 | L | no | pendiente |
 | B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |
@@ -189,6 +189,7 @@
 | B89 | Cuatro detalles a la vista | B72 | S | no | hecho (#283) |
 | B90 | La vista previa no enlaza a lo que no se ve | B71 | S | no | hecho (#284) |
 | B91 | Cuatro detalles del panel | B77 | S | no | hecho (#285) |
+| B92 | El reproductor de YouTube y Vimeo suena con un solo clic | — | S | sí | pendiente |
 
 ## 3. Tickets
 
@@ -1590,6 +1591,26 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** El aviso de un campo único, la bitácora y los selectores dobles se leen en castellano correcto, cada uno con su prueba por HTTP con los grupos reales, y a 951 px las notas editoriales enseñan sus cuatro columnas sin desplazarse, con capturas de antes y después.
 
+#### B92 · El reproductor de YouTube y Vimeo suena con un solo clic
+
+**Hallazgos:** fuera de la auditoría: visto en B78 (etapa 4), al cotejar el comentario del reproductor · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.**
+
+- Tras el clic en la placa, `embeds.js` inserta el iframe sin `referrerpolicy`. Rige entonces la política de la página, `same-origin` (la de Django por defecto), y la petición a `youtube-nocookie.com` sale sin `Referer`.
+- YouTube exige ese dato a sus reproductores incrustados: sin él enseña «Video player configuration error · Error 153» en lugar del video. Se probó en Chromium con un video que admite incrustarse. Sin el atributo, falla; con `referrerpolicy="strict-origin-when-cross-origin"` en el iframe, la petición lleva solo el origen del sitio y el video carga.
+- Vimeo pide lo mismo a los videos que restringen en qué dominios se ven.
+- El iframe tampoco delega `autoplay`, así que tras pulsar la placa hay que volver a pulsar dentro del reproductor.
+
+**Alcance.**
+
+- el iframe que inserta `embeds.js` lleva `referrerpolicy="strict-origin-when-cross-origin"`: el proveedor recibe solo el origen del sitio, y solo después del clic;
+- el iframe delega `autoplay` y pide reproducir al cargar, porque el clic en la placa ya es la orden de la persona;
+- una comprobación en `tools/ux/browser-smoke.js`, en un navegador real y sin depender de la red del proveedor, de la política de referente y de los permisos del iframe insertado, con su mutación;
+- los comentarios del reproductor (`embeds.js`, `_player.html` y `test_embed_consent.py`) dicen lo que recibe el proveedor tras el clic.
+
+**Hecho cuando.** Un registro con un video de YouTube se reproduce con un solo clic en la placa, y antes del clic la página sigue sin contactar con el proveedor.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1609,7 +1630,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92
 
 ## 5. Lo diferido
 

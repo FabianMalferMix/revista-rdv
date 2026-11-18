@@ -1,10 +1,8 @@
-"""La ficha de poema no publica grabaciones inéditas (hallazgo S-05).
+"""La ficha de poema no publica grabaciones inéditas.
 
-Era el ÚNICO consumidor de `Recording` que no filtraba por estado de publicación:
-`media/views.py`, `media/feeds.py` y el índice sí lo hacen. Un poema publicado con una
-grabación `published=False` regalaba el audio y el enlace de embed en el HTML de una
-página indexada —sin necesidad de adivinar nombres de archivo— y hacía que
-«despublicar» un registro no lo retirase de la ficha.
+Si la grabación de un poema publicado no está publicada, el HTML de la ficha (una página
+indexada) no lleva ni su enlace ni el del proveedor, y despublicar un registro lo retira de la
+ficha.
 """
 
 import pytest
@@ -47,8 +45,8 @@ def test_la_ficha_no_expone_una_grabacion_no_publicada(client):
 
 
 def test_la_ficha_si_expone_una_grabacion_publicada(client):
-    """Publicada, la ficha lleva a la del registro. Al tercero no: desde el ticket 2.4 el
-    enlace es interno, y la ficha del registro pide permiso antes de conectar."""
+    """Publicada, la ficha lleva a la del registro y no al tercero: el enlace es interno, y la
+    ficha del registro pide permiso antes de conectar."""
     poem, recording = _poema_con_registro(publicado=True)
     resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
     assert resp.status_code == 200

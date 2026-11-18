@@ -1,10 +1,9 @@
-"""Borrado de los archivos al borrar o reemplazar la fila (hallazgo S-13).
+"""Borrado de los archivos al borrar o reemplazar la fila.
 
-Django NO borra el archivo del disco al borrar el modelo, ni al reemplazar el valor de
-un `FileField`. El resultado era acumulación silenciosa: borrar un envío desde el admin
-dejaba el manuscrito en `private_media` —y en todos los respaldos posteriores—, de modo
-que una petición de supresión de datos no se cumplía de verdad. Solo
-`purge_stale_data` borraba adjuntos, y únicamente por su camino.
+Django NO borra el archivo del disco al borrar la fila ni al reemplazar el valor de un
+`FileField`: sin este módulo, borrar un envío desde el panel dejaría su adjunto en
+`private_media` (y en cada respaldo posterior), y una petición de supresión de datos no se
+cumpliría de verdad.
 
 Se usan señales en vez de sobrescribir `delete()` porque `QuerySet.delete()` (borrado
 masivo desde el admin) no pasa por el método del modelo, pero sí emite `post_delete`
@@ -90,9 +89,9 @@ def _al_reemplazar(field_name):
     def handler(sender, instance, update_fields=None, **kwargs):
         # Lo que anotó un guardado anterior que falló antes de su post_save ya no vale.
         instance.__dict__.setdefault(_REPLACED, {}).pop(field_name, None)
-        # `_state.adding` y no `instance.pk`: hay modelos que fijan la clave antes de
-        # existir en la base —`SiteProfile` fuerza pk=1 por ser un singleton— y con la
-        # comprobación por pk se hacía un SELECT inútil en cada alta.
+        # `_state.adding` y no solo `instance.pk`: hay modelos que fijan la clave antes de
+        # existir en la base (`SiteProfile` fuerza pk=1 por ser un singleton), y con la
+        # comprobación por pk cada alta haría un SELECT inútil.
         if instance._state.adding or not instance.pk:
             return  # alta: no hay archivo previo
         if update_fields is not None and field_name not in update_fields:

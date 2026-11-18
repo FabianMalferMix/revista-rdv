@@ -2,11 +2,9 @@
 
 `MediaAsset.file` es un `ImageField` con `width_field`/`height_field`, y Django conecta
 `update_dimension_fields` a `post_init`: al cargar una fila cuya columna está a NULL, abre
-el archivo y rellena los atributos en memoria sin escribir nada. La reparación comparaba
-contra esos atributos, así que la condición nunca se cumplía y la columna se quedaba en
-NULL para siempre —pagando una apertura de archivo por cada instanciación—. Encontrado en
-las pruebas manuales del §6.4: 10 de 11 recursos estaban así, y el comando informaba
-«Derivados verificados» sin haber reparado nada.
+el archivo y rellena los atributos en memoria sin escribir nada. Por eso la reparación compara
+con lo que guarda la base, no con esos atributos: con ellos, la condición nunca se cumpliría y
+la columna quedaría en NULL para siempre, con una apertura de archivo en cada instanciación.
 """
 
 from io import BytesIO
@@ -43,7 +41,8 @@ def _recurso(ancho=1600, alto=1000):
 
 
 def test_post_init_disfraza_la_columna_vacia():
-    """Fija el porqué del arreglo: sin esto, el resto de las pruebas parecerían absurdas."""
+    """Con la columna a NULL, el ORM enseña el ancho del archivo: por eso el servicio lee la
+    base, y sin esta prueba las demás parecerían absurdas."""
     a = _recurso()
     MediaAsset.objects.filter(pk=a.pk).update(width=None, height=None)
     assert _columna(a.pk) == (None, None)
@@ -58,10 +57,10 @@ def test_repara_la_columna_cuando_esta_a_nulo():
 
 
 def test_repara_aunque_los_derivados_ya_existan():
-    """El caso que el atajo de rendimiento se saltaba: con los derivados en su sitio, la
-    función salía antes de abrir el archivo y no llegaba nunca a reparar."""
+    """Con los derivados en su sitio, el atajo de rendimiento no se salta la reparación: una
+    columna a NULL hace abrir el archivo."""
     a = _recurso()
-    process_image(a.pk)  # deja 480/960/1440 en disco
+    process_image(a.pk)  # deja 240/480/960/1440 en disco
     MediaAsset.objects.filter(pk=a.pk).update(width=None, height=None)
     process_image(a.pk)
     assert _columna(a.pk) == (1600, 1000)
@@ -95,8 +94,8 @@ def test_el_comando_repara_todo_el_catalogo():
 
 
 def test_no_reabre_el_archivo_cuando_no_hace_falta(monkeypatch):
-    """El atajo de rendimiento sigue vivo: con la columna correcta y los derivados en
-    disco, no se abre nada. Si esto cae, el arreglo salió caro."""
+    """Con la columna correcta, las copias en disco y el color medido, el servicio no abre
+    nada: es el atajo que evita releer el catálogo en cada pasada."""
     a = _recurso()
     process_image(a.pk)
     a = MediaAsset.objects.get(pk=a.pk)

@@ -1,9 +1,9 @@
 """Lo despublicado deja de servirse: el audio de un registro y el PDF de una publicación
 solo salen mientras su pieza es pública.
 
-Antes los servía Caddy desde /media/ sin preguntar: despublicar ocultaba la ficha, pero el
-archivo seguía respondiendo a quien tuviera la URL, que el feed de pódcast ya había
-repartido.
+Los entrega una vista que comprueba primero si la pieza es pública, y no /media/, que Caddy
+sirve sin preguntar: así, despublicar retira el archivo también para quien ya tiene su
+dirección, que reparte el feed de pódcast.
 """
 
 import pytest
@@ -101,7 +101,7 @@ def test_the_publication_pdf_follows_the_same_rule(client):
 
 
 def test_uploads_get_random_names():
-    """El nombre original suele ser el slug: con él, se adivinaba la dirección del archivo."""
+    """El nombre original suele ser el slug: con él, se adivinaría la dirección del archivo."""
     name = _recording().file.name
     assert "lectura" not in name
     assert name.startswith("recordings/") and name.endswith(".mp3")

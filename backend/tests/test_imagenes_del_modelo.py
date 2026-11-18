@@ -1,8 +1,8 @@
-"""Las imágenes que el modelo ya guarda llegan a los listados (backlog UX, ticket 3.5).
+"""Las imágenes que guarda el modelo llegan a los listados.
 
-Los textos tenían imagen, los eventos afiche, las fotos crédito y los aliados logo, pero
-los listados no enseñaban nada de eso: solo la ficha de cada uno. Aquí se fija dónde
-aparece cada pieza y que ninguna cuesta una consulta por fila.
+La imagen de un texto, el afiche de un evento y el logo de un aliado salen en sus listados, y
+el álbum dice de quién es cada foto. Aquí se fija dónde aparece cada pieza y que ninguna cuesta
+una consulta por fila.
 """
 
 from datetime import timedelta
@@ -152,9 +152,9 @@ def test_los_aliados_van_por_tipo_en_el_orden_de_los_tipos(client):
 
 
 def test_un_aliado_sin_logo_lleva_su_nombre_en_la_caja_del_logo(client):
-    """En /aliados/ la caja quedaba vacía y el nombre arrancaba donde los demás tienen el
-    logo. Allí el nombre ya va escrito al lado: la caja no se lee dos veces. En el dossier
-    el nombre va solo en la caja, sin el pie que llevan los logos."""
+    """Sin logo, la caja lleva el nombre: vacía, el nombre arrancaría donde los demás tienen el
+    logo. En /aliados/ el nombre ya va escrito al lado, así que la caja no se lee dos veces; en
+    el dossier va solo en la caja, sin el pie que llevan los logos."""
     Partner.objects.create(name="Fondo Sin Logo", kind=Partner.Kind.FINANCIAMIENTO)
     Partner.objects.create(name="Fondo Con Logo", logo=_imagen("logo-con"))
     caja = soup(client, reverse("showcase:partner_index")).select_one(".partner-logo--texto")
