@@ -1,13 +1,12 @@
 """El panel se lee en español, incluida la pantalla de bloqueo.
 
-Convivían «MEDIOS» y «ENVÍOS» (con verbose_name) con «CONTENT», «PEOPLE», «REVIEWS» y
-«COMMUNITY» sin traducir, y los modelos de relación y auditoría tampoco lo tenían: en la
-ficha de un artículo se leía «EDITORIAL TRANSITIONS», «FROM STATUS», «Published at»,
-«Owner». El patrón se entendía —se tradujo lo que el equipo abre a diario— pero para un
-colectivo que trabaja en español es un roce constante.
+Cada app, cada modelo y cada campo propios llevan su rótulo en español: sin él, Django los
+rotula en inglés, y en la ficha de un artículo se leería «EDITORIAL TRANSITIONS», «FROM
+STATUS», «Published at» u «Owner». Para un colectivo que trabaja en español es un roce
+constante.
 
-Nada se comportaba mal: es presentación. Por eso estas pruebas miran el rótulo que se LEE
-y no la configuración que lo produce.
+Es presentación: por eso estas pruebas miran el rótulo que se LEE y no la configuración que
+lo produce.
 """
 
 import ast
@@ -60,7 +59,7 @@ def test_cada_app_propia_tiene_rotulo_en_espanol(etiqueta, esperado):
     """El encabezado de sección del índice del panel.
 
     Sin `verbose_name`, Django usa el nombre del módulo capitalizado —«Content»,
-    «People»— y eso es lo que se leía.
+    «People»— y eso es lo que se leería.
     """
     assert apps.get_app_config(etiqueta).verbose_name == esperado
 
@@ -466,7 +465,8 @@ def _pantalla_de_bloqueo(client):
 
 @override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=2)
 def test_la_pantalla_de_bloqueo_esta_en_espanol(client):
-    """El rótulo sin traducir más visible: lo ve cualquiera que llegue a /admin/login/."""
+    """Sin traducir, sería el rótulo en inglés más visible: lo ve cualquiera que agote los
+    intentos en /admin/login/."""
     html = _pantalla_de_bloqueo(client)
     assert "Demasiados intentos fallidos" in html
     assert "Account locked" not in html

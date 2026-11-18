@@ -12,7 +12,7 @@ Seis textos y cinco poemas, con libros y autores inventados:
   caracteres sin espacios, un correo larguísimo, un bloque preformateado ancho y una cita con
   una lista dentro;
 - una reseña breve de dos libros, con títulos y editoriales largos;
-- una letanía de unos 110 versos con epígrafe, un poema en prosa a cuatro manos, una oda de
+- una letanía de más de cien líneas con epígrafe, un poema en prosa a cuatro manos, una oda de
   versos que no caben en una línea, un poema escalonado con sangrías y uno breve de título
   larguísimo.
 

@@ -3,8 +3,7 @@
 Django documenta `{# … #}` como comentario **de una sola línea**. Si abarca varias, el
 motor NO lo reconoce y lo emite tal cual: el texto del comentario aparece en la página,
 a la vista de cualquier visitante. Es un fallo silencioso —no rompe nada, no lanza
-ninguna excepción, ninguna prueba funcional falla— y así se coló seis veces en distintas
-tandas de trabajo, hasta que se vio a simple vista en la portada.
+ninguna excepción, ninguna prueba funcional falla—: solo se ve mirando la página.
 
 Se comprueba de dos formas complementarias: sobre el FUENTE de las plantillas (barato y
 exhaustivo, cubre también las que ningún test renderiza) y sobre el HTML RENDERIZADO de
@@ -79,7 +78,8 @@ def test_las_vistas_publicas_no_emiten_restos_de_plantilla(client, ruta):
 
 @pytest.mark.django_db
 def test_las_paginas_del_boletin_tampoco(client):
-    """Estas dos plantillas nacieron con el fallo y ningún test las renderizaba."""
+    """Las páginas de confirmar y de darse de baja del boletín piden un token y no están en la
+    lista de vistas públicas: se revisan aparte."""
     from django.utils import timezone
 
     from apps.community.models import NewsletterSubscriber

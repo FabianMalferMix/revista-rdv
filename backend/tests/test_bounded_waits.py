@@ -1,8 +1,8 @@
 """Nada espera sin plazo, y el worker no crece con las CPU del servidor.
 
-Con gthread, el --timeout de gunicorn no corta una petición colgada: una consulta lenta
-retenía un hilo mientras durara. Ahora la base cancela la consulta que pasa del plazo, y una
-conexión que se cortó se comprueba antes de reutilizarla.
+Con gthread, el --timeout de gunicorn no corta una petición colgada: sin un plazo, una
+consulta lenta retendría un hilo mientras durara. La base cancela la consulta que pasa del
+plazo, y una conexión que se cortó se comprueba antes de reutilizarla.
 """
 
 import os

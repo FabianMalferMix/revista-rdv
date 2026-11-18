@@ -1,9 +1,9 @@
-"""Degradación ante fallos de Redis y de SMTP (hallazgos S-22, S-23).
+"""Degradación ante fallos de Redis y de SMTP.
 
 `django_ratelimit` llama a `cache.add()`/`cache.incr()` capturando solo `socket.gaierror`
-y `ValueError`. Con Redis caído, `redis.exceptions.ConnectionError` subía hasta la vista
-y los formularios públicos devolvían un HTTP 500 — justo cuando el sitio ya estaba
-degradado.
+y `ValueError`. Si la caché no degradara (config/cache.py), con Redis caído
+`redis.exceptions.ConnectionError` subiría hasta la vista y los formularios públicos
+devolverían un HTTP 500 — justo cuando el sitio ya está degradado.
 """
 
 import pytest

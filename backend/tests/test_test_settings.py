@@ -1,5 +1,5 @@
 """Lo que la suite fija a propósito vive en config/settings_test.py, y no en settings.py según
-quién lo importe: antes, settings.py miraba si pytest estaba cargado."""
+quién lo importe: settings.py no mira si pytest está cargado."""
 
 import importlib
 
@@ -18,7 +18,8 @@ def test_the_production_settings_do_not_look_for_pytest():
 
 
 def test_an_exception_in_a_task_reaches_the_test_that_queued_it():
-    """En modo eager, una tarea que falla devolvía un resultado fallido y la prueba seguía."""
+    """Sin `CELERY_TASK_EAGER_PROPAGATES`, una tarea eager que falla devolvería un resultado
+    fallido y la prueba seguiría."""
 
     @app.task
     def falla():

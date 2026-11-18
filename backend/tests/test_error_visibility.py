@@ -1,9 +1,9 @@
 """Lo que falla de verdad se ve como un error: llega a Sentry, y el log dice qué.
 
 Lo esperado y manejado (un servicio caído, que la página ya resuelve) va como WARNING de una
-línea; lo inesperado, como ERROR con su traza, que es lo que Sentry convierte en un evento.
-Antes casi todo era WARNING con traza: invisible para Sentry y ruidoso en el log, y el
-buscador convertía un error de programación en «sin resultados».
+línea; lo inesperado, como ERROR con su traza, que es lo que Sentry convierte en un evento:
+un WARNING no le llega como evento, y con traza solo ensucia el log. El buscador no convierte
+un error de programación en «sin resultados».
 """
 
 import pytest

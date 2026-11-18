@@ -4,10 +4,9 @@ En producción el nombre lleva hash y cambiar el archivo cambia la URL. En desar
 sirven con `Last-Modified` pero SIN `Cache-Control`, así que el navegador aplica caché
 heurística: guarda el archivo una fracción del tiempo transcurrido desde su última
 modificación. Con una hoja editada semanas atrás eso son días, y se siguen viendo estilos
-viejos aunque el servidor ya sirva los nuevos. Ocurrió dos veces durante el cambio de
-paleta. Y con los guiones, que no llevaban sufijo: al quitar las flechas de la tirada (D29)
-el navegador siguió con el `registros.js` viejo, que fallaba al arrancar, y la pila y el
-índice dejaron de responder. El sufijo es la fecha del más reciente de las hojas de la lista
+viejos aunque el servidor ya sirva los nuevos. Lo mismo vale para los guiones: uno viejo en
+caché junto a una plantilla nueva puede no encontrar lo que busca, fallar al arrancar y dejar
+su componente sin responder. El sufijo es la fecha del más reciente de las hojas de la lista
 (`STYLESHEETS`) y los guiones, y va en todos.
 """
 

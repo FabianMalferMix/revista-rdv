@@ -1,10 +1,9 @@
-"""Subidas del panel: los FileField no admiten archivos ejecutables (hallazgo S-01).
+"""Subidas del panel: los FileField no admiten archivos que el navegador ejecutaría.
 
-Contexto del hallazgo: Caddy sirve `/media/` directamente desde el volumen, fuera de
-Django y por tanto fuera de la CSP. Un `.html` subido desde el panel se servía con
-`Content-Type: text/html` en el ORIGEN del sitio, de modo que un editor (rol NO
-superusuario) podía ejecutar JS con la sesión del administrador y escalar. Antes de
-esta corrección no existía ni un solo validador en el proyecto.
+Caddy sirve `/media/` directamente desde el volumen, fuera de Django y por tanto fuera de
+la CSP. Si el panel aceptara un `.html`, se serviría con `Content-Type: text/html` en el
+ORIGEN del sitio, y un editor (rol NO superusuario) podría ejecutar JS con la sesión del
+administrador y escalar.
 """
 
 import pytest
@@ -40,7 +39,7 @@ def test_recording_rechaza_archivos_ejecutables(name, payload):
 
 
 def test_recording_acepta_audio_legitimo():
-    # La corrección no puede romper el caso de uso real (un registro de audio).
+    # La validación no rompe el caso de uso real (un registro de audio).
     form = _recording_form(SimpleUploadedFile("lectura.mp3", b"ID3\x04\x00\x00\x00", "audio/mpeg"))
     assert form.is_valid(), form.errors.as_json()
 
@@ -67,9 +66,9 @@ def test_dossier_pdf_solo_admite_pdf():
 
 
 def test_mediaasset_ya_estaba_protegido_por_imagefield():
-    """Regresión del análisis: `ImageField` sí trae `validate_image_file_extension` vía
-    su form field, así que un polyglot GIF/HTML nunca fue subible por esta vía. Se fija
-    para que una refactorización a FileField no reabra el agujero en silencio."""
+    """`ImageField` trae `validate_image_file_extension` por su campo de formulario, así que
+    un políglota GIF/HTML no se sube por esta vía. Se fija para que pasar el campo a
+    FileField no abra el agujero en silencio."""
     form_cls = modelform_factory(MediaAsset, fields=["file", "alt_text"])
     form = form_cls(
         data={"alt_text": "x"},
@@ -79,8 +78,8 @@ def test_mediaasset_ya_estaba_protegido_por_imagefield():
     assert "file" in form.errors
 
 
-# La otra mitad de la corrección son las cabeceras del bloque /media/ del Caddyfile.
-# NO se afirma aquí: el Caddyfile vive fuera del contexto de la imagen (solo se monta
-# `backend/`), y una aserción sobre su texto probaría la cadena, no el comportamiento.
-# La verificación real la hace el job `prod-runtime` del CI, que levanta Caddy con ese
-# mismo fichero y comprueba las cabeceras sobre un archivo servido de verdad.
+# La otra mitad de la defensa son las cabeceras del bloque /media/ del Caddyfile. NO se
+# afirman aquí: una aserción sobre su texto probaría la cadena, no el comportamiento. Las
+# comprueba el job `prod-runtime` del CI, que levanta Caddy con ese mismo fichero y mira, en
+# un archivo servido de verdad, `X-Content-Type-Options: nosniff` y la CSP
+# `default-src 'none'; sandbox`.

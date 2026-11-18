@@ -1,11 +1,10 @@
 """Los tests no escriben en las carpetas de medios reales, ni en la pública ni en la privada.
 
-La fixture `_isolated_media` cubría solo `MEDIA_ROOT`. El almacén privado se le escapaba
-porque `Submission.file` declara `storage=private_storage`, un invocable que Django evalúa
-una vez al cargar el modelo: el `FileSystemStorage` resultante conserva la ruta de
-entonces y cambiar el ajuste después no lo mueve. Resultado: cada corrida de la suite
-dejaba un `m_*.txt` con «contenido-secreto» en el `private_media` del contenedor, y se
-acumulaban.
+Cambiar `PRIVATE_MEDIA_ROOT` no basta para el almacén privado: `Submission.file` declara
+`storage=private_storage`, un invocable que Django evalúa una vez al cargar el modelo, y el
+`FileSystemStorage` resultante conserva la ruta de entonces. Por eso la fixture
+`_isolated_media` reapunta esa instancia: si no, cada corrida de la suite dejaría los
+adjuntos de prueba en el `private_media` del contenedor, y se acumularían.
 """
 
 import os
@@ -24,8 +23,8 @@ def _almacen():
 
 
 def test_el_almacen_privado_apunta_al_temporal_del_test(tmp_path):
-    """Comparar el almacén con `settings.PRIVATE_MEDIA_ROOT` no serviría: sin el arreglo
-    ninguno de los dos cambia y la igualdad se cumple sola. Lo que hay que exigir es que la
+    """Comparar el almacén con `settings.PRIVATE_MEDIA_ROOT` no serviría: si la fixture no
+    tocara ninguno de los dos, la igualdad se cumpliría sola. Lo que hay que exigir es que la
     ruta caiga DENTRO del temporal de esta prueba."""
     ruta = os.path.abspath(_almacen().location)
     assert ruta.startswith(os.path.abspath(str(tmp_path))), f"el almacén sigue en {ruta}"

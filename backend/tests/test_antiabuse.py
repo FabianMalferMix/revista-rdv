@@ -1,4 +1,4 @@
-"""Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit) — F2-5."""
+"""Anti-abuso: fuerza bruta (django-axes) y rate-limit por IP (django-ratelimit)."""
 
 import time
 
@@ -20,7 +20,8 @@ def test_axes_locks_out_repeated_failed_admin_logins(client):
     url = reverse("admin:login")
     for _ in range(3):
         client.post(url, {"username": "atacante", "password": "malo"})
-    # Superado el límite, axes bloquea la IP con 429 (Too Many Requests), no el login (200).
+    # Superado el límite, axes bloquea esa cuenta desde esa IP con un 429 (Too Many Requests),
+    # no con la página del login (200).
     resp = client.post(url, {"username": "atacante", "password": "malo"})
     assert resp.status_code in (403, 429)
     reset()
@@ -117,7 +118,7 @@ def test_past_the_limit_the_usual_page_answers_429(client, frozen_rate_limit_win
     assert page.select_one(where).get_text(strip=True).startswith(notice)
 
 
-# ── Resolución de IP tras el proxy (hallazgo #01: cubo global) ──────────────
+# ── Resolución de IP tras el proxy: un cupo por cliente, no uno global ──────
 
 
 def test_client_ip_uses_rightmost_forwarded_for_and_is_spoof_safe():
@@ -143,8 +144,8 @@ def test_client_ip_falls_back_to_remote_addr_without_proxy():
 
 
 def test_axes_and_ratelimit_share_the_same_ip_resolver():
-    """Regresión de #01: ambos controles deben resolver la IP con el MISMO callable;
-    si divergen, el límite por IP se colapsa en un cubo global tras el proxy."""
+    """Ambos controles resuelven la IP con el MISMO callable: si divergieran, el límite por
+    IP se colapsaría en un cubo global tras el proxy."""
     from django.conf import settings
 
     assert settings.RATELIMIT_IP_META_KEY == "config.clientip.client_ip"
@@ -209,8 +210,9 @@ def test_failed_attempts_lock_the_account_only_from_that_ip(client, two_staff_ac
 
 @override_settings(AXES_ENABLED=True, AXES_FAILURE_LIMIT=3)
 def test_another_account_logging_in_does_not_reset_the_count(client, two_staff_accounts):
-    """Con el bloqueo por IP, una cuenta propia que acertaba cada pocos intentos reiniciaba el
-    contador, y se podían probar contraseñas contra otra cuenta sin fin."""
+    """Un acierto reinicia solo el contador de su cuenta desde su IP: si reiniciara el de la
+    IP, una cuenta propia que acertara cada pocos intentos lo pondría a cero, y se podrían
+    probar contraseñas contra otra cuenta sin fin."""
     _login(client, "duena", "no-es-su-clave", ATTACKER)
     _login(client, "duena", "tampoco", ATTACKER)
     assert _login(Client(), "autora", "clave-correcta-de-la-autora", ATTACKER).status_code == 302

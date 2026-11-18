@@ -1,13 +1,13 @@
-"""Ciclo de vida de los archivos subidos (hallazgos S-13 y S-14).
+"""Ciclo de vida de los archivos subidos: no quedan huérfanos ni publican sus metadatos.
 
-S-13: Django NO borra el archivo del disco al borrar la fila ni al reemplazar el valor
-de un `FileField`. Borrar un envío desde el admin dejaba el manuscrito en
-`private_media` —y en todos los respaldos posteriores—, así que una petición de
-supresión de datos no se cumplía de verdad.
+Django NO borra el archivo del disco al borrar la fila ni al reemplazar el valor de un
+`FileField`. Sin la limpieza, borrar un envío desde el admin dejaría el manuscrito en
+`private_media` —y en todos los respaldos posteriores—, y una petición de supresión de
+datos no se cumpliría de verdad.
 
-S-14: las derivadas salían limpias porque Pillow no copia el EXIF, pero el ORIGINAL
-—el que se sirve a tamaño completo— conservaba geolocalización, fecha y modelo de
-cámara. Publicar la ubicación exacta de un recital es una fuga real.
+Las derivadas salen limpias porque Pillow no copia el EXIF, pero el ORIGINAL —el que se
+sirve a tamaño completo— conservaría geolocalización, fecha y modelo de cámara si no se
+limpiara al subirlo. Publicar la ubicación exacta de un recital es una fuga real.
 """
 
 import errno
@@ -104,7 +104,7 @@ def test_el_jpeg_de_prueba_realmente_lleva_gps():
     assert exif.get(0x0110) == "CamaraX"
 
 
-# ── S-14: metadatos ───────────────────────────────────────
+# ── Metadatos ─────────────────────────────────────────────
 
 
 def test_el_original_publicado_no_conserva_gps_ni_camara():
@@ -198,7 +198,7 @@ def test_el_comando_avisa_de_las_imagenes_que_no_puede_limpiar():
         call_command("generate_image_derivatives", verbosity=0)
 
 
-# ── S-13: archivos huérfanos ──────────────────────────────
+# ── Archivos huérfanos ────────────────────────────────────
 
 
 def _recording(name="primera.mp3"):

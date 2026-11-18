@@ -73,7 +73,8 @@ def test_the_panel_shows_the_size_error_instead_of_saving(client, editor, monkey
 
 
 def test_an_event_with_forty_photos_is_saved(client, editor):
-    """Cada foto suma cinco campos al formulario: con el límite de 200, no pasaban de 35."""
+    """Cada foto suma cinco campos al formulario: con un tope de 200 campos, no cabrían más
+    de 35."""
     client.force_login(editor)
     page = client.get("/admin/agenda/event/add/").content.decode()
     data = admin_form_fields(page, "event_form")

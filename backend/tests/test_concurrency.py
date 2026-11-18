@@ -1,10 +1,9 @@
-"""Concurrencia e idempotencia REALES (hallazgo del crítico de completitud).
+"""Concurrencia e idempotencia REALES.
 
-CELERY_TASK_ALWAYS_EAGER hace que la suite normal nunca ejecute los caminos
-concurrentes que se endurecieron en f2-3/f2-4 (lock de fila + re-verificación de
-estado). Estos tests usan transaction=True (transacciones reales, sin el rollback
-por test) e hilos con conexiones independientes, y afirman el INVARIANTE del
-resultado (exactamente una publicación / transición / fila), que se cumple
+CELERY_TASK_ALWAYS_EAGER hace que la suite normal nunca ejecute los caminos concurrentes
+(lock de fila + re-verificación de estado). Estos tests usan transaction=True (transacciones
+reales, sin el rollback por test) e hilos con conexiones independientes, y afirman el
+INVARIANTE del resultado (exactamente una publicación / transición / fila), que se cumple
 independientemente del entrelazado de los hilos — por eso no son flaky.
 """
 

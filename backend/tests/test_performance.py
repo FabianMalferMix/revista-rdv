@@ -3,7 +3,8 @@
 Se siembra VOLUMEN (12 artículos/poemas, 8 eventos/registros/publicaciones) y se
 afirma que cada vista se mantiene bajo un techo FIJO de consultas. Como el techo no
 crece con la cantidad de piezas, una regresión N+1 (una consulta por ítem) lo
-superaría de inmediato. Los techos llevan holgura sobre lo medido hoy.
+superaría de inmediato. Los techos llevan holgura sobre lo medido hoy, salvo el de la
+búsqueda, que en el peor caso llega justo a su techo.
 """
 
 import pytest
@@ -47,23 +48,19 @@ from tests.factories import (
 
 pytestmark = pytest.mark.django_db
 
-# vista -> techo de consultas (medido hoy + holgura). «Medido» es la primera petición, la que
-# cuenta la prueba: hace tres consultas más que las siguientes. Medido tras el paso 18 del
-# backlog UX, que dejó las redes del colectivo en una consulta por página, y del 19, que
-# añadió a la portada su línea de respaldo (+2) y contó las cifras en una consulta (-1), y del
-# 20: poemas y sus firmas, la última actividad y la fecha (+4), y el perfil una vez (-1). Sin
-# las cifras ni los aliados de la portada (#128), tres menos; sin la cita de prensa (#129), otra.
-# El dossier del paso 22 (ticket 5.1) hace dos menos aunque enseña retratos, cubiertas, logos y
-# la fecha de actualización: dejó de precargar participantes que no enseñaba.
+# vista -> techo de consultas (medido hoy + holgura). «Medido» es el peor caso: la primera
+# petición sin la fila del perfil del sitio, que la crea con tres consultas más que las
+# siguientes. La fila la siembra una migración, y una prueba con transacciones reales la borra
+# al vaciar las tablas.
 BUDGETS = {
     "site:home": 24,  # medido 16 (el sello de convocatoria pregunta si hay una abierta)
     "content:text_archive": 10,  # 8
     "content:poem_index": 10,  # 8
     "people:member_index": 8,  # 6
     "agenda:agenda": 8,  # 6
-    "showcase:publication_index": 10,  # 7
-    "media:recording_index": 10,  # 8
-    "showcase:dossier": 22,  # 15
+    "showcase:publication_index": 10,  # 6
+    "media:recording_index": 10,  # 7
+    "showcase:dossier": 22,  # 14
 }
 
 
@@ -91,9 +88,9 @@ def test_article_detail_query_budget(django_assert_max_num_queries):
 
 
 def test_search_query_budget(_seed_volume, django_assert_max_num_queries):
-    # Medido 8 tras el ticket 5.4: textos y poemas sin precargar sus autores (-2) y los
-    # cuatro tipos por nombre en una sola consulta (+1). Eran 9 con solo textos y poemas.
-    with django_assert_max_num_queries(10):  # medido 8
+    # Tres de las consultas son la búsqueda: textos, poemas y una que une los otros cuatro
+    # tipos; los textos y los poemas no precargan sus autores.
+    with django_assert_max_num_queries(10):  # medido 10
         assert Client().get(reverse("site:search") + "?q=Perf").status_code == 200
 
 
