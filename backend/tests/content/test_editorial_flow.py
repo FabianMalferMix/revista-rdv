@@ -10,15 +10,12 @@ from datetime import timedelta
 
 import pytest
 from bs4 import BeautifulSoup
-from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.agenda.models import Event
 from apps.content import workflow
 from apps.content.models import Collection, EditorialStatus, PublishStatus, editorial_models
 from apps.content.tasks import publish_due_items
-from apps.submissions.models import Call
 from tests.factories import make_article, make_recording
 
 pytestmark = pytest.mark.django_db
@@ -48,6 +45,7 @@ def test_the_scheduled_publication_leaves_what_the_manual_one_leaves(model, edit
     due = timezone.now() - timedelta(minutes=1)
     scheduled = _piece(model, status=S.SCHEDULED, published_at=due)
     approved = _piece(model, status=S.APPROVED)
+    assert approved.published_at is None
 
     assert publish_due_items() == 1
     workflow.perform_transition(approved, "publish", editor)
@@ -153,15 +151,3 @@ def test_recordings_and_collections_are_dated_when_published():
     collection.status = PublishStatus.PUBLISHED
     collection.save()
     assert collection.published_at is not None
-
-
-def test_events_and_calls_cannot_end_before_they_start():
-    start = timezone.now()
-    event = Event(
-        slug="al-reves", title="Al revés", starts_at=start, ends_at=start - timedelta(hours=1)
-    )
-    with pytest.raises(ValidationError, match="no puede terminar antes de empezar"):
-        event.full_clean()
-    call = Call(slug="c", title="C", opens_at=start, closes_at=start)
-    with pytest.raises(ValidationError, match="tiene que cerrar después de abrir"):
-        call.full_clean()

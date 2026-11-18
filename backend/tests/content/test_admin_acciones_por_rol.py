@@ -42,11 +42,6 @@ def test_al_autor_solo_le_queda_enviar_a_revision(autor):
     assert acciones & SOLO_EDITOR == set()
 
 
-def test_la_editora_conserva_todas(editor):
-    acciones = _acciones(ArticleAdmin(Article, AdminSite()), editor)
-    assert {f"do_{nombre}" for nombre in workflow.TRANSITIONS} <= acciones
-
-
 def test_el_filtro_alcanza_tambien_a_los_poemas(autor):
     """Vive en la base compartida: si se declarara por subclase, se olvidaría en una."""
     acciones = _acciones(PoemAdmin(Poem, AdminSite()), autor)

@@ -1,8 +1,8 @@
 """El HTML que escriben los autores (el cuerpo de los textos y de las páginas), saneado al mostrarlo.
 
 El panel lo sanea al guardar, pero loaddata, las migraciones de datos y `update()` no pasan por
-`save()`: la garantía está en la salida. tests/test_authored_html.py prohíbe `|safe` en las
-plantillas, de modo que este filtro es el único camino del HTML de autor a la página.
+`save()`: la garantía está en la salida. tests/content/test_authored_html.py prohíbe `|safe`
+en las plantillas, de modo que este filtro es el único camino del HTML de autor a la página.
 """
 
 from functools import lru_cache

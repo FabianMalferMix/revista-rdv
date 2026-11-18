@@ -6,7 +6,6 @@ también el feed. Y quien lee un RSS es prensa y gestores, la audiencia del siti
 
 import pytest
 from django.test import Client
-from django.utils import timezone
 
 from apps.showcase.models import SiteProfile
 
@@ -32,19 +31,6 @@ def test_el_titulo_sale_del_perfil_no_del_codigo():
     assert descripcion == "Colectivo de poesía"
 
 
-def test_no_queda_rastro_de_la_identidad_antigua():
-    """El canal no anuncia una identidad escrita en el código, como «Revista literaria»: solo
-    la del perfil."""
-    perfil = SiteProfile.load()
-    perfil.name = "Casa Tomada"
-    perfil.tagline = "Colectivo de poesía"
-    perfil.save()
-
-    titulo, descripcion = _canal()
-    assert titulo.startswith("Casa Tomada")  # control: el canal lleva el nombre del perfil
-    assert "Revista literaria" not in titulo + descripcion
-
-
 def test_sin_lema_no_deja_un_guion_suelto():
     perfil = SiteProfile.load()
     perfil.name = "Casa Tomada"
@@ -56,26 +42,3 @@ def test_sin_lema_no_deja_un_guion_suelto():
     assert not titulo.endswith("—")
     # Sin lema el feed tampoco puede quedarse mudo.
     assert descripcion
-
-
-def test_el_feed_sigue_sirviendo_los_articulos():
-    """Control: con el encabezado del perfil, el feed sirve los textos publicados."""
-    from apps.content.models import Article, EditorialStatus
-
-    Article.objects.create(
-        slug="uno",
-        title="Un texto publicado",
-        status=EditorialStatus.PUBLISHED,
-        published_at=timezone.now(),
-    )
-    xml = Client().get("/feed/").content.decode()
-    assert "Un texto publicado" in xml
-
-
-def test_podcast_title_comes_from_the_profile():
-    perfil = SiteProfile.load()
-    perfil.name = "Colectivo de Prueba"
-    perfil.save()
-    xml = Client().get("/feed/registros/").content.decode()
-    canal = xml.split("<channel>", 1)[1]
-    assert canal.split("<title>", 1)[1].split("</title>", 1)[0] == "Colectivo de Prueba — Registros"

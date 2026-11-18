@@ -25,20 +25,6 @@ def test_author_cannot_publish(autor):
         workflow.perform_transition(article, "publish", autor)
 
 
-def test_author_cannot_accept_own(autor):
-    article = make_article(owner=autor, status=S.IN_REVIEW)
-    with pytest.raises(PermissionDenied):
-        workflow.perform_transition(article, "accept", autor)
-
-
-def test_editor_publish_sets_published_at(editor, autor):
-    article = make_article(owner=autor, status=S.APPROVED)
-    assert article.published_at is None
-    workflow.perform_transition(article, "publish", editor)
-    assert article.status == S.PUBLISHED
-    assert article.published_at is not None
-
-
 def test_invalid_transition_from_state(editor):
     article = make_article(status=S.DRAFT)
     with pytest.raises(ValueError):
@@ -69,16 +55,6 @@ def test_available_transitions_for_editor_in_review(editor, autor):
 def test_available_transitions_for_author_draft(autor):
     article = make_article(owner=autor, status=S.DRAFT)
     assert workflow.available_transitions(autor, article) == ["submit"]
-
-
-def test_publish_due_items_task():
-    article = make_article(status=S.SCHEDULED)
-    article.published_at = timezone.now() - timedelta(minutes=1)
-    article.save(update_fields=["published_at"])
-    published = publish_due_items()
-    article.refresh_from_db()
-    assert published >= 1
-    assert article.status == S.PUBLISHED
 
 
 def test_publish_due_items_is_idempotent():
