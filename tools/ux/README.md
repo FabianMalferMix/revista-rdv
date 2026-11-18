@@ -96,7 +96,8 @@ guiones ejecutándose de verdad. Comprueba que:
   que llega con htmx se monta;
 - con «reducir movimiento», ningún guion anima nada ni pide transiciones de vista, y la tirada, el
   estante, «Las voces» y la cabecera cambian igual;
-- el reproductor externo solo se carga al pulsar;
+- el reproductor externo solo se carga al pulsar, y entonces pide sonar y le envía al proveedor
+  solo el origen del sitio;
 - en las tarjetas, pulsar la fecha, la miniatura o la marca ▶ lleva a la pieza, y los enlaces
   secundarios (la sección, la firma, el evento de un registro) llevan a lo suyo;
 - el dossier imprime;

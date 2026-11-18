@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 86 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
+> **Avance:** 87 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
 
 ## Cómo se usa
 
@@ -189,7 +189,7 @@
 | B89 | Cuatro detalles a la vista | B72 | S | no | hecho (#283) |
 | B90 | La vista previa no enlaza a lo que no se ve | B71 | S | no | hecho (#284) |
 | B91 | Cuatro detalles del panel | B77 | S | no | hecho (#285) |
-| B92 | El reproductor de YouTube y Vimeo suena con un solo clic | — | S | sí | pendiente |
+| B92 | El reproductor de YouTube y Vimeo suena con un solo clic | — | S | sí | hecho (#290) |
 
 ## 3. Tickets
 
