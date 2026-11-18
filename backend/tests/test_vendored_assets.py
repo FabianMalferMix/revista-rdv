@@ -12,12 +12,13 @@ las mismas versiones.
 import hashlib
 import json
 import re
-from pathlib import Path
+
+from django.conf import settings
 
 from apps.content.admin import RichTextWidget
 from config.staticfiles import TINYMCE_DIR
 
-STATIC = Path(__file__).resolve().parent.parent / "static"
+STATIC = settings.BASE_DIR / "static"
 VENDOR = STATIC / "vendor"
 MANIFEST = json.loads((VENDOR / "manifest.json").read_text("utf-8"))
 NOT_VENDORED = {"VERSIONS.md", "manifest.json", "package.json"}

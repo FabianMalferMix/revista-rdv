@@ -2,9 +2,9 @@
 
 import json
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
@@ -54,9 +54,7 @@ def test_no_hay_documentos_navegables_entre_los_estaticos():
     no lo es. Si alguien añade un .html o .svg al árbol de estáticos, este test falla y
     obliga a reconsiderar el orden del middleware.
     """
-    from pathlib import Path
-
-    static = Path(__file__).resolve().parent.parent / "static"
+    static = settings.BASE_DIR / "static"
     assert (static / STYLESHEETS[0]).is_file(), "control: se recorren los estáticos"
     navegables = [
         p.relative_to(static)
@@ -159,7 +157,7 @@ def test_los_comentarios_de_una_linea_no_ocupan_dos():
     texto nombra `<style>`, el navegador abre ahí un estilo en línea, que la CSP bloquea, y se
     traga como estilo lo que sigue hasta su cierre. Los de varias líneas van con
     {% comment %}."""
-    plantillas = Path(__file__).resolve().parent.parent / "templates"
+    plantillas = settings.BASE_DIR / "templates"
     lines = [
         (ruta, n, linea)
         for ruta in plantillas.rglob("*.html")

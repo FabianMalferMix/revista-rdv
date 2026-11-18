@@ -8,9 +8,9 @@ static/js/estante.js lo convierte en un botón que saca ese libro al frente. Nad
 
 import re
 from io import BytesIO
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
@@ -28,7 +28,7 @@ from tests.scripts import shared_by_common, taken_from_common
 
 pytestmark = pytest.mark.django_db
 
-BACKEND = Path(__file__).resolve().parent.parent
+BACKEND = settings.BASE_DIR
 ESTANTE_JS = (BACKEND / "static" / "js" / "estante.js").read_text()
 
 

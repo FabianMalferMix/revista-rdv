@@ -43,13 +43,13 @@ un ancho dado.
 import re
 from dataclasses import dataclass, field
 from functools import cache
-from pathlib import Path
 
 import tinycss2
+from django.conf import settings
 
 from config.staticfiles import STYLESHEETS
 
-STATIC = Path(__file__).resolve().parent.parent / "static"
+STATIC = settings.BASE_DIR / "static"
 # Los archivos de la hoja del sitio, en el orden en que los enlazan las páginas.
 SITE_SHEETS = tuple(STATIC / path for path in STYLESHEETS)
 

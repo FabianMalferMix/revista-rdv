@@ -8,15 +8,15 @@ o `:has(.busqueda[open])` en lo que está fuera de ella), y solo toca la cabecer
 """
 
 import re
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.urls import reverse
 
 from tests import css
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = settings.BASE_DIR
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 ABIERTA = ".masthead-fila:has(.busqueda[open])"
 LUPA = ".busqueda[open]"

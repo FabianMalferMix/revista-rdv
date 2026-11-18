@@ -6,7 +6,7 @@ hoja: los `sizes` de las imágenes (la etiqueta `{% sizes %}`), las fuentes de l
 portada y los guiones, que los reciben de la plantilla en un atributo data-.
 
 Con ellos van los carriles (`--wide` y `--measure`, entre dos `--gutter`, en tokens.css), de los
-que sale lo que mide pintada casi cada imagen. `tests/test_shared_values.py` comprueba que la
+que sale lo que mide pintada casi cada imagen. `tests/static/test_shared_values.py` comprueba que la
 hoja corta en cada corte y que sus carriles miden lo mismo que los de aquí.
 """
 

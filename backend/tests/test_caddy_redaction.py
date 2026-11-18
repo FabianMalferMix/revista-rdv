@@ -9,13 +9,13 @@ El Caddyfile está fuera de la imagen: la prueba corre en el CI, con el reposito
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
 from config.redaction import token_route_prefixes
 
-CADDYFILE = Path(__file__).resolve().parents[2] / "infra" / "caddy" / "Caddyfile"
+CADDYFILE = settings.BASE_DIR.parent / "infra" / "caddy" / "Caddyfile"
 FIELDS = ("request>uri", "request>headers>Referer", "request>headers>Hx-Current-Url")
 _FILTER = re.compile(r'^\s*(request>\S+) regexp "([^"]+)" "([^"]+)"\s*$', re.M)
 VALUE = "no-es-una-credencial"

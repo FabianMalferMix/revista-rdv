@@ -11,16 +11,16 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import CommandError
 from django.db.migrations.loader import MigrationLoader
 
 from apps.devtools.management.base import DevelopmentCommand
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = settings.BASE_DIR
 
 # Los comandos de desarrollo, con los argumentos con que se los llama aquí.
 DEV_COMMANDS = {

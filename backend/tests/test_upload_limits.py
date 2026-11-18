@@ -7,10 +7,10 @@ formulario llegue a verse en vez de un 413 sin cuerpo; esa relación también se
 
 import io
 import re
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 from django.urls import reverse
@@ -109,7 +109,7 @@ def test_the_public_form_help_comes_from_its_limits(client):
     assert f"Máximo {MAX_FILE_MB} MB" in html
 
 
-CADDYFILE = Path(__file__).resolve().parents[2] / "infra" / "caddy" / "Caddyfile"
+CADDYFILE = settings.BASE_DIR.parent / "infra" / "caddy" / "Caddyfile"
 
 
 def _caddy_limit(matcher):

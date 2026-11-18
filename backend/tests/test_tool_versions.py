@@ -9,11 +9,11 @@ desarrollo, que solo monta backend/.
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
-RAIZ = Path(__file__).resolve().parents[2]
+RAIZ = settings.BASE_DIR.parent
 _PIP = re.compile(r"(?<![\w-])pip==([\d.]+)")
 
 

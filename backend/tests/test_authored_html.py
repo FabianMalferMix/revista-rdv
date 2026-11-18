@@ -6,16 +6,16 @@ y su contenedor lleva `hx-disable`. Ninguna plantilla usa `|safe`: ese filtro es
 """
 
 import re
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.urls import reverse
 
 from apps.content.models import Article, Page
 from tests.factories import publish
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = settings.BASE_DIR
 HOSTILE = (
     "<p>Texto legítimo.</p><script>alert(1)</script>"
     '<div hx-post="/admin/auth/user/add/" hx-trigger="load">cebo</div>'

@@ -8,10 +8,10 @@ test_css_sistema.py; la hoja, en test_titular.py.
 """
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
 from django.test import TestCase
@@ -33,7 +33,7 @@ from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 
-ESTATICOS = Path(__file__).resolve().parent.parent / "static" / "img" / "portada"
+ESTATICOS = settings.BASE_DIR / "static" / "img" / "portada"
 
 
 def _recurso(nombre="obra.jpg", tamano=(1500, 900), alt="Lectura en la plaza"):

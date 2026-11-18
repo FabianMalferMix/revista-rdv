@@ -7,9 +7,9 @@ las trae de a una, cada 1,8 s, bajo una pasada de tinta; en el teléfono, desliz
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 
 from apps.people.models import Contributor
@@ -21,7 +21,7 @@ from tests.scripts import taken_from_common
 
 pytestmark = pytest.mark.django_db
 
-BACKEND = Path(__file__).resolve().parent.parent
+BACKEND = settings.BASE_DIR
 INTEGRANTES_JS = (BACKEND / "static" / "js" / "integrantes.js").read_text()
 NARROW_PHONE = ("@media (max-width:719px)",)
 

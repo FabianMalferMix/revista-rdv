@@ -2,9 +2,10 @@
 comparte. Lo usan las pruebas que miran que lo común no se copie."""
 
 import re
-from pathlib import Path
 
-JS = Path(__file__).resolve().parent.parent / "static" / "js"
+from django.conf import settings
+
+JS = settings.BASE_DIR / "static" / "js"
 COMMON = JS / "common.js"
 SCRIPTS = sorted(JS.glob("*.js"))
 

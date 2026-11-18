@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Contraste en el navegador: axe-core, solo con su regla de contraste de color (WCAG 1.4.3, AA),
 // sobre cada página de pages.txt a 951 px (la ventana del dueño) y a 375 px (un teléfono). La
-// prueba de paleta (backend/tests/test_contraste_paleta.py) calcula los pares desde el CSS; esto
-// mide lo que de verdad queda pintado, con los fondos heredados, los tamaños y los pesos de letra.
-// La corre el job `navegador` del CI, después de la prueba de humo.
+// prueba de paleta (backend/tests/static/test_contraste_paleta.py) calcula los pares desde el CSS;
+// esto mide lo que de verdad queda pintado, con los fondos heredados, los tamaños y los pesos de
+// letra. La corre el job `navegador` del CI, después de la prueba de humo.
 //
 //   node tools/ux/contraste.js [--base URL]
 //

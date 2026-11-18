@@ -8,15 +8,15 @@ JavaScript, o si el guion no llega o falla al montarse, queda la cabecera fija.
 """
 
 import re
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.urls import reverse
 
 from tests import css
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = settings.BASE_DIR
 CABECERA_JS = (RAIZ / "static" / "js" / "cabecera.js").read_text()
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
 

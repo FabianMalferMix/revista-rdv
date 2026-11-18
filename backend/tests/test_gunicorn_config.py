@@ -13,12 +13,12 @@ saltan en el contenedor de desarrollo, que solo monta backend/.
 import json
 import re
 import runpy
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 from gunicorn.config import Config
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = settings.BASE_DIR
 RAIZ = BACKEND.parent
 
 

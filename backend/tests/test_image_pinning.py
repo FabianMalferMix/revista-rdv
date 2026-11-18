@@ -15,11 +15,11 @@ es explícito (`pytest.skip` con motivo) y no un falso verde.
 """
 
 import re
-from pathlib import Path
 
 import pytest
+from django.conf import settings
 
-RAIZ = Path(__file__).resolve().parents[2]
+RAIZ = settings.BASE_DIR.parent
 
 DOCKERFILES = ["backend/Dockerfile", "infra/backup/Dockerfile"]
 COMPOSES = ["docker-compose.yml", "docker-compose.prod.yml", "docker-compose.override.yml"]
