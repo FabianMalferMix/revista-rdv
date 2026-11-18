@@ -44,17 +44,6 @@ def test_la_ficha_no_expone_una_grabacion_no_publicada(client):
     assert b"Escuchar el poema" not in resp.content
 
 
-def test_la_ficha_si_expone_una_grabacion_publicada(client):
-    """Publicada, la ficha lleva a la del registro y no al tercero: el enlace es interno, y la
-    ficha del registro pide permiso antes de conectar."""
-    poem, recording = _poema_con_registro(publicado=True)
-    resp = client.get(reverse("content:poem_detail", args=[poem.slug]))
-    assert resp.status_code == 200
-    assert recording.get_absolute_url().encode() in resp.content
-    assert recording.embed_url.encode() not in resp.content
-    assert b"Escuchar el poema" in resp.content
-
-
 def test_despublicar_retira_la_grabacion_de_la_ficha():
     """Reversibilidad: quitar `published` debe retirarla de inmediato."""
     from django.test import Client

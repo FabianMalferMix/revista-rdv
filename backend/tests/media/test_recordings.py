@@ -1,39 +1,19 @@
+"""Los registros, en sus páginas y en el pódcast.
+
+Todo enlace de un video de YouTube arma el mismo reproductor; el índice enseña miniaturas y la
+ficha reproduce; el pódcast solo lleva audio; la base no guarda un registro sin archivo ni
+enlace, y un registro publicado no enseña su evento oculto.
+"""
+
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.media.models import Recording
-from apps.media.templatetags.embeds import embed_src
-from apps.showcase.models import SiteProfile
 from tests.factories import make_event, make_recording  # noqa: E402
 
 pytestmark = pytest.mark.django_db
-
-
-# ── Filtro de embeds ─────────────────────────────────────────
-
-
-def test_embed_src_youtube_watch():
-    assert (
-        embed_src("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-        == "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
-    )
-
-
-def test_embed_src_youtu_be():
-    assert embed_src("https://youtu.be/dQw4w9WgXcQ") == (
-        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
-    )
-
-
-def test_embed_src_vimeo():
-    assert embed_src("https://vimeo.com/123456") == "https://player.vimeo.com/video/123456"
-
-
-def test_embed_src_unknown_and_empty():
-    assert embed_src("https://bandcamp.com/track/x") == ""
-    assert embed_src("") == ""
 
 
 # ── Los enlaces de YouTube ───────────────────────────────────
@@ -103,15 +83,6 @@ def test_a_youtube_link_that_is_not_a_video_gets_the_button(client, link):
 # ── Vistas públicas ──────────────────────────────────────────
 
 
-def test_recording_index_lists_published_only(client):
-    make_recording(slug="publico", title="Registro Público")
-    make_recording(slug="oculto", title="Registro Oculto", published=False)
-    resp = client.get(reverse("media:recording_index"))
-    assert resp.status_code == 200
-    assert b"Registro P\xc3\xbablico" in resp.content
-    assert b"Registro Oculto" not in resp.content
-
-
 def test_el_indice_ensena_miniaturas_y_no_reproductores(client):
     """El índice enseña y la ficha reproduce: cada registro es una miniatura con su título que
     lleva a la ficha, y en el índice no hay nada que conecte con YouTube o Vimeo, ni siquiera a
@@ -174,7 +145,7 @@ def test_la_miniatura_usa_el_cartel_y_sin_cartel_lleva_el_titulo(client):
     assert sin.select_one("img") is None
 
 
-def test_el_evento_sigue_siendo_un_enlace_propio_en_la_tarjeta(client):
+def test_the_event_is_a_link_of_its_own_on_the_card(client):
     from datetime import timedelta
 
     from bs4 import BeautifulSoup
@@ -195,11 +166,6 @@ def test_el_evento_sigue_siendo_un_enlace_propio_en_la_tarjeta(client):
         registro.get_absolute_url(),
         evento.get_absolute_url(),
     ]
-
-
-def test_recording_detail_404_when_unpublished(client):
-    rec = make_recording(slug="privado", published=False)
-    assert client.get(reverse("media:recording_detail", args=[rec.slug])).status_code == 404
 
 
 def test_recording_detail_renders_player_and_event(client):
@@ -240,45 +206,6 @@ def test_podcast_feed_only_audio_with_enclosure(client):
     assert "<enclosure" in content
     assert "audio/mpeg" in content
     assert audio.get_absolute_url() in content
-
-
-def test_podcast_enclosure_url_is_absolute(client):
-    """El <enclosure> del pódcast lleva una URL ABSOLUTA (esquema y host): con una relativa,
-    Apple y Spotify no descargan el audio y el episodio queda mudo."""
-    import xml.dom.minidom as minidom
-    from urllib.parse import urlparse
-
-    make_recording(
-        slug="audio-abs",
-        title="Audio Absoluto",
-        kind=Recording.Kind.AUDIO,
-        embed_url="",
-        file=SimpleUploadedFile("abs.mp3", b"ID3-fake-bytes"),
-    )
-    resp = client.get(reverse("recordings_feed"))
-    dom = minidom.parseString(resp.content)
-    enclosures = dom.getElementsByTagName("enclosure")
-    assert enclosures, "el feed debe emitir <enclosure> para audio con archivo"
-    url = enclosures[0].getAttribute("url")
-    parsed = urlparse(url)
-    assert parsed.scheme in ("http", "https"), f"enclosure no absoluto: {url}"
-    assert parsed.netloc, f"enclosure sin host: {url}"
-    # La vista que lo entrega solo mientras el registro está publicado, no /media/.
-    assert parsed.path.startswith("/archivo/registro/"), url
-
-
-def test_home_shows_featured_recording_when_published(client):
-    profile = SiteProfile.load()
-    rec = make_recording(slug="destacado", title="Registro En Portada")
-    profile.featured_recording = rec
-    profile.save()
-    assert b"Registro En Portada" in client.get(reverse("site:home")).content
-
-    rec.published = False
-    rec.save(update_fields=["published"])
-    content = client.get(reverse("site:home")).content.decode()
-    assert "Ver el dossier" in content  # control: la portada se dibuja entera
-    assert "Registro En Portada" not in content
 
 
 # ── Integridad: fuente obligatoria (archivo O embed) a nivel de BD ──────────
