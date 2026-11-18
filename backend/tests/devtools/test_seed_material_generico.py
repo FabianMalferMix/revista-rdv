@@ -1,6 +1,6 @@
 """`seed_material_generico` dibuja marcadores con proporciones reales y los asigna sin
 pisar material real. Como todos los comandos de desarrollo, solo corre con DEBUG y fuera de
-producción (tests/test_dev_tools.py).
+producción (tests/devtools/test_dev_tools.py).
 
 Las pruebas de asignación sustituyen los dibujantes por imágenes diminutas: lo que se
 verifica es la lógica (asignación e idempotencia), no el dibujo. El dibujo se

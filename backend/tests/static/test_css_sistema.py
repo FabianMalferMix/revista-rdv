@@ -1090,7 +1090,7 @@ def test_el_pie_de_la_vista_ampliada_se_lee():
 # ── La marca ──────────────────────────────────────────────────────────────
 
 
-def test_el_sello_de_la_cabecera_sigue_siendo_magenta_con_su_monograma():
+def test_the_header_seal_is_magenta_with_its_monogram():
     """El sello de la cabecera es magenta, con el monograma RV dentro: la R en blanco y la V
     en celeste."""
     sello = css.rule((), ".brand")

@@ -130,7 +130,7 @@ def test_contraste_de_la_paleta(descripcion, frente, fondo, minimo):
 
 
 @pytest.mark.parametrize("descripcion,frente,fondo", PROHIBIDOS)
-def test_los_pares_prohibidos_siguen_sin_alcanzar_aa(descripcion, frente, fondo):
+def test_the_forbidden_pairs_do_not_reach_aa(descripcion, frente, fondo):
     """Si un cambio de color hiciera legible uno de estos pares, deja de ser prohibido
     y esta prueba avisa: se mueve a PARES y se permite a propósito."""
     colores = _paleta()

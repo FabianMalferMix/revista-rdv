@@ -77,7 +77,7 @@ def test_revocar_el_permiso_de_modelo_surte_efecto(groups, editor):
     assert admin_obj.has_delete_permission(_peticion(editor), art) is False
 
 
-def test_un_editor_con_su_permiso_sigue_pudiendo(editor):
+def test_an_editor_changes_and_deletes_a_text_that_is_not_theirs(editor):
     """La composición no puede romper el caso normal."""
     admin_obj = ArticleAdmin(Article, AdminSite())
     art = Article.objects.create(slug="b", title="B")
@@ -115,7 +115,7 @@ def test_setup_groups_no_restaura_un_permiso_retirado_a_mano():
     assert perm not in editor.permissions.all(), "el despliegue restauró el permiso retirado"
 
 
-def test_setup_groups_sigue_sembrando_los_permisos():
+def test_setup_groups_seeds_the_permissions_of_every_role():
     call_command("setup_groups", verbosity=0)
     for nombre in ["admin", "editor", "autor"]:
         assert Group.objects.get(name=nombre).permissions.exists()

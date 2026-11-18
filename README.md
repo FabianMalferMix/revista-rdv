@@ -22,8 +22,8 @@ con PostgreSQL, Celery y Redis, tras Caddy y todo en Docker.
 
 ## Estructura
 
-Una app por cada línea de `INSTALLED_APPS`: `backend/tests/test_readme.py` falla si se instala
-una app sin anotarla aquí o si esta lista nombra una carpeta que no existe.
+Una app por cada línea de `INSTALLED_APPS`: `backend/tests/infra/test_readme.py` falla si se
+instala una app sin anotarla aquí o si esta lista nombra una carpeta que no existe.
 
 ```text
 backend/

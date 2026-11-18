@@ -7,8 +7,8 @@ el utillaje de seguridad del proyecto: **ni Dependabot, ni pip-audit, ni trivy l
 
 El radar es triple: `manifest.json` dice qué hay (paquete de npm, versión, integridad del
 paquete y sha256 de cada archivo), `package.json` (que no se instala) deja que Dependabot avise
-de cada versión nueva, y `tests/test_vendored_assets.py` falla si el árbol no es exactamente el
-del manifiesto o si `package.json` pide otra versión.
+de cada versión nueva, y `tests/infra/test_vendored_assets.py` falla si el árbol no es
+exactamente el del manifiesto o si `package.json` pide otra versión.
 
 ## Al actualizar cualquiera de estas librerías
 

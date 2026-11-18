@@ -4,10 +4,9 @@ Toda respuesta lleva la política en vigor, no en modo de informe, con sus direc
 respuesta ya trae una, se respeta. El nonce entra en la cabecera solo si la plantilla lo usa, es
 el mismo en toda la petición y lo lleva el JSON-LD de un texto. Los estilos en línea se permiten
 solo en el panel, y los guiones en línea, nunca. htmx y TinyMCE se sirven desde el propio sitio,
-y htmx no mete estilos en línea; un comentario de una línea no se parte en dos en las
-plantillas, porque Django lo imprimiría como texto. Entre los estáticos, que la política no
-cubre, no hay documentos navegables, y la cabecera Permissions-Policy niega la geolocalización,
-la cámara, el micrófono y el pago.
+y htmx no mete estilos en línea. Entre los estáticos, que la política no cubre, no hay documentos
+navegables, y la cabecera Permissions-Policy niega la geolocalización, la cámara, el micrófono y
+el pago.
 """
 
 import json
@@ -160,27 +159,6 @@ def test_htmx_no_mete_estilos_en_linea_que_la_csp_bloquea(client):
     assert contenido.index('name="htmx-config"') < contenido.index("vendor/htmx/htmx.min.js")
     indicador = css.rule((), ".htmx-request .htmx-indicator, .htmx-request.htmx-indicator")
     assert indicador["opacity"] == "1"
-
-
-def test_los_comentarios_de_una_linea_no_ocupan_dos():
-    """`{# … #}` solo vale en una línea: partido en dos, Django lo imprime como texto. Si ese
-    texto nombra `<style>`, el navegador abre ahí un estilo en línea, que la CSP bloquea, y se
-    traga como estilo lo que sigue hasta su cierre. Los de varias líneas van con
-    {% comment %}."""
-    plantillas = settings.BASE_DIR / "templates"
-    lines = [
-        (ruta, n, linea)
-        for ruta in plantillas.rglob("*.html")
-        for n, linea in enumerate(ruta.read_text("utf-8").splitlines(), 1)
-        if "{#" in linea
-    ]
-    assert len(lines) >= 10, "control: la búsqueda dejó de encontrar los comentarios"
-    partidos = [
-        f"{ruta.relative_to(plantillas)}:{n}"
-        for ruta, n, linea in lines
-        if "#}" not in linea.split("{#", 1)[1]
-    ]
-    assert not partidos, partidos
 
 
 @pytest.mark.django_db

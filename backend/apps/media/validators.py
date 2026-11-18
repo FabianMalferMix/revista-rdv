@@ -10,7 +10,7 @@ Solo las imágenes se comprueban también por su contenido (`validate_image`). D
 PDF se mira únicamente la extensión: nada lee su contenido.
 
 Cada campo tiene además un tope de tamaño. Caddy deja pasar algo más por /admin/ (el
-Caddyfile, que tests/test_upload_limits.py compara con estos topes), para que quien se pase
+Caddyfile, que tests/media/test_upload_limits.py compara con estos topes), para que quien se pase
 lea aquí cuánto pesa su archivo y qué hacer, y no reciba un 413 sin explicación.
 """
 

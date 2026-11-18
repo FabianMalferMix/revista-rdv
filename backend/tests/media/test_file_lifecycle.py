@@ -19,8 +19,6 @@ import pytest
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.management import call_command
-from django.core.management.base import CommandError
 from django.db import transaction
 from PIL import Image
 from PIL.TiffImagePlugin import IFDRational
@@ -188,14 +186,6 @@ def test_una_imagen_recien_subida_que_no_se_puede_limpiar_no_se_publica():
         MediaAsset.objects.create(file=SimpleUploadedFile("anim.gif", _gif()), alt_text="Gif")
     assert not MediaAsset.objects.filter(alt_text="Gif").exists()
     assert not [p for p in Path(settings.MEDIA_ROOT).rglob("anim*") if p.is_file()]
-
-
-def test_el_comando_avisa_de_las_imagenes_que_no_puede_limpiar():
-    asset = MediaAsset.objects.create(file=SimpleUploadedFile("foto.jpg", _jpeg()), alt_text="Foto")
-    with asset.file.storage.open(asset.file.name, "wb") as fh:
-        fh.write(b"ya no es una imagen")
-    with pytest.raises(CommandError, match="no se pudieron limpiar"):
-        call_command("generate_image_derivatives", verbosity=0)
 
 
 # ── Archivos huérfanos ────────────────────────────────────

@@ -3,7 +3,7 @@ name: resenas
 # Rotación de los logs de cada contenedor: con el driver json-file por defecto crecen sin
 # límite en el disco de la base, de los medios y de los respaldos. Diez megas por archivo y
 # cinco archivos por servicio (docker-compose.prod.yml repite el ancla para la caché y el
-# proxy: las anclas de YAML no cruzan archivos, y tests/test_compose_logging.py las compara).
+# proxy: las anclas de YAML no cruzan archivos, y tests/infra/test_compose_logging.py las compara).
 x-logging: &logging
   driver: json-file
   options:

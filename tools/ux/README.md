@@ -65,7 +65,7 @@ código, y sale con 1.
 
 Añadir una página: una línea en `pages.txt` (`nombre ruta [ancho]`). La prueba de humo también
 la recorre. La ficha que nombra tiene que estar en los datos de desarrollo:
-`backend/tests/test_measured_pages.py` lo comprueba.
+`backend/tests/devtools/test_measured_pages.py` lo comprueba.
 
 ## Prueba de humo en navegador
 

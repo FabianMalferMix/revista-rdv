@@ -3,11 +3,14 @@
 Django documenta `{# … #}` como comentario **de una sola línea**. Si abarca varias, el
 motor NO lo reconoce y lo emite tal cual: el texto del comentario aparece en la página,
 a la vista de cualquier visitante. Es un fallo silencioso —no rompe nada, no lanza
-ninguna excepción, ninguna prueba funcional falla—: solo se ve mirando la página.
+ninguna excepción, ninguna prueba funcional falla—: solo se ve mirando la página. Si ese
+texto nombra `<style>`, el navegador abre ahí un estilo en línea, que la CSP bloquea, y se
+traga como estilo lo que sigue hasta su cierre.
 
 Se comprueba de dos formas complementarias: sobre el FUENTE de las plantillas (barato y
-exhaustivo, cubre también las que ningún test renderiza) y sobre el HTML RENDERIZADO de
-las vistas públicas (comprueba el efecto real).
+exhaustivo, cubre también las que ningún test renderiza: ningún `{#` sin su `#}` en la misma
+línea, ni un par `{# … #}` que cruce un salto de línea) y sobre el HTML RENDERIZADO de las
+vistas públicas (comprueba el efecto real).
 """
 
 import re
@@ -27,14 +30,24 @@ def _plantillas():
 
 
 def test_hay_plantillas_que_revisar():
-    """Si el descubrimiento fallara, los demás tests pasarían por vacío."""
+    """Si el descubrimiento fallara, o dejara de ver los comentarios, los demás tests pasarían
+    por vacío."""
     assert len(_plantillas()) > 20
+    comentarios = [
+        linea
+        for plantilla in _plantillas()
+        for linea in plantilla.read_text("utf-8").splitlines()
+        if "{#" in linea
+    ]
+    assert len(comentarios) >= 10, "control: la búsqueda dejó de encontrar los comentarios"
 
 
 @pytest.mark.parametrize("plantilla", _plantillas(), ids=lambda p: str(p.name))
 def test_ningun_comentario_de_una_linea_abarca_varias(plantilla):
     """`{# … #}` multilínea se RENDERIZA como texto visible. Para comentarios de varias
-    líneas hay que usar `{% comment %} … {% endcomment %}`."""
+    líneas hay que usar `{% comment %} … {% endcomment %}`. Se miran los dos casos: un par
+    `{# … #}` que cruza un salto de línea, aunque lo abra el segundo comentario de la línea, y
+    un `{#` sin su `#}` en la misma línea, aunque no se cierre en todo el archivo."""
     texto = plantilla.read_text(encoding="utf-8")
     culpables = [
         m.group(1).strip()[:60]
@@ -45,6 +58,12 @@ def test_ningun_comentario_de_una_linea_abarca_varias(plantilla):
         f"{plantilla.name}: comentario {{# #}} multilínea, que Django imprime como texto. "
         f"Usa {{% comment %}}. Afectados: {culpables}"
     )
+    partidos = [
+        f"{plantilla.relative_to(PLANTILLAS)}:{n}"
+        for n, linea in enumerate(texto.splitlines(), 1)
+        if "{#" in linea and "#}" not in linea.split("{#", 1)[1]
+    ]
+    assert not partidos, f"{{# sin su #}} en la misma línea, que Django imprime: {partidos}"
 
 
 @pytest.mark.django_db

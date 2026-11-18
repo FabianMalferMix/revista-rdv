@@ -3,7 +3,9 @@
 Al subirla, la imagen se limpia de metadatos en la misma petición (si no se puede, se rechaza);
 cuando el guardado confirma, una tarea hace sus copias y mide el color de su borde. Guardar sin
 cambiar el archivo no la decodifica; la portada no abre ninguna imagen, ni siquiera con la caché
-caída; y un archivo que no se puede leer queda nombrado en el log y hace fallar el comando.
+caída; y un archivo que no se puede leer queda nombrado en el log y hace fallar el comando, cuyo
+mensaje cuenta las imágenes que no se pudieron limpiar o leer y nombra sus recursos. Un fallo
+inesperado es un ERROR que nombra su recurso. Ni uno ni otro detienen a las demás imágenes.
 """
 
 import logging
@@ -18,6 +20,7 @@ from django.urls import reverse
 from PIL import Image, ImageFile
 from PIL.TiffImagePlugin import IFDRational
 
+from apps.media.management.commands import generate_image_derivatives
 from apps.media.models import MediaAsset
 from apps.media.services import process_image
 from apps.showcase.models import SiteProfile
@@ -148,13 +151,43 @@ def test_an_unreadable_image_is_a_warning_naming_it_and_the_command_fails(caplog
     MediaAsset.objects.filter(pk=broken.pk).update(border_color="")
     caplog.set_level(logging.WARNING, logger="apps.media.services")
 
-    with pytest.raises(CommandError, match=rf"1 de 2 .*recursos {broken.pk}\)"):
+    with pytest.raises(
+        CommandError,
+        match=rf"1 de 2 imágenes no se pudieron limpiar o leer \(recursos {broken.pk}\)",
+    ):
         call_command("generate_image_derivatives", verbosity=0)
     warnings = [r.getMessage() for r in caplog.records if r.name == "apps.media.services"]
     assert len(warnings) == 1
     assert broken.file.name in warnings[0] and f"recurso {broken.pk}" in warnings[0]
     pending.refresh_from_db()
     assert _near(pending.border_color, BLUE), "the other images are still processed"
+
+
+def test_an_image_that_fails_unexpectedly_does_not_stop_the_others(monkeypatch, caplog):
+    assets = []
+    for name in ("una", "dos"):
+        buf = BytesIO()
+        Image.new("RGB", (600, 400), (10, 20, 30)).save(buf, format="JPEG")
+        assets.append(
+            MediaAsset.objects.create(
+                file=SimpleUploadedFile(f"{name}.jpg", buf.getvalue()), alt_text=name
+            )
+        )
+    broken, fine = assets
+    original = generate_image_derivatives.process_image
+
+    def failing(pk):
+        if pk == broken.pk:
+            raise ValueError("algo inesperado")
+        return original(pk)
+
+    monkeypatch.setattr(generate_image_derivatives, "process_image", failing)
+    with pytest.raises(CommandError, match=rf"recursos {broken.pk}\)"):
+        call_command("generate_image_derivatives", verbosity=0)
+    assert MediaAsset.objects.get(pk=fine.pk).border_color
+    assert [r.getMessage() for r in caplog.records if r.levelno == logging.ERROR] == [
+        f"No se pudo procesar la imagen del recurso {broken.pk}"
+    ]
 
 
 def test_each_copy_is_resized_once_from_the_next_wider_one(monkeypatch):

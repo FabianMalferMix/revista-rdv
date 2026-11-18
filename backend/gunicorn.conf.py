@@ -3,7 +3,7 @@
 Es la única fuente de sus opciones. La imagen arranca `gunicorn config.wsgi:application` sin
 más, y el compose de producción y el CI usan ese mismo comando: una opción escrita en otro
 sitio dejaría de coincidir con lo que el CI prueba. gunicorn ignora en silencio un nombre que
-no conoce; tests/test_gunicorn_config.py comprueba que todos los de aquí lo son, y los
+no conoce; tests/infra/test_gunicorn_config.py comprueba que todos los de aquí lo son, y los
 auxiliares empiezan con «_».
 
 Los logs de gunicorn (arranque, procesos, errores al atender una petición) salen en JSON y
