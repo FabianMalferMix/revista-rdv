@@ -14,7 +14,7 @@
   // estante.
   const { canAnimate, onSwipe, mountAll, CURVA } = common;
   // El reparto dura un poco más que el acomodo de los demás (la transición de `translate` en
-  // componentes.css; tests/test_tirada.py compara las dos): el que pasa arriba sale de la pila
+  // componentes.css; tests/site/test_tirada.py compara las dos): el que pasa arriba sale de la pila
   // por su lado y vuelve encima, como una carta que se reparte.
   const REPARTO = 700;
 
