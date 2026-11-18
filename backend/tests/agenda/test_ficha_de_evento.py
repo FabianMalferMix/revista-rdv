@@ -1,7 +1,9 @@
 """La ficha de un evento.
 
 El afiche va como un objeto de hasta 420 px, con su pie, y a su lado quiénes participan y los
-registros; las fotos, en un mosaico de seis, y las demás en «Ver las N fotos».
+registros; las fotos, en un mosaico de seis, y las demás en «Ver las N fotos». Cada miniatura
+abre su vista ampliada, que vuelve a la galería sin JavaScript y no promete la semántica de un
+modal.
 """
 
 import re
@@ -96,6 +98,8 @@ def test_el_mosaico_lleva_seis_fotos_y_las_demas_se_abren_sin_javascript(client)
     # La miniatura abre su vista ampliada, y la vista ampliada vuelve a la galería.
     assert resto[1].a["href"] == "#lb-recital-8"
     assert sopa.select_one("#lb-recital-8 .lightbox-close")["href"] == "#galeria-recital"
+    # Vista ampliada honesta: no promete semántica de modal (sin trampa de foco).
+    assert sopa.select_one("[aria-modal], [role=dialog]") is None
 
 
 def test_con_seis_fotos_o_menos_no_hay_nada_que_desplegar(client):

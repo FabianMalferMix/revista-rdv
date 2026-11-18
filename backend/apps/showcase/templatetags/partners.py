@@ -5,8 +5,8 @@ from apps.showcase.models import Partner
 register = template.Library()
 
 # El rótulo de cada grupo de aliados: su tipo (`Partner.Kind`), en plural. Cada tipo tiene el
-# suyo (tests/test_partner_groups.py); la vista lleva a «Otro» al aliado de un tipo desconocido,
-# para que la cabecera no cuente a nadie que la página no enseña.
+# suyo (tests/showcase/test_partner_groups.py); la vista lleva a «Otro» al aliado de un tipo
+# desconocido, para que la cabecera no cuente a nadie que la página no enseña.
 GROUP_TITLES = {
     Partner.Kind.FINANCIAMIENTO: "Financiamiento",
     Partner.Kind.INSTITUCION: "Instituciones",

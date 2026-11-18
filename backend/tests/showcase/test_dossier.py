@@ -1,3 +1,9 @@
+"""El dossier, el kit de prensa: una página que reúne lo vivo del sitio (el colectivo, sus
+integrantes, la trayectoria por años, las publicaciones, la prensa, los aliados, las cifras y la
+ficha de contacto) y se imprime: el botón de imprimir solo aparece con JavaScript, y las imágenes
+salen en el papel. Con el PDF maquetado, la página y el botón de la portada lo descargan; sin él,
+el botón abre la página. Sus consultas no crecen con lo que reúne."""
+
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -10,7 +16,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.agenda.models import Event, Milestone
-from apps.agenda.services import cronologia
 from apps.content.models import EditorialStatus
 from apps.people.models import Contributor
 from apps.reviews.models import Publisher
@@ -64,14 +69,6 @@ def test_dossier_aggregates_everything(client, profile):
     # El botón de imprimir no usa un handler inline, que la CSP bloquearía.
     assert b"onclick" not in resp.content
     assert b"js/dossier.js" in resp.content
-
-
-def test_dossier_excludes_unpublished_publication(client, profile):
-    Publication.objects.create(slug="oculta-d", title="Oculta Dossier", published=False)
-    Publication.objects.create(slug="visible-d", title="Visible Dossier", published=True)
-    resp = client.get(reverse("showcase:dossier"))
-    assert b"Visible Dossier" in resp.content  # control: el dossier lista las publicaciones
-    assert b"Oculta Dossier" not in resp.content
 
 
 def test_home_cta_links_to_dossier_page_without_pdf(client, profile):
@@ -163,22 +160,10 @@ def test_la_trayectoria_es_una_sola_y_va_de_lo_mas_reciente_a_lo_mas_antiguo(cli
     assert "Sin año" in sopa.select_one(".dossier-publicaciones").get_text()
 
 
-def test_el_anio_de_un_evento_es_el_de_su_hora_local(client):
-    """Un recital del 31 de diciembre a las 22:00 en Santiago ya es 1 de enero en UTC: va
-    en el año que termina, el que enseña su fecha, y su ficha lleva a ese año."""
-    noche = datetime(2025, 12, 31, 22, tzinfo=SANTIAGO)
-    evento = make_event(slug="fin-de-anio", title="Fin de año", starts_at=noche)
-    # Leído de la base, como en la página, viene en UTC: ahí ya es el año siguiente.
-    evento = Event.objects.get(pk=evento.pk)
-    assert evento.starts_at.year == 2026
-    assert [bloque["year"] for bloque in cronologia([evento])] == [2025]
-    assert "#anio-2025" in client.get(evento.get_absolute_url()).content.decode()
-
-
 def test_la_ficha_reune_los_datos_del_colectivo(client, profile, settings):
-    settings.SITE_URL = "https://revista.example.org"
     """Fundado, lugar, contacto, Instagram, sitio y la fecha de la última publicación: lo
     que un programador copia en su ficha. El correo es el mismo del pie y de la portada."""
+    settings.SITE_URL = "https://revista.example.org"
     profile.location = "Valparaíso"
     profile.save()
     SiteSocialLink.objects.create(

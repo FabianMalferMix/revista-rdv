@@ -7,8 +7,8 @@ piezas, y que solo las edite en borrador o con cambios pedidos, lo deciden el pa
 `apps/content/permissions.py` sobre estos permisos.
 
 Cada modelo del proyecto está aquí de forma explícita, en EDITOR_PERMISSIONS o en ADMIN_ONLY:
-tests/test_roles.py falla si aparece uno sin clasificar. `setup_groups` reparte estos permisos
-en cada release, sin restaurar los que el operador retiró a mano.
+tests/people/test_roles.py falla si aparece uno sin clasificar. `setup_groups` reparte estos
+permisos en cada release, sin restaurar los que el operador retiró a mano.
 """
 
 from django.contrib.auth.models import Permission

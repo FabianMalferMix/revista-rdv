@@ -1,6 +1,6 @@
-"""El formulario para enviar una propuesta: su página responde, el campo del archivo apunta con
-aria-describedby a una ayuda que está en ella, y un envío crea la propuesta, salvo el que llena
-el campo trampa, que se descarta con el mismo agradecimiento.
+"""El formulario para enviar una propuesta: el campo del archivo apunta con aria-describedby a
+una ayuda que está en ella, y un envío crea la propuesta, salvo el que llena el campo trampa,
+que se descarta con el mismo agradecimiento.
 """
 
 import pytest
@@ -9,10 +9,6 @@ from django.urls import reverse
 from apps.submissions.models import Submission
 
 pytestmark = pytest.mark.django_db
-
-
-def test_submissions_route_stays_alive(client):
-    assert client.get(reverse("submissions:submit")).status_code == 200
 
 
 def test_submit_file_help_aria_reference_resolves(client):

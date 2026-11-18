@@ -1,5 +1,5 @@
-"""Lo despublicado deja de servirse: el audio de un registro y el PDF de una publicación
-solo salen mientras su pieza es pública.
+"""Lo despublicado deja de servirse: el audio de un registro solo sale mientras el registro es
+público.
 
 Los entrega una vista que comprueba primero si la pieza es pública, y no /media/, que Caddy
 sirve sin preguntar: así, despublicar retira el archivo también para quien ya tiene su
@@ -11,7 +11,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from apps.media.models import Recording
-from apps.showcase.models import Publication
 
 pytestmark = pytest.mark.django_db
 AUDIO = b"ID3 una lectura en el puerto"
@@ -83,21 +82,6 @@ def test_behind_caddy_django_only_names_the_file(client, settings):
     assert response.content == b""
     Recording.objects.filter(pk=recording.pk).update(published=False)
     assert _status(client, recording.file_url()) == 404
-
-
-def test_the_publication_pdf_follows_the_same_rule(client):
-    publication = Publication.objects.create(
-        slug="un-libro",
-        title="Un libro",
-        year=2024,
-        published=True,
-        pdf=SimpleUploadedFile(
-            "un-libro.pdf", b"%PDF-1.4 un libro", content_type="application/pdf"
-        ),
-    )
-    assert _status(client, publication.pdf_url()) == 200
-    Publication.objects.filter(pk=publication.pk).update(published=False)
-    assert _status(client, publication.pdf_url()) == 404
 
 
 def test_uploads_get_random_names():

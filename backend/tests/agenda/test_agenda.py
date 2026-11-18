@@ -1,4 +1,16 @@
-from datetime import timedelta
+"""La agenda, la trayectoria y la galería del colectivo.
+
+La agenda enseña lo anunciado y publicado; sin fechas, lo dice, enseña las tres últimas
+actividades y ofrece escribir al mismo correo del pie. La trayectoria reúne por año, el de la
+hora local, las actividades hechas, los hitos y las publicaciones con su editorial. La galería
+enseña cada álbum con fotos en una hoja de hasta tres, con el texto alternativo solo en la
+primera, sin una consulta más por álbum ni traer las fotos que no enseña. `stats` cuenta lo que
+nombra cada página (festivales y ferias, juntos o por separado), y cada actividad tiene su
+dirección.
+"""
+
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.db import connection
@@ -6,8 +18,8 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.agenda.models import EventPhoto, Milestone
-from apps.media.models import Recording
+from apps.agenda.models import Event, EventPhoto, Milestone
+from apps.agenda.services import cronologia
 from apps.reviews.models import Publisher
 from tests.factories import (  # noqa: E402
     instances_built,
@@ -19,6 +31,8 @@ from tests.factories import (  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
+SANTIAGO = ZoneInfo("America/Santiago")
+
 
 def test_agenda_lists_upcoming_published_only(client):
     upcoming = make_event(slug="proximo", title="Evento Próximo")
@@ -29,6 +43,7 @@ def test_agenda_lists_upcoming_published_only(client):
     assert b"Evento Pr\xc3\xb3ximo" in resp.content
     assert b"Evento Pasado" not in resp.content
     assert b"Evento Oculto" not in resp.content
+    assert b"Sin fechas anunciadas" not in resp.content
     assert upcoming.get_absolute_url().encode() in resp.content
 
 
@@ -46,36 +61,24 @@ def test_trayectoria_groups_past_events_and_milestones(client):
     assert str(past.starts_at.year).encode() in resp.content
 
 
-def test_event_detail_404_when_unpublished(client):
-    event = make_event(slug="privado", published=False)
-    assert client.get(reverse("agenda:event_detail", args=[event.slug])).status_code == 404
+def test_trayectoria_includes_publications_by_year(client):
+    make_publication(slug="hist", title="Plaquette Histórica", year=2021)
+    resp = client.get(reverse("agenda:trayectoria"))
+    assert b"Plaquette Hist\xc3\xb3rica" in resp.content
+    assert b"2021" in resp.content
+    assert b"publicaci" in resp.content  # stats strip
 
 
-def test_event_detail_shows_photos_participants_and_recordings(client):
-    from apps.people.models import Contributor
-
-    event = make_event(slug="completo", title="Evento Completo")
-    make_photo(event)
-    member = Contributor.objects.create(slug="participante", display_name="Poeta Participante")
-    event.participants.add(member)
-    Recording.objects.create(
-        slug="registro-evento",
-        title="Registro Del Evento",
-        embed_url="https://example.com/v",
-        published=True,
-        event=event,
-    )
-    Recording.objects.create(
-        slug="registro-oculto",
-        title="Registro Oculto",
-        embed_url="https://example.com/v2",
-        event=event,
-    )
-    resp = client.get(reverse("agenda:event_detail", args=[event.slug]))
-    assert b"Poeta Participante" in resp.content
-    assert b"Registro Del Evento" in resp.content
-    assert b"Registro Oculto" not in resp.content
-    assert b"photo-grid" in resp.content
+def test_el_anio_de_un_evento_es_el_de_su_hora_local(client):
+    """Un recital del 31 de diciembre a las 22:00 en Santiago ya es 1 de enero en UTC: va
+    en el año que termina, el que enseña su fecha, y su ficha lleva a ese año."""
+    noche = datetime(2025, 12, 31, 22, tzinfo=SANTIAGO)
+    evento = make_event(slug="fin-de-anio", title="Fin de año", starts_at=noche)
+    # Leído de la base, como en la página, viene en UTC: ahí ya es el año siguiente.
+    evento = Event.objects.get(pk=evento.pk)
+    assert evento.starts_at.year == 2026
+    assert [bloque["year"] for bloque in cronologia([evento])] == [2025]
+    assert "#anio-2025" in client.get(evento.get_absolute_url()).content.decode()
 
 
 def test_gallery_lists_only_events_with_photos(client):
@@ -85,13 +88,6 @@ def test_gallery_lists_only_events_with_photos(client):
     resp = client.get(reverse("agenda:gallery"))
     assert b"Evento Con Fotos" in resp.content
     assert b"Evento Sin Fotos" not in resp.content
-
-
-def test_home_shows_next_event(client):
-    make_event(slug="siguiente", title="Actividad Siguiente")
-    make_event(slug="hecho", title="Hecho", starts_at=timezone.now() - timedelta(days=5))
-    resp = client.get(reverse("site:home"))
-    assert b"Actividad Siguiente" in resp.content
 
 
 def test_event_absolute_url(client):
@@ -198,15 +194,6 @@ def test_the_empty_agenda_writes_to_the_same_address_as_the_footer(
     assert (escribenos["href"] if escribenos else None) == (pie[0]["href"] if pie else None)
 
 
-def test_con_fechas_anunciadas_no_se_mezclan_las_pasadas(client):
-    make_event(slug="viene", title="Lectura que viene")
-    make_event(slug="fue", title="Lectura que fue", starts_at=timezone.now() - timedelta(days=5))
-    html = client.get(reverse("agenda:agenda")).content.decode()
-    assert "Lectura que viene" in html
-    assert "Lectura que fue" not in html
-    assert "Sin fechas anunciadas" not in html
-
-
 # ── Galería como hoja de contactos ──────────────────────────────────────────
 
 
@@ -252,29 +239,6 @@ def test_en_la_hoja_solo_la_primera_foto_lleva_texto_alternativo(client):
     fotos = _hojas(client)["Álbum Alt"].select(".hoja img")
     assert [f["alt"] for f in fotos] == ["foto-alt-0", "", ""]
     assert len(_hojas(client)["Álbum Alt"].select("a")) == 1
-
-
-def test_la_hoja_de_contactos_no_anade_consultas_por_album(client):
-    """Las tres fotos salen de la caché del prefetch: enseñar más álbumes no puede costar
-    más consultas (una por álbum sería el N+1 de siempre)."""
-    from django.db import connection
-    from django.test.utils import CaptureQueriesContext
-
-    def consultas():
-        with CaptureQueriesContext(connection) as ctx:
-            assert client.get(reverse("agenda:gallery")).status_code == 200
-        return len(ctx)
-
-    uno = make_event(slug="g1", title="G1")
-    for i in range(4):
-        make_photo(uno, position=i)
-    consultas()  # la primera petición crea el perfil del sitio: no cuenta
-    con_uno = consultas()
-    for n in range(2, 6):
-        evento = make_event(slug=f"g{n}", title=f"G{n}")
-        for i in range(4):
-            make_photo(evento, position=i)
-    assert consultas() == con_uno, "la galería hace una consulta más por cada álbum"
 
 
 def test_the_gallery_costs_the_same_with_three_albums_or_thirty(client):

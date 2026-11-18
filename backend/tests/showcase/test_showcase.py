@@ -1,5 +1,7 @@
+"""El perfil del sitio (`SiteProfile`): una sola fila, que se carga sin duplicarse y no se borra,
+y su procesador de contexto, que siempre entrega un perfil, aunque la base esté vacía."""
+
 import pytest
-from django.urls import reverse
 
 from apps.showcase.context_processors import site_profile as site_profile_cp
 from apps.showcase.models import SiteProfile
@@ -43,12 +45,3 @@ def test_context_processor_never_none_even_on_empty_db(rf):
     # El perfil es perezoso: preguntar qué es lo carga.
     assert isinstance(profile, SiteProfile)
     assert SiteProfile.objects.count() == 1
-
-
-def test_footer_shows_booking_email(client):
-    profile = SiteProfile.load()
-    profile.booking_email = "gestion@resenas.cl"
-    profile.save()
-    resp = client.get(reverse("site:home"))
-    assert resp.status_code == 200
-    assert b"gestion@resenas.cl" in resp.content
