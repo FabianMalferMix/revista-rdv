@@ -1,8 +1,8 @@
 # Backlog de la auditoría de código
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
-> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05, y C35, el 2026-11-11. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 88 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
+> **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05; C35, el 2026-11-11, y C36, el 2026-11-10. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
+> **Avance:** 89 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
 
 ## Cómo se usa
 
@@ -54,6 +54,7 @@
 | C33 | TinyMCE se queda en 7.9.3; el paso a la 8, o a otro editor, es un ticket propio | B84 |
 | C34 | Las imágenes de otro sitio en el HTML de autor se admiten copiadas al sitio; mientras no haya copia, se quitan | B68, B86 |
 | C35 | En una vista previa, lo que no tiene página pública se nombra sin enlace | B90 |
+| C36 | TinyMCE pasa a la 8 y se usa bajo la GPL v2 o posterior (`license_key: 'gpl'`) | B84 |
 
 **Decisiones visuales de los tickets.** La de los sellos de «Prensa y gestión» (B55) la tomó el dueño el 2026-11-04: la palabra pequeña de los sellos azules, en el azul hundido. La de la navegación (B73) la aprobó el 2026-11-11: Prensa y Aliados van en «Prensa y gestión», la sub-fila de cada índice es la de su grupo, Agenda va antes que Trayectoria y Registros antes que Publicaciones (D35, en `docs/deferidos-y-decisiones.md` §1).
 
@@ -181,7 +182,7 @@
 | B77 | Nombres trampa y rótulos completos | — | S | no | hecho (#277) |
 | B78 | Comentarios que dicen el presente | B03 | L | no | hecho (#286, #287, #288, #289, #291, #292, #293) |
 | B79 | La suite, por componente | B61 | L | no | en curso (etapa 1: #296; etapa 2: #297) |
-| B84 | TinyMCE 8 u otro editor | B52 | M | no | pendiente |
+| B84 | TinyMCE 8 u otro editor | B52 | M | no | hecho (#298) |
 | B85 | La búsqueda recorta la consulta por palabras | — | S | no | hecho (#257) |
 | B86 | Las imágenes de otro sitio se copian al guardar | B68 | M | no | pendiente |
 | B87 | Los enlaces de YouTube en todas sus formas | B68 | S | no | pendiente |

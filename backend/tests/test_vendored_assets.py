@@ -5,8 +5,8 @@ y quedan fuera del radar de pip-audit y trivy. `static/vendor/manifest.json` dic
 paquete de npm, la versión, la integridad del paquete y el sha256 de cada archivo
 (`tools/vendor/update.py` lo escribe y lo comprueba contra npm). Estas pruebas atan el árbol al
 manifiesto, la versión que llevan dentro las librerías a la declarada, los plugins que pide el
-editor a sus archivos, la URL de TinyMCE a su versión y `package.json`, que vigila Dependabot, a
-las mismas versiones.
+editor a sus archivos, su clave de licencia a la licencia del paquete, la URL de TinyMCE a su
+versión y `package.json`, que vigila Dependabot, a las mismas versiones.
 """
 
 import hashlib
@@ -76,3 +76,13 @@ def test_every_plugin_the_editor_asks_for_is_vendored():
     files = MANIFEST["tinymce"]["files"]
     assert [p for p in plugins if f"plugins/{p}/plugin.min.js" not in files] == []
     assert {"themes/silver/theme.min.js", "models/dom/model.min.js"} <= set(files)
+
+
+def test_the_editor_declares_a_license_its_package_offers():
+    """Sin clave de licencia, TinyMCE deja el editor deshabilitado. La que declara la
+    inicialización, «gpl», tiene que ser una de las que ofrece el paquete vendorizado: la GPL v2
+    o posterior, bajo la que lo usa el proyecto (NOTICE.md)."""
+    init = (STATIC / "admin" / "richtext_init.js").read_text("utf-8")
+    assert re.findall(r'license_key:\s*"([^"]*)"', init) == ["gpl"]
+    offered = (VENDOR / _target(MANIFEST["tinymce"]) / "license.md").read_text("utf-8")
+    assert "GNU General Public License Version 2 or later" in offered

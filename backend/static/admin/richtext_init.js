@@ -25,6 +25,10 @@ window.addEventListener("load", () => {
         "undo redo | h2 h3 | bold italic | bullist numlist | blockquote link | removeformat",
       height: 480,
       branding: false,
+      // Sin clave de licencia, TinyMCE pide un complemento de licencias que no viene en el
+      // paquete y deja el editor deshabilitado. «gpl» declara el uso bajo la GPL v2 o posterior
+      // (NOTICE.md), y el editor la acepta sin consultar la red.
+      license_key: "gpl",
       valid_elements: validElements,
     });
   });
