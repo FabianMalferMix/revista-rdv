@@ -12,10 +12,12 @@ from config.origin import absolute_url
 
 from .models import NewsletterSubscriber
 
-# Rechazos que no cambian por insistir: el destinatario o el remitente rechazados, unas
-# credenciales que no valen o una extensión que el servidor no admite. El resto de errores
-# de red y de SMTP (SMTPException hereda de OSError), y un servidor que no contesta a tiempo,
-# se reintentan.
+# Rechazos que no se reintentan, porque insistir no suele cambiarlos: el destinatario o el
+# remitente rechazados, unas credenciales que no valen o una extensión que el servidor no
+# admite. smtplib lanza la misma excepción si el servidor da el rechazo por temporal (un 4xx,
+# como el de una lista gris), así que tampoco ese se reintenta. El resto de errores de red y
+# de SMTP (SMTPException hereda de OSError), y un servidor que no contesta a tiempo, se
+# reintentan.
 PERMANENT_ERRORS = (
     smtplib.SMTPRecipientsRefused,
     smtplib.SMTPSenderRefused,
@@ -33,7 +35,7 @@ def describe_error(exc):
 
 
 # Cada espera se sortea por debajo de un tope que crece de 30 s a 15 min: los ocho reintentos
-# se reparten en hasta una hora (unos treinta minutos, de media).
+# suman como mucho 60,5 minutos de espera (unos treinta, de media).
 @shared_task(
     autoretry_for=(OSError, SoftTimeLimitExceeded),
     dont_autoretry_for=PERMANENT_ERRORS,
@@ -46,9 +48,10 @@ def send_confirmation_email(subscriber_id):
 
     Fuera del hilo de la petición (no bloquea un worker de gunicorn ante un SMTP
     lento) y con reintento/backoff ante fallos transitorios. Sin fail_silently: un
-    fallo definitivo sube a Sentry en vez de tragarse en silencio. Lleva la cabecera
-    List-Unsubscribe (RFC 8058) con el enlace de baja, para que el cliente de correo
-    ofrezca un botón de darse de baja y mejore la reputación de envío.
+    fallo definitivo sube a Sentry en vez de tragarse en silencio. Lleva las cabeceras
+    List-Unsubscribe, con el enlace de baja, y List-Unsubscribe-Post (RFC 8058), para
+    que el cliente de correo ofrezca un botón de baja en un clic y mejore la reputación
+    de envío.
 
     Recibe solo el id: el correo y los tokens no viajan por el broker, ni quedan en los
     argumentos que Celery escribe en el log o adjunta a un error. Las URL se arman con
@@ -72,7 +75,7 @@ def send_confirmation_email(subscriber_id):
             "List-Unsubscribe": f"<{context['unsub_url']}>",
             # RFC 8058: habilita el botón de baja en un clic del cliente de correo, que
             # envía un POST con este cuerpo. Sin esta cabecera, el cliente visitaría la
-            # URL por GET —que ya no muta nada— y la baja no llegaría a ejecutarse.
+            # URL por GET —que no muta nada— y la baja no llegaría a ejecutarse.
             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
     )

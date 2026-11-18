@@ -1,8 +1,8 @@
 """El correo de confirmación llega aunque el proveedor falle un rato, y deja rastro.
 
-Lo transitorio (una caída, un 4xx) se reintenta durante hasta una hora, con esperas que
-crecen; un rechazo permanente no se reintenta. El panel muestra cuándo salió el correo o por qué no, y
-deja reenviarlo a quien sigue pendiente.
+Una caída o un 4xx al conectar se reintentan durante unos sesenta minutos como mucho, con
+esperas que crecen; un rechazo del destinatario no se reintenta. El panel muestra cuándo salió
+el correo o por qué no, y deja reenviarlo a quien sigue pendiente.
 """
 
 import smtplib

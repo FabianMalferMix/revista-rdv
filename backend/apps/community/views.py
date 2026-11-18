@@ -19,10 +19,9 @@ from .tasks import send_confirmation_email
 
 logger = logging.getLogger(__name__)
 
-# Respuesta única para TODAS las ramas del alta. Antes el mensaje distinguía a quien ya
-# estaba confirmado («Ya estabas suscrito/a») de quien no, lo que convertía el formulario
-# público en un oráculo de pertenencia: cualquiera podía comprobar si una dirección
-# concreta estaba en la lista (hallazgo S-17).
+# Respuesta única para TODAS las ramas del alta: un mensaje distinto para quien ya está en
+# la lista convertiría el formulario público en un oráculo de pertenencia, con el que
+# cualquiera podría comprobar si una dirección concreta está suscrita.
 ALTA_NEUTRA = "Si la dirección es válida, te enviamos un correo para confirmar la suscripción."
 TOO_MANY_ATTEMPTS = "Demasiados intentos. Espera un momento e inténtalo de nuevo."
 
@@ -41,7 +40,7 @@ def _safe_next(request):
 
     Devuelve siempre una URL, nunca un nombre de vista. Solo vale una ruta que empieza por
     «/»: `url_has_allowed_host_and_scheme` acepta también una palabra suelta («agenda»), que
-    `redirect()` intentaba resolver como nombre de vista (un 500), y rechaza `//evil.com`
+    `redirect()` intentaría resolver como nombre de vista (un 500), y rechaza `//evil.com`
     (redirección abierta, CWE-601).
     """
     nxt = request.POST.get("next", "")
@@ -68,8 +67,8 @@ def subscribe(request):
     honeypot descarta bots en silencio.
 
     Todas las ramas que aceptan el correo responden lo mismo y hacen el mismo trabajo
-    observable, para no filtrar si una dirección ya estaba en la lista (S-17). Si el correo
-    no sirve, o se superó el límite de intentos, responde la página del boletín."""
+    observable, para no filtrar si una dirección ya está en la lista. Si el correo no sirve,
+    o se superó el límite de intentos, responde la página del boletín."""
     nxt = _safe_next(request)
     form = SubscribeForm(request.POST)
     if not form.is_valid():
@@ -89,8 +88,8 @@ def subscribe(request):
 
 def _newsletter_page(request, form, nxt):
     """La página del boletín, con el formulario tal como llegó: lo escrito, el error junto al
-    campo y el foco en él, porque el aviso arriba de la página de vuelta quedaba lejos del campo
-    y «Saltar al contenido» se lo saltaba. Tras corregirlo, el alta vuelve a `nxt`."""
+    campo y el foco en él. Un aviso arriba de la página de vuelta quedaría lejos del campo, y
+    «Saltar al contenido» se lo saltaría. Tras corregirlo, el alta vuelve a `nxt`."""
     form.fields["email"].widget.attrs["autofocus"] = True
     return render(request, "community/newsletter.html", {"form": form, "next": nxt})
 
@@ -126,10 +125,10 @@ def _no_referrer(view):
 def confirm(request, token):
     """Confirmación del doble opt-in.
 
-    Muta solo por POST (S-16): los escáneres de enlaces de los clientes de correo y las
-    pasarelas antivirus visitan por GET todo lo que llega en un mensaje, de modo que
-    confirmaban la suscripción por su cuenta y vaciaban de sentido el doble opt-in —el
-    consentimiento registrado no probaba nada—. El GET solo muestra el botón.
+    Muta solo por POST: los escáneres de enlaces de los clientes de correo y las pasarelas
+    antivirus visitan por GET todo lo que llega en un mensaje, y un GET que confirmara les
+    dejaría confirmar la suscripción por su cuenta: el consentimiento registrado no probaría
+    nada. El GET solo muestra el botón.
     """
     sub = _por_token("confirm_token", token)
     if request.method != "POST":
