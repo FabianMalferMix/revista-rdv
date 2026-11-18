@@ -13,7 +13,7 @@ register = template.Library()
 PORTADA_TELEFONO = below(PHONE)
 # Lo que mide la obra en la hoja, que `sizes` repite porque no puede leerla: de alto,
 # max(MIN_HEIGHT, 100svh - --asomo) (componentes.css), donde el asomo (tokens.css) es lo que la
-# obra le deja a la hoja en la primera vista. `tests/test_portada_obra.py` compara cada número
+# obra le deja a la hoja en la primera vista. `tests/site/test_mancheta.py` compara cada número
 # con la hoja.
 MIN_HEIGHT = 460
 ASOMO = 112
@@ -32,7 +32,7 @@ LAMINA_FALLBACK = ("ancha", 1440, "jpg")
 
 # Cuántos registros tiene la tirada, en letras, para el colofón («cinco registros elegidos por el
 # colectivo»): cada cuenta posible hasta el tope de la tirada (`TOPE_TIRADA`, en
-# `apps/site/portada.py`), que `tests/test_tirada.py` compara con esta tabla.
+# `apps/site/portada.py`), que `tests/site/test_tirada.py` compara con esta tabla.
 NUMERALES = {2: "dos", 3: "tres", 4: "cuatro", 5: "cinco"}
 
 

@@ -137,7 +137,7 @@ La lámina de la portada (la obra de la primera vista mientras el colectivo no e
 `backend/static/img/portada/`) sale de sus maestras sin pérdida, que están en
 `backend/apps/devtools/management/commands/lamina/`, cortadas en franjas para que ningún archivo
 pase de 2 MB. Una orden rehace sus quince copias con parámetros fijos, y rehacerlas da los mismos
-bytes (`backend/tests/test_lamina.py` lo comprueba); con `--check`, solo las compara:
+bytes (`backend/tests/devtools/test_lamina.py` lo comprueba); con `--check`, solo las compara:
 
 ```bash
 docker compose exec --user "$(id -u):$(id -g)" web python manage.py generate_lamina_variants

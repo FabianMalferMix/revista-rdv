@@ -8,9 +8,9 @@ archivo del repositorio pase de 2 MB. De cada maestra salen, con LANCZOS, las co
 (`MediaAsset.PORTADA_FORMATS`), y la reserva en JPEG (`LAMINA_FALLBACK`).
 
 Cada codificador lleva sus parámetros fijados y las copias van sin metadatos, así que rehacerlas
-da los mismos bytes (tests/test_lamina.py). La AVIF se codifica con un solo hilo y sin mosaicos
-automáticos: Pillow elige los mosaicos según los núcleos de la máquina, y la copia cambiaría de
-un equipo a otro.
+da los mismos bytes (tests/devtools/test_lamina.py). La AVIF se codifica con un solo hilo y sin
+mosaicos automáticos: Pillow elige los mosaicos según los núcleos de la máquina, y la copia
+cambiaría de un equipo a otro.
 
     python manage.py generate_lamina_variants           # reescribe las copias que difieren
     python manage.py generate_lamina_variants --check   # solo compara; falla si alguna difiere

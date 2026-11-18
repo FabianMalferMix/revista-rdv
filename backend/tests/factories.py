@@ -26,7 +26,7 @@ from apps.site.views import SEARCH_PANEL
 _sequence = itertools.count()
 
 # Las cabeceras con que htmx pide el panel de la lupa: HX-Target lleva el id de su destino.
-# tests/test_search.py comprueba que es el `hx-target` que pinta base.html.
+# tests/site/test_search.py comprueba que es el `hx-target` que pinta base.html.
 SEARCH_PANEL_HEADERS = {"HX-Request": "true", "HX-Target": SEARCH_PANEL}
 
 
