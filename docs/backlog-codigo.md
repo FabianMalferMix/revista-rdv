@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05; C35, el 2026-11-11, y C36, el 2026-11-10. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 92 de 92 tickets cerrados (de los 92: 43 S, 45 M y 4 L). Antes del lanzamiento son imprescindibles 33: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78.
+> **Avance:** 92 de 101 tickets cerrados (de los 101: 48 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 36: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B93 va primero.
 
 ## Cómo se usa
 
@@ -191,6 +191,20 @@
 | B90 | La vista previa no enlaza a lo que no se ve | B71 | S | no | hecho (#284) |
 | B91 | Cuatro detalles del panel | B77 | S | no | hecho (#285) |
 | B92 | El reproductor de YouTube y Vimeo suena con un solo clic | — | S | sí | hecho (#290) |
+
+**Tanda 8 — Lo que dejó la tanda 7**
+
+| Ticket | Qué | Depende de | Tamaño | Lanzamiento | Estado |
+| --- | --- | --- | --- | --- | --- |
+| B93 | Garantías con su prueba | — | M | sí | pendiente |
+| B94 | El correo del boletín | — | S | sí | pendiente |
+| B95 | El panel en castellano, segunda vuelta | B91 | S | no | pendiente |
+| B96 | La suite, segunda vuelta | B79 | M | no | pendiente |
+| B97 | Las reglas 1, 2, 6 y 9 en el código | — | M | no | pendiente |
+| B98 | Imágenes y medidas | B76, B86 | M | no | pendiente |
+| B99 | Diez detalles de las herramientas | B93 | S | no | pendiente |
+| B100 | Los huecos de la agenda y del dossier, a 64 px | — | S | no | pendiente |
+| B101 | Las páginas legales nombran los reproductores | B92 | S | sí | pendiente |
 
 ## 3. Tickets
 
@@ -1612,6 +1626,226 @@ Cada PR baja la línea base de B03.
 
 **Hecho cuando.** Un registro con un video de YouTube se reproduce con un solo clic en la placa, y antes del clic la página sigue sin contactar con el proveedor.
 
+### Tanda 8 — Lo que dejó la tanda 7
+
+#### B93 · Garantías con su prueba
+
+**Hallazgos:** fuera de la auditoría: vistos en la tanda 7, al repasar los comentarios (B78) y al mudar la suite (B79) · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.**
+
+- `RedactTokensFilter` (`config/redaction.py`) falla abierto. Si `record.getMessage()` lanza, el filtro deja pasar el registro, y `logging` escribe en stderr su `msg` y sus `args` sin redactar. La regla 6 pide que los controles de privacidad fallen cerrados.
+- Estas garantías se afirman en el código, y ninguna prueba las vigila (regla 5):
+  - las notas editoriales no salen del panel;
+  - la tarea del boletín recibe solo el id;
+  - el correo de quien se suscribe es de solo lectura en el panel;
+  - la descarga de un adjunto lleva `attachment` y `nosniff`;
+  - la purga de `AccessLog` y de `AccessFailureLog`;
+  - el validador de docx y odt no descomprime;
+  - las respuestas por `X-Accel-Redirect` (el audio y los PDF protegidos): el CI no comprueba su `nosniff` ni su CSP;
+  - el servicio de respaldo no recibe `env_file`;
+  - el paso de `/media/` del CI no comprueba `Referrer-Policy` ni `X-Frame-Options`;
+  - los SVG del panel que quedan en `STATIC_ROOT` no traen guiones;
+  - `tools/ci/decision_refs.py`, que hace fallar el CI si crecen las referencias, no tiene prueba propia.
+- Dos copias de un dato, sin una prueba que las ate (regla 3):
+  - la página del enlace de confirmación caducado dice «48 horas», que es `CONFIRM_TOKEN_TTL`;
+  - el compose de producción rechaza un `SITE_ADDRESS` vacío (`:?`), y envguard lo acepta.
+- A `.env.prod.example` le faltan `CACHE_MEM_LIMIT` y `CACHE_CPUS`. El servicio `cache` de producción no lleva `cap_drop`, aunque no guarda nada en disco: el motivo por el que no lo llevan `db` y `redis`, preparar su directorio de datos, no le aplica.
+
+**Alcance.**
+
+- el filtro falla cerrado: un registro cuyo mensaje no se puede formatear no deja en la salida nada sin redactar, y una prueba lo vigila, con el control de que un mensaje que sí se formatea sigue saliendo, redactado;
+- cada garantía de la lista, con su prueba y su control positivo: por HTTP cuando la ve o la usa una persona, y en el CI cuando es de Caddy o del compose de producción;
+- «48 horas» sale de `CONFIRM_TOKEN_TTL`, y envguard y el compose dicen lo mismo de `SITE_ADDRESS`, o una prueba ata cada copia a su fuente;
+- `.env.prod.example` documenta los límites del servicio `cache`, y el servicio arranca sin capacidades (`cap_drop: [ALL]`).
+
+**Hecho cuando.** Romper cualquiera de esas garantías hace fallar una prueba (cada una con su mutación en el PR), y un registro que no se puede formatear no deja en la salida nada sin redactar.
+
+#### B94 · El correo del boletín
+
+**Hallazgos:** fuera de la auditoría: visto en B79 (etapa 5), al mudar las pruebas del boletín · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.**
+
+- Los reintentos de `send_confirmation_email` (`apps/community/tasks.py`) van al revés. Un rechazo temporal del destinatario (un 4xx, como el de una lista gris) llega como `SMTPRecipientsRefused`, que no se reintenta nunca. Un `SMTPDataError` con un 5xx, que es definitivo, se reintenta ocho veces, porque hereda de `OSError`.
+- El `help_text` de `confirmation_error` dice que solo el rechazo de la dirección no se reintenta, y tampoco se reintentan el remitente rechazado, unas credenciales que no valen ni una extensión que el servidor no admite. Corregirlo pide una migración.
+- La página de un enlace de confirmación caducado dice «o ya se usó», pero un enlace usado da 404, porque el token es de un solo uso: esa frase no la ve nadie.
+- `test_email_task_does_not_swallow_smtp_errors` (`tests/community/test_newsletter.py`) promete «sin fail_silently», pero parchea `EmailMessage.send`: con `fail_silently=True`, sigue pasando.
+
+**Alcance.**
+
+- se reintenta lo temporal (4xx) y no lo definitivo (5xx), sea cual sea la excepción que lo trae, con una prueba de cada caso que simula la respuesta del servidor;
+- el `help_text` dice lo que se reintenta y lo que no, con su migración;
+- el aviso del enlace caducado dice solo lo que puede pasar;
+- la prueba del correo sin `fail_silently` falla si la tarea se lo pone.
+
+**Hecho cuando.** Una lista gris no le cuesta la confirmación a nadie, porque el correo sale al reintentar, y un rechazo definitivo queda en el panel al primer intento.
+
+#### B95 · El panel en castellano, segunda vuelta
+
+**Hallazgos:** fuera de la auditoría: vistos en B91, fuera de su alcance · **Depende de:** B91 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** C3
+
+**Qué pasa.**
+
+- Las restricciones condicionales y las de expresiones no tienen aviso propio: al violarse, el panel enseña su nombre interno («uniq_work_isbn», «suscriptor_email_ci»).
+- En siete inlines, un duplicado nombra los campos por su nombre interno: «Por favor corrija el dato duplicado para article y contributor…».
+- En las notas editoriales, la columna «Autor» enlaza a `/admin/auth/user/N/change/`, que solo puede abrir un superusuario.
+- Dos mensajes del flujo editorial enseñan claves internas: «No se puede 'publish' desde el estado 'in_review'.» (`apps/content/workflow.py`) y «1 artículos → 'submit'.» (`apps/content/admin.py`), que además no concuerda en número.
+- Dos textos de Django: «Agregar Nota editorial adicional» lleva una mayúscula a media frase, y la ayuda «Mantenga presionado "Control"…» sale bajo los selectores dobles, donde no aplica.
+
+**Alcance.**
+
+- cada restricción condicional o de expresiones lleva su aviso, que concuerda con sus rótulos, y la prueba de B91 que recorre los campos únicos recorre también estas restricciones, con su control;
+- los duplicados de un inline se nombran con los rótulos de sus campos;
+- la columna «Autor» no enlaza a donde quien mira no puede entrar;
+- los mensajes del flujo editorial nombran las acciones y los estados como el resto del panel, y concuerdan en número;
+- «Agregar nota editorial adicional», y la ayuda del selector múltiple fuera de los selectores dobles.
+
+**Hecho cuando.** Cada caso tiene su prueba por HTTP con los grupos reales, y en el panel no queda a la vista ninguno de esos nombres internos.
+
+#### B96 · La suite, segunda vuelta
+
+**Hallazgos:** fuera de la auditoría: lo que dejaron fuera las etapas 2 a 7 de B79, caso por caso y con sus líneas, en «Lo que queda fuera» de los PR #297, #300, #301, #303, #304 y #305 · **Depende de:** B79 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C3
+
+**Qué pasa.** B79 mudaba pruebas y fusionaba duplicados sin cambiar lo que comprueba ninguna. Lo que vio y no cumple la regla 10 (las rutas, desde `backend/tests/`):
+
+- `RequestFactory` donde hace falta HTTP: `config/test_security_csp.py`, `config/test_antiabuse.py`, `content/test_admin.py`, `content/test_admin_acciones_por_rol.py`, `showcase/test_showcase.py` y el `_peticion` de `people/test_admin_hardening.py`;
+- pruebas que leen la declaración y no lo que pasa: `resp.context`, `_meta`, los ajustes, el accesor del ORM, el fuente de las plantillas o literales de `estante.js` y `dossier.js`;
+- pruebas de «no aparece» sin control positivo, y pruebas que buscan en la página entera y pasan gracias al pie;
+- ninguna prueba ejercita el reintento de una tarea: tres solo leen su política;
+- datos que no distinguen lo que vigilan (`submissions/test_constraint_migrations.py`) y un nivel de registro sin afirmar (`media/test_image_service.py`);
+- nadie prueba `embed_provider("")`: si con el enlace vacío diera «YouTube», la suite no lo vería;
+- el techo de consultas de la búsqueda no tiene holgura y depende del orden;
+- `test_bounded_waits` falla si no existe la base que nombra `POSTGRES_DB`;
+- `test_contraste_paleta` mide «sobre las bandas» contra el blanco.
+
+Y de orden:
+
+- ayudantes repetidos que caben en `tests/factories.py` (`_imagen`, `_form_data`, `_pending`, `_body`, `_publish`, `_submission` y los de imagen);
+- imports dentro de las pruebas, `noqa` que sobran y líneas de más de 100 caracteres;
+- mensajes de `assert` y nombres que cuentan historia. Dos, con su nombre propuesto: `test_los_formatos_sin_contenedor_no_cambian` (`submissions/test_firma_zip.py`) → `test_formats_without_a_container_skip_the_index_check`, y `test_the_types_on_offer_keep_their_names_and_their_keys_lose_the_accents` (`submissions/test_submissions.py`) → `test_each_type_on_offer_has_its_name_and_an_unaccented_key`;
+- seis archivos de `content/` sin docstring de módulo: admin, models, permissions, poems, views y workflow.
+
+**Alcance.** Cada caso de esas listas, corregido o descartado con su motivo en el PR. Una prueba que cambia lo que comprueba lleva su mutación. Los solapes parciales que B79 dejó como estaban siguen fuera.
+
+**Hecho cuando.** Ninguna prueba de las listas lee lo que la regla 10 no deja leer, cada prueba de «no aparece» tiene su control positivo, y no queda ninguno de los ayudantes repetidos.
+
+#### B97 · Las reglas 1, 2, 6 y 9 en el código
+
+**Hallazgos:** fuera de la auditoría: vistos en B78 y B79, al repasar los comentarios y al mudar la suite · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C8, C17
+
+**Qué pasa.**
+
+- `publish_due_items` (`apps/content/tasks.py`) declara su reintento, pero no sus límites (regla 9).
+- Dos lecturas a mano de lo publicado (regla 2): `published_recording` (`apps/content/models.py`) lee `.published`, y `event_detail` (`apps/agenda/views.py`) filtra `r.published`.
+- El `except OSError` de `version_estaticos` (`config/context_processors.py`) vuelve sin registrar nada (regla 6).
+- Dos cosas fuera de su sitio (regla 1): `seccion_aporta` es un cálculo visual dentro del modelo, y la etiqueta `social`, que pinta el sitio entero, vive en `apps/media`.
+- Código que no hace nada que se vea: `SanitizedBodyMixin` (`apps/content/admin.py`) no añade nada observable, `press_index` pide `select_related("logo")` y no pinta logos, y `available_transitions` solo la usan las pruebas.
+- El reproductor de Vimeo no pide `dnt=1`.
+- Con Redis caído, cada 503 deja un ERROR de `django.request` solo en la consola, porque Sentry ignora ese logger.
+- El id `search-results` está en `apps/site/views.py`, en `buscador.js` y en `tools/ux/browser-smoke.js`, sin una prueba que los ate (regla 3).
+
+**Alcance.**
+
+- `publish_due_items` declara sus límites;
+- lo publicado se lee con su QuerySet, también en esas dos;
+- `version_estaticos` registra el error con su nivel;
+- `seccion_aporta`, a un templatetag, y la etiqueta `social`, a `apps/site`;
+- fuera lo que no hace nada, o una prueba de lo que hace;
+- el reproductor de Vimeo pide `dnt=1`;
+- con Redis caído, el 503 llega a Sentry, agrupado y sin datos personales;
+- el id del panel de resultados sale de una fuente, o una prueba ata las copias.
+
+**Hecho cuando.** Cada caso tiene su prueba, con su mutación, y la regla que rompía se cumple.
+
+#### B98 · Imágenes y medidas
+
+**Hallazgos:** fuera de la auditoría: medido en B76 (#276) y en B86 (#302), fuera de su alcance · **Depende de:** B76, B86 · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.**
+
+- Donde las columnas dependen de cuántas piezas hay (`:has`, `auto-fit`), `sizes` no puede saberlo y pide de más. Pasa con la galería entre 987 y 1100 px (de un 79 a un 100 % de más), con los registros del índice, el retrato del colectivo, las tapas del catálogo, el afiche de la agenda y la miniatura de una fila, recortada con `cover`.
+- Las tapas de la ficha de una editorial piden 241 px y se pintan a 174 cuando hay cuatro títulos. La rejilla cambia a 900 px con `:has`, un corte que no está en `breakpoints.py`.
+- Las copias de 240, 480, 960 y 1440 px saltan de archivo por un píxel junto al límite. Una copia de 720 obligaría a regenerar los derivados.
+- El HTML crece de 1,4 a 4,9 KB (de 95 a 170 B con gzip) por los `sizes` más largos.
+- Si el guardado de un texto falla después de copiar sus imágenes de otro sitio (una consulta que pasa de `statement_timeout`), la fila de la copia se deshace y su archivo queda en el volumen sin dueño, como pasa hoy con una subida que falla igual.
+- TinyMCE reescribe una dirección propia como `../../../../media/…` (`convert_urls` y `relative_urls`). El registro de imágenes la resuelve desde la ficha, como el navegador, y una prueba lo vigila.
+- Un guardado que esté copiando durante un despliegue tiene el `graceful_timeout` de gunicorn (30 s), lo mismo que el presupuesto del guardado.
+
+**Alcance.**
+
+- donde las columnas dependen de cuántas piezas hay, `sizes` pide lo que se pinta, medido antes y después en cada lista a 951 y a 390 px;
+- el corte de 900 px, con nombre en `breakpoints.py`;
+- con la medida, se decide si la escalera de copias gana una de 720 px, que regenera los derivados;
+- los archivos de una copia cuyo guardado falla no quedan sin dueño;
+- TinyMCE guarda las direcciones propias desde `/media/`;
+- el `graceful_timeout` de gunicorn deja terminar al guardado más largo.
+
+**Hecho cuando.** En cada lista medida, `sizes` no pide más de lo que se pinta; un guardado que falla no deja archivos sin dueño, y el editor guarda direcciones que empiezan por `/media/`.
+
+#### B99 · Diez detalles de las herramientas
+
+**Hallazgos:** fuera de la auditoría: vistos en la tanda 7 · **Depende de:** B93 · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.**
+
+- bandit corre en el CI, fijado en 1.9.4, pero no está en `requirements-dev`: en el contenedor `web` hay que instalarlo a mano, y se pierde al reconstruirlo.
+- El `# nosec B308, B703` de `apps/content/templatetags/authored.py` tapa un aviso que no existe: bandit dice «nosec encountered (B703), but no failed test».
+- `tools/ci/decision_refs.py` cuenta como la decisión C3 el `%C3` de una dirección codificada, el primer byte de una letra con tilde (`%C3%A1` es «á»).
+- pip-compile avisa de que pip no va fijado, y lo fijan el Dockerfile y el CI.
+- Dos líneas de `tools/vendor/update.py` pasan de 100 caracteres.
+- La prueba de humo no entra al panel: el editor y los guiones del panel no se prueban en un navegador.
+- La prueba de humo mira el foco del correo rechazado en cuanto carga la página, y el foco lo pone `autofocus`, que Chrome puede aplicar después. En main falló una vez a 951 px («el foco está en «undefined»», ejecución 44525216836, en `1172282`) y pasó al relanzarla sobre el mismo commit.
+- El `notices.txt` de TinyMCE dice DOMPurify 3.3.2, y se sirve la 3.4.11.
+- Dos filas de la tabla de `tools/ux/README.md` cuentan historia («pasos 13 y siguientes»).
+- El video de YouTube de los datos de desarrollo sale como «no disponible».
+
+**Alcance.**
+
+- bandit en `requirements-dev`, con la versión del CI de una sola fuente, o una prueba que las ate;
+- fuera el `nosec` que no tapa nada;
+- `decision_refs.py` no cuenta lo que va codificado en una dirección, con su caso en la prueba que le da B93;
+- pip-compile compila sin ese aviso;
+- las dos líneas de `update.py`, partidas;
+- la prueba de humo entra al panel y abre el editor de un texto;
+- la prueba del correo rechazado espera al foco, con un plazo;
+- lo vendorizado dice la versión de DOMPurify que se sirve;
+- el README de `tools/ux` dice el presente;
+- los datos de desarrollo llevan un video que se puede ver incrustado.
+
+**Hecho cuando.** bandit corre en el contenedor recién reconstruido sin instalar nada a mano y sin avisos, y la prueba de humo pasa por el editor del panel.
+
+#### B100 · Los huecos de la agenda y del dossier, a 64 px
+
+**Hallazgos:** fuera de la auditoría: vistos al cerrar la tanda 7; el dueño eligió igualarlos el 2026-11-19 · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.**
+
+- En `/agenda/`, sin eventos próximos, «Lo más reciente» queda a 104 px del aviso vacío.
+- En `/dossier/`, «Contacto» queda a 88 px de la sección anterior.
+- En las demás secciones, el aire es de 64 px.
+
+**Alcance.** Los dos huecos, a 64 px, a 951 y a 390 px, sin mover nada más.
+
+**Hecho cuando.** A 951 y a 390 px los dos huecos miden 64 px, con capturas de antes y después, y el resto de las dos páginas no se mueve (comparadas píxel a píxel).
+
+#### B101 · Las páginas legales nombran los reproductores
+
+**Hallazgos:** fuera de la auditoría: visto al cerrar la tanda 7 · **Depende de:** B92 · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.**
+
+- Un registro o un texto puede llevar un video de YouTube o de Vimeo. Antes del clic en su placa, la página no contacta con el proveedor. Tras el clic, el reproductor se carga desde el sitio del proveedor, que recibe el origen de la página (B92) y puede guardar en el navegador sus propias cookies y datos.
+- Las páginas legales no lo dicen. La de cookies afirma que no se comparte información con terceros mediante cookies, y la de términos solo dice que el sitio puede enlazar a plataformas de video.
+- Su texto vive en la base de datos: lo escriben las migraciones de datos desde `apps/content/legal.py`, y una base que ya migró no vuelve a leer ese archivo.
+
+**Alcance.**
+
+- un párrafo en la política de cookies, y en la de privacidad si hace falta, que nombra los reproductores de YouTube y de Vimeo, qué reciben tras el clic y qué no se carga antes. El texto es del dueño: lo redacta Claude y el dueño lo aprueba antes de fusionar;
+- `apps/content/legal.py` con el texto nuevo, y una migración de datos que actualiza las bases existentes sin pisar una página editada en el panel, con su prueba.
+
+**Hecho cuando.** Las páginas legales nombran los reproductores con el texto que aprobó el dueño, una base recién migrada y una que ya migró dicen lo mismo, y una página editada en el panel no cambia.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1631,7 +1865,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101
 
 ## 5. Lo diferido
 
