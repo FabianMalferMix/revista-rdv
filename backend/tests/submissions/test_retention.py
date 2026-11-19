@@ -11,7 +11,7 @@ import logging
 from datetime import timedelta
 
 import pytest
-from axes.models import AccessAttempt
+from axes.models import AccessAttempt, AccessFailureLog, AccessLog
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -81,23 +81,28 @@ def test_la_purga_respeta_lo_reciente():
     assert NewsletterSubscriber.objects.filter(email="reciente@example.com").exists()
 
 
-def test_la_purga_borra_los_intentos_de_acceso_caducados():
-    """django-axes guarda IP y usuario tecleado, que son datos personales: la purga los borra
-    pasados `AXES_RETENTION_DAYS`."""
-    viejo = AccessAttempt.objects.create(
-        username="alguien", ip_address="203.0.113.5", failures_since_start=1
-    )
-    AccessAttempt.objects.filter(pk=viejo.pk).update(
+@pytest.mark.parametrize(
+    ("model", "fields"),
+    [
+        pytest.param(AccessAttempt, {"failures_since_start": 1}, id="AccessAttempt"),
+        pytest.param(AccessLog, {}, id="AccessLog"),
+        pytest.param(AccessFailureLog, {"locked_out": False}, id="AccessFailureLog"),
+    ],
+)
+def test_la_purga_borra_los_intentos_de_acceso_caducados(model, fields):
+    """django-axes guarda IP y usuario tecleado, que son datos personales, en tres tablas: los
+    intentos que cuentan para el bloqueo, las entradas y los fallos. La purga los borra de las
+    tres pasados `AXES_RETENTION_DAYS`."""
+    viejo = model.objects.create(username="alguien", ip_address="203.0.113.5", **fields)
+    model.objects.filter(pk=viejo.pk).update(
         attempt_time=timezone.now() - timedelta(days=AXES_RETENTION_DAYS + 1)
     )
-    reciente = AccessAttempt.objects.create(
-        username="otro", ip_address="203.0.113.6", failures_since_start=1
-    )
+    reciente = model.objects.create(username="otro", ip_address="203.0.113.6", **fields)
 
     call_command("purge_stale_data", verbosity=0)
 
-    assert not AccessAttempt.objects.filter(pk=viejo.pk).exists()
-    assert AccessAttempt.objects.filter(pk=reciente.pk).exists()
+    assert not model.objects.filter(pk=viejo.pk).exists()
+    assert model.objects.filter(pk=reciente.pk).exists()
 
 
 def test_purge_dry_run_deletes_nothing():

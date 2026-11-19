@@ -44,7 +44,8 @@ PATTERN = re.compile(
 )
 
 # La documentación, las migraciones, los datos y lo de terceros pueden citarlos; el código no.
-# pyproject.toml nombra reglas de ruff (C4, C90…), que no son decisiones.
+# pyproject.toml nombra reglas de ruff (C4, C90…), que no son decisiones. Esta guarda y su
+# prueba los llevan de muestra.
 EXCLUDED = re.compile(
     r"\.md$"
     r"|(?:^|/)pyproject\.toml$"
@@ -54,6 +55,7 @@ EXCLUDED = re.compile(
     r"|^backend/apps/devtools/management/commands/textos_largos/"
     r"|^tools/ux/(?:linea-base|final)/"
     r"|^tools/ci/decision_refs"
+    r"|^backend/tests/infra/test_decision_refs\.py$"
 )
 
 

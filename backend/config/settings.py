@@ -390,7 +390,8 @@ if not DEBUG:
         "DJANGO_ALLOWED_HOSTS": _ALLOWED_HOSTS_FROM_ENV,
         "DJANGO_CSRF_TRUSTED_ORIGINS": CSRF_TRUSTED_ORIGINS,
         "SITE_URL": SITE_URL,
-        # El dominio que sirve Caddy (docker-compose.prod.yml): solo se lee para compararlo.
+        # El dominio que sirve Caddy (docker-compose.prod.yml): se exige, como en el compose, y
+        # se compara con SITE_URL.
         "SITE_ADDRESS": env_str("SITE_ADDRESS"),
         "AXES_ENABLED": AXES_ENABLED,
         "RATELIMIT_ENABLE": RATELIMIT_ENABLE,

@@ -1,5 +1,7 @@
 """Newsletter con doble opt-in + baja, y el formulario de alta."""
 
+from unittest import mock
+
 import pytest
 from bs4 import BeautifulSoup
 from django.core import mail
@@ -9,6 +11,7 @@ from django.utils import timezone
 
 from apps.community.forms import SubscribeForm
 from apps.community.models import NewsletterSubscriber
+from apps.community.tasks import send_confirmation_email
 from apps.community.views import ALTA_NEUTRA
 
 pytestmark = pytest.mark.django_db
@@ -134,8 +137,6 @@ def test_the_newsletter_page_also_sends_a_bogus_next_home(client, nxt):
 def test_subscribe_degrades_gracefully_when_broker_is_down(client):
     """Si el broker está caído al encolar el correo, el alta NO revienta con 500: el
     suscriptor queda guardado y el fallo se registra."""
-    from unittest import mock
-
     from kombu.exceptions import OperationalError
 
     from apps.community import views
@@ -149,6 +150,23 @@ def test_subscribe_degrades_gracefully_when_broker_is_down(client):
         )
     assert resp.status_code == 302  # redirección normal, no 500
     assert NewsletterSubscriber.objects.filter(email="broker@example.com").exists()
+
+
+def test_the_confirmation_task_receives_only_the_subscriber_id(client, editor):
+    """El correo y los tokens no viajan por el broker ni quedan en los argumentos que Celery
+    escribe en el log: la tarea recibe el id, se encole desde el sitio o desde el panel (el alta
+    a mano y el reenvío)."""
+    panel = reverse("admin:community_newslettersubscriber_changelist")
+    with mock.patch.object(send_confirmation_email, "delay_on_commit") as enqueue:
+        client.post(reverse("community:subscribe"), {"email": "ana@example.com", "apodo": ""})
+        client.force_login(editor)
+        client.post(
+            reverse("admin:community_newslettersubscriber_add"), {"email": "berta@example.com"}
+        )
+        ana = NewsletterSubscriber.objects.get(email="ana@example.com")
+        client.post(panel, {"action": "do_resend", "_selected_action": [ana.pk]})
+    berta = NewsletterSubscriber.objects.get(email="berta@example.com")
+    assert enqueue.call_args_list == [mock.call(ana.pk), mock.call(berta.pk), mock.call(ana.pk)]
 
 
 def test_email_task_does_not_swallow_smtp_errors(monkeypatch):

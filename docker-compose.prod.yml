@@ -141,6 +141,10 @@ services:
       retries: 5
     mem_limit: ${CACHE_MEM_LIMIT:-128m}
     cpus: ${CACHE_CPUS:-0.25}
+    # La misma imagen que redis, sin datos que preparar: arranca ya con el usuario de Redis y
+    # así no necesita ninguna capacidad del kernel (como root, la pediría para bajar de usuario).
+    user: redis
+    cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 

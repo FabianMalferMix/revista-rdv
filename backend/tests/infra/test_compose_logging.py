@@ -10,36 +10,21 @@ Los compose están fuera de la imagen: la prueba corre en el CI, con el reposito
 
 import re
 
-import pytest
-from django.conf import settings
+from tests.repo_root import read, services
 
-ROOT = settings.BASE_DIR.parent
 COMPOSES = ["docker-compose.yml", "docker-compose.prod.yml"]
 _ANCHOR = re.compile(r"^x-logging: &logging\n((?:  .*\n)+)", re.M)
-_SERVICES = re.compile(r"^services:\n((?:(?:  .*)?\n)+)", re.M)
-_SERVICE = re.compile(r"^  ([\w-]+):\n((?:(?:    .*)?\n)*)", re.M)
-
-
-def _read(name):
-    path = ROOT / name
-    if not path.exists():
-        pytest.skip(f"{name} no está en este árbol")
-    return path.read_text(encoding="utf-8")
-
-
-def _services(text):
-    return dict(_SERVICE.findall(_SERVICES.search(text).group(1)))
 
 
 def test_both_files_declare_the_same_rotation():
-    base, prod = (_ANCHOR.search(_read(name)).group(1) for name in COMPOSES)
+    base, prod = (_ANCHOR.search(read(name)).group(1) for name in COMPOSES)
     assert base == prod
     assert "driver: json-file" in base
     assert re.search(r'max-size: "\d+m"', base) and re.search(r'max-file: "\d+"', base)
 
 
 def test_every_service_rotates_its_logs():
-    base, prod = (_services(_read(name)) for name in COMPOSES)
+    base, prod = (services(name) for name in COMPOSES)
     assert {"web", "worker", "beat", "db", "redis", "proxy"} <= set(base) | set(prod)
     for name in set(base) | set(prod):
         # Un servicio de producción que ya existe en la base hereda su `logging`.

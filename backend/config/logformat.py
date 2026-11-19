@@ -7,7 +7,7 @@ Se usa en producción para que los logs sean agregables/consultables por un cole
 import json
 import logging
 
-from config.redaction import redact_text
+from config.redaction import redact_text, unformattable_message
 
 
 def _redact(value):
@@ -45,13 +45,19 @@ def _serializa_redactado(obj):
 
 class JsonFormatter(logging.Formatter):
     def format(self, record):
+        # Redactado también aquí, y no solo en el filtro: así la garantía no depende de que
+        # quien añada un handler recuerde engancharle `redact_tokens` (gunicorn no lo lleva).
+        # Si el mensaje no se puede formatear, sale el aviso: si `format` fallara, el handler
+        # escribiría en stderr la plantilla y los argumentos sin redactar.
+        try:
+            message = record.getMessage()
+        except Exception:  # noqa: BLE001 - la línea sale igual, con el aviso en vez del mensaje
+            message = unformattable_message(record)
         data = {
             "time": self.formatTime(record, self.datefmt),
             "level": record.levelname,
             "logger": record.name,
-            # Redactado también aquí, y no solo en el filtro: así la garantía no depende
-            # de que quien añada un handler recuerde engancharle `redact_tokens`.
-            "message": redact_text(record.getMessage()),
+            "message": redact_text(message),
         }
         if record.exc_info:
             # Una traza puede citar la ruta (p. ej. en el marco de la vista) o la dirección

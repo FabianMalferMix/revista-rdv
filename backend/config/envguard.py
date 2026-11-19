@@ -125,6 +125,13 @@ def check_production_env(values):
         ):
             problems.append(f"{name} (valor de ejemplo)")
 
+    # ── El dominio que sirve Caddy ───────────────────────────
+    # El compose de producción no se carga sin él, y el arranque tampoco: el compose puede
+    # tomarlo de la consola de quien lo lanza, que no llega a los contenedores de la app, y sin
+    # él SITE_URL no se compararía con el dominio que sirve Caddy.
+    if not values["SITE_ADDRESS"]:
+        problems.append("SITE_ADDRESS (el dominio que sirve Caddy, por ejemplo revista.cl)")
+
     # ── Origen de las URL absolutas ──────────────────────────
     problems += _site_url_problems(values)
 

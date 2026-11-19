@@ -1,9 +1,10 @@
 """Guard de arranque en producción.
 
 Con DEBUG=0 el sitio no arranca con secretos de plantilla, hosts por defecto, orígenes
-sin https, un correo sin remitente o de ejemplo, ni defensas apagadas sin autorización. Las pruebas de la función usan valores
-ya interpretados; las del final cargan `config.settings` en un proceso aparte, para
-comprobar que el guard recibe lo mismo que usa Django.
+sin https, sin el dominio que sirve Caddy, con un correo sin remitente o de ejemplo, ni con
+defensas apagadas sin autorización. Las pruebas de la función usan valores ya interpretados;
+las del final cargan `config.settings` en un proceso aparte, para comprobar que el guard
+recibe lo mismo que usa Django.
 """
 
 import os
@@ -20,6 +21,7 @@ from config.envguard import (
     check_storage_separation,
     is_placeholder,
 )
+from tests.repo_root import read
 
 CLAVE_BUENA = "k7Qm2vLpZ4wR8nT3bY6cF1jH5dG0sA2eU7oI4aN9qWxYzBv"  # 47… se completa abajo
 CLAVE_BUENA = CLAVE_BUENA + "123"  # 50 caracteres, variados
@@ -34,7 +36,7 @@ BUENA = {
     "DJANGO_ALLOWED_HOSTS": ["revista.midominio.cl"],
     "DJANGO_CSRF_TRUSTED_ORIGINS": ORIGENES_BUENOS,
     "SITE_URL": "https://revista.midominio.cl",
-    "SITE_ADDRESS": "",
+    "SITE_ADDRESS": "revista.midominio.cl",
     "AXES_ENABLED": True,
     "RATELIMIT_ENABLE": True,
     "DJANGO_HSTS_SECONDS": 31536000,
@@ -121,7 +123,11 @@ def test_example_com_no_se_considera_placeholder():
     assert not is_placeholder("ci.example.com")
     assert (
         _check(
-            {"DJANGO_ALLOWED_HOSTS": ["ci.example.com"], "SITE_URL": "https://ci.example.com"},
+            {
+                "DJANGO_ALLOWED_HOSTS": ["ci.example.com"],
+                "SITE_URL": "https://ci.example.com",
+                "SITE_ADDRESS": "ci.example.com",
+            },
             origins=["https://ci.example.com"],
         )
         == []
@@ -178,9 +184,22 @@ def test_site_url_must_be_the_https_origin_of_an_allowed_host(site_url, reason):
 def test_site_url_must_be_the_domain_caddy_serves():
     problems = _check({"SITE_ADDRESS": "otra.midominio.cl"})
     assert any("no es el dominio que sirve Caddy" in p for p in problems)
+    # Sin el dominio no hay con qué comparar: el arranque se niega, como el compose.
+    assert any(p.startswith("SITE_ADDRESS (") for p in _check({"SITE_ADDRESS": ""}))
     # Controles positivos: el mismo dominio, o «:80» en las pruebas locales.
     assert _check({"SITE_ADDRESS": "revista.midominio.cl"}) == []
     assert _check({"SITE_ADDRESS": ":80"}) == []
+
+
+def test_the_guard_and_the_production_compose_agree_on_requiring_the_domain():
+    """El compose de producción no se carga sin SITE_ADDRESS (`${SITE_ADDRESS:?…}`) y el
+    arranque de la app tampoco: si una de las dos exigencias se relaja sin la otra, una capa
+    rechaza lo que la otra deja pasar."""
+    expansions = re.findall(r"\$\{SITE_ADDRESS(:?[?+-]|\})", read("docker-compose.prod.yml"))
+    assert expansions, "control: el compose de producción usa SITE_ADDRESS"
+    compose_requires_it = ":?" in expansions
+    guard_requires_it = any(p.startswith("SITE_ADDRESS (") for p in _check({"SITE_ADDRESS": ""}))
+    assert compose_requires_it == guard_requires_it, (compose_requires_it, guard_requires_it)
 
 
 @pytest.mark.parametrize(
@@ -245,6 +264,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
+        "SITE_ADDRESS": "ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
         "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
@@ -255,6 +275,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
         "SITE_URL": "https://ci.example.com",
+        "SITE_ADDRESS": "ci.example.com",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
         "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
@@ -265,6 +286,7 @@ ENTORNOS_CI = {
         "DJANGO_ALLOWED_HOSTS": "localhost",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://localhost",
         "SITE_URL": "https://localhost",
+        "SITE_ADDRESS": "localhost",
         "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
         "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
     },
@@ -305,6 +327,7 @@ def test_settings_refuse_a_weakened_defense_unless_authorized():
             "DJANGO_ALLOW_WEAKENED": "RATELIMIT_ENABLE,SENTRY_DSN",
             "DJANGO_ALLOWED_HOSTS": "revista.cl, www.revista.cl",
             "SITE_URL": "https://revista.cl",
+            "SITE_ADDRESS": "revista.cl",
         },
         "s.RATELIMIT_ENABLE, s.ALLOWED_HOSTS",
     )
@@ -336,3 +359,12 @@ def test_settings_refuse_to_start_without_site_url():
     result = _load_settings(env)
     assert result.returncode != 0
     assert "SITE_URL (el origen de las URL absolutas" in result.stderr
+
+
+def test_settings_refuse_to_start_without_the_domain_caddy_serves():
+    """El control positivo son los entornos del CI, que lo traen y arrancan."""
+    env = dict(ENTORNOS_CI["build-prod / collectstatic"])
+    del env["SITE_ADDRESS"]
+    result = _load_settings(env)
+    assert result.returncode != 0
+    assert "SITE_ADDRESS (el dominio que sirve Caddy" in result.stderr

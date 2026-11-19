@@ -3,7 +3,7 @@
 Borrar una pieza deja sus movimientos con el título de la pieza y el nombre de quien los hizo, y
 borrar la cuenta, también. Ni el modelo ni una consulta directa pueden cambiar o borrar una
 entrada. En el panel, una nota lleva como autora a quien la escribe, y las notas ajenas no se
-editan ni se borran.
+editan ni se borran. Y una nota no sale del panel: ninguna página pública la enseña.
 """
 
 import pytest
@@ -24,7 +24,12 @@ from apps.content.models import (
     EditorialStatus as S,
 )
 from apps.content.tasks import publish_due_items
-from tests.factories import admin_form_fields, soup
+from tests.factories import (
+    admin_form_fields,
+    make_published_article,
+    make_published_poem,
+    soup,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -170,3 +175,38 @@ def test_the_migration_copies_title_and_actor_into_existing_entries(migrate):
     ]
     with pytest.raises(DatabaseError), transaction.atomic():
         entries.update(note="otra cosa")
+
+
+def test_a_note_never_leaves_the_panel(client, editor):
+    """La nota de una pieza publicada se lee en su ficha del panel, y en ninguna página pública:
+    ni en la pieza, ni en los listados, la portada, la búsqueda, el feed o el sitemap."""
+    note = "Ojo: la tercera estrofa cojea"
+    poem = make_published_poem(title="Umbral de ceniza", owner=editor)
+    article = make_published_article(title="Correspondencias del puerto", owner=editor)
+    for piece in (poem, article):
+        EditorialNote.objects.create(item=piece, author=editor, body=note)
+    search = reverse("site:search")
+    # Cada página, con lo que la prueba espera ver en ella: así se sabe que es la que enseña
+    # la pieza.
+    pages = {
+        poem.get_absolute_url(): poem.title,
+        article.get_absolute_url(): article.title,
+        reverse("site:home"): article.title,
+        reverse("content:poem_index"): poem.title,
+        reverse("content:text_archive"): article.title,
+        f"{search}?q=Umbral": poem.title,
+        reverse("feed"): article.title,
+        reverse("sitemap"): article.get_absolute_url(),
+    }
+    for url, expected in pages.items():
+        response = client.get(url)
+        assert response.status_code == 200, url
+        assert expected in response.content.decode(), url
+        assert "estrofa cojea" not in response.content.decode(), url
+    found = soup(client, f"{search}?q=cojea")
+    assert poem.title not in found.text and article.title not in found.text
+
+    client.force_login(editor)
+    for piece in (poem, article):
+        panel = reverse(f"admin:content_{piece._meta.model_name}_change", args=[piece.pk])
+        assert note in soup(client, panel).text

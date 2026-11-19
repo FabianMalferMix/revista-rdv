@@ -1,8 +1,18 @@
+from datetime import timedelta
+
 from django import template
 
+from .. import models
 from ..forms import SubscribeForm
 
 register = template.Library()
+
+
+@register.simple_tag
+def confirm_link_hours():
+    """Las horas que vale un enlace de confirmación, como las dice la página del enlace caducado:
+    las de CONFIRM_TOKEN_TTL, el mismo plazo que decide si caducó."""
+    return models.CONFIRM_TOKEN_TTL // timedelta(hours=1)
 
 
 @register.inclusion_tag("partials/_newsletter_form.html", takes_context=True)

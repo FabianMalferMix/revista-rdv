@@ -9,8 +9,10 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.community import models
 from apps.community.models import CONFIRM_TOKEN_TTL, NewsletterSubscriber
 from apps.community.views import ALTA_NEUTRA
+from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 S = NewsletterSubscriber.Status
@@ -74,6 +76,25 @@ def test_el_enlace_de_confirmacion_caduca(client):
     assert resp.status_code == 404
     sub.refresh_from_db()
     assert sub.status == S.PENDING
+
+
+def test_the_expired_link_page_states_the_real_lifetime(client, monkeypatch):
+    """La página del enlace caducado dice cuánto vale un enlace: lo que fija CONFIRM_TOKEN_TTL,
+    el mismo plazo que decide si caducó."""
+    monkeypatch.setattr(models, "CONFIRM_TOKEN_TTL", timedelta(hours=72))
+    now = timezone.now()
+    _pendiente(confirm_token="tok-viejo", confirm_token_at=now - timedelta(hours=80))
+    _pendiente(
+        email="otra@example.com",
+        token="tok-baja-2",
+        confirm_token="tok-reciente",
+        confirm_token_at=now - timedelta(hours=60),
+    )
+    expired = soup(client, reverse("community:confirm", args=["tok-viejo"]))
+    assert "caducan a las 72 horas, o ya se usó" in expired.select_one(".dek").get_text()
+    # Control: con 60 horas, el otro enlace aún vale (con 48 ya habría caducado).
+    valid = soup(client, reverse("community:confirm", args=["tok-reciente"]))
+    assert valid.select_one("form .btn").get_text(strip=True) == "Confirmar mi suscripción"
 
 
 def test_el_token_de_confirmacion_es_de_un_solo_uso(client):

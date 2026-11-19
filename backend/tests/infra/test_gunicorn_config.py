@@ -18,8 +18,9 @@ import pytest
 from django.conf import settings
 from gunicorn.config import Config
 
+from tests.repo_root import services
+
 BACKEND = settings.BASE_DIR
-RAIZ = BACKEND.parent
 
 
 def _options():
@@ -29,14 +30,9 @@ def _options():
 
 def _service(compose, name):
     """El bloque de un servicio en un archivo de compose."""
-    path = RAIZ / compose
-    if not path.exists():
-        pytest.skip(f"{compose} vive en la raíz del repositorio, fuera del contenedor")
-    match = re.search(
-        rf"^  {name}:\n(.*?)(?=^  \S|^\S|\Z)", path.read_text(encoding="utf-8"), re.M | re.S
-    )
-    assert match, f"{compose} no tiene el servicio {name}"
-    return match.group(1)
+    block = services(compose).get(name)
+    assert block, f"{compose} no tiene el servicio {name}"
+    return block
 
 
 def test_every_name_in_the_config_file_is_a_gunicorn_setting():
