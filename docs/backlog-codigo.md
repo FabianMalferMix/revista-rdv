@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05; C35, el 2026-11-11, y C36, el 2026-11-10. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 93 de 102 tickets cerrados (de los 102: 49 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 36: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B102 se añadió el mismo día, porque al registrar D39 se vio que el icono seguía en Syne.
+> **Avance:** 93 de 104 tickets cerrados (de los 104: 51 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 37: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B102 se añadió el mismo día, porque al registrar D39 se vio que el icono seguía en Syne. B103 y B104 se añadieron al cerrar B93, por dos de sus hallazgos; el tercero entró en B97.
 
 ## Cómo se usa
 
@@ -206,6 +206,8 @@
 | B100 | Los huecos de la agenda y del dossier, a 64 px | — | S | no | pendiente |
 | B101 | Las páginas legales nombran los reproductores | B92 | S | sí | pendiente |
 | B102 | El icono, en la letra de titulares | — | S | no | pendiente |
+| B103 | Todos los handlers, con el filtro de redacción | — | S | sí | pendiente |
+| B104 | El respaldo, con las capacidades justas | — | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1733,7 +1735,7 @@ Y de orden:
 
 #### B97 · Las reglas 1, 2, 6 y 9 en el código
 
-**Hallazgos:** fuera de la auditoría: vistos en B78 y B79, al repasar los comentarios y al mudar la suite · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C8, C17
+**Hallazgos:** fuera de la auditoría: vistos en B78 y B79, al repasar los comentarios y al mudar la suite, y en B93 (#310), la copia de los entornos del CI · **Depende de:** — · **Tamaño:** M · **Lanzamiento:** no · **Decisiones:** C8, C17
 
 **Qué pasa.**
 
@@ -1745,6 +1747,7 @@ Y de orden:
 - El reproductor de Vimeo no pide `dnt=1`.
 - Con Redis caído, cada 503 deja un ERROR de `django.request` solo en la consola, porque Sentry ignora ese logger.
 - El id `search-results` está en `apps/site/views.py`, en `buscador.js` y en `tools/ux/browser-smoke.js`, sin una prueba que los ate (regla 3).
+- `ENTORNOS_CI` (`tests/config/test_envguard.py`) copia a mano los entornos de los tres pasos del CI que arrancan con `DEBUG=0`, y ninguna prueba ata la copia a `ci.yml`: si un paso cambia su entorno, la prueba sigue pasando con el viejo (regla 3).
 
 **Alcance.**
 
@@ -1755,7 +1758,8 @@ Y de orden:
 - fuera lo que no hace nada, o una prueba de lo que hace;
 - el reproductor de Vimeo pide `dnt=1`;
 - con Redis caído, el 503 llega a Sentry, agrupado y sin datos personales;
-- el id del panel de resultados sale de una fuente, o una prueba ata las copias.
+- el id del panel de resultados sale de una fuente, o una prueba ata las copias;
+- los entornos de esos tres pasos se leen de `ci.yml`, o una prueba ata la copia.
 
 **Hecho cuando.** Cada caso tiene su prueba, con su mutación, y la regla que rompía se cumple.
 
@@ -1865,6 +1869,43 @@ Y de orden:
 
 **Hecho cuando.** Los tres iconos y la tarjeta salen en Bricolage Grotesque, el informe trae las capturas de antes y después a 16, 32 y 180 px, y D39 dice desde cuándo.
 
+#### B103 · Todos los handlers, con el filtro de redacción
+
+**Hallazgos:** fuera de la auditoría: visto en B93 (#310) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
+
+**Qué pasa.** `LOGGING` (`config/settings.py`) pone el filtro de redacción solo en el handler de la raíz, y los demás escriben sin él:
+
+- los que Django configura por su cuenta (`DEFAULT_LOGGING`), que siguen colgados de sus loggers:
+  - `console`, del logger `django`, que solo escribe con `DEBUG`: en desarrollo, `Not Found: /novedades/baja/<token>/` sale en claro, junto a la línea redactada de la raíz;
+  - `django.server`, que escribe la línea de cada petición de runserver, también con el token;
+  - `mail_admins`, que con `DEBUG=0` manda a `ADMINS` los errores 500. Hoy no manda nada, porque `ADMINS` está vacío; si alguien lo llena, el correo lleva la ruta con el token, en el asunto y en los datos de la petición;
+- los dos de `gunicorn.conf.py` (`console` y `error_console`), que llevan el formateador JSON pero no el filtro. Si una excepción se escapa de Django al responder, gunicorn escribe `Error handling request` con el método y la ruta, en nivel ERROR, y la ruta lleva el token.
+
+**Alcance.**
+
+- ningún handler escribe un registro sin pasar por el filtro de redacción, ni los de Django ni los de gunicorn. Un handler que arme su salida con algo más que el mensaje, como `mail_admins`, que copia en el correo los datos de la petición, se redacta entero o se apaga;
+- una prueba por cada salida (la consola con `DEBUG` y sin él, la línea de runserver, el correo con `ADMINS` lleno y el error de gunicorn), que registra la ruta de un enlace del boletín y comprueba que el token no sale, con su control positivo: la ruta redactada sí sale.
+
+**Hecho cuando.** Con `DEBUG` o sin él, y aunque se llene `ADMINS`, el token de un enlace del boletín no sale en claro por ningún handler.
+
+#### B104 · El respaldo, con las capacidades justas
+
+**Hallazgos:** fuera de la auditoría: visto en B93 (#310) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** —
+
+**Qué pasa.**
+
+- En producción, cada contenedor suelta las capacidades del kernel (`cap_drop: [ALL]`) y lleva `no-new-privileges`. db y redis llevan solo lo segundo, porque sus imágenes oficiales arrancan como root y después bajan de usuario. El servicio backup (`docker-compose.yml`) no lleva ninguna de las dos: corre como root, con las capacidades que Docker da por defecto, sobre los volúmenes de la app y la carpeta del host.
+- `tests/infra/test_compose_production.py` lo exime (`KEEP_CAPABILITIES`).
+- El job backup-restore del CI corre `backup.sh` y `restore.sh` con `docker run` y sus propias opciones, no con las del compose: el CI no prueba el respaldo con las capacidades que tiene en producción.
+
+**Alcance.**
+
+- backup suelta todas las capacidades, añade solo las que necesitan `backup.sh` y `restore.sh`, cada una con su porqué, y lleva `no-new-privileges`;
+- la prueba de las capacidades deja de eximirlo y comprueba las que añade;
+- el job backup-restore corre el respaldo y la restauración con esas mismas opciones, tomadas del compose o atadas a él por una prueba.
+
+**Hecho cuando.** El respaldo y la restauración pasan en el CI con las capacidades del compose de producción, y una capacidad de más hace fallar una prueba.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1884,7 +1925,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101 · el icono y la tarjeta para compartir, todavía en Syne, vistos al registrar D39 → B102
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79, y la copia de los entornos del CI, vista en B93 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101 · el icono y la tarjeta para compartir, todavía en Syne, vistos al registrar D39 → B102 · los handlers que escriben sin el filtro de redacción, vistos en B93 → B103 · el respaldo con las capacidades por defecto, visto en B93 → B104
 
 ## 5. Lo diferido
 
