@@ -6,7 +6,9 @@ las rutas del URLconf: renombrar la de confirmación, o añadir otra ruta con to
 token en claro sin tocar nada más, y si no puede leerlas, tapa la línea entera. Y llega a todos
 los procesos: a los extras anidados que adjunta Celery, al worker y a beat, que escriben con el
 formato y el filtro de Django, y a gunicorn. Un mensaje que no se puede formatear tampoco deja
-nada en claro: en su lugar sale un aviso con el lugar de la llamada.
+nada en claro: en su lugar sale un aviso con el lugar de la llamada. Y no escriben los handlers
+que Django pone por su cuenta: la consola de desarrollo y la línea de runserver salen por la
+raíz, redactadas, y un error no llega por correo a ADMINS, aunque se llene.
 """
 
 import json
@@ -16,10 +18,15 @@ import os
 import subprocess
 import sys
 from copy import deepcopy
+from io import BytesIO
+from types import SimpleNamespace
 
 import pytest
 from django.conf import settings
+from django.core.mail import mail_admins
+from django.core.servers.basehttp import WSGIRequestHandler
 from django.urls import reverse
+from django.utils.log import configure_logging
 
 from config import redaction
 from config.celery import app as celery_app
@@ -92,15 +99,23 @@ def test_nested_extras_from_celery_are_redacted():
 
 
 @pytest.fixture
-def restore_root_logging():
-    root = logging.getLogger()
-    handlers, level = root.handlers[:], root.level
+def restore_logging():
+    """Devuelve cada logger a como estaba: estas pruebas vuelven a configurar el log."""
+    loggers = [logging.getLogger()] + [
+        logger
+        for logger in logging.root.manager.loggerDict.values()
+        if isinstance(logger, logging.Logger)
+    ]
+    saved = [(lg, lg.handlers[:], lg.level, lg.propagate, lg.disabled) for lg in loggers]
     yield
-    root.handlers[:] = handlers
-    root.setLevel(level)
+    for logger, handlers, level, propagate, disabled in saved:
+        logger.handlers[:] = handlers
+        logger.setLevel(level)
+        logger.propagate = propagate
+        logger.disabled = disabled
 
 
-def test_a_worker_line_comes_out_as_redacted_json(settings, capsys, restore_root_logging):
+def test_a_worker_line_comes_out_as_redacted_json(settings, capsys, restore_logging):
     """Como en producción: Celery configura el log del worker y una tarea registra un extra
     con una URL con token."""
     production = deepcopy(settings.LOGGING)
@@ -119,7 +134,7 @@ def test_a_worker_line_comes_out_as_redacted_json(settings, capsys, restore_root
 
 
 def test_a_message_that_cannot_be_formatted_leaves_nothing_in_clear(
-    settings, capsys, restore_root_logging
+    settings, capsys, restore_logging
 ):
     """Con el formato de desarrollo, el filtro es lo único que redacta. A un mensaje le falta un
     argumento: sale un aviso con el lugar de la llamada, y la línea siguiente, bien formada,
@@ -138,6 +153,104 @@ def test_a_message_that_cannot_be_formatted_leaves_nothing_in_clear(
     assert f"{redaction.UNFORMATTABLE_MARK} (" in notice
     assert "test_logging_pipeline.py:" in notice
     assert control.endswith("WARNING apps.community.views Baja de /novedades/baja/<redactado>/")
+
+
+def _start_logging_like_django(settings, *, debug):
+    """Configura el log como `django.setup()`: primero el DEFAULT_LOGGING de Django, con sus
+    propios handlers, y encima el LOGGING del sitio. Con el formato de cada entorno: texto
+    plano con DEBUG, como en desarrollo, y JSON sin él, como en producción."""
+    site = deepcopy(settings.LOGGING)
+    site["handlers"]["console"]["formatter"] = "plain" if debug else "json"
+    settings.DEBUG = debug
+    configure_logging(settings.LOGGING_CONFIG, site)
+
+
+def _json_line(err, logger):
+    """La última línea JSON que escribió un logger."""
+    lines = [json.loads(line) for line in err.splitlines() if line.startswith("{")]
+    return [line for line in lines if line["logger"] == logger][-1]
+
+
+@pytest.mark.django_db
+def test_the_development_console_writes_a_newsletter_link_redacted(
+    client, settings, capsys, restore_logging
+):
+    """Django cuelga del logger `django` su propia consola, que con DEBUG escribe sin el filtro.
+    El 404 de un enlace de baja que no existe sale redactado."""
+    _start_logging_like_django(settings, debug=True)
+    assert client.get(reverse("community:unsubscribe", args=[VALUE])).status_code == 404
+    err = capsys.readouterr().err
+    assert VALUE not in err
+    assert "WARNING django.request Not Found: /novedades/baja/<redactado>/" in err
+
+
+@pytest.mark.django_db
+def test_the_production_console_writes_a_newsletter_link_redacted(
+    client, settings, capsys, restore_logging
+):
+    """Sin DEBUG, la línea sale en JSON, con la ruta redactada en el mensaje y en la petición
+    que Django le adjunta."""
+    _start_logging_like_django(settings, debug=False)
+    assert client.get(reverse("community:confirm", args=[VALUE])).status_code == 404
+    err = capsys.readouterr().err
+    assert VALUE not in err
+    line = _json_line(err, "django.request")
+    assert line["message"] == "Not Found: /novedades/confirmar/<redactado>/"
+    assert line["request"] == "<WSGIRequest: GET '/novedades/confirmar/<redactado>/'>"
+
+
+def _serve_like_runserver(path):
+    """Atiende un GET con el manejador de peticiones de runserver, que escribe la línea de cada
+    una en `django.server`. La petición llega por un búfer, sin socket, y la responde con un 404
+    una aplicación mínima."""
+
+    def app(environ, start_response):
+        start_response("404 Not Found", [("Content-Length", "0")])
+        return [b""]
+
+    request = BytesIO(f"GET {path} HTTP/1.1\r\nHost: testserver\r\n\r\n".encode())
+    # La respuesta se descarta: lo que se mira es la línea del log.
+    connection = SimpleNamespace(
+        makefile=lambda *args, **kwargs: request, sendall=lambda data: None
+    )
+    server = SimpleNamespace(base_environ={}, get_app=lambda: app)
+    WSGIRequestHandler(connection, ("127.0.0.1", 50000), server)
+
+
+def test_the_runserver_line_writes_a_newsletter_link_redacted(settings, capsys, restore_logging):
+    """Django cuelga de `django.server` su propio handler, sin el filtro y sin propagar a la
+    raíz. La línea de un enlace de baja sale redactada."""
+    _start_logging_like_django(settings, debug=True)
+    _serve_like_runserver(reverse("community:unsubscribe", args=[VALUE]))
+    err = capsys.readouterr().err
+    assert VALUE not in err
+    assert 'WARNING django.server "GET /novedades/baja/<redactado>/ HTTP/1.1" 404 0' in err
+
+
+@pytest.mark.django_db
+def test_an_error_on_a_newsletter_link_sends_no_email_to_admins(
+    client, monkeypatch, settings, capsys, mailoutbox, restore_logging
+):
+    """Con ADMINS lleno y sin DEBUG, Django mandaría cada error por correo, con la ruta en el
+    asunto y la petición entera en el cuerpo. No sale ningún correo, y el error queda en el
+    log, redactado."""
+    _start_logging_like_django(settings, debug=False)
+    settings.ADMINS = [("Redacción", "redaccion@example.org")]
+
+    def fails(field, token):
+        raise RuntimeError("la base no responde")
+
+    monkeypatch.setattr("apps.community.views._por_token", fails)
+    client.raise_request_exception = False
+    assert client.get(reverse("community:unsubscribe", args=[VALUE])).status_code == 500
+    assert mailoutbox == []
+    err = capsys.readouterr().err
+    assert VALUE not in err
+    line = _json_line(err, "django.request")
+    assert line["message"] == "Internal Server Error: /novedades/baja/<redactado>/"
+    # Control: con este ADMINS, un correo a los administradores sí sale.
+    mail_admins("Prueba", "Un correo a los administradores.")
+    assert len(mailoutbox) == 1
 
 
 def _log_like_gunicorn(*calls):

@@ -373,6 +373,11 @@ LOGGING = {
         "handlers": ["console"],
         "level": env_str("DJANGO_LOG_LEVEL", "INFO"),
     },
+    # Django cuelga sus propios handlers (DEFAULT_LOGGING) del logger `django` y de su hijo
+    # `django.server`, y escriben sin el filtro: la consola de desarrollo, el correo de cada
+    # error a ADMINS, con la petición entera, y la línea de runserver. Al nombrar aquí `django`,
+    # dictConfig les quita los handlers a él y a sus hijos, que propagan: todo sale por la raíz.
+    "loggers": {"django": {"handlers": []}},
 }
 
 SENTRY_DSN = env_str("SENTRY_DSN")
