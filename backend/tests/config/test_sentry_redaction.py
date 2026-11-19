@@ -11,11 +11,9 @@ boletín sale tapado en la transacción y en la URL, y un evento con una forma i
 
 import json
 import secrets
-import smtplib
 
 import pytest
 import sentry_sdk
-from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from kombu.exceptions import OperationalError as BrokerError
@@ -29,8 +27,6 @@ from config.redaction import sentry_before_send
 pytestmark = pytest.mark.django_db
 EMAIL = "ana.prueba@example.com"
 NAME = "Ana Prueba"
-# La respuesta de un servidor SMTP que rechaza al destinatario: cita su dirección.
-SMTP_REPLY = f"5.1.1 <{EMAIL}>: Recipient address rejected: User unknown".encode()
 
 
 def _pending():
@@ -72,21 +68,32 @@ def test_an_error_while_subscribing_reaches_sentry_without_personal_data(
         assert secret not in sent
 
 
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+# Las respuestas de un servidor SMTP que rechaza al destinatario, para siempre o por un rato (una
+# lista gris), citan su dirección; y las sesiones que abre la tarea hasta rendirse.
+@pytest.mark.parametrize(
+    ("reply", "sessions"),
+    [
+        (f"550 5.1.1 <{EMAIL}>: Recipient address rejected: User unknown", 1),
+        (f"450 4.2.0 <{EMAIL}>: Recipient address rejected: Greylisted", 1 + 8),
+    ],
+    ids=["definitivo", "temporal"],
+)
 def test_a_failed_confirmation_email_reaches_sentry_without_personal_data(
-    sentry_events, monkeypatch, task_failures_stay_in_the_task
+    sentry_events, smtp_server, task_failures_stay_in_the_task, reply, sessions
 ):
+    """El servidor de correo rechaza al destinatario, y smtplib copia su respuesta, que cita
+    la dirección, en el error que llega a Sentry: al primer intento si el rechazo es definitivo,
+    y tras el último reintento si es temporal y no se levanta."""
+    smtp_server.script["RCPT"] = reply  # en todas las sesiones
     sub = _pending()
-
-    def refused(self, *args, **kwargs):
-        raise smtplib.SMTPRecipientsRefused({EMAIL: (550, SMTP_REPLY)})
-
-    monkeypatch.setattr("django.core.mail.EmailMessage.send", refused)
     send_confirmation_email.apply(args=[sub.pk])
+    assert smtp_server.sessions == sessions  # control: el caso tomó su camino
 
     events = sentry_events()
     assert events, "el fallo del envío tiene que llegar a Sentry"
     sent = json.dumps(events)
+    # Control: lo que llegó es el rechazo, con la dirección tapada.
+    assert "SMTPRecipientsRefused" in sent and "<correo>" in sent
     for secret in _secrets(sub):
         assert secret not in sent
 

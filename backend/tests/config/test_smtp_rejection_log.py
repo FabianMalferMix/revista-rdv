@@ -1,16 +1,15 @@
 """Una dirección que el servidor de correo rechaza no queda en el log del worker.
 
 Al rechazar el destinatario, smtplib lanza SMTPRecipientsRefused con la dirección dentro, y
-Celery copia la excepción en la línea de error de la tarea: en el mensaje, en la traza y en el
-extra `data`. El log de producción (JSON) la sustituye por una marca, como Sentry, y deja el
-resto de la línea, que es lo que sirve para diagnosticar.
+Celery copia la excepción en lo que escribe de la tarea: en la línea del reintento, si el rechazo
+es temporal, y en la del error, si es definitivo (en el mensaje, en la traza y en el extra
+`data`). El log de producción (JSON) la sustituye por una marca, como Sentry, y deja el resto de
+la línea, que es lo que sirve para diagnosticar.
 """
 
 import io
 import json
 import logging
-import socketserver
-import threading
 from copy import deepcopy
 
 import pytest
@@ -23,41 +22,6 @@ from config.logformat import JsonFormatter
 
 pytestmark = pytest.mark.django_db
 EMAIL = "lectora.rechazada@example.com"
-
-
-class _RejectingSMTP(socketserver.StreamRequestHandler):
-    """Un servidor SMTP mínimo: acepta la conexión y el remitente, y rechaza al destinatario."""
-
-    def handle(self):
-        self.reply("220 localhost ESMTP")
-        for raw in self.rfile:
-            verb, _, argument = raw.decode().strip().partition(" ")
-            if verb.upper() == "RCPT":
-                self.server.refused.append(argument[argument.index("<") + 1 : argument.index(">")])
-                self.reply("550 5.1.1 Recipient address rejected: user unknown")
-            elif verb.upper() == "QUIT":
-                self.reply("221 Bye")
-                return
-            else:
-                self.reply("250 OK")
-
-    def reply(self, line):
-        self.wfile.write(f"{line}\r\n".encode())
-
-
-@pytest.fixture
-def rejecting_smtp(settings):
-    server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), _RejectingSMTP)
-    server.daemon_threads = True
-    server.refused = []
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    settings.EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    settings.EMAIL_HOST, settings.EMAIL_PORT = server.server_address
-    settings.EMAIL_HOST_USER = settings.EMAIL_HOST_PASSWORD = ""
-    settings.EMAIL_USE_TLS = settings.EMAIL_USE_SSL = False
-    yield server
-    server.shutdown()
-    server.server_close()
 
 
 @pytest.fixture
@@ -79,15 +43,20 @@ def worker_log(settings):
     root.setLevel(level)
 
 
-def test_a_refused_recipient_is_not_in_the_worker_log(
-    rejecting_smtp, worker_log, task_failures_stay_in_the_task
-):
+def _send():
     sub = NewsletterSubscriber.objects.create(
         email=EMAIL, token="baja-tok", confirm_token="alta-tok", confirm_token_at=timezone.now()
     )
     send_confirmation_email.apply(args=[sub.pk])
 
-    assert rejecting_smtp.refused == [EMAIL]
+
+def test_a_refused_recipient_is_not_in_the_worker_log(
+    smtp_server, worker_log, task_failures_stay_in_the_task
+):
+    smtp_server.script["RCPT"] = "550 5.1.1 Recipient address rejected: user unknown"
+    _send()
+
+    assert smtp_server.recipients == [EMAIL]
     lines = worker_log()
     failure = next(
         line for line in lines if line["logger"] == "celery.app.trace" and line["level"] == "ERROR"
@@ -95,4 +64,22 @@ def test_a_refused_recipient_is_not_in_the_worker_log(
     assert "SMTPRecipientsRefused" in failure["message"]
     assert "<correo>" in failure["message"] and "550" in failure["message"]
     assert "SMTPRecipientsRefused" in failure["exc_info"]
+    assert EMAIL not in json.dumps(lines)
+
+
+def test_a_greylisted_recipient_is_not_in_the_retry_line(
+    smtp_server, worker_log, task_failures_stay_in_the_task
+):
+    smtp_server.script["RCPT"] = ["450 4.2.0 Greylisted, try again later"]
+    _send()
+
+    assert smtp_server.recipients == [EMAIL, EMAIL]  # el rechazo y el reintento, que sale
+    lines = worker_log()
+    (retry,) = [
+        line
+        for line in lines
+        if line["logger"] == "celery.app.trace" and " retry: " in line["message"]
+    ]
+    assert "SMTPRecipientsRefused" in retry["message"]
+    assert "<correo>" in retry["message"] and "450" in retry["message"]
     assert EMAIL not in json.dumps(lines)

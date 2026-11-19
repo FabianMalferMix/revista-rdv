@@ -115,6 +115,22 @@ def task_failures_stay_in_the_task():
 
 
 @pytest.fixture
+def smtp_server(settings):
+    """Un servidor SMTP de mentira (tests/smtp_server.py), con el backend SMTP de Django
+    apuntando a él e iniciando sesión, como en producción: `smtp_server.script` fija lo que
+    contesta cada paso."""
+    from tests.smtp_server import SMTPServer
+
+    server = SMTPServer()
+    settings.EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    settings.EMAIL_HOST, settings.EMAIL_PORT = server.server_address
+    settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD = "boletin", "clave-de-prueba"
+    settings.EMAIL_USE_TLS = settings.EMAIL_USE_SSL = False
+    yield server
+    server.stop()
+
+
+@pytest.fixture
 def groups(db):
     """Los tres grupos CON sus permisos, como en producción.
 

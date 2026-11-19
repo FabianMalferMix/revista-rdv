@@ -2,7 +2,8 @@ import smtplib
 
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
-from django.core.mail import EmailMessage
+from celery.utils.time import get_exponential_backoff_interval
+from django.core.mail import EmailMessage, get_connection
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -12,43 +13,66 @@ from config.origin import absolute_url
 
 from .models import NewsletterSubscriber
 
-# Rechazos que no se reintentan, porque insistir no suele cambiarlos: el destinatario o el
-# remitente rechazados, unas credenciales que no valen o una extensión que el servidor no
-# admite. smtplib lanza la misma excepción si el servidor da el rechazo por temporal (un 4xx,
-# como el de una lista gris), así que tampoco ese se reintenta. El resto de errores de red y
-# de SMTP (SMTPException hereda de OSError), y un servidor que no contesta a tiempo, se
-# reintentan.
-PERMANENT_ERRORS = (
-    smtplib.SMTPRecipientsRefused,
-    smtplib.SMTPSenderRefused,
-    smtplib.SMTPAuthenticationError,
-    smtplib.SMTPNotSupportedError,
-)
+MAX_RETRIES = 8
+
+
+def smtp_code(exc):
+    """El código SMTP que trae el error, o None si no trae ninguno.
+
+    Un rechazo de los destinatarios trae un código por dirección: el correo de confirmación va
+    a una sola, así que vale el primero.
+    """
+    code = getattr(exc, "smtp_code", None)
+    if code is None and isinstance(exc, smtplib.SMTPRecipientsRefused) and exc.recipients:
+        code = next(iter(exc.recipients.values()))[0]
+    return code
+
+
+def is_temporary(exc):
+    """Si insistir puede hacer que el correo salga.
+
+    Si el servidor contestó con un código, lo decide el código y no la excepción que lo trae:
+    smtplib lanza la misma con un 4xx, que es temporal (una lista gris, un buzón lleno, un
+    servidor saturado), y con un 5xx, que es definitivo. Sin código, se reintentan un corte de
+    la conexión, los errores de la red y un servidor que no contesta a tiempo, y no lo que el
+    servidor no ofrece (STARTTLS, o un modo de iniciar sesión que smtplib sepa usar), que no
+    cambia por insistir.
+    """
+    code = smtp_code(exc)
+    if code is not None:
+        return 400 <= code < 500
+    if isinstance(exc, smtplib.SMTPServerDisconnected):
+        return True
+    if isinstance(exc, smtplib.SMTPException):
+        return False
+    return isinstance(exc, (OSError, SoftTimeLimitExceeded))
 
 
 def describe_error(exc):
     """El error, sin direcciones: su tipo y, si lo trae, el código SMTP."""
-    code = getattr(exc, "smtp_code", None)
-    if code is None and isinstance(exc, smtplib.SMTPRecipientsRefused) and exc.recipients:
-        code = next(iter(exc.recipients.values()))[0]
+    code = smtp_code(exc)
     return f"{type(exc).__name__} {code}" if code else type(exc).__name__
 
 
-# Cada espera se sortea por debajo de un tope que crece de 30 s a 15 min: los ocho reintentos
-# suman como mucho 60,5 minutos de espera (unos treinta, de media).
-@shared_task(
-    autoretry_for=(OSError, SoftTimeLimitExceeded),
-    dont_autoretry_for=PERMANENT_ERRORS,
-    retry_backoff=30,
-    retry_backoff_max=900,
-    retry_kwargs={"max_retries": 8},
-)
-def send_confirmation_email(subscriber_id):
+def retry_wait(retries):
+    """Los segundos que se esperan antes del reintento que sigue a `retries` reintentos.
+
+    Se sortean por debajo de un tope que crece de 30 s a 15 min: los ocho reintentos suman
+    como mucho 60,5 minutos de espera (unos treinta, de media).
+    """
+    return get_exponential_backoff_interval(
+        factor=30, retries=retries, maximum=900, full_jitter=True
+    )
+
+
+@shared_task(bind=True, max_retries=MAX_RETRIES)
+def send_confirmation_email(self, subscriber_id):
     """Correo de confirmación de suscripción (doble opt-in).
 
     Fuera del hilo de la petición (no bloquea un worker de gunicorn ante un SMTP
-    lento) y con reintento/backoff ante fallos transitorios. Sin fail_silently: un
-    fallo definitivo sube a Sentry en vez de tragarse en silencio. Lleva las cabeceras
+    lento) y con reintento ante los fallos temporales (`is_temporary`), con esperas que
+    crecen (`retry_wait`). Sin fail_silently: un fallo definitivo, o el último de los
+    reintentos, sube a Sentry en vez de tragarse en silencio. Lleva las cabeceras
     List-Unsubscribe, con el enlace de baja, y List-Unsubscribe-Post (RFC 8058), para
     que el cliente de correo ofrezca un botón de baja en un clic y mejore la reputación
     de envío.
@@ -80,11 +104,17 @@ def send_confirmation_email(subscriber_id):
         },
     )
     try:
-        message.send(fail_silently=False)
+        # Como contexto, el backend cierra la conexión al salir, falle donde falle. Sin él, una
+        # conexión que el servidor rechaza en EHLO, STARTTLS o el inicio de sesión quedaría
+        # abierta: send_messages solo cierra la que llegó a abrir entera.
+        with get_connection(fail_silently=False) as connection:
+            connection.send_messages([message])
     except Exception as exc:
         NewsletterSubscriber.objects.filter(pk=sub.pk).update(
             confirmation_error=describe_error(exc)[:120]
         )
+        if is_temporary(exc):
+            raise self.retry(exc=exc, countdown=retry_wait(self.request.retries)) from exc
         raise
     NewsletterSubscriber.objects.filter(pk=sub.pk).update(
         confirmation_sent_at=timezone.now(), confirmation_error=""

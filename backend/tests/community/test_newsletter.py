@@ -19,13 +19,6 @@ S = NewsletterSubscriber.Status
 LOCMEM = "django.core.mail.backends.locmem.EmailBackend"
 
 
-def _pending(email="a@example.com"):
-    """Una suscripción pendiente de confirmar, con sus dos tokens."""
-    return NewsletterSubscriber.objects.create(
-        email=email, token="tok-baja", confirm_token="tok-confirma", confirm_token_at=timezone.now()
-    )
-
-
 @override_settings(EMAIL_BACKEND=LOCMEM)
 def test_subscribe_sends_confirmation_with_link(client, django_capture_on_commit_callbacks):
     with django_capture_on_commit_callbacks(execute=True):
@@ -167,23 +160,6 @@ def test_the_confirmation_task_receives_only_the_subscriber_id(client, editor):
         client.post(panel, {"action": "do_resend", "_selected_action": [ana.pk]})
     berta = NewsletterSubscriber.objects.get(email="berta@example.com")
     assert enqueue.call_args_list == [mock.call(ana.pk), mock.call(berta.pk), mock.call(ana.pk)]
-
-
-def test_email_task_does_not_swallow_smtp_errors(monkeypatch):
-    """Sin fail_silently: un fallo definitivo de SMTP se propaga (sube a Sentry) en vez
-    de tragarse en silencio."""
-    import smtplib
-
-    from django.core.mail import EmailMessage
-
-    from apps.community import tasks
-
-    def boom(self, *a, **k):
-        raise smtplib.SMTPException("smtp caído")
-
-    monkeypatch.setattr(EmailMessage, "send", boom)
-    with pytest.raises(smtplib.SMTPException):
-        tasks.send_confirmation_email(_pending().pk)
 
 
 # ── El formulario, desde SubscribeForm: en el pie y en la página del boletín ────────
