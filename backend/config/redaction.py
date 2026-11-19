@@ -26,6 +26,10 @@ _REDACTADO = r"\1/<redactado>/"
 # Lo que se escribe en lugar del texto si el patrón no se puede construir con Django ya
 # en marcha: sin patrón no se sabe qué redactar, y se falla cerrado.
 SIN_PATRON = "<redactado: no se pudo construir el patrón de las rutas con token>"
+# Lo que se escribe en lugar de un mensaje que no se puede formatear (le faltan argumentos, o
+# su `__str__` falla). Sin él, el handler escribe en stderr la plantilla y los argumentos tal
+# cual llegaron (`logging.Handler.handleError`), con el token en claro.
+UNFORMATTABLE_MARK = "<redactado: el mensaje no se pudo formatear>"
 _patterns = {}
 
 
@@ -159,6 +163,14 @@ def sentry_before_breadcrumb(crumb, hint):
         return None
 
 
+def unformattable_message(record):
+    """El aviso que sustituye a un mensaje que no se puede formatear, con el lugar de la llamada.
+
+    No cita la plantilla: puede llevar la ruta con el token si se armó antes con una f-string.
+    """
+    return f"{UNFORMATTABLE_MARK} ({record.pathname}:{record.lineno})"
+
+
 class RedactTokensFilter:
     """Filtro de logging que redacta los tokens del mensaje ya formateado.
 
@@ -169,7 +181,8 @@ class RedactTokensFilter:
     def filter(self, record):
         try:
             mensaje = record.getMessage()
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 - la línea sale igual, con el aviso en vez del mensaje
+            record.msg, record.args = unformattable_message(record), ()
             return True
         redactado = redact_path(mensaje)
         if redactado != mensaje:

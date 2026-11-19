@@ -5,15 +5,17 @@ respuesta ya trae una, se respeta. El nonce entra en la cabecera solo si la plan
 el mismo en toda la petición y lo lleva el JSON-LD de un texto. Los estilos en línea se permiten
 solo en el panel, y los guiones en línea, nunca. htmx y TinyMCE se sirven desde el propio sitio,
 y htmx no mete estilos en línea. Entre los estáticos, que la política no cubre, no hay documentos
-navegables, y la cabecera Permissions-Policy niega la geolocalización, la cámara, el micrófono y
-el pago.
+navegables propios, y los que traen las apps (los SVG del panel) no llevan guiones. La cabecera
+Permissions-Policy niega la geolocalización, la cámara, el micrófono y el pago.
 """
 
 import json
 import re
+from pathlib import Path
 
 import pytest
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
@@ -27,6 +29,11 @@ from tests.factories import make_article
 
 CSP = "Content-Security-Policy"
 CSP_RO = "Content-Security-Policy-Report-Only"
+# Lo que el navegador abre como documento, con sus guiones, si alguien navega a él.
+NAVIGABLE = {".html", ".htm", ".xhtml", ".svg", ".xml"}
+# Lo que ejecuta código en un documento: un elemento script, un atributo de evento (onload=…),
+# una dirección javascript: y el HTML incrustado en un SVG, que puede llevar un marco con guiones.
+SCRIPTING = re.compile(r"<script|\son[a-z]+\s*=|javascript:|<foreignObject", re.I)
 
 
 # ── Middleware (unitario, sin BD) ─────────────────────────────
@@ -65,15 +72,42 @@ def test_no_hay_documentos_navegables_entre_los_estaticos():
     """
     static = settings.BASE_DIR / "static"
     assert (static / STYLESHEETS[0]).is_file(), "control: se recorren los estáticos"
-    navegables = [
-        p.relative_to(static)
-        for p in static.rglob("*")
-        if p.suffix.lower() in {".html", ".htm", ".xhtml", ".svg", ".xml"}
-    ]
+    navegables = [p.relative_to(static) for p in static.rglob("*") if p.suffix.lower() in NAVIGABLE]
     assert navegables == [], (
         f"hay documentos navegables en static/ ({navegables}): revisar si la CSP debe "
         "cubrir los estáticos moviendo el middleware por delante de WhiteNoise"
     )
+
+
+def test_no_static_document_carries_scripts():
+    """Caddy sirve /static/ desde STATIC_ROOT sin la CSP (infra/caddy/Caddyfile), así que un
+    documento de los estáticos, abierto directamente, ejecutaría sus guiones en el origen del
+    sitio. collectstatic copia allí lo que encuentran los finders, también lo de las apps: hoy,
+    los únicos documentos son los iconos SVG del panel, que trae Django. Ninguno lleva un
+    elemento `script`, un atributo de evento, una dirección `javascript:` ni HTML incrustado."""
+    documents = {
+        path: storage
+        for finder in finders.get_finders()
+        for path, storage in finder.list([])
+        if Path(path).suffix.lower() in NAVIGABLE
+    }
+    assert "admin/img/icon-addlink.svg" in documents, "control: se recorren los del panel"
+    # Control: el patrón reconoce cada forma en un icono como los del panel.
+    icon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h9"/></svg>'
+    assert not SCRIPTING.search(icon)
+    for with_script in (
+        icon.replace("<svg ", '<svg onload="alert(1)" '),
+        icon.replace("</svg>", "<script>alert(1)</script></svg>"),
+        icon.replace("<path ", '<a href="javascript:alert(1)"><path '),
+        icon.replace("</svg>", "<foreignObject><div/></foreignObject></svg>"),
+    ):
+        assert SCRIPTING.search(with_script), with_script
+    scripted = []
+    for path, storage in sorted(documents.items()):
+        with storage.open(path) as document:
+            if SCRIPTING.search(document.read().decode("utf-8")):
+                scripted.append(path)
+    assert scripted == []
 
 
 def test_style_src_no_relaja_nada_en_el_sitio_publico():

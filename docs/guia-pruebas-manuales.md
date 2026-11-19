@@ -692,9 +692,9 @@ docker compose exec web python manage.py check --deploy
 ### Recrear la vista previa de producción
 
 ```bash
-# 1. un .env de prueba (NO uses el tuyo). Con DEBUG=0, el guard de producción exige SITE_URL y
-#    el remitente, y que se nombren las defensas apagadas: aquí no hay Sentry ni HSTS. Los
-#    puertos se abren solo en el propio equipo (127.0.0.1), no en la red.
+# 1. un .env de prueba (NO uses el tuyo). Con DEBUG=0, el guard de producción exige SITE_URL,
+#    SITE_ADDRESS y el remitente, y que se nombren las defensas apagadas: aquí no hay Sentry ni
+#    HSTS. Los puertos se abren solo en el propio equipo (127.0.0.1), no en la red.
 cat > /tmp/prod.env <<'EOF'
 DJANGO_DEBUG=0
 DJANGO_SECRET_KEY=<50+ caracteres variados>

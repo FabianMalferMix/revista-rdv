@@ -18,8 +18,10 @@ import zipfile
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
 
 from apps.submissions.forms import SubmissionForm
+from apps.submissions.models import Submission
 
 # Validar el formulario consulta en la base la restricción del tipo de propuesta.
 pytestmark = pytest.mark.django_db
@@ -88,18 +90,33 @@ def test_un_zip_corrupto_no_revienta():
     assert "no coincide con su extensión" in error
 
 
-def test_no_se_extrae_nada_del_contenedor():
-    """Solo se lee el índice, así que una entrada enorme declarada no se descomprime.
-
-    Un zip bomba entraría por ahí si el validador extrajera. La entrada de la prueba declara
-    5 MB y comprime muchísimo: el docx bien formado entra sin que nada se cuelgue.
+def test_no_se_extrae_nada_del_contenedor(client, monkeypatch):
+    """Solo se lee el índice: ninguna entrada se descomprime, así que un zip bomba no tiene por
+    dónde entrar. La de la prueba se infla a 16 MB, más que el tope del adjunto, y el .docx entra
+    por el formulario sin que se abra nada. Control: el espía ve la descompresión cuando la hay.
     """
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", "x")
-        z.writestr("word/document.xml", "0" * (5 * 1024 * 1024))  # comprime muchísimo
-    ok, _ = _valida("bomba.docx", buf.getvalue())
-    assert ok  # es un docx bien formado; el punto es que no se cuelga
+        z.writestr("word/document.xml", "0" * (16 * 1024 * 1024))  # comprime muchísimo
+    opened = []
+    real_open = zipfile.ZipFile.open
+
+    def spy(self, member, *args, **kwargs):
+        opened.append(member)
+        return real_open(self, member, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, "open", spy)
+    zipfile.ZipFile(io.BytesIO(buf.getvalue())).read("[Content_Types].xml")
+    assert opened == ["[Content_Types].xml"]
+    opened.clear()
+
+    upload = SimpleUploadedFile("bomba.docx", buf.getvalue())
+    response = client.post(reverse("submissions:submit"), {**DATOS, "apodo": "", "file": upload})
+    assert response.status_code == 302
+    assert response["Location"] == reverse("submissions:submit_thanks")
+    assert Submission.objects.get(title=DATOS["title"]).file
+    assert opened == []
 
 
 @pytest.mark.parametrize("ext", ["pdf", "rtf", "txt"])

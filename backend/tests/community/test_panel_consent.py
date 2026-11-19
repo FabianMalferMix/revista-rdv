@@ -1,7 +1,8 @@
 """El panel respeta el consentimiento del boletín y el estado de los envíos.
 
 El doble opt-in es la única prueba del consentimiento: el panel no deja marcar a nadie como
-confirmado a mano, y un alta desde el panel manda el correo de confirmación. En los envíos, el
+confirmado a mano ni cambiar el correo de quien se suscribió, y un alta desde el panel manda el
+correo de confirmación. En los envíos, el
 panel no reescribe lo que mandó la autora, y resolver uno le pone la fecha de la que depende la
 purga.
 """
@@ -14,6 +15,7 @@ from django.utils import timezone
 
 from apps.community.models import NewsletterSubscriber
 from apps.submissions.models import Submission
+from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 S = NewsletterSubscriber.Status
@@ -44,6 +46,21 @@ def test_the_panel_cannot_mark_a_subscriber_as_confirmed(panel):
     assert panel.post(f"{SUBSCRIBERS}{sub.pk}/change/", {"status": "confirmed"}).status_code == 302
     sub.refresh_from_db()
     assert sub.status == S.PENDING and sub.confirmed_at is None
+
+
+def test_the_panel_cannot_change_a_subscribers_email(panel):
+    """Con otro correo, el consentimiento pasaría a una persona que no lo dio: la ficha enseña el
+    correo como texto, y uno distinto en el formulario no lo cambia. El alta sí lo pide."""
+    sub = _pending()
+    change = f"{SUBSCRIBERS}{sub.pk}/change/"
+    page = soup(panel, change)
+    assert page.select_one("#newslettersubscriber_form input[name='email']") is None
+    assert "ana@example.com" in [box.get_text(strip=True) for box in page.select(".readonly")]
+    assert panel.post(change, {"email": "otra@example.com"}).status_code == 302
+    sub.refresh_from_db()
+    assert sub.email == "ana@example.com"
+    add = soup(panel, f"{SUBSCRIBERS}add/")
+    assert add.select_one("#newslettersubscriber_form input[name='email']") is not None
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")

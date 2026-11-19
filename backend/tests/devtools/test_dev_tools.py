@@ -19,6 +19,7 @@ from django.core.management.base import CommandError
 from django.db.migrations.loader import MigrationLoader
 
 from apps.devtools.management.base import DevelopmentCommand
+from tests.repo_root import services
 
 BACKEND_DIR = settings.BASE_DIR
 
@@ -108,6 +109,7 @@ PRODUCTION_ENV = {
     "DJANGO_ALLOWED_HOSTS": "ci.example.com",
     "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
     "SITE_URL": "https://ci.example.com",
+    "SITE_ADDRESS": "ci.example.com",
     "DJANGO_ALLOW_WEAKENED": "SENTRY_DSN",
     "DEFAULT_FROM_EMAIL": "no-reply@ci.example.com",
 }
@@ -153,27 +155,16 @@ def test_a_declared_production_refuses_from_the_command_line_even_with_debug():
     assert "se declara de producción" in result.stderr, result.stderr[-500:]
 
 
-_SERVICES = re.compile(r"^services:\n((?:(?:  .*)?\n)+)", re.M)
-_SERVICE = re.compile(r"^  ([\w-]+):\n((?:(?:    .*)?\n)*)", re.M)
-
-
-def _services(compose):
-    path = BACKEND_DIR.parent / compose
-    if not path.exists():
-        pytest.skip(f"{compose} vive en la raíz del repositorio, fuera del contenedor")
-    return dict(_SERVICE.findall(_SERVICES.search(path.read_text(encoding="utf-8")).group(1)))
-
-
 def test_the_production_compose_declares_production_wherever_the_app_runs():
     """Cada servicio que corre la app declara en docker-compose.prod.yml el entorno que la guarda
     rechaza: el valor viaja por el mismo camino que en producción, la variable de entorno."""
     app = {
         name
-        for name, block in _services("docker-compose.yml").items()
+        for name, block in services("docker-compose.yml").items()
         if "    image: resenas-app:" in block
     }
     assert {"release", "web", "worker", "beat"} <= app, "control: son los servicios de la app"
-    prod = _services("docker-compose.prod.yml")
+    prod = services("docker-compose.prod.yml")
     declared = {
         name: re.findall(r"^      DJANGO_ENVIRONMENT: (\S+)$", prod.get(name, ""), re.M)
         for name in app

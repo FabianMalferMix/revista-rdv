@@ -115,6 +115,7 @@ jobs:
           DJANGO_ALLOWED_HOSTS: ci.example.com
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
           SITE_URL: https://ci.example.com
+          SITE_ADDRESS: ci.example.com
           DJANGO_ALLOW_WEAKENED: SENTRY_DSN
           DEFAULT_FROM_EMAIL: no-reply@ci.example.com
           # El guard exige contraseña en las URL efectivas de Redis; este paso no se conecta.
@@ -181,6 +182,7 @@ jobs:
           DJANGO_ALLOWED_HOSTS: ci.example.com
           DJANGO_CSRF_TRUSTED_ORIGINS: https://ci.example.com
           SITE_URL: https://ci.example.com
+          SITE_ADDRESS: ci.example.com
           DJANGO_ALLOW_WEAKENED: SENTRY_DSN
           DEFAULT_FROM_EMAIL: no-reply@ci.example.com
         run: |
@@ -196,6 +198,7 @@ jobs:
             -e DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
             -e DJANGO_CSRF_TRUSTED_ORIGINS="$DJANGO_CSRF_TRUSTED_ORIGINS" \
             -e SITE_URL="$SITE_URL" \
+            -e SITE_ADDRESS="$SITE_ADDRESS" \
             -e DJANGO_ALLOW_WEAKENED="$DJANGO_ALLOW_WEAKENED" \
             -e DEFAULT_FROM_EMAIL="$DEFAULT_FROM_EMAIL" \
             resenas-prod manage.py collectstatic --noinput
@@ -386,13 +389,15 @@ jobs:
           docker compose up -d --build
           sano() { [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q "$1")")" = healthy ]; }
           for i in $(seq 1 60); do
-            sano web && sano worker && sano beat && break
+            sano web && sano worker && sano beat && sano cache && break
             sleep 5
           done
-          for servicio in web worker beat; do
+          # cache va aparte: web no espera por ella ni /readyz/ la mira, así que una caché que
+          # no arranca solo se ve aquí.
+          for servicio in web worker beat cache; do
             sano "$servicio" || { echo "FALLO: $servicio no pasó su healthcheck"; docker compose ps; exit 1; }
           done
-          echo "OK: web, worker y beat pasan los healthchecks del compose"
+          echo "OK: web, worker, beat y cache pasan los healthchecks del compose"
 
           RELEASE=$(docker compose ps -aq release)
           [ "$(docker inspect -f '{{.State.ExitCode}}' "$RELEASE")" = "0" ] \
@@ -452,13 +457,8 @@ jobs:
       - name: Cabeceras defensivas de /media/
         run: |
           docker compose exec -T web sh -c "printf '<script>alert(document.domain)</script>' > /app/mediafiles/evil.html"
-          H=$(curl -sS -D - -o /dev/null http://127.0.0.1:8080/media/evil.html)
-          echo "$H"
-          echo "$H" | grep -iq 'X-Content-Type-Options: *nosniff' \
-            || { echo "FALLO: /media/ se sirve sin nosniff"; exit 1; }
-          echo "$H" | grep -iq "Content-Security-Policy: *default-src 'none'; sandbox" \
-            || { echo "FALLO: /media/ se sirve sin CSP de aislamiento"; exit 1; }
-          echo "OK: /media/ se sirve con nosniff y CSP de aislamiento"
+          curl -fsS -D - -o /dev/null http://127.0.0.1:8080/media/evil.html \
+            | tools/ci/defensive_headers.sh "/media/evil.html"
 
       - name: Lo despublicado deja de servirse
         run: |
@@ -484,6 +484,7 @@ jobs:
             || { echo "FALLO: el audio publicado no se sirve"; exit 1; }
           [ "$(codigo -H 'Range: bytes=0-9' "$P$PUB_URL")" = 206 ] \
             || { echo "FALLO: el audio publicado no admite saltos (Range)"; exit 1; }
+          curl -fsS -D - -o /dev/null "$P$PUB_URL" | tools/ci/defensive_headers.sh "el audio publicado"
           [ "$(codigo "$P$DES_URL")" = 404 ] \
             || { echo "FALLO: el audio despublicado se sigue sirviendo"; exit 1; }
           for archivo in "$PUB_FILE" "$DES_FILE"; do
@@ -514,6 +515,7 @@ jobs:
           grep -q primera /tmp/pdf-primera || { echo "FALLO: $URL no da el PDF"; exit 1; }
           echo "$H" | grep -qi '^cache-control: no-cache' \
             || { echo "FALLO: $URL llega sin la orden de revalidar"; echo "$H"; exit 1; }
+          echo "$H" | tools/ci/defensive_headers.sh "el PDF de una publicación"
           [ "$(sube segunda)" = "$URL" ] || { echo "FALLO: la dirección cambió con el reemplazo"; exit 1; }
           curl -fsS "$P$URL" | grep -q segunda \
             || { echo "FALLO: tras el reemplazo, $URL sigue dando el PDF viejo"; exit 1; }
@@ -612,7 +614,7 @@ jobs:
             -e POSTGRES_PASSWORD=ci-strong-db-password \
             -e REDIS_PASSWORD=ci-strong-redis-password \
             -e DJANGO_ALLOWED_HOSTS=localhost -e DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost \
-            -e SITE_URL=https://localhost \
+            -e SITE_URL=https://localhost -e SITE_ADDRESS=localhost \
             -e DJANGO_ALLOW_WEAKENED=SENTRY_DSN \
             -e DEFAULT_FROM_EMAIL=no-reply@ci.example.com \
             --entrypoint python resenas-prod manage.py migrate

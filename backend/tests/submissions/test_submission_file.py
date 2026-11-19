@@ -1,9 +1,11 @@
 """El adjunto de un envío solo lo descarga quien puede ver los envíos: a un anónimo lo manda al
 login y a una autora le responde 404. Si el archivo falta en el disco, también 404. El almacén
-privado no da URL pública: al archivo solo se llega por esa vista.
+privado no da URL pública: al archivo solo se llega por esa vista, que lo entrega para guardar,
+sin que el navegador adivine su tipo.
 """
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from apps.submissions.models import Submission
@@ -12,8 +14,6 @@ pytestmark = pytest.mark.django_db
 
 
 def test_submission_file_only_for_editors(client, editor, autor):
-    from django.core.files.uploadedfile import SimpleUploadedFile
-
     submission = Submission.objects.create(
         author_name="A",
         author_email="a@a.com",
@@ -39,8 +39,6 @@ def test_a_submission_file_missing_from_disk_is_a_404(client, editor, caplog):
     """Si el adjunto falta en el disco, quien puede ver los envíos recibe un 404, no un
     500, y el log lo dice con el número del envío y sin el nombre del archivo, que lo puso
     quien envió la propuesta. Control: con el archivo en su sitio, la descarga sale."""
-    from django.core.files.uploadedfile import SimpleUploadedFile
-
     submission = Submission.objects.create(
         author_name="A",
         author_email="a@a.com",
@@ -61,6 +59,27 @@ def test_a_submission_file_missing_from_disk_is_a_404(client, editor, caplog):
     assert record.levelname == "WARNING"
     assert str(submission.pk) in record.getMessage()
     assert "carta-de-ana" not in record.getMessage()
+
+
+def test_the_attachment_is_saved_as_a_file_and_its_type_is_not_guessed(client, editor):
+    """Lo escribió alguien de fuera: el navegador lo guarda en vez de abrirlo en el origen del
+    sitio, y no adivina su tipo por el contenido, así que un manuscrito con HTML dentro no se
+    pinta como una página."""
+    content = b"<html><script>alert(1)</script></html>"
+    submission = Submission.objects.create(
+        author_name="A",
+        author_email="a@a.com",
+        type="resena",
+        title="Privado",
+        body="cuerpo",
+        file=SimpleUploadedFile("manuscrito.pdf", content),
+    )
+    client.force_login(editor)
+    response = client.get(reverse("submissions:file", args=[submission.pk]))
+    assert response.status_code == 200
+    assert b"".join(response.streaming_content) == content
+    assert response["Content-Disposition"].startswith("attachment;")
+    assert response["X-Content-Type-Options"] == "nosniff"
 
 
 def test_private_storage_has_no_public_url():

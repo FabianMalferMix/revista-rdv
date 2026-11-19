@@ -5,11 +5,13 @@ las rutas que no lo llevan; el filtro de registro lo tapa en el mensaje. La reda
 las rutas del URLconf: renombrar la de confirmación, o añadir otra ruta con token, no deja el
 token en claro sin tocar nada más, y si no puede leerlas, tapa la línea entera. Y llega a todos
 los procesos: a los extras anidados que adjunta Celery, al worker y a beat, que escriben con el
-formato y el filtro de Django, y a gunicorn.
+formato y el filtro de Django, y a gunicorn. Un mensaje que no se puede formatear tampoco deja
+nada en claro: en su lugar sale un aviso con el lugar de la llamada.
 """
 
 import json
 import logging
+import logging.config
 import os
 import subprocess
 import sys
@@ -116,13 +118,35 @@ def test_a_worker_line_comes_out_as_redacted_json(settings, capsys, restore_root
     assert json.loads(line)["data"]["args"] == ["/novedades/confirmar/<redactado>/"]
 
 
-def test_gunicorn_logs_json_with_redaction():
-    """gunicorn lee gunicorn.conf.py de su directorio de trabajo; un error al atender una
-    petición sale en JSON y sin el token."""
+def test_a_message_that_cannot_be_formatted_leaves_nothing_in_clear(
+    settings, capsys, restore_root_logging
+):
+    """Con el formato de desarrollo, el filtro es lo único que redacta. A un mensaje le falta un
+    argumento: sale un aviso con el lugar de la llamada, y la línea siguiente, bien formada,
+    sale redactada como siempre."""
+    development = deepcopy(settings.LOGGING)
+    development["handlers"]["console"]["formatter"] = "plain"
+    logging.config.dictConfig(development)
+
+    url = reverse("community:unsubscribe", args=[VALUE])
+    logger = logging.getLogger("apps.community.views")
+    logger.warning("Baja de %s por %s", url)
+    logger.warning("Baja de %s", url)
+    err = capsys.readouterr().err
+    assert VALUE not in err
+    notice, control = err.strip().splitlines()[-2:]
+    assert f"{redaction.UNFORMATTABLE_MARK} (" in notice
+    assert "test_logging_pipeline.py:" in notice
+    assert control.endswith("WARNING apps.community.views Baja de /novedades/baja/<redactado>/")
+
+
+def _log_like_gunicorn(*calls):
+    """Ejecuta las llamadas en otro proceso, con el log configurado como lo hace gunicorn (lee
+    gunicorn.conf.py de su directorio de trabajo), y devuelve lo que escribió en stderr."""
     script = (
-        "import django, logging.config, runpy; django.setup(); "
+        "import django, logging, logging.config, runpy; django.setup(); "
         "logging.config.dictConfig(runpy.run_path('gunicorn.conf.py')['logconfig_dict']); "
-        f"logging.getLogger('gunicorn.error').error('Error handling request %s', '/novedades/baja/{VALUE}/')"
+        "log = logging.getLogger('gunicorn.error'); " + "; ".join(calls)
     )
     result = subprocess.run(
         [sys.executable, "-c", script],
@@ -134,6 +158,25 @@ def test_gunicorn_logs_json_with_redaction():
         check=False,
     )
     assert result.returncode == 0, result.stderr[-500:]
-    line = json.loads(result.stderr.strip().splitlines()[-1])
+    return result.stderr
+
+
+def test_gunicorn_logs_json_with_redaction():
+    """Un error al atender una petición sale en JSON y sin el token."""
+    err = _log_like_gunicorn(f"log.error('Error handling request %s', '/novedades/baja/{VALUE}/')")
+    line = json.loads(err.strip().splitlines()[-1])
     assert line["logger"] == "gunicorn.error"
     assert line["message"] == "Error handling request /novedades/baja/<redactado>/"
+
+
+def test_gunicorn_turns_a_message_that_cannot_be_formatted_into_a_notice():
+    """gunicorn no lleva el filtro: el formateador JSON es lo único que redacta. Un mensaje al
+    que le falta un argumento sale como aviso, y la línea siguiente sale redactada."""
+    err = _log_like_gunicorn(
+        f"log.error('Error handling request %s %s', '/novedades/baja/{VALUE}/')",
+        f"log.error('Error handling request %s', '/novedades/baja/{VALUE}/')",
+    )
+    assert VALUE not in err
+    notice, control = (json.loads(line) for line in err.strip().splitlines()[-2:])
+    assert notice["message"].startswith(f"{redaction.UNFORMATTABLE_MARK} (")
+    assert control["message"] == "Error handling request /novedades/baja/<redactado>/"

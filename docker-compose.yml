@@ -125,9 +125,9 @@ services:
     build: ./infra/backup   # postgres:16 + restic (off-site) + curl (alertas)
     profiles: ["backup"]
     # Entorno EXPLÍCITO en vez de `env_file: .env` (mínimo privilegio): el fichero completo
-    # le daría DJANGO_SECRET_KEY y las credenciales de SMTP, que no necesita para nada. Ojo
-    # al enumerar: RESTIC_PASSWORD y AWS_* no aparecen en los scripts porque los lee el
-    # propio binario `restic`, no el shell.
+    # le daría DJANGO_SECRET_KEY y las credenciales de SMTP, que no necesita para nada
+    # (tests/infra/test_compose_production.py lo comprueba). Ojo al enumerar: RESTIC_PASSWORD
+    # y AWS_* no aparecen en los scripts porque los lee el propio binario `restic`, no el shell.
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-resenas}
       POSTGRES_USER: ${POSTGRES_USER:-resenas}
