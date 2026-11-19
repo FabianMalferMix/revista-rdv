@@ -57,8 +57,10 @@ class NewsletterSubscriber(models.Model):
         max_length=120,
         blank=True,
         verbose_name="error del último envío",
-        help_text="Vacío si el último envío salió. Un rechazo de la dirección "
-        "(SMTPRecipientsRefused) no se reintenta; los demás errores se reintentan solos.",
+        help_text="Vacío si el último envío salió. Se reintentan solos un rechazo temporal "
+        "(código 4xx, como el de una lista gris), un corte de la red o un servidor que no "
+        "contesta a tiempo. No se reintentan un rechazo definitivo (código 5xx) ni un ajuste "
+        "que el servidor no admite, como STARTTLS o el modo de iniciar sesión.",
     )
 
     class Meta:

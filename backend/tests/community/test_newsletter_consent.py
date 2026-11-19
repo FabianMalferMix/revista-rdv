@@ -80,7 +80,8 @@ def test_el_enlace_de_confirmacion_caduca(client):
 
 def test_the_expired_link_page_states_the_real_lifetime(client, monkeypatch):
     """La página del enlace caducado dice cuánto vale un enlace: lo que fija CONFIRM_TOKEN_TTL,
-    el mismo plazo que decide si caducó."""
+    el mismo plazo que decide si caducó. No dice otra causa: un enlace ya usado no llega a esta
+    página, porque da 404 (test_el_token_de_confirmacion_es_de_un_solo_uso)."""
     monkeypatch.setattr(models, "CONFIRM_TOKEN_TTL", timedelta(hours=72))
     now = timezone.now()
     _pendiente(confirm_token="tok-viejo", confirm_token_at=now - timedelta(hours=80))
@@ -91,7 +92,7 @@ def test_the_expired_link_page_states_the_real_lifetime(client, monkeypatch):
         confirm_token_at=now - timedelta(hours=60),
     )
     expired = soup(client, reverse("community:confirm", args=["tok-viejo"]))
-    assert "caducan a las 72 horas, o ya se usó" in expired.select_one(".dek").get_text()
+    assert "caducan a las 72 horas. Vuelve a suscribirte" in expired.select_one(".dek").get_text()
     # Control: con 60 horas, el otro enlace aún vale (con 48 ya habría caducado).
     valid = soup(client, reverse("community:confirm", args=["tok-reciente"]))
     assert valid.select_one("form .btn").get_text(strip=True) == "Confirmar mi suscripción"
