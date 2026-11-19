@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05; C35, el 2026-11-11, y C36, el 2026-11-10. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 92 de 101 tickets cerrados (de los 101: 48 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 36: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B93 va primero.
+> **Avance:** 92 de 102 tickets cerrados (de los 102: 49 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 36: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B102 se añadió el mismo día, porque al registrar D39 se vio que el icono seguía en Syne. B93 va primero.
 
 ## Cómo se usa
 
@@ -205,6 +205,7 @@
 | B99 | Diez detalles de las herramientas | B93 | S | no | pendiente |
 | B100 | Los huecos de la agenda y del dossier, a 64 px | — | S | no | pendiente |
 | B101 | Las páginas legales nombran los reproductores | B92 | S | sí | pendiente |
+| B102 | El icono, en la letra de titulares | — | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1846,6 +1847,24 @@ Y de orden:
 
 **Hecho cuando.** Las páginas legales nombran los reproductores con el texto que aprobó el dueño, una base recién migrada y una que ya migró dicen lo mismo, y una página editada en el panel no cambia.
 
+#### B102 · El icono, en la letra de titulares
+
+**Hallazgos:** fuera de la auditoría: visto al registrar D39 (#308); el dueño pidió redibujarlo el 2026-11-19 · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** D17, D39
+
+**Qué pasa.**
+
+- El icono de la pestaña (`icono-32.png`), el de la pantalla del teléfono (`icono-180.png`) y `favicon.ico` (16, 32 y 48 px) se dibujaron el 2026-10-13, en Syne. Desde D17 (2026-10-20), los titulares van en Bricolage Grotesque.
+- La tarjeta para compartir salió ese día en la misma letra. La dibuja también `tools/ux/iconos.js`, pero no está en el repositorio: queda en `tools/ux/out/` y se sube desde el panel, como imagen para compartir del perfil, al lanzar.
+- Desde B62, `iconos.js` toma la letra de titulares de `--display`: si se vuelve a correr, dibuja los iconos en la letra de hoy.
+
+**Alcance.**
+
+- los tres iconos, dibujados de nuevo con `tools/ux/iconos.js`, y la tarjeta, en `tools/ux/out/`, lista para subirla al lanzar;
+- comprobar que «RdV» se lee a 16, 32 y 180 px (en Syne, a 16 px la «d» apenas se leía), con capturas de antes y después;
+- una nota fechada en D39, con la fecha de los iconos nuevos.
+
+**Hecho cuando.** Los tres iconos y la tarjeta salen en Bricolage Grotesque, el informe trae las capturas de antes y después a 16, 32 y 180 px, y D39 dice desde cuándo.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1865,7 +1884,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101 · el icono y la tarjeta para compartir, todavía en Syne, vistos al registrar D39 → B102
 
 ## 5. Lo diferido
 
