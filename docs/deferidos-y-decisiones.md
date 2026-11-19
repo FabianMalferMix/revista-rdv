@@ -91,6 +91,12 @@ cerraron con **P0+P1+P2 y los accionables de P3 completos, CI verde**. La vigent
   de reintento con tests de contrato. El mismo módulo pone un `string_if_invalid` que hace
   fallar una variable de plantilla que no existe: un parámetro opcional de una parcial se
   lee con `{% if %}` o `{% firstof %}`, no con `|default`.
+  *Nota del 2026-11-19:* con el fixture `task_failures_stay_in_the_task`, que apaga la
+  propagación, una tarea que pide un reintento sí se reintenta: `apply()` la vuelve a correr
+  en el acto, sin esperar la cuenta atrás, hasta su `max_retries`. Desde B94, las pruebas del
+  correo del boletín (`tests/community/test_confirmation_email.py`) cuentan con eso. Con la
+  propagación encendida, como en el resto de la suite, el `Retry` llega a la prueba y la
+  tarea no se vuelve a correr.
 
 - **`serialized_rollback` descartado.** Los tests `transaction=True` vacían la tabla y
   con ella las páginas legales de migración; se intentó `serialized_rollback=True` pero
