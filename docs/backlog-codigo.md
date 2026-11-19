@@ -206,7 +206,7 @@
 | B100 | Los huecos de la agenda y del dossier, a 64 px | — | S | no | pendiente |
 | B101 | Las páginas legales nombran los reproductores | B92 | S | sí | pendiente |
 | B102 | El icono, en la letra de titulares | — | S | no | pendiente |
-| B103 | Todos los handlers, con el filtro de redacción | — | S | sí | pendiente |
+| B103 | Los handlers de Django, con el filtro de redacción | — | S | sí | pendiente |
 | B104 | El respaldo, con las capacidades justas | — | S | no | pendiente |
 
 ## 3. Tickets
@@ -1869,22 +1869,22 @@ Y de orden:
 
 **Hecho cuando.** Los tres iconos y la tarjeta salen en Bricolage Grotesque, el informe trae las capturas de antes y después a 16, 32 y 180 px, y D39 dice desde cuándo.
 
-#### B103 · Todos los handlers, con el filtro de redacción
+#### B103 · Los handlers de Django, con el filtro de redacción
 
 **Hallazgos:** fuera de la auditoría: visto en B93 (#310) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** sí · **Decisiones:** —
 
-**Qué pasa.** `LOGGING` (`config/settings.py`) pone el filtro de redacción solo en el handler de la raíz, y los demás escriben sin él:
+**Qué pasa.** `LOGGING` (`config/settings.py`) pone el filtro de redacción solo en el handler de la raíz. Los handlers que Django configura por su cuenta (`DEFAULT_LOGGING`) siguen colgados de sus loggers y escriben sin él:
 
-- los que Django configura por su cuenta (`DEFAULT_LOGGING`), que siguen colgados de sus loggers:
-  - `console`, del logger `django`, que solo escribe con `DEBUG`: en desarrollo, `Not Found: /novedades/baja/<token>/` sale en claro, junto a la línea redactada de la raíz;
-  - `django.server`, que escribe la línea de cada petición de runserver, también con el token;
-  - `mail_admins`, que con `DEBUG=0` manda a `ADMINS` los errores 500. Hoy no manda nada, porque `ADMINS` está vacío; si alguien lo llena, el correo lleva la ruta con el token, en el asunto y en los datos de la petición;
-- los dos de `gunicorn.conf.py` (`console` y `error_console`), que llevan el formateador JSON pero no el filtro. Si una excepción se escapa de Django al responder, gunicorn escribe `Error handling request` con el método y la ruta, en nivel ERROR, y la ruta lleva el token.
+- `console`, del logger `django`, que solo escribe con `DEBUG`: en desarrollo, `Not Found: /novedades/baja/<token>/` sale en claro, junto a la línea redactada de la raíz;
+- `django.server`, que escribe la línea de cada petición de runserver, también con el token;
+- `mail_admins`, que con `DEBUG=0` manda a `ADMINS` los errores 500. Hoy no manda nada, porque `ADMINS` está vacío; si alguien lo llena, el correo lleva la ruta con el token, en el asunto y en los datos de la petición.
+
+Los dos handlers de `gunicorn.conf.py` tampoco llevan el filtro, y no lo necesitan: su formateador, `JsonFormatter`, redacta el mensaje, la traza y los extras, y `test_gunicorn_logs_json_with_redaction` (`tests/config/test_logging_pipeline.py`) lo prueba con la línea `Error handling request`.
 
 **Alcance.**
 
-- ningún handler escribe un registro sin pasar por el filtro de redacción, ni los de Django ni los de gunicorn. Un handler que arme su salida con algo más que el mensaje, como `mail_admins`, que copia en el correo los datos de la petición, se redacta entero o se apaga;
-- una prueba por cada salida (la consola con `DEBUG` y sin él, la línea de runserver, el correo con `ADMINS` lleno y el error de gunicorn), que registra la ruta de un enlace del boletín y comprueba que el token no sale, con su control positivo: la ruta redactada sí sale.
+- ningún handler de Django escribe un registro sin redactar. Un handler que arme su salida con algo más que el mensaje, como `mail_admins`, que copia en el correo los datos de la petición, se redacta entero o se apaga;
+- una prueba por cada salida (la consola con `DEBUG` y sin él, la línea de runserver y el correo con `ADMINS` lleno), que registra la ruta de un enlace del boletín y comprueba que el token no sale, con su control positivo: la ruta redactada sí sale.
 
 **Hecho cuando.** Con `DEBUG` o sin él, y aunque se llene `ADMINS`, el token de un enlace del boletín no sale en claro por ningún handler.
 
