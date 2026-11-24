@@ -248,9 +248,9 @@ html{scroll-padding-top:calc(var(--alto-cabecera) + var(--s2))}
 .subhead{margin:var(--s5) 0 var(--s3); font-size:var(--t5); font-weight:700; line-height:var(--lh-titulo);
   color:var(--ink)}
 /* En la rejilla del lienzo los márgenes no se funden: cuando el título de una sección sigue a
-   la cabecera de la ficha, entre el filete y el título queda solo el aire del título, el mismo
-   que en las demás fichas. */
-.index-head:has(+ .subhead){margin-bottom:0}
+   la cabecera de la ficha o al aviso de una lista vacía, entre los dos queda solo el aire del
+   título, el mismo que en las demás secciones. */
+.index-head:has(+ .subhead), .vacio:has(+ .subhead){margin-bottom:0}
 /* Datos: autoría, fecha, lugar, rol. En caja baja, que se lee de corrido. */
 .meta, .muted{font-family:var(--mono); font-size:var(--t-1); letter-spacing:var(--tr-meta);
   color:var(--muted)}
@@ -1189,7 +1189,8 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .dossier-head h1{font-size:var(--t6); line-height:1.05; margin:10px 0 0}
 .dossier-head .dek{font-size:var(--t2); margin:var(--s1) 0 0}
 .dossier-toolbar{display:flex; flex-wrap:wrap; gap:10px}
-.dossier-section{margin:var(--s5) 0 0}
+/* El aire antes de cada sección, que la caja del contacto toma también, menos su relleno. */
+.dossier-section{--aire:var(--s5); margin:var(--aire) 0 0}
 .dossier-doc .subhead{margin:0 0 var(--s3)}
 .dossier-doc h3{margin:0}
 .dossier-doc h3 a, .cronologia-titulo a{text-decoration:none; color:var(--ink)}
@@ -1270,7 +1271,10 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
 .dossier-aliados{list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap;
   gap:var(--s3) clamp(var(--s3), 4vw, var(--s5))}
 .dossier-aliados li{display:flex; flex-direction:column; gap:var(--s1); width:160px}
-.dossier-contact{padding:var(--s3); background:var(--paper-2)}
+/* El contacto va en una caja de hoja clara que sube lo que mide su relleno: su título queda a la
+   misma distancia de la sección anterior que el de las demás. */
+.dossier-contact{--relleno:var(--s3); margin-top:calc(var(--aire) - var(--relleno)); padding:var(--relleno);
+  background:var(--paper-2)}
 
 /* Pie: la identidad del colectivo, el mapa, el boletín (lista de prensa) y lo legal. */
 /* La identidad abre el pie: el sello, de dónde es y desde cuándo, y cómo escribirle. El

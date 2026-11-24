@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Prueba de humo en navegador: el sitio en Chrome a 951 px (la ventana del dueño) y a 375 px (un
-// teléfono), y lo que pide cada imagen y el aire de las fichas a 951 y a 390 px, con los guiones
-// de backend/static/js/ ejecutándose de verdad. Una comprobación falla si lo que mide no se
-// cumple, y también ante un error de página o de consola, un recurso propio que no carga o una
-// petición a un tercero que nadie pidió. La corre el job `navegador` del CI.
+// teléfono), y lo que pide cada imagen y el aire antes de los títulos de sección (en las fichas,
+// el dossier y la agenda) a 951 y a 390 px, con los guiones de backend/static/js/ ejecutándose
+// de verdad. Una comprobación falla si lo que mide no se cumple, y también ante un error de
+// página o de consola, un recurso propio que no carga o una petición a un tercero que nadie
+// pidió. La corre el job `navegador` del CI.
 //
 //   node tools/ux/browser-smoke.js [--base URL]
 //
@@ -1378,6 +1379,43 @@ const CHECKS = [
         !wrong.length,
         `entre el filete y el título hay, en ${wrong.join('; en ')}, y en la ficha de una integrante, ${reference.gap} px`
       );
+    },
+  },
+  {
+    name: 'Antes del título de una sección, el mismo aire: en el dossier, también en la caja del contacto, y en la agenda sin fechas',
+    widths: [951, 390],
+    async run({ page }) {
+      // En el dossier, del borde de abajo de lo anterior al título de cada sección.
+      await visit(page, '/dossier/');
+      const sections = await page.evaluate(() =>
+        [...document.querySelectorAll('main .dossier-doc > .dossier-section')].map((section) => {
+          const title = section.querySelector('.subhead');
+          return {
+            title: title.textContent.trim(),
+            gap: title.getBoundingClientRect().top - section.previousElementSibling.getBoundingClientRect().bottom,
+          };
+        })
+      );
+      const contact = sections.find((section) => section.title === 'Contacto');
+      const others = sections.filter((section) => section !== contact);
+      expect(contact && others.length, 'el dossier no tiene la sección «Contacto» y otra con la que medir el aire');
+      // La medida: la de la primera de las demás secciones, que tienen que coincidir entre sí.
+      const reference = others[0];
+      const differs = (gap) => Math.abs(gap - reference.gap) >= 0.5;
+      const wrong = [...others, contact]
+        .filter((section) => differs(section.gap))
+        .map((section) => `en el dossier, antes de «${section.title}», ${section.gap} px`);
+      // En la agenda sin fechas, del aviso al título de lo más reciente.
+      await visit(page, '/agenda/');
+      const agenda = await page.evaluate(() => {
+        const notice = document.querySelector('main .vacio');
+        const title = notice && notice.nextElementSibling;
+        if (!title || !title.matches('.subhead')) return null;
+        return { title: title.textContent.trim(), gap: title.getBoundingClientRect().top - notice.getBoundingClientRect().bottom };
+      });
+      expect(agenda, '/agenda/ no muestra el aviso sin fechas con el título de una sección debajo: no hay aire que medir');
+      if (differs(agenda.gap)) wrong.push(`en la agenda, antes de «${agenda.title}», ${agenda.gap} px`);
+      expect(!wrong.length, `${wrong.join('; ')}, y no los ${reference.gap} px que hay en el dossier antes de «${reference.title}»`);
     },
   },
   {
