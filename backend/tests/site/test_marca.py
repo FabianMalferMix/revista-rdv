@@ -1,6 +1,7 @@
 """La marca del colectivo: el sello magenta de la cabecera, con el monograma RV dentro, que en
-colores forzados toma el color del texto; como icono, «RdV» en blanco sobre el mismo magenta, y
-como tarjeta para compartir, el sello a toda la tarjeta. /favicon.ico lleva al icono.
+colores forzados toma el color del texto; como icono, «RdV» en blanco sobre el mismo magenta, en
+la letra de titulares, y como tarjeta para compartir, el sello a toda la tarjeta. /favicon.ico
+lleva al icono.
 """
 
 from pathlib import Path
@@ -63,6 +64,18 @@ def test_los_iconos_existen_con_su_tamano():
         )
     with Image.open(IMG / "favicon.ico") as ico:
         assert sorted(ico.ico.sizes()) == [(16, 16), (32, 32), (48, 48)]
+
+
+def test_the_icons_are_drawn_in_the_heading_font():
+    """tools/ux/iconos.js escribe en cada PNG la letra con que lo dibujó. Si la hoja cambia la de
+    titulares, los iconos se vuelven a dibujar."""
+    heading_font = css.split_commas(css.tokens()["--display"])[0].strip("\"'")
+    for name in ("icono-32.png", "icono-180.png"):
+        with Image.open(IMG / name) as icon:
+            assert icon.text.get("font") == heading_font, (
+                f"{name} no está dibujado en la letra de titulares ({heading_font}): "
+                "hay que volver a correr tools/ux/iconos.js"
+            )
 
 
 def test_quien_pide_favicon_ico_recibe_el_icono(client):
