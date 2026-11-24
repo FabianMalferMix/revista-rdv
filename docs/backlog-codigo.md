@@ -2,7 +2,7 @@
 
 > **Fuente:** [`docs/auditoria-codigo.md`](auditoria-codigo.md), commit `38fdf03` (2026-10-27), con 113 hallazgos.
 > **Decisiones:** C1 a C29, tomadas por el dueño el 2026-10-28; C30, el 2026-10-29, C31 a C33, el 2026-11-04; C34, el 2026-11-05; C35, el 2026-11-11, y C36, el 2026-11-10. El porqué de cada una está en [`docs/deferidos-y-decisiones.md`](deferidos-y-decisiones.md) §1, y lo diferido, en su §3.
-> **Avance:** 98 de 106 tickets cerrados (de los 106: 53 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 37: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B102 se añadió el mismo día, porque al registrar D39 se vio que el icono seguía en Syne. B103 y B104 se añadieron al cerrar B93, por dos de sus hallazgos; el tercero entró en B97. Al cerrar B94, B97 sumó otras dos tareas sin sus límites. B105 se añadió al cerrar B101, porque el dueño pidió que la nota del reproductor lleve a la política de cookies. B106 se añadió al cerrar B97, porque el logo de las menciones en prensa no se pinta en ninguna página.
+> **Avance:** 98 de 107 tickets cerrados (de los 107: 54 S, 49 M y 4 L). Antes del lanzamiento son imprescindibles 37: los marcados «sí», más B07, que es urgente. B80 se añadió al cerrar la tanda 4, B81 a B84 al cerrar la tanda 5 y B85 al cerrar la tanda 6, por hallazgos que la auditoría no tenía, y B86 a B92 en la tanda 7: B86, por una decisión del dueño en B68; B87, por lo que se vio al hacerla; B88, por lo que se vio en B72; B89 y B90, por la ronda de vistos buenos; B91, por lo que se vio en B77, y B92, por lo que se vio en B78. B93 a B101 se añadieron al cerrar la tanda 7, con lo que el dueño decidió sobre su informe final el 2026-11-19: B93 a B99, por los hallazgos sin ticket, y B100 y B101, por dos de sus preguntas. B102 se añadió el mismo día, porque al registrar D39 se vio que el icono seguía en Syne. B103 y B104 se añadieron al cerrar B93, por dos de sus hallazgos; el tercero entró en B97. Al cerrar B94, B97 sumó otras dos tareas sin sus límites. B105 se añadió al cerrar B101, porque el dueño pidió que la nota del reproductor lleve a la política de cookies. B106 se añadió al cerrar B97, porque el logo de las menciones en prensa no se pinta en ninguna página. B107 se añadió al cerrar B105, porque el mando de la placa tapa el título largo de una carátula.
 
 ## Cómo se usa
 
@@ -210,6 +210,7 @@
 | B104 | El respaldo, con las capacidades justas | — | S | no | pendiente |
 | B105 | La nota del reproductor enlaza a la política de cookies | B101 | S | no | hecho (#320) |
 | B106 | El logo de la prensa | — | S | no | pendiente |
+| B107 | El título de la carátula, sin nada encima | — | S | no | pendiente |
 
 ## 3. Tickets
 
@@ -1946,6 +1947,39 @@ Los dos handlers de `gunicorn.conf.py` tampoco llevan el filtro, y no lo necesit
 
 **Hecho cuando.** El logo de una mención se ve donde decidió el dueño, o el panel ya no lo ofrece. En los dos casos, una prueba lo comprueba.
 
+#### B107 · El título de la carátula, sin nada encima
+
+**Hallazgos:** fuera de la auditoría: visto en B105 (#320) · **Depende de:** — · **Tamaño:** S · **Lanzamiento:** no · **Decisiones:** D10
+
+**Qué pasa.**
+
+- Un registro sin póster lleva en su placa la carátula tipográfica (D10): el rótulo y el título, en blanco sobre el azul. La misma carátula va en la miniatura del índice (`media/partials/_caratula.html`). El título está oculto al lector de pantalla, porque la página ya lo dice.
+- El título no se achica con la placa ni se corta. Si es largo, o la pantalla es estrecha, baja más allá del espacio que la carátula le reserva, y le quedan encima el mando de la placa en la ficha (el botón y el aviso) o la marca de reproducción en el índice.
+- En la ficha, la carátula reserva abajo 88 px (`calc(64px + var(--s3))`), pensados para un mando de 64 px. Pero el mando mide 64 px solo con JavaScript y desde 360 px de ancho:
+  - por debajo de 360, el aviso pasa a tres renglones y el mando mide 69;
+  - sin JavaScript, el aviso suma «Ver en YouTube ↗» y el mando mide 71, u 88 por debajo de 360.
+- Medido en B105 sobre la ficha y el índice reales, con la carátula en lugar del póster. Las cifras son las mismas con el aviso de antes de B105.
+  - En la ficha, con el título de desarrollo (33 caracteres, dos renglones):
+    - con JavaScript, el mando lo tapa por debajo de 360 px (5 px a 352, 23 a 320);
+    - sin JavaScript, por debajo de 365 (3 px a 360, 43 a 320).
+  - En la ficha, con un título de 60 caracteres, que ocupa tres renglones a 390: el mando lo tapa también a 390, 10 px con JavaScript y 17 sin él.
+  - En el índice:
+    - la marca tapa 8 px de un título de 60 caracteres a 360 px, y 20 px de uno de 90 a 390;
+    - a 320, el de 60 ya se sale de la miniatura, que lo corta.
+  - A 951 px caben todos.
+
+**Alcance.**
+
+- El título de la carátula se ve entero, o cortado con puntos suspensivos, siempre por encima del mando y de la marca. Vale para la ficha y el índice, a cualquier ancho desde 320 px, con JavaScript y sin él.
+  - Maneras posibles:
+    - achicarlo con la placa, con unidades de contenedor, como ya hace la placa desde 600 px;
+    - cortarlo en un número de renglones;
+    - reservarle el alto real del mando.
+  - Claude le muestra al dueño las maneras, con capturas a 951, a 390 y a 320 px, y él elige.
+- Una prueba en el navegador, con un título largo, comprueba que el pie del título queda por encima del mando y de la marca. Lleva su control: un título corto.
+
+**Hecho cuando.** Un título de carátula largo se lee sin nada encima, en la ficha y en el índice, a 951, a 390 y a 320 px, y una prueba en el navegador lo vigila.
+
 ## 4. Cobertura de los hallazgos
 
 Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda cerrado cuando todos sus tickets lo están. Si un ticket cubre solo una parte, su ficha dice cuál.
@@ -1965,7 +1999,7 @@ Cada hallazgo de la auditoría y los tickets que lo cierran. Un hallazgo queda c
 - **Dominio editorial: flujo de estados, visibilidad, permisos y admin (DOM):** DOM-1 → B17 · DOM-2 → B16 · DOM-3 → B18 · DOM-4 → B37 · DOM-5 → B39 · DOM-6 → B48
 - **Herramientas de desarrollo, datos de demostración y salud del repositorio (HER):** HER-1 → B07 · HER-2 → B07, B63 · HER-3 → B64 · HER-4 → B52 · HER-5 → B64 · HER-6 → B62 · HER-7 → B01, B62 · HER-8 → B01, B03, B41, B65
 - **Auditorías complementarias: accesibilidad y permanencia de las URL (COM):** COM-1 → B28 · COM-2 → B55 · COM-3 → B51 · COM-4 → B54 · COM-5 → B28 · COM-6 → B29 · COM-7 → B54 · COM-8 → B28 · COM-9 → B28, B29 · COM-10 → B54 · COM-11 → B56 · COM-12 → B02, B28
-- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79, la copia de los entornos del CI, vista en B93, y las dos tareas sin sus límites, vistas en B94 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101 · el icono y la tarjeta para compartir, todavía en Syne, vistos al registrar D39 → B102 · los handlers que escriben sin el filtro de redacción, vistos en B93 → B103 · el respaldo con las capacidades por defecto, visto en B93 → B104 · la nota del reproductor, que no lleva a la política de cookies, vista al cerrar B101 → B105 · el logo de las menciones en prensa, que no se pinta, visto en B97 → B106
+- **Fuera de la auditoría:** la dirección rechazada en el log del worker, vista al cerrar la tanda 4 → B80 · la dirección del PDF que cambia con cada reemplazo, vista al cerrar B42 → B81 · el epígrafe fuera de la búsqueda → B82 · las notas ajenas que no dicen por qué no se pueden cambiar, vistas al cerrar B48 → B83 · TinyMCE 8 y su licencia (PR #233) → B84 · el recorte de la búsqueda a mitad de palabra, visto en B61 → B85 · las imágenes de otro sitio en el HTML de autor, decididas en B68 → B86 · los enlaces de YouTube que el patrón no reconocía, vistos en B68 → B87 · la cápsula abierta con el teclado que buscaba en 167 px, vista en B72 → B88 · los cuatro detalles a la vista de la ronda de vistos buenos → B89 · los enlaces de la vista previa que llevaban a un 404 → B90 · los avisos, los estados y los selectores del panel que se leían mal, y las notas editoriales que no caben a 951 px, vistos en B77 → B91 · el reproductor de YouTube que no cargaba tras el clic, visto en B78 → B92 · el filtro de redacción que falla abierto y las garantías sin prueba, vistos en B78 y B79 → B93 · los reintentos y los avisos del correo del boletín, vistos en B79 → B94 · los nombres internos y los textos de Django que quedan en el panel, vistos en B91 → B95 · lo que B79 vio en la suite y no le tocaba cambiar → B96 · lo que no cumple las reglas 1, 2, 6 y 9, visto en B78 y B79, la copia de los entornos del CI, vista en B93, y las dos tareas sin sus límites, vistas en B94 → B97 · lo que pide de más `sizes`, medido en B76, y los cabos de la copia de imágenes, vistos en B86 → B98 · los detalles de las herramientas, vistos en la tanda 7 → B99 · los dos huecos de la agenda y del dossier → B100 · los reproductores que las páginas legales no nombran → B101 · el icono y la tarjeta para compartir, todavía en Syne, vistos al registrar D39 → B102 · los handlers que escriben sin el filtro de redacción, vistos en B93 → B103 · el respaldo con las capacidades por defecto, visto en B93 → B104 · la nota del reproductor, que no lleva a la política de cookies, vista al cerrar B101 → B105 · el logo de las menciones en prensa, que no se pinta, visto en B97 → B106 · el título de la carátula que tapan el mando y la marca, visto en B105 → B107
 
 ## 5. Lo diferido
 
