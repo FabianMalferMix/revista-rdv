@@ -181,6 +181,16 @@ services:
     security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
 
+  # El respaldo y la restauración corren como root sobre los volúmenes de la app y la carpeta
+  # del host, que son de otros usuarios.
+  backup:
+    # De las capacidades del kernel conserva tres: DAC_OVERRIDE, para escribir donde no es
+    # dueño; CHOWN, para devolver cada archivo restaurado a su dueño, y FOWNER, para fijarle
+    # después sus permisos.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    security_opt: ["no-new-privileges:true"]
+
 volumes:
   caddydata:
   caddyconfig:

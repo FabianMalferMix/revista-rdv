@@ -646,7 +646,20 @@ jobs:
             docker exec bk-ping python -c "import urllib.request as u; u.urlopen('http://localhost:8000/')" 2>/dev/null && break
             sleep 1
           done
-          BK="docker run --rm --network bknet -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
+          # backup.sh y restore.sh corren con las opciones de seguridad que el respaldo lleva en
+          # producción, tal como las declara el compose: las capacidades del kernel que suelta y
+          # las que añade, y no-new-privileges. Si no saliera ninguna, el job los probaría con las
+          # de Docker por defecto.
+          SEGURIDAD=$(docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+            --profile backup config --no-interpolate --format json | jq -r '.services.backup
+            | [(.cap_drop // [])[] | "--cap-drop=\(.)"] + [(.cap_add // [])[] | "--cap-add=\(.)"]
+            + [(.security_opt // [])[] | "--security-opt=\(.)"] | join(" ")')
+          echo "opciones de seguridad del respaldo: $SEGURIDAD"
+          case " $SEGURIDAD " in
+            *" --cap-drop=ALL "*) ;;
+            *) echo "FALLO: el compose de producción no le quita las capacidades al respaldo"; exit 1 ;;
+          esac
+          BK="docker run --rm --network bknet $SEGURIDAD -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
             -e POSTGRES_USER=resenas -e POSTGRES_PASSWORD=ci-strong-db-password
             -e BACKUP_PING_URL=http://bk-ping:8000/ping -v $PWD/infra/backup:/scripts:ro
             --entrypoint sh"
@@ -695,7 +708,7 @@ jobs:
           echo "OK: cada fallo avisa, y ninguno queda como respaldo completo"
 
           # ── restore.sh exige confirmación explícita ──
-          RESTORE="docker run --rm --network bknet -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
+          RESTORE="docker run --rm --network bknet $SEGURIDAD -e POSTGRES_HOST=bk-db -e POSTGRES_DB=resenas
             -e POSTGRES_USER=resenas -e POSTGRES_PASSWORD=ci-strong-db-password
             -v $PWD/infra/backup:/scripts:ro -v /tmp/bk:/backups
             -v /tmp/bkmedia:/volumes/media -v /tmp/bkpriv:/volumes/private_media"
