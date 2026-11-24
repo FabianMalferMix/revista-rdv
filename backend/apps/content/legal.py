@@ -1,12 +1,12 @@
 """El texto vigente de las páginas legales: privacidad, cookies y términos.
 
-Lo leen las migraciones de datos que crean y actualizan estas páginas (`0007_legal_pages` y
-`0010_privacy_ley_21719`) y el fixture `legal_pages` de las pruebas, así que una base recién
-migrada y la de pruebas tienen el mismo texto. Una base que ya migró no vuelve a leer este
-archivo: cambiar el texto de una página publicada se hace con una migración de datos nueva que
-actualice las bases existentes, no editando este archivo a secas. De sus slugs sale también
-`LEGAL_PAGES` (models.py): las páginas a las que el panel no deja cambiar el slug, despublicar
-ni borrar.
+Lo leen las migraciones de datos que crean y actualizan estas páginas (`0007_legal_pages`,
+`0010_privacy_ley_21719` y `0024_legal_pages_name_the_players`) y el fixture `legal_pages` de las
+pruebas, así que una base recién migrada y la de pruebas tienen el mismo texto. Una base que ya
+migró no vuelve a leer este archivo: cambiar el texto de una página publicada se hace con una
+migración de datos nueva que actualice las bases existentes, no editando este archivo a secas. De
+sus slugs sale también `LEGAL_PAGES` (models.py): las páginas a las que el panel no deja cambiar el
+slug, despublicar ni borrar.
 
 Como lo importan migraciones, este módulo no importa modelos (cada migración le pasa el suyo, el
 histórico), y `pages` y `create_pages` conservan su nombre y su firma.
@@ -50,6 +50,10 @@ un tiempo desde su resolución.</li>
 <p>Los datos se alojan en nuestra infraestructura de servidor y no se venden ni ceden a terceros con
 fines comerciales. Aplicamos medidas de seguridad razonables; el material de los envíos se guarda en
 almacenamiento privado, no accesible públicamente.</p>
+<p>Si reproduces un video de YouTube o de Vimeo, tu navegador se conecta directamente con esa
+plataforma, que recibe tu dirección IP y los datos de tu navegador y los trata según su propia
+política de privacidad. Antes de que lo pidas, la página no se conecta con ellas. Los detalles
+están en la política de cookies.</p>
 <h2>Tus derechos</h2>
 <p>Puedes ejercer tus derechos de <strong>acceso, rectificación, cancelación (supresión), oposición y
 portabilidad</strong> escribiéndonos al correo de contacto publicado en este sitio. Puedes darte de
@@ -59,14 +63,25 @@ baja de las novedades desde el enlace incluido en cada correo.</p>
 
 _COOKIES = """
 <p>Este sitio usa <strong>solo cookies técnicas y estrictamente necesarias</strong> para su
-funcionamiento. No usamos cookies de analítica, publicidad ni seguimiento de terceros.</p>
+funcionamiento. No usamos cookies de analítica, publicidad ni seguimiento de terceros. Solo si
+reproduces un video de YouTube o de Vimeo, esa plataforma puede guardar las suyas, como se explica
+al final.</p>
 <h2>Qué cookies usamos</h2>
 <ul>
 <li><strong>Sesión:</strong> mantiene la sesión iniciada en el panel de administración.</li>
 <li><strong>CSRF:</strong> protege los formularios contra falsificación de solicitudes.</li>
 </ul>
-<p>Al ser necesarias para operar el sitio, no requieren consentimiento previo. No se comparte
-información con terceros mediante cookies.</p>
+<p>Al ser necesarias para operar el sitio, no requieren consentimiento previo. Nuestras cookies no
+comparten información con terceros.</p>
+<h2>Videos de YouTube y Vimeo</h2>
+<p>Algunos registros se ven en el reproductor de YouTube o de Vimeo. Hasta que pulsas el botón para
+reproducir uno, la página no se conecta con esas plataformas ni carga nada de ellas: en su lugar se
+ve una carátula del propio sitio.</p>
+<p>Al pulsarlo, tu navegador carga el reproductor desde YouTube, en su modo de privacidad mejorado,
+o desde Vimeo. Desde ese momento, la plataforma recibe tu dirección IP, los datos de tu navegador,
+la dirección de este sitio (no la de la página que estás viendo) y lo que haces en el reproductor,
+y puede guardar en tu navegador sus propias cookies u otros datos, según sus políticas, que no
+controlamos.</p>
 """
 
 _TERMS = """
