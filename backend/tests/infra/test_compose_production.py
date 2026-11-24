@@ -15,8 +15,18 @@ COMPOSES = ["docker-compose.yml", "docker-compose.prod.yml"]
 KEEP_CAPABILITIES = {
     "db": "la imagen oficial prepara como root su directorio de datos y luego baja de usuario",
     "redis": "la imagen oficial prepara como root su directorio de datos y luego baja de usuario",
-    "backup": "corre como root sobre los volúmenes de la app y la carpeta del host",
 }
+# Las que añade alguno de los que las sueltan todas, con su porqué.
+ADDED_CAPABILITIES = {
+    "proxy": {"NET_BIND_SERVICE": "enlazar los puertos 80 y 443"},
+    "backup": {
+        "DAC_OVERRIDE": "backup.sh y restore.sh escriben en la carpeta del host y en los volúmenes,"
+        " que son de otros usuarios",
+        "CHOWN": "restore.sh devuelve cada archivo restaurado a su dueño, el usuario de la app",
+        "FOWNER": "restore.sh fija los permisos de cada archivo después de devolvérselo a su dueño",
+    },
+}
+
 _LIMIT = re.compile(r"\$\{(\w+_(?:MEM_LIMIT|CPUS)):-([^}]+)\}")
 
 
@@ -42,17 +52,54 @@ def test_the_backup_gets_only_the_variables_it_names():
 
 def test_every_production_container_drops_the_kernel_capabilities():
     """Un proceso comprometido en un contenedor sin capacidades no puede, por ejemplo, cambiar el
-    dueño de un archivo ni abrir sockets crudos. Solo los de KEEP_CAPABILITIES las conservan, y
-    solo el proxy añade una: enlazar los puertos 80 y 443."""
+    dueño de un archivo ni abrir sockets crudos. Solo los de KEEP_CAPABILITIES las conservan, los
+    de ADDED_CAPABILITIES añaden las que dicen y ni una más, y ninguno corre privilegiado."""
     production = _production()
     assert set(KEEP_CAPABILITIES) < set(production), "una excepción que ya no es un servicio"
+    added = {}
     for name, block in production.items():
         drops = "    cap_drop: [ALL]\n" in block
         assert drops != (name in KEEP_CAPABILITIES), name
-    added = {
-        name: re.findall(r"^    cap_add: (.+)$", block, re.M) for name, block in production.items()
-    }
-    assert {name: caps for name, caps in added.items() if caps} == {"proxy": ["[NET_BIND_SERVICE]"]}
+        assert not re.search(r"^    privileged:", block, re.M), name
+        for value in re.findall(r"^    cap_add:(.*)$", block, re.M):
+            listed = re.fullmatch(r" \[([A-Z_, ]+)\]", value)
+            assert listed, f"{name}: cap_add va en una lista en línea y sin comillas"
+            added.setdefault(name, set()).update(cap.strip() for cap in listed.group(1).split(","))
+    assert added == {name: set(caps) for name, caps in ADDED_CAPABILITIES.items()}
+
+
+def test_no_production_container_gains_privileges_from_a_setuid_binary():
+    """Con no-new-privileges, ningún proceso gana privilegios al ejecutar un binario setuid, como
+    su o sudo: lo llevan todos, también los que conservan las capacidades."""
+    production = _production()
+    assert {"web", "db", "backup"} <= set(production), "control: los servicios de producción"
+    without = [
+        name
+        for name, block in production.items()
+        if '    security_opt: ["no-new-privileges:true"]\n' not in block
+    ]
+    assert without == []
+
+
+def test_the_ci_runs_the_backup_scripts_with_their_production_options():
+    """El job backup-restore del CI saca del compose de producción las opciones de seguridad del
+    respaldo, y corre backup.sh y restore.sh siempre con ellas, por $BK o por $RESTORE: así los
+    prueba con las capacidades que tienen en producción."""
+    workflow = read(".github/workflows/ci.yml")
+    job = re.search(r"^  backup-restore:\n((?:(?:    .*)?\n)*)", workflow, re.M)
+    script = re.sub(r"\\\n", " ", job.group(1))
+    assert re.search(
+        r"SEGURIDAD=\$\(docker compose -f docker-compose.yml -f docker-compose.prod.yml +"
+        r"--profile backup config .*\| jq -r '.services.backup$",
+        script,
+        re.M,
+    )
+    for name in ("BK", "RESTORE"):
+        assert re.search(rf'^ *{name}="docker run [^"]*\$SEGURIDAD\s', script, re.M), name
+    launches = re.findall(r"^.*/scripts/(?:backup|restore)\.sh.*$", script, re.M)
+    assert len(launches) > 2, "control: el job corre los dos guiones"
+    for line in launches:
+        assert re.search(r"\$(BK|RESTORE) .*/scripts/(backup|restore)\.sh", line), line
 
 
 def test_docker_waits_for_a_confirmation_email_to_finish():
