@@ -14,12 +14,15 @@
 //   backend/static/img/favicon.ico     16, 32 y 48 px, para quien pide /favicon.ico
 //   tools/ux/out/tarjeta-para-compartir.png   1200 × 630: se sube desde el panel como
 //                                      «imagen para compartir» (og_image) del perfil del sitio
+// Los dos PNG del sitio llevan escrita la letra con que se dibujaron (el texto «font» del PNG):
+// test_marca la compara con la de titulares y falla si la hoja cambia de letra sin volver a
+// dibujarlos.
 //
 // Necesita el sitio arriba en UX_BASE (http://localhost:8000) y Pillow en python3 para el .ico.
 // Los SVG viven aquí y no en static/: ahí no puede haber documentos navegables, como un .svg,
 // porque los estáticos se sirven sin CSP (test_security_csp).
 // El diseño: «RdV» en blanco sobre el magenta del sello (icono) y el sello a toda la tarjeta,
-// con el monograma RV (tarjeta).
+// con el monograma RV de la cabecera, ampliado (tarjeta).
 
 const { chromium } = require('playwright-core');
 const { execFileSync } = require('child_process');
@@ -43,15 +46,24 @@ const icono = (familia, lado, radio) => `<svg xmlns="http://www.w3.org/2000/svg"
   <text ${letra(familia)} x="4" y="27" fill="#fff" textLength="32" lengthAdjust="spacingAndGlyphs"><tspan font-size="17">R</tspan><tspan font-size="13">d</tspan><tspan font-size="17">V</tspan></text>
 </svg>`;
 
-const tarjeta = (familia, nombre, lema) => {
+// El monograma de la tarjeta es el del sello de la cabecera, ampliado: la R va a 300 en
+// (770, 470), y la V, donde la pone el sello respecto de la R. Así la pisa en la misma medida
+// que en la cabecera, sea cual sea la letra.
+const tarjeta = (familia, nombre, lema, sello) => {
   const [primera, ...resto] = nombre.split(' ');
+  const scale = 300 / sello.r.size;
+  const v = {
+    x: 770 + (sello.v.x - sello.r.x) * scale,
+    y: 470 + (sello.v.y - sello.r.y) * scale,
+    size: sello.v.size * scale,
+  };
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="${MAGENTA}"/>
   <text ${letra(familia)} fill="#fff" x="80" y="290" font-size="92">${primera}</text>
   <text ${letra(familia)} fill="#fff" x="80" y="392" font-size="92">${resto.join(' ')}</text>
   <text ${letra(familia)} fill="${CELESTE}" x="84" y="470" font-size="34">${lema}</text>
   <text ${letra(familia)} fill="#fff" x="770" y="470" font-size="300">R</text>
-  <text ${letra(familia)} fill="${CELESTE}" x="935" y="490" font-size="300">V</text>
+  <text ${letra(familia)} fill="${CELESTE}" x="${v.x}" y="${v.y}" font-size="${v.size}">V</text>
 </svg>`;
 };
 
@@ -67,6 +79,17 @@ const tarjeta = (familia, nombre, lema) => {
     (document.querySelector('.brand-nombre') || document.querySelector('.brand')).textContent.trim()
   );
   const lema = await pagina.evaluate(() => document.querySelector('.hero-tagline')?.textContent.trim() || 'Colectivo de poesía');
+  // El monograma del sello, tal como lo pinta la cabecera: dónde va cada letra y a qué tamaño.
+  const sello = await pagina.evaluate(() => {
+    const letter = (cls) => {
+      const t = document.querySelector(`.brand-mono .${cls}`);
+      return t && { x: parseFloat(t.getAttribute('x')), y: parseFloat(t.getAttribute('y')), size: parseFloat(t.getAttribute('font-size')) };
+    };
+    return { r: letter('brand-mono-r'), v: letter('brand-mono-v') };
+  });
+  if (![sello.r, sello.v].every((l) => l && [l.x, l.y, l.size].every(Number.isFinite))) {
+    throw new Error('La cabecera no trae el monograma del sello con sus medidas: no se sabe dónde va la V de la tarjeta.');
+  }
 
   const fotografiar = async (svg, destino) => {
     // Sin el papel del sitio detrás: las esquinas redondeadas del icono quedan transparentes.
@@ -88,8 +111,21 @@ const tarjeta = (familia, nombre, lema) => {
   await fotografiar(icono(familia, 180, 0), path.join(IMG, 'icono-180.png'));
   const grande = path.join(OUT, 'icono-64.png');
   await fotografiar(icono(familia, 64, 6), grande);
-  await fotografiar(tarjeta(familia, nombre, lema), path.join(OUT, 'tarjeta-para-compartir.png'));
+  await fotografiar(tarjeta(familia, nombre, lema, sello), path.join(OUT, 'tarjeta-para-compartir.png'));
   await navegador.close();
+
+  // La letra, escrita en los dos PNG del sitio.
+  const pngs = [path.join(IMG, 'icono-32.png'), path.join(IMG, 'icono-180.png')];
+  execFileSync('python3', ['-c', `import sys
+from PIL import Image
+from PIL.PngImagePlugin import PngInfo
+for path in sys.argv[2:]:
+    with Image.open(path) as icon:
+        image = icon.copy()
+    info = PngInfo()
+    info.add_text("font", sys.argv[1])
+    image.save(path, pnginfo=info)`, familia, ...pngs]);
+  pngs.forEach((png) => console.log('con su letra', path.relative(RAIZ, png)));
 
   // El .ico lleva 16, 32 y 48 px, reducidos del de 64 con Pillow.
   const ico = path.join(IMG, 'favicon.ico');
