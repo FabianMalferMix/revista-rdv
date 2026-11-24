@@ -35,24 +35,32 @@ SYSTEM_NAME = "Sistema"
 
 class Transition(NamedTuple):
     sources: frozenset
-    target: str
+    target: S
     who: tuple
+    # Cómo la nombran los avisos, tras «No se puede…» o «Sin permiso para…».
+    label: str
 
 
 TRANSITIONS = {
-    "submit": Transition(frozenset({S.DRAFT, S.CHANGES_REQUESTED}), S.IN_REVIEW, (OWNER, REVIEW)),
-    "request_changes": Transition(frozenset({S.IN_REVIEW}), S.CHANGES_REQUESTED, (REVIEW,)),
-    "accept": Transition(frozenset({S.IN_REVIEW}), S.APPROVED, (REVIEW,)),
-    "reject": Transition(frozenset({S.IN_REVIEW}), S.REJECTED, (REVIEW,)),
+    "submit": Transition(
+        frozenset({S.DRAFT, S.CHANGES_REQUESTED}), S.IN_REVIEW, (OWNER, REVIEW), "enviar a revisión"
+    ),
+    "request_changes": Transition(
+        frozenset({S.IN_REVIEW}), S.CHANGES_REQUESTED, (REVIEW,), "pedir cambios"
+    ),
+    "accept": Transition(frozenset({S.IN_REVIEW}), S.APPROVED, (REVIEW,), "aceptar"),
+    "reject": Transition(frozenset({S.IN_REVIEW}), S.REJECTED, (REVIEW,), "rechazar"),
     # Una rechazada vuelve a borrador para rehacerla.
-    "reopen": Transition(frozenset({S.REJECTED}), S.DRAFT, (REVIEW,)),
-    "schedule": Transition(frozenset({S.APPROVED}), S.SCHEDULED, (PUBLISH,)),
+    "reopen": Transition(frozenset({S.REJECTED}), S.DRAFT, (REVIEW,), "reabrir"),
+    "schedule": Transition(frozenset({S.APPROVED}), S.SCHEDULED, (PUBLISH,), "programar"),
     # Una programada se retira de la cola y vuelve a aprobada, con su fecha.
-    "unschedule": Transition(frozenset({S.SCHEDULED}), S.APPROVED, (PUBLISH,)),
-    "publish": Transition(frozenset({S.APPROVED, S.SCHEDULED}), S.PUBLISHED, (PUBLISH,)),
-    "unpublish": Transition(frozenset({S.PUBLISHED}), S.DRAFT, (PUBLISH,)),
-    "archive": Transition(frozenset({S.PUBLISHED}), S.ARCHIVED, (PUBLISH,)),
-    "restore": Transition(frozenset({S.ARCHIVED}), S.PUBLISHED, (PUBLISH,)),
+    "unschedule": Transition(frozenset({S.SCHEDULED}), S.APPROVED, (PUBLISH,), "desprogramar"),
+    "publish": Transition(
+        frozenset({S.APPROVED, S.SCHEDULED}), S.PUBLISHED, (PUBLISH,), "publicar"
+    ),
+    "unpublish": Transition(frozenset({S.PUBLISHED}), S.DRAFT, (PUBLISH,), "despublicar"),
+    "archive": Transition(frozenset({S.PUBLISHED}), S.ARCHIVED, (PUBLISH,), "archivar"),
+    "restore": Transition(frozenset({S.ARCHIVED}), S.PUBLISHED, (PUBLISH,), "restaurar"),
 }
 
 
@@ -69,6 +77,10 @@ def _allowed(user, item, who):
     return any(user.has_perm(permission_for(item, action)) for action in who if action != OWNER)
 
 
+def _wrong_state(transition, status):
+    return f"No se puede {transition.label} desde el estado «{S(status).label}»."
+
+
 def perform_transition(item, name, user, note="", when=None):
     """Mueve la pieza por la transición `name`. Programar recibe su fecha en `when`, que se fija
     bajo el mismo bloqueo; sin ella se usa la que ya tenía la pieza."""
@@ -78,16 +90,16 @@ def perform_transition(item, name, user, note="", when=None):
     transition = TRANSITIONS[name]
     # Chequeos rápidos (mensajes claros para el caso común, con el estado en memoria).
     if item.status not in transition.sources:
-        raise ValueError(f"No se puede '{name}' desde el estado '{item.status}'.")
+        raise ValueError(_wrong_state(transition, item.status))
     if not _allowed(user, item, transition.who):
-        raise PermissionDenied(f"Sin permiso para '{name}'.")
+        raise PermissionDenied(f"Sin permiso para {transition.label}.")
 
     with transaction.atomic():
         # Re-lee la pieza bajo lock de fila y revalida el estado de forma autoritativa:
         # cierra la ventana de carrera entre editores o con la publicación programada.
         locked = type(item).objects.select_for_update().get(pk=item.pk)
         if locked.status not in transition.sources:
-            raise ValueError(f"No se puede '{name}' desde el estado '{locked.status}'.")
+            raise ValueError(_wrong_state(transition, locked.status))
 
         now = timezone.now()
         if name == "schedule" and when is not None:

@@ -4,6 +4,7 @@ from django.db.models.functions import Coalesce
 
 from apps.content.models import Poem
 from config import publishing
+from config.panel import PanelWordingMixin, account_name
 from config.publishing import FrozenSlugAdminMixin
 
 from .models import MediaAsset, Recording
@@ -13,10 +14,12 @@ from .models import MediaAsset, Recording
 class MediaAssetAdmin(admin.ModelAdmin):
     list_display = ["__str__", "used_in", "width", "height", "uploaded_by", "created_at"]
     search_fields = ["alt_text", "caption", "credit"]
-    # `uploaded_by` es de solo lectura y lo pone save_model: editable, sería un <select> con
-    # TODAS las cuentas del sistema, que le enumeraría al rol más bajo (autor) los nombres de
-    # usuario del equipo y le dejaría atribuir una subida a otra persona.
-    readonly_fields = ["width", "height", "uploaded_by", "created_at"]
+    # `uploaded_by` no se edita: lo pone save_model, y la ficha lo lee por su nombre. Editable,
+    # sería un <select> con TODAS las cuentas del sistema, que le enumeraría al rol más bajo
+    # (autor) los nombres de usuario del equipo y le dejaría atribuir una subida a otra persona.
+    exclude = ["uploaded_by"]
+    readonly_fields = ["width", "height", "uploaded_by_name", "created_at"]
+    uploaded_by_name = account_name(MediaAsset, "uploaded_by")
 
     def save_model(self, request, obj, form, change):
         if not obj.uploaded_by_id:
@@ -61,7 +64,7 @@ def _uses():
 
 
 @admin.register(Recording)
-class RecordingAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class RecordingAdmin(FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin):
     list_display = ["title", "kind", "featured", "published", "recorded_on"]
     list_filter = ["kind", "featured", "published"]
     search_fields = ["title", "description"]

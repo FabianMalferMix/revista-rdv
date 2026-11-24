@@ -68,7 +68,11 @@ class NewsletterSubscriber(models.Model):
         verbose_name = "suscriptor"
         verbose_name_plural = "suscriptores"
         constraints = [
-            models.UniqueConstraint(Lower("email"), name="suscriptor_email_ci"),
+            models.UniqueConstraint(
+                Lower("email"),
+                name="suscriptor_email_ci",
+                violation_error_message="Ya hay un suscriptor con este correo.",
+            ),
         ]
 
     def __str__(self):

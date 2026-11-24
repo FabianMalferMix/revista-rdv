@@ -167,10 +167,13 @@ class Work(models.Model):
         verbose_name_plural = "obras"
         constraints = [
             # Unicidad solo sobre ISBN reales (no NULL ni ""): clave candidata opcional.
+            # Con el código «unique», el aviso va junto al campo ISBN.
             models.UniqueConstraint(
                 fields=["isbn"],
                 condition=models.Q(isbn__isnull=False) & ~models.Q(isbn=""),
                 name="uniq_work_isbn",
+                violation_error_message="Ya hay una obra con este ISBN.",
+                violation_error_code="unique",
             )
         ]
 

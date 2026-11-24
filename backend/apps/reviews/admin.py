@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from config.panel import PanelWordingMixin
 from config.publishing import FrozenSlugAdminMixin, ViewOnSiteIfVisibleMixin
 
 from .models import BookAuthor, Publisher, Work
@@ -20,7 +21,9 @@ class BookAuthorAdmin(ViewOnSiteIfVisibleMixin, FrozenSlugAdminMixin, admin.Mode
 
 
 @admin.register(Work)
-class WorkAdmin(ViewOnSiteIfVisibleMixin, FrozenSlugAdminMixin, admin.ModelAdmin):
+class WorkAdmin(
+    ViewOnSiteIfVisibleMixin, FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin
+):
     list_display = ["title", "kind", "publisher", "publication_year", "publicacion"]
     list_filter = ["kind"]
     search_fields = ["title", "isbn"]

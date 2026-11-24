@@ -10,11 +10,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core.management import call_command
 from django.test import RequestFactory
+from django.urls import reverse
 
 from apps.content.admin import ArticleAdmin
 from apps.content.models import Article
 from apps.media.admin import MediaAssetAdmin
 from apps.media.models import MediaAsset
+from tests.factories import soup
 
 pytestmark = pytest.mark.django_db
 User = get_user_model()
@@ -38,9 +40,12 @@ def _peticion(user):
 # ── uploaded_by no es editable ni enumera cuentas ─────────
 
 
-def test_uploaded_by_es_readonly(editor):
-    admin_obj = MediaAssetAdmin(MediaAsset, AdminSite())
-    assert "uploaded_by" in admin_obj.get_readonly_fields(_peticion(editor))
+def test_uploaded_by_no_se_elige_en_la_ficha(client, autor):
+    client.force_login(autor)
+    form = soup(client, reverse("admin:media_mediaasset_add")).select_one("form#mediaasset_form")
+    # Control: la ficha que se mira es la del recurso, con sus campos.
+    assert form.select("[name='alt_text']")
+    assert not form.select("[name='uploaded_by']")
 
 
 def test_uploaded_by_se_asigna_solo_a_quien_sube(autor):

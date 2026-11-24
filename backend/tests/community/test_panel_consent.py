@@ -123,3 +123,15 @@ def test_rejecting_from_the_panel_dates_it_and_records_the_previous_state(panel,
     assert LogEntry.objects.get(object_id=str(submission.pk)).get_change_message() == (
         "Estado: Recibido → Rechazado."
     )
+
+
+def _messages(page):
+    return [" ".join(item.get_text().split()) for item in page.select("ul.messagelist li")]
+
+
+def test_moving_submissions_says_how_many_moved(panel):
+    one, two, three = _submission(), _submission(), _submission()
+    panel.post(SUBMISSIONS, {"action": "move_to_rejected", "_selected_action": [one.pk]})
+    assert _messages(soup(panel, SUBMISSIONS)) == ["1 envío pasó a «Rechazado»."]
+    panel.post(SUBMISSIONS, {"action": "move_to_rejected", "_selected_action": [two.pk, three.pk]})
+    assert _messages(soup(panel, SUBMISSIONS)) == ["2 envíos pasaron a «Rechazado»."]

@@ -15,8 +15,9 @@ pytestmark = pytest.mark.django_db
 
 def test_recording_requires_a_source():
     rec = Recording(slug="sin-fuente", title="Sin fuente")
-    with pytest.raises(ValidationError):
-        rec.clean()
+    with pytest.raises(ValidationError) as refused:
+        rec.full_clean()
+    assert refused.value.messages == ["Un registro necesita un archivo o un enlace para incrustar."]
 
 
 def test_recording_with_embed_is_valid():
