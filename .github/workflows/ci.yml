@@ -252,7 +252,7 @@ jobs:
         # Espacios, YAML, archivos de más de 2 MB, la sintaxis de los guiones (node --check)
         # y los identificadores de decisión en el código (tools/ci/decision_refs.py). ruff y
         # gitleaks se saltan porque ya corren, bloqueantes, en los jobs test y security. La
-        # versión va fijada, como la de bandit.
+        # versión va fijada, para que el resultado no cambie con la última que haya ese día.
         env:
           SKIP: ruff-check,ruff-format,gitleaks
         run: |
@@ -262,10 +262,10 @@ jobs:
 
   # Los guiones del sitio, ejecutados en un navegador: la suite de Python solo lee su texto.
   # Levanta el stack de desarrollo, lo puebla con `datos_de_desarrollo cargar` (el único camino
-  # para poblar desarrollo, el mismo del README y de tools/ux/preparar-entorno.sh) y corre
-  # tools/ux/browser-smoke.js (a 951 y a 375 px, y lo que pide cada imagen y el aire de las fichas a
-  # 951 y a 390) y el contraste de axe (tools/ux/contraste.js) a 951 y a 375 px, con el Chrome que
-  # trae el runner.
+  # para poblar desarrollo, el mismo del README y de tools/ux/preparar-entorno.sh), le crea una
+  # cuenta del panel y corre tools/ux/browser-smoke.js (a 951, 390 y 375 px, también el editor del
+  # panel) y el contraste de axe (tools/ux/contraste.js) a 951 y a 375 px, con el Chrome que trae
+  # el runner.
   navegador:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -295,6 +295,18 @@ jobs:
             sleep 2
           done
           curl -fsS -o /dev/null http://127.0.0.1:8000/
+
+      - name: Una cuenta del panel para la prueba de humo
+        # Los datos de desarrollo no traen cuentas. La clave es aleatoria y va enmascarada en el
+        # registro; la prueba la lee de las mismas variables que `createsuperuser --noinput`.
+        run: |
+          CLAVE=$(openssl rand -hex 24)
+          echo "::add-mask::$CLAVE"
+          export DJANGO_SUPERUSER_USERNAME=humo DJANGO_SUPERUSER_PASSWORD="$CLAVE" DJANGO_SUPERUSER_EMAIL=humo@example.invalid
+          docker compose exec -T -e DJANGO_SUPERUSER_USERNAME -e DJANGO_SUPERUSER_PASSWORD -e DJANGO_SUPERUSER_EMAIL \
+            web python manage.py createsuperuser --noinput
+          printf 'DJANGO_SUPERUSER_USERNAME=%s\nDJANGO_SUPERUSER_PASSWORD=%s\n' \
+            "$DJANGO_SUPERUSER_USERNAME" "$DJANGO_SUPERUSER_PASSWORD" >> "$GITHUB_ENV"
 
       - name: Prueba de humo en navegador (951, 390 y 375 px)
         run: |
@@ -350,15 +362,23 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
 
       - name: SAST (bandit, severidad media+, bloqueante)
-        # Versión fijada: un CI que exige --require-hashes al resto de las dependencias
-        # no debería instalar sus propias herramientas desde la última versión que haya
-        # ese día. Fijarla hace además reproducible el resultado del SAST.
+        # bandit sale del lockfile de desarrollo, con su hash, como en el contenedor `web`: el
+        # SAST da lo mismo en el CI y en local (tests/infra/test_tool_versions.py). Un aviso de
+        # bandit también falla, aunque él salga con 0: un nosec que no tapa nada, por ejemplo.
         run: |
           python -m pip install "pip==26.3"
-          python -m pip install "bandit==1.9.4"
-          bandit -r backend/apps backend/config -ll
+          pip install --require-hashes -r backend/requirements-dev.txt
+          estado=0
+          bandit -r backend/apps backend/config -ll 2> "$RUNNER_TEMP/bandit.err" || estado=$?
+          cat "$RUNNER_TEMP/bandit.err" >&2
+          if grep -qP '^\[\w+\]\t(WARNING|ERROR)\t' "$RUNNER_TEMP/bandit.err"; then
+            echo "FALLO: bandit avisa (arriba, la línea WARNING o ERROR)"; exit 1
+          fi
+          exit "$estado"
 
       - name: Revisión de dependencias del PR (informativo)
         if: github.event_name == 'pull_request'

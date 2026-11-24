@@ -108,13 +108,21 @@ guiones ejecutándose de verdad. Comprueba que:
 - a 951 y a 390 px, en las fichas de una obra, una editorial, un autor y quien colabora, entre el
   filete de la cabecera y el título de la primera sección queda el aire que hay en la ficha de una
   integrante entre su cabecera y su primera sección;
+- a 951 y a 390 px, antes del título de cada sección del dossier, también «Contacto», y en la
+  agenda sin fechas antes de «Lo más reciente», queda el mismo aire;
 - con el foco, cada botón y cada pieza con caja propia (el salto al contenido, las etiquetas, los
   campos, el campo de la lupa, los lomos del estante, las miniaturas de la tirada, el botón del
-  reproductor) conserva sus esquinas, y el anillo de foco se ve.
+  reproductor) conserva sus esquinas, y el anillo de foco se ve;
+- en el panel, el editor del primer texto de la lista abre habilitado, muestra su cuerpo y deja
+  escribir. No guarda nada.
 
 Cada comprobación falla también ante un error de página o de consola, ante un recurso propio que
 no carga y ante una petición a un tercero que nadie pidió. La corre el job `navegador` del CI, sobre
 el stack de desarrollo poblado con `datos_de_desarrollo cargar`, el mismo comando que en local.
+
+Al panel entra con la cuenta que dicen `DJANGO_SUPERUSER_USERNAME` y `DJANGO_SUPERUSER_PASSWORD`,
+las variables con que `createsuperuser --noinput` crea una. El CI la crea así, con una clave
+aleatoria. Sin esas variables, la comprobación del panel falla.
 
 ```bash
 node tools/ux/browser-smoke.js                              # contra http://localhost:8000
@@ -162,11 +170,11 @@ cualquier máquina.
 | `preparar-entorno.sh` | Reconstruye el entorno de diseño en una máquina nueva: levanta el stack, lo puebla con `datos_de_desarrollo cargar` (el único camino; ver el README), instala estas herramientas y pasa la prueba de humo. Se puede repetir: en una base de desarrollo ya poblada, `cargar` no hace nada. | `bash tools/ux/preparar-entorno.sh` |
 | `ver.js` | Capturas sueltas a cualquier ancho y de cualquier ruta, con aviso de scroll horizontal. | `node tools/ux/ver.js tools/ux/out/prueba 768 900 poemas=/poemas/` |
 | `hoja.js` | Hoja de contactos: varias capturas en una sola imagen. | `node tools/ux/hoja.js tools/ux/out/prueba tools/ux/out/prueba/hoja.png -d1440-full.png 620 3 home poemas` |
-| `superficies.js` | Bandas de tinta, planos de amarillo por pantalla, cajas blancas con borde y textos bajo AA contra el fondo que tienen debajo, página a página (pasos 13 y siguientes). Sale con 1 si una página no cumple. | `node tools/ux/superficies.js 951 900` (todas) o `… 390 800 home dossier` |
+| `superficies.js` | Bandas de tinta, planos de amarillo por pantalla, cajas blancas con borde y textos bajo AA contra el fondo que tienen debajo, página a página. Sale con 1 si una página no cumple. | `node tools/ux/superficies.js 951 900` (todas) o `… 390 800 home dossier` |
 | `variantes.js` | Alternativas de una pieza sobre la página real: CSS (y JS) inyectado en el navegador de captura, una imagen por variante, recortada a la pieza. Para que el dueño elija viendo. | `node tools/ux/variantes.js tools/ux/out/cifras 951 900 / .hero hoy=- marcador=marcador.css` |
 | `iconos.js` | El icono de la pestaña (32 px y `.ico`), el del teléfono (180 px) y la tarjeta para compartir (1200 × 630), dibujados con la fuente de titulares del sitio (la de `--display`); se detiene si no carga. Necesita el sitio arriba y Pillow en python3. | `node tools/ux/iconos.js` |
 | `mutar.sh` | Comprueba que una prueba nueva pasa y que **falla** cuando se rompe lo que vigila. Trabaja en un worktree temporal con los cambios sin confirmar (no toca el árbol de trabajo) y recrea su propia base de pruebas, así que también vale para mutar una migración. Necesita la imagen `resenas-app:dev` y la base del stack arriba; no usa el contenedor `web`. Sale con 0 si detecta, 1 si no y 2 si no llegó a correr o ya fallaba sin mutar. | `bash tools/ux/mutar.sh static/css/componentes.css '<actual>' '<roto>' 'tests/…::test_…'` |
-| `fusionar.sh` | Fusiona el PR de un paso solo si su CI está verde, con el asunto del proyecto. | `bash tools/ux/fusionar.sh 105 <rama> "<efecto visible>"` |
+| `fusionar.sh` | Fusiona un PR solo si su CI está verde, con el asunto del proyecto. | `bash tools/ux/fusionar.sh 105 <rama> "<efecto visible>"` |
 
 Cada uno explica sus argumentos en su cabecera. Los de Node usan el mismo Chrome (variable `CHROME`)
 y la misma base (`UX_BASE`), de `common.js`.

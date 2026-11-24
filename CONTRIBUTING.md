@@ -41,6 +41,7 @@ docker compose exec web ruff format .                            # formato
 docker compose exec web python manage.py makemigrations --check --dry-run   # sin drift
 docker compose exec web python manage.py check                  # chequeos del framework
 docker compose exec web lint-imports --no-cache                  # aristas entre apps
+docker compose exec web bandit -r apps config -ll                # SAST, el mismo del CI
 docker compose exec web python manage.py generate_image_derivatives  # derivados srcset
 ```
 
@@ -57,15 +58,16 @@ hashes (`requirements.txt` / `requirements-dev.txt`). Tras editar un `.in`:
 ```bash
 docker compose exec web bash -c 'cd /app && \
   python -m piptools compile --generate-hashes --strip-extras -o requirements.txt requirements.in && \
-  python -m piptools compile --generate-hashes --strip-extras --unsafe-package pip \
+  python -m piptools compile --generate-hashes --strip-extras --allow-unsafe \
     -o requirements-dev.txt requirements-dev.in'
 docker compose build && docker compose up -d   # reconstruye con --require-hashes
 ```
 
-pip-tools está en el lockfile de desarrollo, así que la imagen de `web` lo trae. pip queda
-fuera de los lockfiles: su versión la fijan el Dockerfile y el CI, y una prueba comprueba que
-coincidan. release, web, worker y beat usan una sola imagen (`resenas-app:dev` en
-desarrollo): al reconstruirla se actualizan los cuatro.
+pip-tools y bandit están en el lockfile de desarrollo, así que la imagen de `web` los trae. pip
+entra en él con pip-tools (`--allow-unsafe` lo fija), y el Dockerfile y el CI fijan la misma
+versión: una prueba comprueba que coincidan. Para subirlo se cambia en los tres; en el lockfile,
+añadiendo `-P pip==<versión>` a la segunda orden. release, web, worker y beat usan una sola
+imagen (`resenas-app:dev` en desarrollo): al reconstruirla se actualizan los cuatro.
 
 Commitea el `.in` y el `.txt` juntos. Dependabot recompila estos lockfiles
 automáticamente (Django se mantiene en la línea 5.2 LTS).
@@ -99,14 +101,15 @@ puede bajar, y tras quitar alguno se baja con `--update`.
    - `python manage.py makemigrations --check --dry-run` (sin drift)
    - `python manage.py check`
    - `lint-imports --no-cache` (aristas entre apps)
+   - `bandit -r apps config -ll` (SAST, el mismo del CI)
 4. **Commit.** Cada archivo se añade por su nombre, nunca una carpeta entera: en `docs/` hay un
    documento personal que no es del repositorio. Mensaje: `rama: qué cambia (Bxx)`, y en el
    cuerpo, el porqué del cambio, que es lo que no va en los comentarios del código.
 5. **Pull Request** contra `main`, titulado `rama — qué cambia (Bxx)`, con la lista de
    [.github/pull_request_template.md](.github/pull_request_template.md) en el cuerpo. El CI corre
    ruff, `pip-audit` (bloqueante), migraciones, tests con cobertura (`--cov-fail-under=80`),
-   `check --deploy`, gitleaks y, en el job `navegador`, ESLint, la prueba de humo y el contraste
-   con axe, en navegador.
+   `check --deploy`, gitleaks, bandit y, en el job `navegador`, ESLint, la prueba de humo y el
+   contraste con axe, en navegador.
    pip-audit y gitleaks solo corren allí; ESLint y la prueba de humo también se corren en local
    ([tools/ux/README.md](tools/ux/README.md)). El PR está listo cuando el CI está en verde, no
    cuando pasan las pruebas locales.

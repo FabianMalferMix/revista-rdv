@@ -30,7 +30,8 @@ REGISTRY = "https://registry.npmjs.org"
 
 
 def _fetch(url):
-    with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310 - solo el registro de npm
+    # Solo abre el registro de npm: la dirección de REGISTRY y los tarballs que ella nombra.
+    with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310
         return response.read()
 
 
@@ -65,7 +66,8 @@ def check():
             published = hashlib.sha256(_read(tar, lib["source"] + relative)).hexdigest()
             local = hashlib.sha256((_target(lib) / relative).read_bytes()).hexdigest()
             if not published == sha == local:
-                problems.append(f"{name}: {relative} no coincide con {lib['package']}@{lib['version']}")
+                package = f"{lib['package']}@{lib['version']}"
+                problems.append(f"{name}: {relative} no coincide con {package}")
     for problem in problems:
         print(problem)
     print("OK: lo vendorizado es lo publicado en npm" if not problems else "FALLO")

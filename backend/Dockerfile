@@ -9,8 +9,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 WORKDIR /app
-# pip fijado, para que la imagen sea reproducible: el CI instala el mismo
-# (tests/infra/test_tool_versions.py). Al subirlo, cambia en los dos sitios.
+# pip fijado, para que la imagen sea reproducible: el CI y el lockfile de desarrollo fijan el
+# mismo (tests/infra/test_tool_versions.py). Al subirlo, cambia en los tres sitios.
 RUN pip install "pip==26.3"
 COPY requirements.txt requirements-dev.txt ./
 

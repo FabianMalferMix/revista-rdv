@@ -2,7 +2,9 @@
 
 El CI instala Python con la versión de .python-version, y la imagen parte de una base de
 Python: si divergieran, el CI probaría con otro intérprete que el de producción. pip va
-fijado en el Dockerfile y en cada job del CI que lo instala, con la misma versión.
+fijado en el Dockerfile, en cada job del CI que lo instala y en el lockfile de desarrollo, con
+la misma versión. bandit va fijado solo en el lockfile: el CI lo instala desde ahí, como la
+imagen de desarrollo.
 
 Leen archivos de la raíz del repositorio: corren en el CI y se saltan en el contenedor de
 desarrollo, que solo monta backend/.
@@ -43,6 +45,16 @@ def test_the_ci_python_is_the_image_python():
 
 def test_pip_is_pinned_to_one_version():
     dockerfile, workflows = _read("backend/Dockerfile"), _workflows()
-    assert _PIP.search(dockerfile) and _PIP.search(workflows)  # control positivo
-    assert len(set(_PIP.findall(dockerfile + workflows))) == 1
+    lockfile = _read("backend/requirements-dev.txt")
+    # Control positivo: cada uno lo fija.
+    assert _PIP.search(dockerfile) and _PIP.search(workflows) and _PIP.search(lockfile)
+    assert len(set(_PIP.findall(dockerfile + workflows + lockfile))) == 1
     assert "--upgrade pip" not in dockerfile + workflows
+
+
+def test_bandit_is_pinned_only_in_the_dev_lockfile():
+    lockfile, workflows = _read("backend/requirements-dev.txt"), _workflows()
+    assert re.search(r"^bandit==[\d.]+ ", lockfile, re.M)
+    assert "bandit -r " in workflows  # control positivo: el CI lo corre
+    # Ningún workflow lo instala por su nombre, con otra versión o con la última.
+    assert not re.search(r"install\b[^\n]*\bbandit\b", workflows)
