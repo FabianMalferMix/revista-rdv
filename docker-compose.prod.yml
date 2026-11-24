@@ -63,8 +63,9 @@ services:
       start_period: 20s
 
   worker:
-    # Por encima del límite duro de las tareas (CELERY_TASK_TIME_LIMIT, 60 s): un correo en
-    # curso termina antes de que Docker mate el proceso.
+    # Por encima del límite duro del correo de confirmación (apps/community/tasks.py): uno en
+    # curso termina antes de que Docker mate el proceso. Una imagen o la purga, que pueden durar
+    # más, son idempotentes: si Docker las corta, Redis las reentrega.
     stop_grace_period: 75s
     environment:
       DJANGO_DEBUG: "0"

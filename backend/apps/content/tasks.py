@@ -3,7 +3,11 @@ from django.db import OperationalError
 from django.utils import timezone
 
 
+# Corre cada minuto: con el límite duro por debajo del minuto, una corrida que se alarga termina
+# antes de que llegue la siguiente.
 @shared_task(
+    soft_time_limit=40,
+    time_limit=50,
     acks_late=True,  # confirma al terminar: si cae el worker entero, Redis la reentrega
     autoretry_for=(OperationalError,),  # reintenta errores transitorios de BD
     retry_backoff=True,

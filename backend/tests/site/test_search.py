@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import EditorialStatus, Poem
+from apps.site.views import SEARCH_PANEL
 from tests.factories import SEARCH_PANEL_HEADERS, make_article, make_poem, soup
 from tests.factories import publish as _publish
 
@@ -165,7 +166,7 @@ def test_la_pagina_de_busqueda_tiene_un_solo_campo(client):
     buscador a la vista."""
     html = client.get(reverse("site:search")).content.decode()
     assert len(re.findall(r'<input[^>]*name="q"', html)) == 1
-    assert 'id="search-results"' not in html
+    assert f'id="{SEARCH_PANEL}"' not in html
 
 
 # ── Cobertura completa y grupos por tipo ────────────────────────────────────

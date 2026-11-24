@@ -14,6 +14,7 @@ from apps.media.models import TIRADA_SIZE, MediaAsset, Recording
 from apps.people.models import Contributor
 from apps.showcase.models import Publication
 from apps.submissions.models import Call
+from config import publishing
 from config.breakpoints import PHONE, below
 
 from .services import ultima_publicacion
@@ -151,7 +152,7 @@ def featured_poem(profile, tirada):
     """El poema destacado del perfil, solo si está publicado y en lugar de la tirada: sin ningún
     registro destacado, nunca los dos a la vez."""
     poema = profile.featured_poem
-    if tirada.registros or poema is None or not poema.is_published:
+    if tirada.registros or not publishing.is_published(poema):
         return None
     return poema
 

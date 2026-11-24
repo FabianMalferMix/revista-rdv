@@ -15,7 +15,6 @@ from django.utils.formats import date_format
 from config import publishing
 from config.content_policy import AUTHORED_HTML_HELP
 from config.models import TimestampedModel
-from config.text import strip_accents
 
 from . import legal
 from .sanitize import clean_html
@@ -162,10 +161,6 @@ class EditorialItem(TimestampedModel):
                 violation_error_message=DATED_MESSAGE,
             )
         ]
-
-    @property
-    def is_published(self):
-        return self.status == publishing.PUBLISHED
 
     @classmethod
     def bylines_prefetch(cls, prefix="", with_page=False):
@@ -329,24 +324,6 @@ class Article(EditorialItem):
         """La imagen para compartir el texto: la elegida para eso o, si falta, la portada.
         Sin ninguna, `{% social_meta %}` recurre a la del perfil del sitio."""
         return self.og_image or self.cover_image
-
-    @property
-    def seccion_aporta(self):
-        """¿Dice la sección algo que el tipo no diga ya?
-
-        La cejilla nombra la sección junto al tipo solo cuando añade información, como en
-        «Crónica · Entrevista»; si no, diría la misma palabra dos veces («Reseñas · Reseña»).
-        Se comparan sin tildes ni mayúsculas, y basta que una empiece por la otra para cubrir
-        el plural.
-        """
-        if not self.section_id:
-            return False
-
-        def base(texto):
-            return strip_accents(texto).lower().strip()
-
-        seccion, tipo = base(self.section.name), base(self.get_type_display())
-        return not (seccion.startswith(tipo) or tipo.startswith(seccion))
 
     def _calc_reading_time(self):
         text = re.sub(r"<[^>]+>", " ", self.body or "")
@@ -513,8 +490,7 @@ class Poem(EditorialItem):
         de los listados, y despublicarlo lo retira de los poemas que lo enlazan. Se filtra
         aquí, en la capa de datos, para que ninguna plantilla tenga que acordarse.
         """
-        recording = self.recording
-        return recording if recording is not None and recording.published else None
+        return self.recording if publishing.is_published(self.recording) else None
 
 
 class PoemContributor(models.Model):
@@ -601,7 +577,7 @@ class Collection(models.Model):
 
     def save(self, *args, **kwargs):
         # Lo publicado lleva fecha: la del momento en que se publica, si no se dio otra.
-        if self.status == PublishStatus.PUBLISHED and self.published_at is None:
+        if publishing.is_published(self) and self.published_at is None:
             self.published_at = timezone.now()
         super().save(*args, **kwargs)
 
@@ -700,7 +676,7 @@ class Page(models.Model):
         super().clean()
         guardada = Page.objects.filter(pk=self.pk).values("slug").first() if self.pk else None
         if guardada and guardada["slug"] in LEGAL_PAGES:
-            if self.slug != guardada["slug"] or self.status != PublishStatus.PUBLISHED:
+            if self.slug != guardada["slug"] or not publishing.is_published(self):
                 raise ValidationError(
                     "Es una página legal: el pie y los formularios enlazan a ella. Se puede "
                     "editar su texto, pero no cambiar su dirección ni despublicarla."

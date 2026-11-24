@@ -1,11 +1,14 @@
 """Contexto común a todas las plantillas."""
 
+import logging
 from pathlib import Path
 
 from django.conf import settings
 
 from config.origin import site_host, site_origin
 from config.staticfiles import STYLESHEETS
+
+logger = logging.getLogger(__name__)
 
 
 def version_estaticos(request):
@@ -31,8 +34,10 @@ def version_estaticos(request):
     try:
         propios = [*(raiz / path for path in STYLESHEETS), *(raiz / "js").glob("*.js")]
         return {"version_estaticos": f"?v={int(max(p.stat().st_mtime for p in propios))}"}
-    except OSError:
-        # Que falte un archivo no debe tumbar todas las páginas del sitio.
+    except OSError as exc:
+        # Que falte un archivo no debe tumbar todas las páginas del sitio: salen sin sufijo, y el
+        # registro dice cuál falta.
+        logger.warning("Los estáticos van sin sufijo de versión: %s", exc)
         return {"version_estaticos": ""}
 
 

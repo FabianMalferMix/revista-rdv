@@ -9,8 +9,10 @@ recibe lo mismo que usa Django.
 
 import os
 import re
+import shlex
 import subprocess
 import sys
+import textwrap
 
 import pytest
 from django.conf import settings
@@ -252,14 +254,19 @@ def _load_settings(env, expression="'ok'"):
     )
 
 
-# Entornos DEBUG=0 reales de .github/workflows/ci.yml. Se fijan aquí para que endurecer
-# el guard no deje el CI en rojo sin que la suite lo avise antes. El de prod-runtime vive en
-# ci/prod.env, y su prueba lo lee de ahí.
+# Los arranques de Django con DJANGO_DEBUG=0 que escribe .github/workflows/ci.yml, con el
+# entorno que les declara. Se copian aquí para que la prueba del guard corra también en el
+# contenedor, donde ci.yml no está: así, endurecer el guard no deja el CI en rojo sin que la suite
+# lo avise antes. La copia la ata a ci.yml `test_the_copy_is_what_the_ci_declares`. Los que leen
+# ci/prod.env (prod-runtime) los prueba `test_the_ci_production_environment_passes_the_guard`.
 ENTORNOS_CI = {
-    "test / check --deploy": {
+    "test / check": {
         "DJANGO_SECRET_KEY": CI_SECRET,
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
         "POSTGRES_PASSWORD": "ci-strong-db-password",
         "CELERY_BROKER_URL": "redis://:ci-check-password@localhost:6379/0",
+        "CELERY_RESULT_BACKEND": "redis://localhost:6379/1",
         "CACHE_URL": "redis://:ci-check-password@localhost:6379/2",
         "DJANGO_ALLOWED_HOSTS": "ci.example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ci.example.com",
@@ -281,6 +288,9 @@ ENTORNOS_CI = {
     },
     "backup-restore / migrate": {
         "DJANGO_SECRET_KEY": CI_SECRET,
+        "POSTGRES_HOST": "bk-db",
+        "POSTGRES_DB": "resenas",
+        "POSTGRES_USER": "resenas",
         "POSTGRES_PASSWORD": "ci-strong-db-password",
         "REDIS_PASSWORD": "ci-strong-redis-password",
         "DJANGO_ALLOWED_HOSTS": "localhost",
@@ -297,6 +307,71 @@ ENTORNOS_CI = {
 def test_los_entornos_debug0_del_ci_pasan_el_guard(nombre):
     result = _load_settings(ENTORNOS_CI[nombre])
     assert result.returncode == 0, f"{nombre} quedaría en rojo: {result.stderr[-500:]}"
+
+
+# Lo justo de YAML para leer ci.yml sin PyYAML, que no es dependencia de la suite: los jobs, el
+# `env:` de un job y el de un paso, y el `run:` de un paso, cada uno por su sangría.
+_JOBS = re.compile(r"^jobs:\n((?:(?: .*)?\n)+)", re.M)
+_JOB = re.compile(r"^  ([\w-]+):\n((?:(?:    .*)?\n)*)", re.M)
+_JOB_ENV = re.compile(r"^    env:\n((?:(?:      .*)?\n)*)", re.M)
+_STEP_ENV = re.compile(r"^        env:\n((?:(?:          .*)?\n)*)", re.M)
+_STEP_RUN = re.compile(r"^        run: (?:\|[-+]?\n((?:(?:          .*)?\n)*)|(.+)\n)", re.M)
+_PAIR = re.compile(r"^ +(\w+): (.+)$", re.M)
+
+
+def _mapping(block):
+    """Las variables de un bloque `env:`, sin sus comentarios ni sus comillas."""
+    env = {}
+    for name, value in _PAIR.findall(block):
+        value = re.sub(r"\s+#.*$", "", value).strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        env[name] = value
+    return env
+
+
+def _expand(word, env):
+    """`$NOMBRE` o `${NOMBRE}` con el valor que el paso declara: una que no declare falla."""
+    return re.sub(r"\$\{?(\w+)\}?", lambda found: env[found.group(1)], word)
+
+
+def _debug0_launches(workflow):
+    """Cada arranque de Django con DJANGO_DEBUG=0 que escribe el workflow, con el entorno que
+    recibe, sin DJANGO_DEBUG: en el runner, el del job con el del paso encima; en un `docker run`
+    con `-e DJANGO_DEBUG=0`, sus `-e`. Por «job / orden de manage.py» o, si no la hay, por la
+    última palabra del `docker run`, la imagen que arranca su servidor."""
+    launches = {}
+
+    def add(job, words, env):
+        order = words[words.index("manage.py") + 1] if "manage.py" in words else words[-1]
+        name = f"{job} / {order}"
+        assert name not in launches, f"dos arranques se llamarían igual: {name}"
+        assert env.pop("DJANGO_DEBUG") == "0", name
+        launches[name] = env
+
+    for job, body in _JOB.findall(_JOBS.search(workflow).group(1)):
+        job_env = _mapping(found.group(1)) if (found := _JOB_ENV.search(body)) else {}
+        for step in re.split(r"^      - ", body, flags=re.M)[1:]:
+            step_env = _mapping(found.group(1)) if (found := _STEP_ENV.search(step)) else {}
+            env = {**job_env, **step_env}
+            run = _STEP_RUN.search(step)
+            script = textwrap.dedent(run.group(1) or run.group(2)) if run else ""
+            if "docker run" not in script and env.get("DJANGO_DEBUG") == "0":
+                add(job, shlex.split(script), dict(env))
+            for line in re.sub(r"\\\n", " ", script).splitlines():
+                if line.lstrip().startswith("#"):
+                    continue
+                if "docker run" in line and "DJANGO_DEBUG=0" in line:
+                    words = shlex.split(line)
+                    pairs = [words[i + 1] for i, word in enumerate(words) if word == "-e"]
+                    add(job, words, dict(_expand(pair, env).split("=", 1) for pair in pairs))
+    return launches
+
+
+def test_the_copy_is_what_the_ci_declares():
+    """Si un paso del CI cambia su entorno, o arranca otro con DJANGO_DEBUG=0, la copia tiene que
+    cambiar con él: si no, la prueba del guard seguiría pasando con el entorno viejo."""
+    assert _debug0_launches(read(".github/workflows/ci.yml")) == ENTORNOS_CI
 
 
 def test_the_ci_production_environment_passes_the_guard():

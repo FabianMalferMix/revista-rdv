@@ -5,6 +5,7 @@ transporte que guarda los eventos en vez de enviarlos (tests/config/test_sentry_
 """
 
 import sentry_sdk
+from sentry_sdk.integrations.redis import RedisIntegration
 
 from config.redaction import sentry_before_breadcrumb, sentry_before_send
 
@@ -43,5 +44,8 @@ def init_sentry(dsn, *, environment, release=None, traces_sample_rate=0.0, trans
         max_request_body_size="never",
         before_send=sentry_before_send,
         before_breadcrumb=sentry_before_breadcrumb,
+        # La de Redis anota cada orden con su clave, y la de un contador del límite de tasa es
+        # un hash de la IP con datos que se conocen: se puede revertir.
+        disabled_integrations=[RedisIntegration()],
         transport=transport,
     )

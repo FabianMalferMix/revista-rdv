@@ -25,7 +25,6 @@ from django.template.loader_tags import IncludeNode
 from apps.community.templatetags.newsletter import newsletter_form
 from apps.content.models import Article, ArticleContributor, Poem, PoemContributor, Section
 from apps.media.templatetags.images import responsive_img
-from apps.media.templatetags.social import social_meta
 from apps.people.models import Contributor
 from apps.people.templatetags.personas import portrait
 from apps.reviews.models import Publisher, Work
@@ -35,6 +34,7 @@ from apps.site import portada
 from apps.site.navigation import site_map, subnav
 from apps.site.templatetags.pie import cierre_pie
 from apps.site.templatetags.portada import portada_img
+from apps.site.templatetags.social import social_meta
 from tests.factories import (
     make_event,
     make_image,

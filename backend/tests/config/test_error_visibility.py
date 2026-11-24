@@ -47,7 +47,7 @@ def test_a_dropped_connection_in_search_shows_no_results_and_is_an_error(
 
 
 def test_the_cache_reports_one_error_per_interval(monkeypatch, caplog):
-    monkeypatch.setattr(resilient, "_last_error", None)
+    monkeypatch.setattr(resilient._error_due, "last", None)
     store = resilient.ResilientRedisCache("redis://127.0.0.1:1/0", {})
     assert store.get("clave", "por defecto") == "por defecto"
     assert store.get("clave") is None

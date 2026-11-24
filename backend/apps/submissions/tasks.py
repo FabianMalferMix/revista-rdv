@@ -3,9 +3,13 @@ from django.core.management import call_command
 from django.db import OperationalError
 
 
-# Una base que no responde se reintenta: la purga es idempotente. Un fallo de otra clase (un
-# adjunto que no se pudo borrar) termina la tarea en error, con la causa en el log.
+# Corre una vez por semana y borra en bloque: si se corta, lo caducado se queda hasta la semana
+# siguiente, así que tiene más margen que la publicación, que corre cada minuto. Una base que no
+# responde se reintenta: la purga es idempotente. Un fallo de otra clase (un adjunto que no se
+# pudo borrar) termina la tarea en error, con la causa en el log.
 @shared_task(
+    soft_time_limit=120,
+    time_limit=150,
     autoretry_for=(OperationalError,),
     retry_backoff=60,
     retry_kwargs={"max_retries": 3},

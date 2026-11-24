@@ -3,7 +3,7 @@
 from .models import SiteProfile
 
 # Lo que toda página lee del perfil: la imagen para compartir, que base.html usa cuando la
-# pieza no tiene la suya (apps/media/templatetags/social.py). Viene en la misma consulta.
+# pieza no tiene la suya (apps/site/templatetags/social.py). Viene en la misma consulta.
 PAGE_RELATIONS = ("og_image",)
 
 _ATTRIBUTE = "_site_profile"

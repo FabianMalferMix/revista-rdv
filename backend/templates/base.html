@@ -1,4 +1,4 @@
-{% load joined newsletter social static stylesheets %}
+{% load buscador joined newsletter social static stylesheets %}
 <!doctype html>
 <html lang="es">
 <head>
@@ -114,26 +114,28 @@
       {% comment %}
          La lupa abre el campo en la fila, en el lugar de los enlaces. Sin JavaScript, el
          <details> abre igual y el envío lleva a /buscar/; con htmx, el campo busca en vivo y
-         los resultados cuelgan debajo: htmx los pone por el id, y la hoja los estila por la
-         clase. Con una sola letra no busca: `hx-validate` hace que htmx respete el `minlength`.
+         los resultados cuelgan debajo: htmx los pone por el id, el que la vista de búsqueda
+         reconoce en HX-Target (`search_panel_id`), y la hoja y los guiones los encuentran por
+         la clase. Con una sola letra no busca: `hx-validate` hace que htmx respete el `minlength`.
          Los resultados no son una región viva, porque el lector los leería enteros en cada
          pausa: lo que se anuncia es el recuento, en `search-status`, que rellena la parcial.
       {% endcomment %}
       {% block buscador %}
+      {% search_panel_id as panel_id %}
       <details class="busqueda">
         <summary aria-label="Buscar"><svg class="lupa" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5"/><path d="M15 15 21 21"/></svg></summary>
         <form class="search" role="search" action="{% url 'site:search' %}">
           <input type="search" name="q" placeholder="Buscar en el sitio…" minlength="2"
                  hx-get="{% url 'site:search' %}"
                  hx-trigger="input changed delay:300ms, search"
-                 hx-target="#search-results"
+                 hx-target="#{{ panel_id }}"
                  hx-indicator="#search-ind"
                  hx-validate="true"
                  autocomplete="off" aria-label="Buscar">
           <span id="search-ind" class="htmx-indicator">…</span>
           <p id="search-status" class="sr-only" role="status"></p>
           {# Resultados como overlay anclado al buscador (no empujan el layout). #}
-          <div id="search-results" class="busqueda-resultados" role="region" aria-label="Resultados de búsqueda"></div>
+          <div id="{{ panel_id }}" class="busqueda-resultados" role="region" aria-label="Resultados de búsqueda"></div>
         </form>
       </details>
       {% endblock %}

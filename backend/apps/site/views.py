@@ -62,7 +62,8 @@ SEARCH_RESULTS_PANEL = 5
 # encarece el `to_tsquery`.
 SEARCH_MAX_QUERY = 120
 TOO_MANY_SEARCHES = "Demasiadas búsquedas seguidas. Espera un momento e inténtalo de nuevo."
-# El id del panel de la lupa (base.html), que htmx manda en HX-Target al pedir sus resultados.
+# El id del panel de la lupa, que htmx manda en HX-Target al pedir sus resultados. base.html lo
+# pinta con `search_panel_id` (templatetags/buscador.py).
 SEARCH_PANEL = "search-results"
 
 
