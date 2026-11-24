@@ -7,7 +7,7 @@ página) lo comprueba en un navegador la prueba de humo, `tools/ux/browser-smoke
 """
 
 import re
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 import pytest
 from django.template import Context, Template
@@ -109,6 +109,35 @@ def test_the_vimeo_player_does_not_follow_the_session(client):
     src = urlsplit(placa["data-embed-src"])
     assert (src.netloc, src.path) == ("player.vimeo.com", "/video/123456789")
     assert parse_qs(src.query) == {"dnt": ["1"]}
+
+
+def test_the_note_links_to_the_players_section_of_the_cookies_policy(client, legal_pages):
+    """El aviso de la placa lleva a la sección de la política de cookies que cuenta qué recibe el
+    proveedor. Su titular no tiene `id`: el enlace llega a él con un fragmento de texto, que el
+    navegador solo sigue si dice, letra por letra, un titular de la página servida. Lo que pasa
+    al pulsarlo (no se carga el reproductor) lo comprueba la prueba de humo."""
+    from bs4 import BeautifulSoup
+
+    rec = _recording()
+    html = client.get(reverse("media:recording_detail", args=[rec.slug])).content.decode()
+    note = BeautifulSoup(html, "html.parser").select_one(".player-consent .embed-note")
+    links = [a for a in note.find_all("a") if a.find_parent("noscript") is None]
+    assert len(links) == 1, "el aviso no enlaza a la política de cookies"
+    link = links[0]
+    # Lo que se ve, y lo que oye el lector de pantalla: el nombre empieza por lo que se ve.
+    assert link.contents[0] == "podrá registrar tu visita"
+    assert link.get_text() == "podrá registrar tu visita (política de cookies)"
+
+    target = urlsplit(link["href"])
+    assert target.path == reverse("content:page_detail", args=["cookies"])
+    directive, _, text = target.fragment.partition("=")
+    assert directive == ":~:text"
+    # La coma, el guion y el ampersand separan las partes del fragmento: el texto va sin ellos.
+    assert not re.search(r"[,&-]", text), f"el fragmento «{text}» no va codificado entero"
+    policy = BeautifulSoup(client.get(target.path).content, "html.parser")
+    headings = [h2.get_text() for h2 in policy.select("article .body h2")]
+    assert len(headings) > 1, "la política de cookies no tiene secciones entre las que elegir"
+    assert unquote(text) in headings, f"«{unquote(text)}» no es ningún titular de {headings}"
 
 
 def test_the_filters_resolve_the_player_and_its_provider():

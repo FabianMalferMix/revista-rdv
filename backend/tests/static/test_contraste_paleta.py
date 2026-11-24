@@ -112,6 +112,9 @@ PROHIBIDOS = [
     ("magenta sobre la tinta", "accent", "ink"),
     ("azul de la carátula como texto sobre el papel", "caratula", "paper"),
     ("texto secundario sobre la carátula", "muted", "caratula"),
+    # Ni como texto ni como subrayado: los enlaces del aviso del reproductor, sobre el azul,
+    # se subrayan en el blanco de su texto.
+    ("magenta sobre la carátula", "accent", "caratula"),
     ("amarillo del cartel como texto sobre el papel", "riso-amarillo", "paper"),
     ("acento de la tinta sobre el papel", "accent-on-ink", "paper"),
     ("gris de los datos sobre la tinta", "muted", "ink"),

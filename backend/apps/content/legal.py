@@ -61,7 +61,12 @@ baja de las novedades desde el enlace incluido en cada correo.</p>
 <p><em>Texto base para revisión legal.</em></p>
 """
 
-_COOKIES = """
+# El titular de la sección de la política de cookies que explica los reproductores. La nota del
+# reproductor de un registro lleva a él con un fragmento de texto (`players_policy_url`, en
+# apps/media/templatetags/embeds.py), que solo funciona si coincide letra por letra.
+PLAYERS_HEADING = "Videos de YouTube y Vimeo"
+
+_COOKIES = f"""
 <p>Este sitio usa <strong>solo cookies técnicas y estrictamente necesarias</strong> para su
 funcionamiento. No usamos cookies de analítica, publicidad ni seguimiento de terceros. Solo si
 reproduces un video de YouTube o de Vimeo, esa plataforma puede guardar las suyas, como se explica
@@ -73,7 +78,7 @@ al final.</p>
 </ul>
 <p>Al ser necesarias para operar el sitio, no requieren consentimiento previo. Nuestras cookies no
 comparten información con terceros.</p>
-<h2>Videos de YouTube y Vimeo</h2>
+<h2>{PLAYERS_HEADING}</h2>
 <p>Algunos registros se ven en el reproductor de YouTube o de Vimeo. Hasta que pulsas el botón para
 reproducir uno, la página no se conecta con esas plataformas ni carga nada de ellas: en su lugar se
 ve una carátula del propio sitio.</p>
