@@ -1054,8 +1054,11 @@ const CHECKS = [
       const section = decodeURIComponent(target.hash.slice('#:~:text='.length));
       // El aviso cabe en la placa, y el enlace se distingue del resto, que va en el mismo blanco,
       // por un subrayado que se ve sobre el azul (3:1, como lo que no es texto en WCAG 1.4.11).
+      // Sin guiones, Chrome a veces calcula el estilo antes de tener todas las hojas, y la
+      // transición de color de los enlaces arranca al cargar: se mide el color en que se queda.
       const look = (tab) =>
-        tab.locator(policy).evaluate((a) => {
+        tab.locator(policy).evaluate(async (a) => {
+          await Promise.allSettled(a.getAnimations().map((animation) => animation.finished));
           const luminance = (color) => {
             const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map((value) => {
               const c = Number(value) / 255;
