@@ -2,9 +2,10 @@
 
 El pie de todas las páginas y el consentimiento del boletín y de los envíos enlazan a
 `privacidad`, `cookies` y `terminos`, que cualquiera puede leer; la de privacidad cita las leyes
-19.628 y 21.719. Desde el panel, la editora puede corregir su título y su texto (los revisará
-un abogado), pero no cambiarles el slug, despublicarlas ni borrarlas, tampoco con la acción en
-bloque. Cada caso lleva su control: una página corriente sí se despublica y se borra.
+19.628 y 21.719, y ella y la de cookies nombran cada plataforma de la que el sitio carga un
+reproductor de video. Desde el panel, la editora puede corregir su título y su texto (los
+revisará un abogado), pero no cambiarles el slug, despublicarlas ni borrarlas, tampoco con la
+acción en bloque. Cada caso lleva su control: una página corriente sí se despublica y se borra.
 """
 
 import pytest
@@ -15,6 +16,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 from apps.content.models import LEGAL_PAGES, Page, PublishStatus
+from config.content_policy import EMBED_PROVIDERS
 
 pytestmark = pytest.mark.django_db
 
@@ -169,3 +171,13 @@ def test_privacy_page_cites_ley_21719(client, legal_pages):
     assert resp.status_code == 200
     assert b"21.719" in resp.content
     assert b"19.628" in resp.content
+
+
+@pytest.mark.parametrize("slug", ["cookies", "privacidad"])
+def test_the_cookie_and_privacy_policies_name_each_video_platform(client, legal_pages, slug):
+    # Las plataformas de las que el sitio carga un reproductor salen de EMBED_PROVIDERS: si se
+    # suma una, esta prueba pide nombrarla también en las dos políticas.
+    resp = client.get(reverse("content:page_detail", args=[slug]))
+    assert resp.status_code == 200
+    body = BeautifulSoup(resp.content, "html.parser").select_one("article .body").get_text(" ")
+    assert [provider.name for provider in EMBED_PROVIDERS if provider.name not in body] == []

@@ -2,15 +2,18 @@
 
 Las entradas de la bitácora editorial pasan a apuntar a su texto por el enlace genérico (0004),
 y al deshacer esa migración, las que apuntan a un texto vuelven a él. Las páginas legales que
-faltan se crean (0007), y la política de privacidad sembrada toma el texto vigente (0010), pero
-una página editada en el panel se conserva. Cada prueba crea con los modelos de entonces las
-filas que la migración transforma, migra y comprueba qué quedó, con el fixture `migrate` de
-`conftest.py`.
+faltan se crean (0007), la política de privacidad sembrada toma el texto vigente (0010), y las
+de cookies y de privacidad que conservan el texto anterior pasan al que nombra los reproductores
+de video (0024), así que una base que ya migró termina igual que una nueva; una página editada
+en el panel se conserva. Cada prueba crea con los modelos de entonces las filas que la migración
+transforma, migra y comprueba qué quedó, con el fixture `migrate` de `conftest.py`.
 
 La migración que corrige los textos antes de su restricción se prueba en
 `test_constraint_migrations.py`, y la que copia el título y la firma en las entradas de la
 bitácora, en `test_editorial_log.py`.
 """
+
+import importlib
 
 from apps.content import legal
 
@@ -109,3 +112,58 @@ def test_the_seeded_privacy_policy_gets_the_current_text_and_an_edited_one_is_ke
     _privacy_policy(migrate("content", "0009_search_vector_triggers"), edited)
     new = migrate("content", "0010_privacy_ley_21719")
     assert _privacy_policy(new) == edited
+
+
+_POLICIES = ("cookies", "privacidad")
+
+
+def _previous_policies():
+    """El texto de las políticas en una base que ya migró, el que les dieron 0007 y 0010."""
+    return importlib.import_module(
+        "apps.content.migrations.0024_legal_pages_name_the_players"
+    ).PREVIOUS_BODIES
+
+
+def _policies(models, bodies=None):
+    """El cuerpo de las políticas de cookies y de privacidad; si se dan `bodies`, antes se los
+    pone."""
+    Page = models.get_model("content", "Page")
+    for slug, body in (bodies or {}).items():
+        Page.objects.update_or_create(
+            slug=slug,
+            defaults={"title": legal.pages()[slug].title, "body": body, "status": "published"},
+        )
+    return dict(Page.objects.filter(slug__in=_POLICIES).values_list("slug", "body"))
+
+
+def test_a_database_that_already_migrated_ends_with_the_policies_of_a_new_one(migrate):
+    previous = _previous_policies()
+    current = {slug: legal.pages()[slug].body for slug in _POLICIES}
+    # Control: el texto anterior no es el vigente, o las dos bases coincidirían sin migrar nada.
+    assert set(previous) == set(_POLICIES)
+    assert [slug for slug in _POLICIES if previous[slug] == current[slug]] == []
+
+    _policies(migrate("content", "0023_body_images"), previous)
+    already_migrated = _policies(migrate("content", "0024_legal_pages_name_the_players"))
+
+    before_legal = migrate("content", "0006_alter_article_owner_poem_collectionpoem_and_more")
+    before_legal.get_model("content", "Page").objects.all().delete()
+    new = _policies(migrate("content", "0024_legal_pages_name_the_players"))
+
+    assert already_migrated == new == current
+
+
+def test_a_policy_edited_in_the_panel_keeps_its_text(migrate):
+    previous = _previous_policies()
+    for edited, seeded in (("cookies", "privacidad"), ("privacidad", "cookies")):
+        # Con un párrafo más ya es una página editada: la migración compara el texto entero, no
+        # si empieza por el anterior o lo contiene.
+        bodies = {
+            edited: f"{previous[edited]}\n<p>Revisado por la abogada del colectivo.</p>",
+            seeded: previous[seeded],
+        }
+        _policies(migrate("content", "0023_body_images"), bodies)
+        assert _policies(migrate("content", "0024_legal_pages_name_the_players")) == {
+            edited: bodies[edited],
+            seeded: legal.pages()[seeded].body,
+        }
