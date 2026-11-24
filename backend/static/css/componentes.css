@@ -556,9 +556,12 @@ li:has(.enlace-total) a:not(.enlace-total){position:relative; z-index:var(--z-en
    botón, por dentro y en azul oscuro: así se ve sobre cualquier póster. */
 .player-consent :focus-visible{outline-color:#fff}
 .player-consent .embed-play:focus-visible{outline:3px solid var(--caratula-rotulo); outline-offset:-9px}
-/* La placa fija el blanco de sus datos: el gris de `.meta` no se lee sobre el azul. Sin
-   JavaScript el aviso enseña además un enlace al proveedor, que también es un dato. */
+/* La placa fija el blanco de sus datos: el gris de `.meta` no se lee sobre el azul. El aviso
+   enlaza a la política de cookies y, sin JavaScript, enseña además un enlace al proveedor, que
+   también es un dato. Sus subrayados van en el color del texto: el magenta de los enlaces no se
+   ve sobre el azul. */
 .player-consent .meta, .player-consent .meta a{color:#fff}
+.player-consent .meta a{text-decoration-color:currentColor}
 /* El aviso es una frase: se lee en la serif, no en la letra de los datos. */
 .embed-note{display:flex; flex-direction:column; justify-content:center; gap:2px; margin:0;
   padding:var(--s1) var(--s2); max-width:44ch; background:var(--caratula); color:#fff;

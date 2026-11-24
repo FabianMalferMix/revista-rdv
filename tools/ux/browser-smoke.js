@@ -81,6 +81,21 @@ function expect(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+// La ficha del primer registro del índice con un reproductor externo, y la dirección de ese
+// reproductor.
+async function visitPlayer(page) {
+  await visit(page, '/registros/');
+  const recordings = await page.evaluate(() => [
+    ...new Set([...document.querySelectorAll('a[href^="/registro/"]')].map((a) => a.getAttribute('href'))),
+  ]);
+  for (const route of recordings) {
+    await visit(page, route);
+    const consent = page.locator('.player-consent');
+    if (await consent.count()) return { route, player: await consent.first().getAttribute('data-embed-src') };
+  }
+  throw new Error('ningún registro tiene un reproductor externo con el que probar');
+}
+
 // Un deslizamiento del dedo sobre lo que señala `locator`: hacia la izquierda si `dx` es negativo,
 // y hacia abajo `dy` px. Los guiones solo miran el tipo de puntero (`pointerType`, otro que el
 // dedo si se pide) y dónde empieza y termina el gesto.
@@ -999,20 +1014,7 @@ const CHECKS = [
     name: 'El reproductor externo solo se carga, y solo contacta al tercero, al pulsar; entonces pide sonar y le envía solo el origen del sitio',
     widths: [951, 375],
     async run({ page, thirdParty, allowed, consented }) {
-      await visit(page, '/registros/');
-      const recordings = await page.evaluate(() => [
-        ...new Set([...document.querySelectorAll('a[href^="/registro/"]')].map((a) => a.getAttribute('href'))),
-      ]);
-      let player = null;
-      for (const route of recordings) {
-        await visit(page, route);
-        const consent = page.locator('.player-consent');
-        if (await consent.count()) {
-          player = await consent.first().getAttribute('data-embed-src');
-          break;
-        }
-      }
-      expect(player, 'ningún registro tiene un reproductor externo con el que probar');
+      const { player } = await visitPlayer(page);
       expect((await page.locator('iframe').count()) === 0, 'hay un iframe antes de pulsar');
       expect(!thirdParty.length, `antes de pulsar ya se contactó a ${thirdParty[0]}`);
       // Desde aquí lo pide la persona: esas peticiones no cuentan como fallo.
@@ -1037,6 +1039,82 @@ const CHECKS = [
       );
       expect(mayPlay !== null, 'este Chrome no dice qué permisos tiene el iframe (featurePolicy)');
       expect(mayPlay, 'el iframe no tiene permiso para sonar');
+    },
+  },
+  {
+    name: 'El aviso del reproductor lleva a la política de cookies sin cargar el reproductor, con los guiones y sin ellos; el botón sí lo carga',
+    widths: [951, 390],
+    async run({ context, page, thirdParty, allowed }, width) {
+      const { route, player } = await visitPlayer(page);
+      // Sin guiones, el `<noscript>` trae otro enlace, al proveedor: este es el de la política.
+      const policy = '.player-consent .embed-note a:not(noscript a)';
+      expect((await page.locator(policy).count()) === 1, 'el aviso del reproductor no enlaza a la política de cookies');
+      const target = new URL(await page.locator(policy).getAttribute('href'), BASE);
+      expect(target.hash.startsWith('#:~:text='), `el enlace del aviso no lleva a una sección: ${target.hash || 'sin fragmento'}`);
+      const section = decodeURIComponent(target.hash.slice('#:~:text='.length));
+      // El aviso cabe en la placa, y el enlace se distingue del resto, que va en el mismo blanco,
+      // por un subrayado que se ve sobre el azul (3:1, como lo que no es texto en WCAG 1.4.11).
+      const look = (tab) =>
+        tab.locator(policy).evaluate((a) => {
+          const luminance = (color) => {
+            const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map((value) => {
+              const c = Number(value) / 255;
+              return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+            });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          };
+          const note = a.closest('.embed-note');
+          const style = getComputedStyle(a);
+          const [light, dark] = [style.textDecorationColor, getComputedStyle(note).backgroundColor]
+            .map(luminance)
+            .sort((x, y) => y - x);
+          const frame = a.closest('.player-consent').getBoundingClientRect();
+          const box = note.getBoundingClientRect();
+          return {
+            underlined: a.checkVisibility() && style.textDecorationLine.includes('underline'),
+            ratio: (light + 0.05) / (dark + 0.05),
+            fits: box.top >= frame.top - 0.5 && box.bottom <= frame.bottom + 0.5 && box.right <= frame.right + 0.5,
+          };
+        });
+      // Pulsarlo lleva a la política, donde está la sección que nombra su fragmento.
+      const follow = async (tab, label) => {
+        const seen = await look(tab);
+        expect(seen.fits, `${label}: el aviso no cabe en la placa`);
+        expect(seen.underlined, `${label}: el enlace del aviso no se ve subrayado`);
+        expect(seen.ratio >= 3, `${label}: el subrayado del enlace del aviso queda a ${seen.ratio.toFixed(2)}:1 del azul`);
+        await Promise.all([tab.waitForURL((url) => url.pathname === target.pathname), tab.locator(policy).click()]);
+        const headings = await tab.locator('article .body h2').allTextContents();
+        expect(headings.includes(section), `${label}: el enlace lleva a ${target.pathname}, que no tiene la sección «${section}»`);
+      };
+      await follow(page, 'con los guiones');
+      expect(!thirdParty.length, `pulsar el enlace del aviso contactó a ${thirdParty[0]}`);
+      // El control: en la misma placa, el botón sí carga el reproductor.
+      await visit(page, route);
+      allowed.add(new URL(player).origin);
+      await page.click('.player-consent .embed-play');
+      const loaded = await page
+        .waitForSelector(`iframe[src^="${player}"]`, { timeout: 3000 })
+        .then(() => true, () => false);
+      expect(loaded, 'pulsar el botón no carga el reproductor');
+      // Sin guiones no hay reproductor: el aviso enlaza además al proveedor, y el de la política
+      // se sigue viendo y pulsando.
+      const noScripts = await context.browser().newContext({ ...WINDOWS[width], javaScriptEnabled: false });
+      try {
+        const bare = await noScripts.newPage();
+        const stray = [];
+        await bare.route('**/*', (request) => {
+          if (new URL(request.request().url()).origin === ORIGIN) return request.continue();
+          stray.push(request.request().url());
+          return request.abort();
+        });
+        await visit(bare, route);
+        const provider = await bare.locator('.player-consent .embed-note noscript a').count();
+        expect(provider === 1, 'sin los guiones, el aviso no enlaza al proveedor');
+        await follow(bare, 'sin los guiones');
+        expect(!stray.length, `sin los guiones se contactó a ${stray[0]}`);
+      } finally {
+        await noScripts.close();
+      }
     },
   },
   {
