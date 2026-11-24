@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // Prueba de humo en navegador: el sitio en Chrome a 951 px (la ventana del dueño) y a 375 px (un
-// teléfono), y lo que pide cada imagen y el aire antes de los títulos de sección (en las fichas,
-// el dossier y la agenda) a 951 y a 390 px, con los guiones de backend/static/js/ ejecutándose
-// de verdad. Una comprobación falla si lo que mide no se cumple, y también ante un error de
-// página o de consola, un recurso propio que no carga o una petición a un tercero que nadie
-// pidió. La corre el job `navegador` del CI.
+// teléfono), con el editor de un texto en el panel, y lo que pide cada imagen y el aire antes de
+// los títulos de sección (en las fichas, el dossier y la agenda) a 951 y a 390 px, con los guiones
+// de backend/static/js/ ejecutándose de verdad. Una comprobación falla si lo que mide no se
+// cumple, y también ante un error de página o de consola, un recurso propio que no carga o una
+// petición a un tercero que nadie pidió. La corre el job `navegador` del CI.
 //
 //   node tools/ux/browser-smoke.js [--base URL]
 //
 // Usa playwright-core con el Chrome del sistema (variable CHROME para otra ruta) y las páginas
-// de pages.txt, las mismas que mide capture.js. Sale con 1 si falla alguna comprobación.
+// de pages.txt, las mismas que mide capture.js. Al panel entra con la cuenta que dicen
+// DJANGO_SUPERUSER_USERNAME y DJANGO_SUPERUSER_PASSWORD; sin ellas, esa comprobación falla. Sale
+// con 1 si falla alguna comprobación.
 const { chromium } = require('playwright-core');
 const { CHROME, readPages, siteBase } = require('./common');
 
@@ -37,6 +39,9 @@ const PAGES = readPages().map((page) => page.route);
 // Para lo que pide cada imagen, también lo que pages.txt no enseña: las tapas en la ficha de una
 // editorial y el afiche de un registro de audio, en el carril de lectura.
 const IMAGE_PAGES = [...PAGES, '/editorial/ediciones-ceniza/', '/registro/umbral-lectura/'];
+// La cuenta con que se entra al panel: las variables que lee `createsuperuser --noinput`, con que
+// el CI la crea. Lo que se escribe en el editor no se guarda.
+const PANEL_ACCOUNT = ['DJANGO_SUPERUSER_USERNAME', 'DJANGO_SUPERUSER_PASSWORD'];
 
 const routeOf = (url) => (url.startsWith(ORIGIN) ? url.slice(ORIGIN.length) : url);
 
@@ -500,6 +505,11 @@ const CHECKS = [
       // «ana@correo» lo acepta el navegador (no pide punto en el dominio) y Django no.
       await field.fill('ana@correo');
       await Promise.all([page.waitForURL('**/novedades/'), field.press('Enter')]);
+      // `autofocus` lo aplica Chrome al pintar, que puede llegar después de `load`. Si el foco no
+      // llega, la comprobación de abajo dice dónde quedó.
+      await page
+        .waitForFunction(() => document.activeElement && document.activeElement.name === 'email', null, { timeout: 2000 })
+        .catch(() => {});
       const state = await page.evaluate(() => {
         const input = document.activeElement;
         const error = document.getElementById(`${input.id}_error`);
@@ -1455,6 +1465,72 @@ const CHECKS = [
       expect(!wrong.length, wrong.join(' · '));
       const missing = kinds.filter((kind) => !measured.has(kind));
       expect(!missing.length, `no hay ningún ${missing.join(', ')} que medir`);
+    },
+  },
+  {
+    name: 'En el panel, el editor de un texto abre habilitado, con su cuerpo, y lo que se escribe entra',
+    widths: [951, 375],
+    async run({ page }) {
+      const [username, password] = PANEL_ACCOUNT.map((name) => process.env[name]);
+      expect(
+        username && password,
+        `faltan ${PANEL_ACCOUNT.join(' y ')}: la cuenta con que entrar al panel (createsuperuser --noinput crea una con ellas)`
+      );
+      await visit(page, '/admin/login/?next=/admin/content/article/');
+      await page.fill('#id_username', username);
+      await page.fill('#id_password', password);
+      // Por la ruta, y no con un patrón: la dirección del ingreso ya termina en la de la lista
+      // (`?next=`), y el patrón daría por llegada la página que todavía no se envió.
+      const changelist = new URL(BASE + '/admin/content/article/').pathname;
+      const entered = await Promise.all([
+        page.waitForURL((url) => url.pathname === changelist, { timeout: 10000 }),
+        page.click('#login-form [type="submit"]'),
+      ]).then(() => true, () => false);
+      if (!entered) {
+        const note = (await page.locator('.errornote').allTextContents()).join(' ').trim();
+        throw new Error(`no entró al panel como ${username}: ${note || `quedó en ${routeOf(page.url())}`}`);
+      }
+      const links = page.locator('#result_list tbody th a');
+      expect(await links.count(), 'el panel no lista ningún texto con el que abrir el editor');
+      const title = (await links.first().textContent()).trim();
+      await visit(page, await links.first().getAttribute('href'));
+      const ready = await page
+        .waitForFunction(() => window.tinymce && window.tinymce.get('id_body')?.initialized, null, { timeout: 10000 })
+        .then(() => true, () => false);
+      expect(ready, `el editor del cuerpo de «${title}» no se inició`);
+      const editor = await page.evaluate(() => {
+        const instance = window.tinymce.get('id_body');
+        const saved = new DOMParser().parseFromString(document.getElementById('id_body').value, 'text/html');
+        const box = instance.getContainer().getBoundingClientRect();
+        return {
+          mode: instance.mode.get(),
+          disabled: instance.options.get('disabled'),
+          enabled: instance.ui.isEnabled(),
+          shown: box.width > 0 && box.height > 0,
+          showing: instance.getBody().textContent,
+          body: saved.body.textContent,
+        };
+      });
+      expect(editor.shown, `el editor de «${title}» no se ve`);
+      expect(
+        editor.mode === 'design' && !editor.disabled && editor.enabled,
+        `el editor de «${title}» no deja editar: modo ${editor.mode}, disabled ${editor.disabled}`
+      );
+      // El texto, sin los blancos: entre los bloques, el editor no conserva los saltos de línea.
+      const letters = (text) => text.replace(/\s+/g, '');
+      const shorten = (text) => text.replace(/\s+/g, ' ').trim().slice(0, 60);
+      expect(letters(editor.body), `«${title}» no tiene cuerpo con el que comparar el editor`);
+      expect(
+        letters(editor.showing) === letters(editor.body),
+        `el editor de «${title}» muestra «${shorten(editor.showing)}», y el cuerpo empieza «${shorten(editor.body)}»`
+      );
+      // Al final del cuerpo, con el teclado.
+      const mark = 'Prueba de humo del panel';
+      await page.frameLocator('iframe.tox-edit-area__iframe').locator('body').click();
+      await page.keyboard.press('Control+End');
+      await page.keyboard.type(` ${mark}`);
+      const typed = await page.evaluate(() => window.tinymce.get('id_body').getBody().textContent);
+      expect(typed.includes(mark), `en el editor de «${title}», lo escrito no entró: termina en «${typed.slice(-60)}»`);
     },
   },
 ];

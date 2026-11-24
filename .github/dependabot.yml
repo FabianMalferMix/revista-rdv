@@ -17,6 +17,9 @@ updates:
     ignore:
       - dependency-name: "django"
         update-types: ["version-update:semver-major"]
+      # pip va en el lockfile de desarrollo y también en el Dockerfile y en el CI, que
+      # Dependabot no cambia: se sube a mano en los tres (tests/infra/test_tool_versions.py).
+      - dependency-name: "pip"
 
   # Lo vendorizado (htmx y TinyMCE): el package.json no se instala, solo le da el radar a
   # Dependabot. Su PR cambia la versión y la prueba del manifiesto falla hasta que alguien

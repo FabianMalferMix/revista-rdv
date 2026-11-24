@@ -4,9 +4,10 @@ htmx y TinyMCE se sirven auto-hospedados para que la CSP pueda limitar `script-s
 y quedan fuera del radar de pip-audit y trivy. `static/vendor/manifest.json` dice qué hay: el
 paquete de npm, la versión, la integridad del paquete y el sha256 de cada archivo
 (`tools/vendor/update.py` lo escribe y lo comprueba contra npm). Estas pruebas atan el árbol al
-manifiesto, la versión que llevan dentro las librerías a la declarada, los plugins que pide el
-editor a sus archivos, su clave de licencia a la licencia del paquete, la URL de TinyMCE a su
-versión y `package.json`, que vigila Dependabot, a las mismas versiones.
+manifiesto, la versión que llevan dentro las librerías a la declarada (y la de DOMPurify, que
+va dentro de TinyMCE, a la que dice VERSIONS.md), los plugins que pide el editor a sus
+archivos, su clave de licencia a la licencia del paquete, la URL de TinyMCE a su versión y
+`package.json`, que vigila Dependabot, a las mismas versiones.
 """
 
 import hashlib
@@ -49,6 +50,18 @@ def test_the_declared_versions_are_the_ones_inside_the_bundles():
     tinymce = (VENDOR / _target(MANIFEST["tinymce"]) / "tinymce.min.js").read_bytes()
     found = re.search(rb'majorVersion:"(\d+)",minorVersion:"([\d.]+)"', tinymce)
     assert f"{found.group(1).decode()}.{found.group(2).decode()}" == MANIFEST["tinymce"]["version"]
+
+
+def test_the_inventory_names_the_dompurify_that_tinymce_carries():
+    """La cabecera de `tinymce.min.js` y su `notices.txt` nombran versiones de DOMPurify
+    anteriores a la que trae su código: VERSIONS.md dice la del código."""
+    tinymce = (VENDOR / _target(MANIFEST["tinymce"]) / "tinymce.min.js").read_bytes()
+    code = re.findall(rb'\b\w+\.version="(\d+\.\d+\.\d+)",\w+\.removed=\[\]', tinymce)
+    assert len(code) == 1
+    assert re.findall(rb"@license DOMPurify (\d+\.\d+\.\d+)", tinymce) == code
+    inventory = (VENDOR / "VERSIONS.md").read_text("utf-8").split("## Inventario")[1]
+    inventory = inventory.split("\n## ")[0]
+    assert re.findall(r"DOMPurify (\d+\.\d+\.\d+)", inventory) == [code[0].decode()]
 
 
 def test_htmx_esta_al_dia_en_su_linea_2_0():

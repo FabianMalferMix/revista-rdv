@@ -59,15 +59,18 @@ def test_a_baseline_above_the_count_has_to_be_lowered(guard, capsys):
 
 
 def test_documents_migrations_colours_and_entities_do_not_count(guard, capsys):
-    """Los documentos y las migraciones pueden citar decisiones, y un color o una entidad HTML no
-    son un número de PR; en el código, un número con una o dos cifras o entre paréntesis, sí."""
+    """Los documentos y las migraciones pueden citar decisiones, y un color, una entidad HTML o un
+    byte de una dirección codificada no son un código; en el código, un número con una o dos
+    cifras o entre paréntesis, sí, y un código suelto también."""
     quiet = {
         "docs/notas.md": "Se decidió en D18 (#147).\n",
         "backend/apps/content/migrations/0002_datos.py": "# B07\n",
         "backend/static/css/sitio.css": ".a { color: #333; background: #151515; }\n",
         "backend/templates/pie.html": "<p>&#15; &#147;</p>\n",
+        "backend/apps/site/views.py": 'URL = "/buscar/?q=Poes%C3%ADa+%D0%B0+%B10"\n',
     }
     assert guard(quiet, {}) == 0
-    # Control: en el código, los números de PR cuentan.
-    assert guard({**quiet, CODE: "# Visto en #15 y en (#147).\n"}, {}) == 1
-    assert f"{CODE}: 2 (la línea base admite 0)" in capsys.readouterr().out
+    # Control: en el código, los números de PR y los códigos sueltos cuentan.
+    files = {**quiet, CODE: "# Visto en #15 y en (#147); lo pide C3, como B10.\n"}
+    assert guard(files, {}) == 1
+    assert f"{CODE}: 4 (la línea base admite 0)" in capsys.readouterr().out

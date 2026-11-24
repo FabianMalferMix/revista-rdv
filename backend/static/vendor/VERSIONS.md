@@ -39,8 +39,11 @@ publicado en npm.
   versión de `manifest.json`) porque carga sus recursos con rutas relativas en tiempo de
   ejecución. Caddy no la marca como inmutable: la revalida en cada uso. Va con
   `license_key: "gpl"` (`richtext_init.js`): sin una clave, TinyMCE deja el editor
-  deshabilitado. Al actualizarlo, comprobar que su `license.md` sigue ofreciendo la GPL (la
-  prueba lo exige) y que el editor abre habilitado y sin avisos en la consola.
+  deshabilitado. Trae dentro DOMPurify 3.4.12, la versión que dice su propio código
+  (`DOMPurify.version` y su aviso `@license`); la cabecera de `tinymce.min.js` nombra la 3.4.11,
+  y su `notices.txt`, la 3.3.2. Al actualizarlo, comprobar que su `license.md` sigue ofreciendo
+  la GPL (la prueba lo exige), que el editor abre habilitado y sin avisos en la consola, y poner
+  aquí la versión de DOMPurify que trae (la prueba la compara con el código).
 
 ## Licencias
 
@@ -62,5 +65,5 @@ repositorio que se declara propietario: está documentado allí.
 - **2026-11-18** — TinyMCE 7.9.3 → 8.10.2, con `update.py` (C36). La 8 exige una clave de
   licencia: va `license_key: "gpl"`, la del uso bajo la GPL v2 o posterior. Los 14 archivos
   conservan sus rutas, y `lists`, `link` y `autolink` siguen en el paquete libre. Trae
-  DOMPurify 3.4.11 (su `notices.txt` aún dice 3.3.2) y los arreglos de seguridad de la línea 8:
-  la 7 libre ya no los recibe.
+  DOMPurify 3.4.12 (la cabecera del archivo dice 3.4.11, y su `notices.txt`, 3.3.2) y los
+  arreglos de seguridad de la línea 8: la 7 libre ya no los recibe.

@@ -28,10 +28,11 @@ BASELINE = Path(__file__).with_name("decision_refs_baseline.json")
 # («Lote F2-4», «Onda D», «tickets 1.2», «decisión 3»), y números de PR, también sueltos.
 # Un número suelto cuenta si tiene una o dos cifras («#15»), que no pueden ser un color (#333
 # y #151515 tienen tres o más), y no sigue a «&» (la entidad HTML &#15;); con más cifras,
-# solo entre paréntesis («(#147)»).
+# solo entre paréntesis («(#147)»). Tras «%» va un byte de una dirección codificada («%C3%A1»
+# es «á»), no un código.
 PATTERN = re.compile(
-    r"\b[DC]\d{1,2}\b"
-    r"|\bB\d{2}\b"
+    r"(?<!%)\b[DC]\d{1,2}\b"
+    r"|(?<!%)\bB\d{2}\b"
     r"|\bS-\d{2}\b"
     r"|\bqa-\d+\b"
     r"|\b(?:[Tt]ickets?|[Pp]asos?|[Ll]otes?)\s+(?:\d|[A-H]\b|[A-Z]{1,3}-?\d)"
