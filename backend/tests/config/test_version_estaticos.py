@@ -10,6 +10,7 @@ su componente sin responder. El sufijo es la fecha del más reciente de las hoja
 (`STYLESHEETS`) y los guiones, y va en todos.
 """
 
+import logging
 import os
 import re
 import shutil
@@ -82,6 +83,25 @@ def test_manda_el_mas_reciente_aunque_sea_un_guion(settings, tmp_path):
     from config.context_processors import version_estaticos
 
     assert version_estaticos(None) == {"version_estaticos": "?v=2000"}
+
+
+def test_a_missing_file_leaves_the_pages_without_suffix_and_says_which(settings, tmp_path, caplog):
+    """Si falta una hoja de la lista, las páginas salen igual, sin sufijo, y el registro dice cuál
+    falta."""
+    settings.DEBUG = True
+    _copy_own_statics(settings, tmp_path)
+    with caplog.at_level(logging.WARNING, logger="config.context_processors"):
+        completa = Client().get("/")
+        (tmp_path / "static" / STYLESHEETS[0]).unlink()
+        sin_hoja = Client().get("/")
+    avisos = [r for r in caplog.records if r.name == "config.context_processors"]
+    # Control: con todos los archivos, las hojas llevan su sufijo.
+    assert all("?v=" in enlace for enlace in _enlaces(completa.content.decode()))
+    assert sin_hoja.status_code == 200
+    enlaces = _enlaces(sin_hoja.content.decode())
+    assert len(enlaces) == len(STYLESHEETS) and "?v=" not in "".join(enlaces), enlaces
+    assert [r.levelno for r in avisos] == [logging.WARNING], "solo avisa la página sin la hoja"
+    assert STYLESHEETS[0] in avisos[0].getMessage()
 
 
 def test_fuera_de_desarrollo_no_se_ensucia_la_url(settings):

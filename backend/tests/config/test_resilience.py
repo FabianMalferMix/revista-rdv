@@ -6,13 +6,16 @@ y `ValueError`. Si la caché no degradara (config/cache.py), con Redis caído
 devolverían un HTTP 500 — justo cuando el sitio ya está degradado.
 """
 
+import json
+
 import pytest
 from django.core.cache import caches
 from django.core.cache.backends.redis import RedisCache
 from django.test import override_settings
 from django.urls import reverse
 
-from config.cache import FALLBACKS, SERVICE_UNAVAILABLE, WITHOUT_REDIS
+from config import ratelimit
+from config.cache import ERROR_INTERVAL, FALLBACKS, SERVICE_UNAVAILABLE, WITHOUT_REDIS
 from tests.factories import SEARCH_PANEL_HEADERS
 
 # Puerto sin nadie escuchando: simula Redis caído sin tocar el de verdad.
@@ -115,6 +118,59 @@ def test_a_real_rate_limit_still_says_too_many_attempts(client, frozen_rate_limi
     assert SERVICE_UNAVAILABLE not in html
 
 
+def _closure_reports(events):
+    return [event for event in events if event.get("logger") == "config.ratelimit"]
+
+
+@pytest.mark.django_db
+@override_settings(CACHES=CACHE_CAIDA, RATELIMIT_ENABLE=True)
+def test_sentry_hears_of_the_closed_views_once_per_interval_and_without_personal_data(
+    sentry_events, client, monkeypatch
+):
+    """Sentry ignora el logger que anota cada 503 (django.request). Le llega un ERROR por
+    intervalo, con el mismo texto venga de la vista que venga, y sin el correo del formulario,
+    lo buscado ni la IP de quien los pidió."""
+    monkeypatch.setattr(ratelimit._report_due, "last", None)
+    email, term, ip = "ana.prueba@example.com", "umbralinedito", "203.0.113.7"
+
+    def search():
+        return client.get(reverse("site:search"), {"q": term}, REMOTE_ADDR=ip).status_code
+
+    subscribe = client.post(
+        reverse("community:subscribe"), {"email": email, "apodo": ""}, REMOTE_ADDR=ip
+    ).status_code
+    assert (subscribe, search()) == (503, 503), "control: las dos vistas cerraron"
+    assert len(_closure_reports(sentry_events())) == 1, "un ERROR por intervalo, no por 503"
+    ratelimit._report_due.last -= ERROR_INTERVAL
+    assert search() == 503
+
+    first, second = _closure_reports(sentry_events())
+    assert first["level"] == "error"
+    assert first["logentry"]["message"] == ratelimit.UNAVAILABLE_REPORT
+    assert second["logentry"] == first["logentry"], "las dos caídas, en un mismo issue"
+    sent = json.dumps(sentry_events())
+    for personal in (email, term, ip):
+        assert personal not in sent
+    # Ni la clave de su contador, que es un hash de la IP con datos que se conocen. Control: el
+    # evento cuenta lo que pasó antes, la caché que no respondió.
+    crumbs = {crumb.get("category") for crumb in first["breadcrumbs"]["values"]}
+    assert "config.cache" in crumbs
+    assert ":rl:" not in sent
+
+
+@pytest.mark.django_db
+@override_settings(RATELIMIT_ENABLE=True)
+def test_a_real_rate_limit_sends_nothing_to_sentry(
+    sentry_events, client, monkeypatch, frozen_rate_limit_window
+):
+    """Pasarse del límite es cosa de quien pide, no una caída: no llega a Sentry."""
+    monkeypatch.setattr(ratelimit._report_due, "last", None)
+    for i in range(6):
+        resp = client.post(reverse("community:subscribe"), {"email": f"a{i}@example.com"})
+    assert resp.status_code == 429, "control: el límite llegó"
+    assert _closure_reports(sentry_events()) == []
+
+
 def test_the_wrapper_covers_every_redis_method():
     """Un método nuevo de RedisCache tiene que decidir qué devuelve con Redis caído."""
     own = {
@@ -148,10 +204,12 @@ def test_la_politica_ante_cache_no_disponible_es_fail_closed(settings):
 def test_hay_limites_de_tiempo_en_celery_y_en_el_correo(settings):
     """Sin ellos, un SMTP que acepta la conexión y luego calla ocupa los procesos del
     worker indefinidamente."""
+    from apps.community.tasks import send_confirmation_email
+
     assert settings.EMAIL_TIMEOUT > 0
     assert settings.CELERY_TASK_SOFT_TIME_LIMIT > 0
     # Un servidor que calla tiene que fallar por el socket antes que por el límite blando.
-    assert settings.EMAIL_TIMEOUT < settings.CELERY_TASK_SOFT_TIME_LIMIT
+    assert settings.EMAIL_TIMEOUT < send_confirmation_email.soft_time_limit
     assert settings.CELERY_TASK_TIME_LIMIT > settings.CELERY_TASK_SOFT_TIME_LIMIT
     assert settings.CELERY_WORKER_PREFETCH_MULTIPLIER == 1
 

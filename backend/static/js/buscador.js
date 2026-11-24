@@ -54,10 +54,12 @@
     });
   });
 
+  // Los resultados se encuentran por su clase, como en la hoja: el id es el destino de htmx, y
+  // lo decide la vista de búsqueda. El recuento, en la región de estado de la lupa.
   document.addEventListener("htmx:validation:failed", (evento) => {
     const panel = evento.target.closest && evento.target.closest(".busqueda");
     if (!panel) return;
-    panel.querySelectorAll("#search-results, #search-status").forEach((region) => {
+    panel.querySelectorAll('.busqueda-resultados, [role="status"]').forEach((region) => {
       region.textContent = "";
     });
   });

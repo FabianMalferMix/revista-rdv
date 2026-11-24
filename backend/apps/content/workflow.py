@@ -69,15 +69,6 @@ def _allowed(user, item, who):
     return any(user.has_perm(permission_for(item, action)) for action in who if action != OWNER)
 
 
-def available_transitions(user, item):
-    """Transiciones que este usuario puede disparar sobre esta pieza ahora."""
-    return [
-        name
-        for name, transition in TRANSITIONS.items()
-        if item.status in transition.sources and _allowed(user, item, transition.who)
-    ]
-
-
 def perform_transition(item, name, user, note="", when=None):
     """Mueve la pieza por la transición `name`. Programar recibe su fecha en `when`, que se fija
     bajo el mismo bloqueo; sin ella se usa la que ya tenía la pieza."""

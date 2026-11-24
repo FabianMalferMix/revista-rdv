@@ -3,6 +3,7 @@ from django.db.models import Count, IntegerField, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 
 from apps.content.models import Poem
+from config import publishing
 from config.publishing import FrozenSlugAdminMixin
 
 from .models import MediaAsset, Recording
@@ -72,7 +73,7 @@ class RecordingAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         # Un aviso, no un bloqueo: el colectivo puede publicar y escribir la transcripción después.
-        if obj.published and obj.kind == Recording.Kind.AUDIO and not obj.transcript:
+        if publishing.is_published(obj) and obj.kind == Recording.Kind.AUDIO and not obj.transcript:
             if not Poem.objects.filter(recording=obj).exists():
                 messages.warning(
                     request,

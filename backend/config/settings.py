@@ -270,11 +270,11 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Límites de tiempo de cada tarea: sin ellos, un SMTP que acepta la conexión y no
-# responde ocupa un proceso del worker indefinidamente. El blando lanza
-# SoftTimeLimitExceeded dentro de la tarea, que termina como fallo salvo que ella misma
-# lo capture o lo reintente; el duro mata el proceso. Se completa con EMAIL_TIMEOUT, más
-# abajo.
+# Los límites de tiempo de las tareas que no declaran los suyos, que son las de Celery mismo:
+# cada tarea de las apps declara los suyos (tests/config/test_bounded_waits.py). Sin límite,
+# una tarea que espera a un servicio que no contesta ocupa un proceso del worker
+# indefinidamente. El blando lanza SoftTimeLimitExceeded dentro de la tarea, que termina como
+# fallo salvo que ella misma lo capture o lo reintente; el duro mata el proceso.
 CELERY_TASK_SOFT_TIME_LIMIT = env_int("CELERY_TASK_SOFT_TIME_LIMIT", 30)
 CELERY_TASK_TIME_LIMIT = env_int("CELERY_TASK_TIME_LIMIT", 60)
 # acks_late confirma el mensaje cuando la tarea termina, no cuando llega: si cae el
@@ -422,8 +422,9 @@ if not DEBUG:
         )
 
 # ── Observabilidad: Sentry ────────────────────────────────
-# Obligatorio con DEBUG=0 (guard de producción). sentry-sdk habilita solo las integraciones
-# de Django y Celery: basta con arrancarlo aquí, que importan los dos procesos. Sin DSN
+# Obligatorio con DEBUG=0 (guard de producción). sentry-sdk habilita por su cuenta las
+# integraciones de las librerías instaladas, Django y Celery entre ellas (la de Redis no:
+# config/sentry.py): basta con arrancarlo aquí, que importan los dos procesos. Sin DSN
 # (desarrollo, pruebas) no hace nada.
 if SENTRY_DSN:
     from config.sentry import init_sentry

@@ -4,11 +4,13 @@ prensa, que enseña cada mención publicada con su cita; y las publicaciones de 
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from apps.people.models import Contributor
 from apps.showcase.models import PressMention, WhereToBuy
-from tests.factories import make_publication  # noqa: E402
+from tests.factories import make_image, make_publication  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -39,6 +41,28 @@ def test_press_index_lists_published_mentions(client):
     assert b"Nota Publicada" in resp.content
     assert b"Voz nueva y necesaria." in resp.content
     assert b"Nota Oculta" not in resp.content
+
+
+def test_the_press_page_asks_the_same_with_one_mention_as_with_four(client):
+    """Cada mención sale de la consulta de su lista, también las que tienen logo: con cuatro, la
+    página de prensa hace las mismas consultas que con una."""
+    url = reverse("showcase:press_index")
+
+    def mention(n):
+        PressMention.objects.create(
+            title=f"Nota {n}", outlet=f"Medio {n}", quote="Cita.", logo=make_image(f"logo{n}")
+        )
+
+    mention(0)
+    client.get(url)  # en caliente: el perfil ya existe
+    with CaptureQueriesContext(connection) as una:
+        client.get(url)
+    for n in (1, 2, 3):
+        mention(n)
+    with CaptureQueriesContext(connection) as cuatro:
+        html = client.get(url).content.decode()
+    assert all(f"Medio {n}" in html for n in range(4)), "control: salen las cuatro"
+    assert len(cuatro) == len(una), "una consulta más por mención"
 
 
 def test_member_publications_reverse_relation():

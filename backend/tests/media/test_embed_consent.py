@@ -7,6 +7,7 @@ página) lo comprueba en un navegador la prueba de humo, `tools/ux/browser-smoke
 """
 
 import re
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from django.template import Context, Template
@@ -97,11 +98,24 @@ def test_la_ficha_del_registro_tampoco(client):
     assert b"embed-play" in resp.content
 
 
+def test_the_vimeo_player_does_not_follow_the_session(client):
+    """La placa le pide a Vimeo su reproductor con `dnt=1`: sin sus cookies ni sus estadísticas
+    de quien lo ve. Es la dirección que embeds.js carga al pulsar."""
+    from bs4 import BeautifulSoup
+
+    rec = _recording(embed_url=VIMEO)
+    html = client.get(reverse("media:recording_detail", args=[rec.slug])).content.decode()
+    placa = BeautifulSoup(html, "html.parser").select_one(".player-consent")
+    src = urlsplit(placa["data-embed-src"])
+    assert (src.netloc, src.path) == ("player.vimeo.com", "/video/123456789")
+    assert parse_qs(src.query) == {"dnt": ["1"]}
+
+
 def test_the_filters_resolve_the_player_and_its_provider():
     """La dirección del reproductor se calcula aunque el iframe espere al clic: se difiere su
     uso, no se pierde."""
     assert embed_src(YOUTUBE) == "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
-    assert embed_src(VIMEO) == "https://player.vimeo.com/video/123456789"
+    assert embed_src(VIMEO) == "https://player.vimeo.com/video/123456789?dnt=1"
     assert embed_src("https://bandcamp.com/track/x") == ""
     assert embed_src("") == ""
     assert embed_provider(YOUTUBE) == "YouTube"

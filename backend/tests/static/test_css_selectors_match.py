@@ -858,10 +858,11 @@ def _showcase(members):
 
 
 def _with_search_results(page, panel):
-    """La página con la lupa abierta y sus resultados: htmx mete la respuesta del servidor en
-    #search-results (`hx-target`, con el intercambio por defecto, `innerHTML`)."""
+    """La página con la lupa abierta y sus resultados: htmx mete la respuesta del servidor en el
+    destino del campo (`hx-target`), con el intercambio por defecto, `innerHTML`."""
     soup = BeautifulSoup(page, "html.parser")
-    soup.select_one("#search-results").append(BeautifulSoup(panel, "html.parser"))
+    campo = soup.select_one('.busqueda input[type="search"]')
+    soup.select_one(campo["hx-target"]).append(BeautifulSoup(panel, "html.parser"))
     return soup
 
 

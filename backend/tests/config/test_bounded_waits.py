@@ -48,3 +48,20 @@ def test_the_worker_starts_two_processes_on_an_eight_core_server():
         worker = app.WorkController(hostname="prueba@local", pool_cls="prefork")
     assert worker.concurrency == 2
     assert worker.max_tasks_per_child == 200
+
+
+def test_every_task_declares_its_time_limits():
+    """Cada tarea de las apps declara sus dos límites, con su porqué junto a ella: los globales de
+    settings son para las tareas de Celery mismo, no un valor que se hereda sin decidirlo."""
+    app.loader.import_default_modules()
+    own = {name: task for name, task in app.tasks.items() if name.startswith("apps.")}
+    # Control: se leen las tareas de las apps, también la que ya los declaraba.
+    assert "apps.media.tasks.process_image" in own and len(own) >= 4, sorted(own)
+    undeclared = [
+        name
+        for name, task in own.items()
+        if task.soft_time_limit is None or task.time_limit is None
+    ]
+    assert sorted(undeclared) == []
+    for name, task in own.items():
+        assert 0 < task.soft_time_limit < task.time_limit, name

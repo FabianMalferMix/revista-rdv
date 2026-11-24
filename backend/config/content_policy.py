@@ -61,7 +61,9 @@ EMBED_PROVIDERS = (
     EmbedProvider(
         "Vimeo",
         re.compile(r"vimeo\.com/(?P<id>\d+)"),
-        "https://player.vimeo.com/video/{id}",
+        # Con `dnt=1`, el reproductor no sigue la sesión de quien lo ve: no guarda sus cookies
+        # ni sus estadísticas.
+        "https://player.vimeo.com/video/{id}?dnt=1",
     ),
 )
 

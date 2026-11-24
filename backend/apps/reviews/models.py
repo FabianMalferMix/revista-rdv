@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from apps.content.models import Article
 from apps.showcase.models import Publication
+from config import publishing
 
 # Obras, editoriales y autoras de obra no tienen estado propio: tienen ficha y van al sitemap
 # solo si algo publicado las respalda. Lo demás responde 404.
@@ -186,5 +187,4 @@ class Work(models.Model):
     @property
     def public_publication(self):
         """La publicación del colectivo que es esta obra, solo si está publicada."""
-        publication = self.publicacion
-        return publication if publication is not None and publication.published else None
+        return self.publicacion if publishing.is_published(self.publicacion) else None

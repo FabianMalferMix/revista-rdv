@@ -55,6 +55,16 @@ def test_every_production_container_drops_the_kernel_capabilities():
     assert {name: caps for name, caps in added.items() if caps} == {"proxy": ["[NET_BIND_SERVICE]"]}
 
 
+def test_docker_waits_for_a_confirmation_email_to_finish():
+    """Al parar el worker, Docker espera su stop_grace_period antes de matarlo: tiene que cubrir el
+    límite duro del correo de confirmación, para que uno en curso termine."""
+    from apps.community.tasks import send_confirmation_email
+
+    grace = re.search(r"^    stop_grace_period: (\d+)s$", _production()["worker"], re.M)
+    assert grace, "control: el worker declara cuánto espera Docker"
+    assert int(grace.group(1)) > send_confirmation_email.time_limit
+
+
 def test_the_production_template_documents_every_resource_limit():
     """Cada límite de recursos del compose de producción sale en .env.prod.example con su valor
     por defecto, para ajustarlo a la RAM del servidor, y la suma que da la plantilla es la de

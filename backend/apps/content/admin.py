@@ -33,7 +33,6 @@ from .models import (
     Tag,
 )
 from .permissions import can_edit_item
-from .sanitize import clean_html, keep_any_image
 
 
 def tinymce_valid_elements():
@@ -69,19 +68,6 @@ class RichTextWidget(forms.Textarea):
         super().__init__(*args, **kwargs)
 
 
-class SanitizedBodyMixin:
-    """Sanea el cuerpo al validar el formulario del panel, como `Model.save()` al guardarlo, pero
-    sin quitar las imágenes de otro sitio, que copia el guardado (`CopiesRemoteImagesMixin`).
-
-    Ninguno de los dos es la garantía, porque una migración de datos, un `bulk_create` o
-    `loaddata` no pasan por ellos: la garantía está en la salida, en el filtro `authored_html`
-    (templatetags/authored.py), que sanea el cuerpo al pintarlo.
-    """
-
-    def clean_body(self):
-        return clean_html(self.cleaned_data.get("body", ""), image_source=keep_any_image)
-
-
 class CopiesRemoteImagesMixin:
     """Al guardar, copia a la biblioteca las imágenes de otro sitio del cuerpo, y lo dice: cuántas
     copió y, de cada una que no, por qué. Una imagen que no se copia no impide guardar."""
@@ -110,7 +96,7 @@ class CopiesRemoteImagesMixin:
             )
 
 
-class ArticleAdminForm(SanitizedBodyMixin, forms.ModelForm):
+class ArticleAdminForm(forms.ModelForm):
     class Meta:
         model = Article
         fields = "__all__"
@@ -132,7 +118,7 @@ LEGAL_PAGE_NOTICE = (
 )
 
 
-class PageAdminForm(SanitizedBodyMixin, forms.ModelForm):
+class PageAdminForm(forms.ModelForm):
     class Meta:
         model = Page
         fields = "__all__"

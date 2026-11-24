@@ -46,16 +46,18 @@ def trayectoria(request):
 
 @require_safe
 def event_detail(request, slug):
+    # Los registros de la actividad, con el QuerySet de su modelo, al otro lado de la relación:
+    # agenda no importa media.
+    recordings = Event._meta.get_field("recordings").related_model.objects.published()
     event, preview = publishing.piece_for(
         request,
         Event.objects.select_related("poster").prefetch_related(
-            participants_prefetch(), "photos__asset", "recordings"
+            participants_prefetch(),
+            "photos__asset",
+            Prefetch("recordings", queryset=recordings, to_attr="published_recordings"),
         ),
         slug=slug,
     )
-    # Los registros publicados salen de la caché del prefetch: un `.filter()` se la saltaría
-    # y haría una consulta más.
-    recordings = [r for r in event.recordings.all() if r.published]
     # Las actividades van por fecha: «anterior» es la de antes en el tiempo. `vecinos`
     # devuelve el orden de un índice, del más reciente al más antiguo: se dan vuelta.
     mas_reciente, mas_antigua = vecinos(Event.objects.published(), event, "starts_at")
@@ -67,7 +69,7 @@ def event_detail(request, slug):
         "agenda/event_detail.html",
         {
             "event": event,
-            "recordings": recordings,
+            "recordings": event.published_recordings,
             "neighbors": (mas_antigua, mas_reciente),
             "creditos": creditos,
             "preview": preview,

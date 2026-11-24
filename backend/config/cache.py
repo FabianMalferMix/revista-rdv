@@ -31,17 +31,32 @@ from redis.exceptions import RedisError
 
 logger = logging.getLogger(__name__)
 
+
+class OncePerInterval:
+    """Verdadero la primera vez y, después, una vez por cada intervalo de `seconds`. Con Redis
+    caído, lo que se repite en cada visita llega así a Sentry como un ERROR por intervalo, y no
+    como uno por petición que gaste la cuota."""
+
+    def __init__(self, seconds):
+        self.seconds = seconds
+        self.last = None
+
+    def __call__(self):
+        now = time.monotonic()
+        if self.last is None or now - self.last >= self.seconds:
+            self.last = now
+            return True
+        return False
+
+
 # Con Redis caído, cada visita falla en varias operaciones: un ERROR con su traza (que llega a
 # Sentry) por cada intervalo, y el resto, un WARNING de una línea.
 ERROR_INTERVAL = 300  # segundos
-_last_error = None
+_error_due = OncePerInterval(ERROR_INTERVAL)
 
 
 def _degraded(operation):
-    global _last_error
-    now = time.monotonic()
-    if _last_error is None or now - _last_error >= ERROR_INTERVAL:
-        _last_error = now
+    if _error_due():
         logger.error("Caché Redis no disponible en %s(); se degrada", operation, exc_info=True)
     else:
         logger.warning("Caché Redis no disponible en %s(); se degrada", operation)

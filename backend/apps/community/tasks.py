@@ -65,7 +65,11 @@ def retry_wait(retries):
     )
 
 
-@shared_task(bind=True, max_retries=MAX_RETRIES)
+# Un servidor que contesta despacio a cada paso de la conversación SMTP agota el límite blando y
+# se reintenta (`is_temporary`); EMAIL_TIMEOUT, menor, corta antes al que calla. El duro queda por
+# debajo del plazo que Docker da al worker para parar (docker-compose.prod.yml): un correo en
+# curso termina antes de que lo maten.
+@shared_task(bind=True, max_retries=MAX_RETRIES, soft_time_limit=30, time_limit=60)
 def send_confirmation_email(self, subscriber_id):
     """Correo de confirmación de suscripción (doble opt-in).
 

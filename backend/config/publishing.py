@@ -7,8 +7,11 @@ prensa, en `published`, y los aliados, en `active`.
 
 Cada modelo monta su QuerySet como manager (`objects = ….as_manager()`), así que el filtro vale
 también desde las relaciones (`member.events.published()`). Dentro de una consulta sobre otro
-modelo se usa como subconsulta: `article__in=Article.objects.published()`. Fuera de estos
-QuerySets el filtro no se escribe a mano, y tests/config/test_published_querysets.py lo vigila.
+modelo se usa como subconsulta: `article__in=Article.objects.published()`. De una pieza ya
+cargada, `is_published(pieza)` responde lo mismo sin otra consulta: lo usan las relaciones hacia
+algo publicable (el registro de un poema, el evento de un registro) y lo que se hace al publicar.
+Fuera de estos QuerySets no se escribe a mano ni el filtro ni esa pregunta, y
+tests/config/test_published_querysets.py lo vigila.
 
 Las fichas piden su pieza con `piece_for`: a quien puede verla en el panel le sirven también lo
 que no está publicado, como vista previa.
@@ -29,6 +32,9 @@ class EditorialQuerySet(models.QuerySet):
     def published(self):
         return self.filter(status=PUBLISHED)
 
+    def is_published(self, piece):
+        return piece.status == PUBLISHED
+
 
 class PublishableQuerySet(models.QuerySet):
     """Lo que se publica con una casilla."""
@@ -38,6 +44,15 @@ class PublishableQuerySet(models.QuerySet):
 
     def published(self):
         return self.filter(**{self.published_field: True})
+
+    def is_published(self, piece):
+        return bool(getattr(piece, self.published_field))
+
+
+def is_published(piece):
+    """Si una pieza ya cargada está publicada, con la regla del QuerySet de su modelo: lo mismo
+    que buscarla en `published()`, sin otra consulta. Lo que no existe (None) no lo está."""
+    return piece is not None and type(piece)._default_manager.is_published(piece)
 
 
 def piece_for(request, queryset, **lookup):

@@ -412,7 +412,7 @@ const CHECKS = [
       expect(inField, 'al abrir la lupa, el foco no va al campo');
       await page.keyboard.type('casa');
       const found = await page
-        .waitForFunction(() => document.querySelector('#search-results a'), null, { timeout: 5000 })
+        .waitForFunction(() => document.querySelector('.busqueda-resultados a'), null, { timeout: 5000 })
         .then(() => true, () => false);
       expect(found, 'escribir «casa» no trae resultados al panel (htmx)');
       await page.keyboard.press('Escape');
@@ -449,13 +449,13 @@ const CHECKS = [
       expect(!searches.length, 'con una sola letra, la lupa busca igual');
       await page.keyboard.type('asa');
       const found = await page
-        .waitForFunction(() => document.querySelector('#search-results a'), null, { timeout: 5000 })
+        .waitForFunction(() => document.querySelector('.busqueda-resultados a'), null, { timeout: 5000 })
         .then(() => true, () => false);
       expect(found, 'escribir «casa» no trae resultados al panel (htmx)');
       await page.waitForTimeout(SETTLE_MS);
       const [announced, live] = await page.evaluate(() => [
         window.announced,
-        !!document.querySelector('#search-results').closest('[aria-live], [role="status"], [role="alert"], [role="log"]'),
+        !!document.querySelector('.busqueda-resultados').closest('[aria-live], [role="status"], [role="alert"], [role="log"]'),
       ]);
       expect(!live, 'los resultados van en una región viva: el lector los lee enteros en cada pausa');
       expect(
@@ -466,7 +466,7 @@ const CHECKS = [
       for (let i = 0; i < 3; i += 1) await page.keyboard.press('Backspace');
       await page.waitForTimeout(SETTLE_MS);
       const left = await page.evaluate(() =>
-        ['#search-results', '.busqueda [role="status"]'].map((s) => document.querySelector(s).textContent.trim()).join('')
+        ['.busqueda-resultados', '.busqueda [role="status"]'].map((s) => document.querySelector(s).textContent.trim()).join('')
       );
       expect(!left, `con una letra queda «${left.slice(0, 60)}»`);
       expect(searches.length === 1, `la lupa buscó ${searches.length} veces`);
@@ -593,10 +593,10 @@ const CHECKS = [
         await page.keyboard.press('Enter');
         await page.waitForFunction(() => document.activeElement.matches('.busqueda input[type="search"]'), null, { timeout: 2000 });
         await page.keyboard.type('casa');
-        await page.waitForFunction(() => document.querySelector('#search-results a'), null, { timeout: 5000 });
+        await page.waitForFunction(() => document.querySelector('.busqueda-resultados a'), null, { timeout: 5000 });
         await page.waitForTimeout(SETTLE_MS);
         return page.evaluate(() =>
-          ['.masthead-fila', '.busqueda input[type="search"]', '#search-results'].map((s) =>
+          ['.masthead-fila', '.busqueda input[type="search"]', '.busqueda-resultados'].map((s) =>
             Math.round(document.querySelector(s).getBoundingClientRect().width)
           )
         );

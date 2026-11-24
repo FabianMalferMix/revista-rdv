@@ -16,8 +16,10 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.urls import reverse
 
+from apps.site.views import SEARCH_PANEL
 from tests import css
 from tests.factories import soup
+from tests.repo_root import read
 
 RAIZ = settings.BASE_DIR
 BUSCADOR_JS = (RAIZ / "static" / "js" / "buscador.js").read_text()
@@ -113,6 +115,22 @@ def test_the_results_are_styled_by_their_class_and_their_id_is_only_htmxs_target
     assert con_id == []
 
 
+def test_the_scripts_find_the_results_by_their_class_like_the_stylesheet():
+    """Los guiones del sitio encuentran los resultados por su clase, como la hoja: el id del
+    panel es cosa de htmx y de la vista de búsqueda, que lo decide (`SEARCH_PANEL`), y si cambia
+    no hay que tocarlos."""
+    scripts = {path.name: path.read_text() for path in (RAIZ / "static" / "js").glob("*.js")}
+    assert "buscador.js" in scripts, "control: se leyeron los guiones del sitio"
+    assert [name for name, text in scripts.items() if SEARCH_PANEL in text] == []
+
+
+def test_the_browser_smoke_finds_the_results_by_their_class_too():
+    """La prueba de humo, que busca con la lupa en un navegador, también."""
+    smoke = read("tools/ux/browser-smoke.js")
+    assert ".busqueda summary" in smoke, "control: la prueba de humo abre la lupa"
+    assert SEARCH_PANEL not in smoke
+
+
 @pytest.mark.django_db
 def test_the_live_search_form_is_only_in_the_lupa_and_only_the_open_lupa_places_it(client):
     """El formulario de la búsqueda en vivo solo está en la lupa de la cabecera, y lo sitúa solo
@@ -143,7 +161,7 @@ def test_the_search_panel_announces_a_count_and_not_the_whole_list(client):
     anuncia el recuento, en una región de estado aparte que rellena la parcial (test_search)."""
     sopa = BeautifulSoup(client.get(reverse("site:home")).content, "html.parser")
     # Un solo contenedor de resultados.
-    resultados = sopa.select("#search-results")
+    resultados = sopa.select(f"#{SEARCH_PANEL}")
     assert len(resultados) == 1
     assert resultados[0].find_parent(attrs={"aria-live": True}) is None
     assert not resultados[0].has_attr("aria-live")

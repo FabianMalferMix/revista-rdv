@@ -46,17 +46,6 @@ def test_transition_writes_audit_trail(editor, autor):
     assert entry.note == "ok"
 
 
-def test_available_transitions_for_editor_in_review(editor, autor):
-    article = make_article(owner=autor, status=S.IN_REVIEW)
-    available = set(workflow.available_transitions(editor, article))
-    assert {"accept", "reject", "request_changes"} <= available
-
-
-def test_available_transitions_for_author_draft(autor):
-    article = make_article(owner=autor, status=S.DRAFT)
-    assert workflow.available_transitions(autor, article) == ["submit"]
-
-
 def test_publish_due_items_is_idempotent():
     # Una pieza vencida se publica una vez; una segunda corrida no la re-publica
     # ni duplica la bitácora (idempotencia contra un doble beat, un reintento o una reentrega).

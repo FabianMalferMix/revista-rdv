@@ -170,9 +170,7 @@ def _cejilla(html):
 def test_la_cejilla_no_repite_la_seccion_cuando_dice_lo_mismo_que_el_tipo(client):
     """La cejilla no dice «Reseñas · Reseña»: repetiría la palabra en cada tarjeta del archivo."""
     resenas = Section.objects.create(slug="resenas", name="Reseñas")
-    articulo = make_published_article(slug="r1", section=resenas, type=ArticleType.RESENA)
-    assert articulo.seccion_aporta is False
-
+    make_published_article(slug="r1", section=resenas, type=ArticleType.RESENA)
     html = client.get(reverse("content:text_archive")).content.decode()
     assert _cejilla(html) == "Reseña"
     # La sección no se pierde: el tipo enlaza a ella.
@@ -181,16 +179,14 @@ def test_la_cejilla_no_repite_la_seccion_cuando_dice_lo_mismo_que_el_tipo(client
 
 def test_la_cejilla_nombra_la_seccion_cuando_anade_algo(client):
     cronica = Section.objects.create(slug="cronica", name="Crónica")
-    articulo = make_published_article(slug="e1", section=cronica, type=ArticleType.ENTREVISTA)
-    assert articulo.seccion_aporta is True
+    make_published_article(slug="e1", section=cronica, type=ArticleType.ENTREVISTA)
     assert _cejilla(client.get(reverse("content:text_archive")).content.decode()) == (
         "Crónica · Entrevista"
     )
 
 
 def test_sin_seccion_la_cejilla_es_solo_el_tipo(client):
-    articulo = make_published_article(slug="s1", section=None, type=ArticleType.ENSAYO)
-    assert articulo.seccion_aporta is False
+    make_published_article(slug="s1", section=None, type=ArticleType.ENSAYO)
     assert _cejilla(client.get(reverse("content:text_archive")).content.decode()) == "Ensayo"
 
 

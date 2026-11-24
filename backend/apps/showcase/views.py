@@ -63,7 +63,7 @@ def publication_detail(request, slug):
 
 @require_safe
 def press_index(request):
-    mentions = PressMention.objects.published().select_related("logo")
+    mentions = PressMention.objects.published()
     return render(request, "showcase/press_index.html", {"mentions": mentions})
 
 

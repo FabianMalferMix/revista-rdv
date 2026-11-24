@@ -7,9 +7,10 @@ actualización sin que nada avisara.
 """
 
 import pytest
+from django.urls import reverse
 
 from apps.content.sanitize import ALLOWED_URL_SCHEMES, clean_html
-from tests.factories import make_article
+from tests.factories import admin_form_fields, make_article
 
 # Vectores clásicos: si alguno sobrevive, hay XSS almacenado en artículos y páginas.
 VECTORES = [
@@ -76,22 +77,24 @@ def test_los_enlaces_salen_con_rel_defensivo():
 
 
 @pytest.mark.django_db
-def test_el_formulario_del_panel_tambien_sanea():
-    """El formulario del panel sanea el cuerpo al validarlo, como `Model.save()` al guardarlo."""
-    from apps.content.admin import ArticleAdminForm
+@pytest.mark.parametrize("model", ["article", "page"])
+def test_what_the_panel_saves_comes_out_clean(client, editor, model):
+    """Lo que un editor guarda desde el panel, en un texto o en una página, queda saneado: el
+    texto permitido sigue y el guion, con lo que traía, no."""
+    from apps.content.models import Page
 
-    form = ArticleAdminForm(
-        data={
-            "slug": "prueba",
-            "title": "Prueba",
-            "type": "resena",
-            "status": "draft",
-            "body": "<p>ok</p><script>alert(1)</script>",
-        }
-    )
-    form.is_valid()  # dispara clean_body aunque otros campos falten
-    assert "<p>ok</p>" in form.cleaned_data["body"]  # control: el texto permitido queda
-    assert "<script" not in form.cleaned_data["body"]
+    if model == "article":
+        item = make_article(slug="desde-el-panel")
+    else:
+        item = Page.objects.create(slug="desde-el-panel", title="Desde el panel", body="<p>x</p>")
+    url = reverse(f"admin:content_{model}_change", args=[item.pk])
+    client.force_login(editor)
+    data = admin_form_fields(client.get(url).content, f"{model}_form")
+    data["body"] = "<p>ok</p><script>alert(1)</script>"
+    assert client.post(url, data).status_code == 302, "control: el panel guardó"
+    item.refresh_from_db()
+    assert "<p>ok</p>" in item.body
+    assert "<script" not in item.body and "alert" not in item.body
 
 
 @pytest.mark.django_db

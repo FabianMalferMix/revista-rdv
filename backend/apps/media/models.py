@@ -427,7 +427,7 @@ class Recording(TimestampedModel):
     def save(self, *args, **kwargs):
         # Lo publicado lleva fecha: la del momento en que se publica, si no se dio otra. La
         # leen el pódcast y «Actualizado el…».
-        if self.published and self.published_at is None:
+        if publishing.is_published(self) and self.published_at is None:
             self.published_at = timezone.now()
         super().save(*args, **kwargs)
 
@@ -448,8 +448,7 @@ class Recording(TimestampedModel):
     def public_event(self):
         """El evento del registro, solo si está publicado: un registro publicado no puede enseñar
         la sala, la ciudad, la fecha ni las fotos de un evento oculto (cancelado o privado)."""
-        event = self.event
-        return event if event is not None and event.published else None
+        return self.event if publishing.is_published(self.event) else None
 
     @property
     def duracion(self):
