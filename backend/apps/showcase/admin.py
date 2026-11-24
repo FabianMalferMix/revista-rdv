@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from config.panel import PanelWordingMixin
 from config.publishing import FrozenSlugAdminMixin
 
 from .models import (
@@ -18,7 +19,7 @@ class SiteSocialLinkInline(admin.TabularInline):
 
 
 @admin.register(SiteProfile)
-class SiteProfileAdmin(admin.ModelAdmin):
+class SiteProfileAdmin(PanelWordingMixin, admin.ModelAdmin):
     inlines = [SiteSocialLinkInline]
     autocomplete_fields = [
         "featured_recording",
@@ -42,7 +43,7 @@ class WhereToBuyInline(admin.TabularInline):
 
 
 @admin.register(Publication)
-class PublicationAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class PublicationAdmin(FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin):
     list_display = ["title", "kind", "year", "is_own", "published", "featured"]
     list_filter = ["published", "featured", "kind", "is_own"]
     search_fields = ["title", "synopsis", "isbn"]

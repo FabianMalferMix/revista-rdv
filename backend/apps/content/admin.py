@@ -12,6 +12,7 @@ from django.utils.html import format_html
 
 from apps.people.roles import is_editor
 from config.content_policy import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
+from config.panel import PanelWordingMixin, account_name, moved_message
 from config.publishing import FrozenSlugAdminMixin
 from config.staticfiles import TINYMCE_DIR
 
@@ -23,6 +24,7 @@ from .models import (
     Collection,
     CollectionArticle,
     CollectionPoem,
+    EditorialItem,
     EditorialNote,
     EditorialTransition,
     Page,
@@ -178,8 +180,11 @@ class EditorialNoteInline(GenericTabularInline):
     model = EditorialNote
     formset = EditorialNoteFormSet
     extra = 1
-    # El autor es quien la escribe (EditorialItemAdmin.save_formset), no un desplegable.
-    readonly_fields = ["author", "created_at"]
+    # El autor es quien la escribe (EditorialItemAdmin.save_formset), no un desplegable, y se lee
+    # por su nombre.
+    exclude = ["author"]
+    readonly_fields = ["author_name", "created_at"]
+    author_name = account_name(EditorialNote, "author")
     # La clase con la que admin/editorial_notes.css ajusta la tabla al ancho de la ficha.
     classes = ["notas-editoriales"]
 
@@ -229,7 +234,7 @@ class ScheduleForm(forms.Form):
         return when
 
 
-class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class EditorialItemAdmin(FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin):
     """Base para piezas del flujo editorial (Article, Poem).
 
     Concentra los permisos por objeto y estado, el dueño automático y las
@@ -301,9 +306,17 @@ class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
         # acciones de transición, que aplican guardas y dejan rastro en la bitácora.
         ro = [*super().get_readonly_fields(request, obj), "status"]
         if not is_editor(request.user):
-            # El autor tampoco toca la fecha de publicación ni el dueño.
-            ro += ["published_at", "owner"]
+            # El autor tampoco toca la fecha de publicación ni el dueño, que lee por su nombre.
+            ro += ["published_at", "owner_name"]
         return ro
+
+    def get_exclude(self, request, obj=None):
+        exclude = list(super().get_exclude(request, obj) or [])
+        if not is_editor(request.user):
+            exclude.append("owner")
+        return exclude
+
+    owner_name = account_name(EditorialItem, "owner")
 
     def _run(self, request, queryset, name, **kwargs):
         ok = 0
@@ -312,10 +325,16 @@ class EditorialItemAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
                 workflow.perform_transition(item, name, request.user, **kwargs)
                 ok += 1
             except (PermissionDenied, ValueError) as exc:
-                self.message_user(request, f"{item}: {exc}", level=messages.WARNING)
+                reason = str(exc)
+                # Tras el título de la pieza, el motivo sigue la frase.
+                self.message_user(
+                    request, f"{item}: {reason[:1].lower()}{reason[1:]}", level=messages.WARNING
+                )
         if ok:
-            label = self.model._meta.verbose_name_plural
-            self.message_user(request, f"{ok} {label} → '{name}'.", level=messages.SUCCESS)
+            target = workflow.TRANSITIONS[name].target.label
+            self.message_user(
+                request, moved_message(self.model, ok, target), level=messages.SUCCESS
+            )
 
     @admin.action(description="Enviar a revisión", permissions=[_action_permission("submit")])
     def do_submit(self, request, queryset):
@@ -463,7 +482,7 @@ class CollectionPoemInline(admin.TabularInline):
 
 
 @admin.register(Collection)
-class CollectionAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class CollectionAdmin(FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin):
     list_display = ["title", "status", "published_at"]
     list_filter = ["status"]
     search_fields = ["title"]

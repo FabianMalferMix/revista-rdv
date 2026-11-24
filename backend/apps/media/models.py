@@ -413,11 +413,12 @@ class Recording(TimestampedModel):
         verbose_name = "registro"
         verbose_name_plural = "registros"
         constraints = [
-            # Debe existir una fuente: archivo O embed. Lo que clean() valida en el
-            # form, garantizado también en BD ante create()/update directos.
+            # Debe existir una fuente: archivo O embed. El formulario la valida con esta
+            # restricción y su aviso, y la base la garantiza ante create()/update directos.
             models.CheckConstraint(
                 name="recording_file_or_embed",
                 condition=~(models.Q(file="") & models.Q(embed_url="")),
+                violation_error_message="Un registro necesita un archivo o un enlace para incrustar.",
             )
         ]
 
@@ -459,8 +460,6 @@ class Recording(TimestampedModel):
         return f"{horas} h {minutos:02d} min" if horas else f"{minutos} min"
 
     def clean(self):
-        if not self.file and not self.embed_url:
-            raise ValidationError("Indica un archivo o una URL de embed para el registro.")
         if self.featured:
             otros = Recording.objects.filter(featured=True).exclude(pk=self.pk).count()
             if otros >= TIRADA_SIZE:

@@ -2,6 +2,8 @@ from django.contrib import admin, messages
 from django.urls import reverse
 from django.utils.html import format_html
 
+from config.panel import account_name, moved_message
+
 from .models import Call, Submission
 
 
@@ -31,7 +33,7 @@ def _move_to(status):
             submission.save()
             modeladmin.log_change(request, submission, f"Estado: {previous} → {label}.")
             moved += 1
-        modeladmin.message_user(request, f"{moved} envío(s) pasaron a «{label}».", messages.SUCCESS)
+        modeladmin.message_user(request, moved_message(Submission, moved, label), messages.SUCCESS)
 
     move.__name__ = f"move_to_{status}"
     return move
@@ -46,7 +48,9 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_filter = ["status", "call"]
     search_fields = ["title", "author_name", "author_email"]
     autocomplete_fields = ["call"]
-    exclude = ["file"]  # el adjunto se descarga por la vista protegida, no se sirve
+    # El adjunto se descarga por la vista protegida (`archivo`), no se sirve, y quien revisó el
+    # envío se lee por su nombre.
+    exclude = ["file", "reviewer"]
     readonly_fields = [
         "author_name",
         "author_email",
@@ -55,10 +59,11 @@ class SubmissionAdmin(admin.ModelAdmin):
         "body",
         "archivo",
         "status",
-        "reviewer",
+        "reviewer_name",
         "resolved_at",
         "created_at",
     ]
+    reviewer_name = account_name(Submission, "reviewer")
     actions = [
         _move_to(status) for status in Submission.Status if status != Submission.Status.RECEIVED
     ]

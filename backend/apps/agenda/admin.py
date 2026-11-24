@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from config.panel import PanelWordingMixin
 from config.publishing import FrozenSlugAdminMixin
 
 from .models import Event, EventPhoto, Milestone
@@ -12,7 +13,7 @@ class EventPhotoInline(admin.TabularInline):
 
 
 @admin.register(Event)
-class EventAdmin(FrozenSlugAdminMixin, admin.ModelAdmin):
+class EventAdmin(FrozenSlugAdminMixin, PanelWordingMixin, admin.ModelAdmin):
     list_display = ["title", "type", "starts_at", "city", "published"]
     list_filter = ["published", "type", "is_external"]
     search_fields = ["title", "venue_name", "city", "description"]

@@ -21,11 +21,12 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Model
+from django.db.models import CheckConstraint, F, Model, UniqueConstraint
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.community.models import NewsletterSubscriber
 from apps.content import workflow
 from apps.content.models import (
     Article,
@@ -35,6 +36,7 @@ from apps.content.models import (
     EditorialNote,
 )
 from apps.people.models import Contributor
+from apps.reviews.models import Work
 from apps.submissions.models import Submission
 from tests.factories import admin_form_fields, make_article, make_poem, soup
 
@@ -180,31 +182,91 @@ def test_every_project_model_names_its_rows():
     assert not nameless, "modelos que se nombran con el texto de Django: " + ", ".join(nameless)
 
 
+def _field_names(expression):
+    """Los campos que nombra una expresión, también dentro de una función: `Lower("email")`."""
+    if isinstance(expression, F):
+        return [expression.name]
+    return [part.name for part in expression.flatten() if isinstance(part, F)]
+
+
+def _unique_rules():
+    """Cada regla de unicidad propia, con su aviso y los rótulos que ese aviso nombra: los campos
+    únicos y las restricciones de unicidad con condición o con expresiones. Las de varios campos
+    sin condición son las de los inlines, y las avisa la frase de Django para un dato repetido
+    entre sus filas, con los rótulos de sus campos (tests/config/test_panel.py)."""
+    for model in _project_models():
+        meta = model._meta
+        for field in meta.local_concrete_fields:
+            if field.unique and not field.primary_key:
+                yield (
+                    f"{meta.label}.{field.name}",
+                    str(field.error_messages["unique"]),
+                    [meta.verbose_name, field.verbose_name],
+                )
+        for constraint in meta.constraints:
+            if isinstance(constraint, UniqueConstraint) and (
+                constraint.condition or constraint.expressions
+            ):
+                names = [
+                    *constraint.fields,
+                    *(
+                        name
+                        for expression in constraint.expressions
+                        for name in _field_names(expression)
+                    ),
+                ]
+                yield (
+                    f"{meta.label}.{constraint.name}",
+                    str(constraint.violation_error_message),
+                    [meta.verbose_name, *(meta.get_field(name).verbose_name for name in names)],
+                )
+
+
 def test_every_unique_field_has_its_own_warning():
     """El aviso de Django para un valor repetido pega el nombre de la pieza y el rótulo del campo
-    en una frase en masculino: «Ya existe Artículo con este Dirección.». Cada campo único lleva
-    el suyo, que nombra la pieza y el campo: «Ya hay un artículo con esta dirección.»."""
-    fields = [
-        (model._meta, field)
-        for model in _project_models()
-        for field in model._meta.local_concrete_fields
-        if field.unique and not field.primary_key
-    ]
-    names = {f"{meta.label}.{field.name}" for meta, field in fields}
-    # Control: llega a las direcciones, a la cuenta de quien colabora y a la publicación del
-    # colectivo de una obra.
-    assert {"content.Article.slug", "people.Contributor.user", "reviews.Work.publicacion"} <= (
-        names
-    ), names
+    en una frase en masculino: «Ya existe Artículo con este Dirección.», y el de una restricción
+    con condición o con expresiones dice su nombre interno: «No se cumple la restricción
+    "uniq_work_isbn".». Cada regla lleva el suyo, que nombra la pieza y el campo: «Ya hay un
+    artículo con esta dirección.»."""
+    rules = list(_unique_rules())
+    names = {name for name, _message, _labels in rules}
+    # Control: llega a las direcciones, a la cuenta de quien colabora, a la publicación del
+    # colectivo de una obra, al ISBN, que solo es único cuando lo hay, y al correo de quien se
+    # suscribe, que lo es sin distinguir mayúsculas.
+    assert {
+        "content.Article.slug",
+        "people.Contributor.user",
+        "reviews.Work.publicacion",
+        "reviews.Work.uniq_work_isbn",
+        "community.NewsletterSubscriber.suscriptor_email_ci",
+    } <= names, names
     wrong = sorted(
-        f"{meta.label}.{field.name}: «{message}»"
-        for meta, field in fields
-        for message in [str(field.error_messages["unique"])]
-        if "%(" in message
-        or str(meta.verbose_name) not in message
-        or str(field.verbose_name) not in message
+        f"{name}: «{message}»"
+        for name, message, labels in rules
+        if "%(" in message or not all(str(label) in message for label in labels)
     )
     assert not wrong, "avisos que no nombran la pieza y su campo: " + ", ".join(wrong)
+
+
+def test_every_check_constraint_has_its_own_warning():
+    """Sin aviso propio, el panel anuncia una restricción incumplida por su nombre interno: «No se
+    cumple la restricción "recording_file_or_embed".»."""
+    constraints = [
+        (model._meta.label, constraint)
+        for model in _project_models()
+        for constraint in model._meta.constraints
+        if isinstance(constraint, CheckConstraint)
+    ]
+    names = {constraint.name for _label, constraint in constraints}
+    # Control: llega a la fuente de un registro y a la fecha de lo publicado.
+    assert {"recording_file_or_embed", "content_article_dated_if_public"} <= names, names
+    wrong = sorted(
+        f"{label}.{constraint.name}: «{message}»"
+        for label, constraint in constraints
+        for message in [str(constraint.violation_error_message)]
+        if "%(" in message or constraint.name in message
+    )
+    assert not wrong, "restricciones sin aviso propio: " + ", ".join(wrong)
 
 
 def _field_labels(page):
@@ -236,7 +298,7 @@ def test_the_submission_record_reads_in_spanish(client, editor):
         "body": "Descripción o texto",
         "archivo": "Archivo adjunto",
         "status": "Estado",
-        "reviewer": "Revisado por",
+        "reviewer_name": "Revisado por",
         "resolved_at": "Resuelto el",
         "created_at": "Recibido el",
     }
@@ -272,6 +334,11 @@ def test_editorial_notes_read_in_spanish_and_say_who_wrote_them_and_when(client,
         "Nota de editora_dos, 10 de noviembre de 2026",
         "Nota de editor_test, 11 de noviembre de 2026",
         "Nota de una cuenta borrada, 12 de noviembre de 2026",
+    ]
+    assert _texts(notes.select("tr.has_original td.field-author_name")) == [
+        "editora_dos",
+        "editor_test",
+        "-",
     ]
 
 
@@ -340,6 +407,52 @@ def test_an_account_with_its_contributor_says_so(client, groups):
         "Ya hay un colaborador con esta cuenta."
     ]
     assert "Ya existe" not in page.get_text()
+
+
+def test_a_repeated_isbn_says_a_work_has_it(client, editor):
+    Work.objects.create(slug="umbral", title="Umbral", isbn="978-956-9999-01-2")
+    client.force_login(editor)
+    page = _post(
+        client,
+        reverse("admin:reviews_work_add"),
+        "work_form",
+        title="Umbral, segunda edición",
+        slug="umbral-segunda-edicion",
+        isbn="978-956-9999-01-2",
+    )
+    assert _texts(page.select(".field-isbn .errorlist li")) == ["Ya hay una obra con este ISBN."]
+    assert "uniq_work_isbn" not in str(page)
+
+
+def test_a_repeated_email_says_there_is_a_subscriber_with_it(client, editor):
+    """El correo se compara sin distinguir mayúsculas: es la misma persona."""
+    NewsletterSubscriber.objects.create(email="ana@example.com")
+    client.force_login(editor)
+    page = _post(
+        client,
+        reverse("admin:community_newslettersubscriber_add"),
+        "newslettersubscriber_form",
+        email="Ana@Example.com",
+    )
+    assert _texts(page.select(".errorlist.nonfield li")) == [
+        "Ya hay un suscriptor con este correo."
+    ]
+    assert "suscriptor_email_ci" not in str(page)
+
+
+def test_a_recording_without_a_source_says_so_once(client, editor):
+    client.force_login(editor)
+    page = _post(
+        client,
+        reverse("admin:media_recording_add"),
+        "recording_form",
+        title="Lectura en el patio",
+        slug="lectura-en-el-patio",
+    )
+    assert _texts(page.select(".errorlist li")) == [
+        "Un registro necesita un archivo o un enlace para incrustar."
+    ]
+    assert "recording_file_or_embed" not in str(page)
 
 
 def test_the_log_names_each_state_like_the_rest_of_the_panel(client, editor, autor):
